@@ -1,0 +1,395 @@
+# CLAUDE.md — Guía permanente para agentes de IA
+
+> Este archivo es la **fuente de verdad operativa** para cualquier agente de IA que trabaje sobre este repositorio.
+> Debe leerse **completo** al inicio de cada sesión, antes de cualquier modificación.
+> Última actualización: 2026-09-29 · Etapa vigente: **ETAPA 1 — Datos** (Fase 1, en progreso)
+
+---
+
+## 1. Descripción del proyecto
+
+**Motor Predictivo de Abastecimiento de Inventarios.**
+
+Sistema empresarial que analiza históricos de consumo, inventarios, tiempos de entrega y
+comportamiento de proveedores para **predecir la demanda futura** y, a partir de esa predicción,
+**recomendar decisiones de abastecimiento** (cuánto pedir, cuándo pedir, a quién pedir).
+
+El sistema NO es un chatbot ni un dashboard. Es un motor de decisión con tres capas
+claramente separadas: predicción, reglas de negocio e interfaz/explicación.
+
+## 2. Objetivo
+
+Reducir simultáneamente:
+
+- el **riesgo de desabasto** (pérdida de venta / paro operativo),
+- el **sobreinventario** (capital inmovilizado, obsolescencia),
+- el **costo logístico** (órdenes urgentes, fletes extraordinarios, compras reactivas),
+
+sustituyendo decisiones de compra basadas en intuición por decisiones basadas en evidencia
+cuantitativa, **auditables y reproducibles**.
+
+## 3. Alcance
+
+### Dentro del alcance
+Administración de productos, categorías, inventarios, movimientos, consumo/ventas,
+proveedores, lead times y órdenes de compra; análisis de históricos; predicción de demanda
+por SKU; cálculo de stock de seguridad, punto de reorden y cantidad recomendada; detección de
+riesgo de desabasto y sobreinventario; interfaz web; indicadores en Power BI; explicaciones
+en lenguaje natural mediante IA generativa; autenticación corporativa; CI/CD.
+
+### Fuera del alcance (hasta nueva instrucción)
+Ejecución automática de compras sin aprobación humana; integración con ERP específico;
+optimización de rutas/transporte; gestión de almacén (WMS); pricing; MRP multinivel con
+lista de materiales; finanzas y contabilidad.
+
+> Ver el detalle formal en `docs/01-requerimientos.md`.
+
+## 4. Arquitectura conceptual
+
+Tres responsabilidades **estrictamente separadas**:
+
+| Capa | Responsable de | NO responsable de |
+|---|---|---|
+| **A. Predicción (ML)** | Estimar demanda futura por SKU y horizonte, con incertidumbre | Decidir cuánto comprar |
+| **B. Motor de abastecimiento (reglas)** | Convertir predicción + inventario + lead time + política en recomendaciones determinísticas | Estimar la demanda |
+| **C. IA generativa** | Explicar, resumir, responder preguntas, recuperar conocimiento documental | Calcular cifras de inventario |
+
+```mermaid
+flowchart LR
+    H[(Históricos)] --> A[A. Predicción ML]
+    A -->|forecast + intervalo| B[B. Motor de abastecimiento<br/>reglas determinísticas]
+    I[(Inventario, lead time,<br/>políticas, proveedores)] --> B
+    B -->|recomendaciones| U[UI / Power BI]
+    B -->|cifras ya calculadas| C[C. IA generativa<br/>explica, no calcula]
+    C --> U
+```
+
+**Regla arquitectónica no negociable:** Azure OpenAI **nunca** produce, altera ni recalcula
+una cifra de inventario, un punto de reorden, un stock de seguridad ni una cantidad
+recomendada. Recibe cifras ya calculadas por la capa B y solo las **explica**.
+Ver `docs/03-arquitectura.md` y `docs/09-ia-generativa.md`.
+
+## 5. Tecnologías
+
+| Tecnología | Rol en el proyecto |
+|---|---|
+| Python | Lenguaje de backend, ML y ETL |
+| FastAPI | API REST, contrato OpenAPI, validación con Pydantic |
+| React.js | Interfaz web (SPA) |
+| PostgreSQL | Almacenamiento transaccional e histórico |
+| Docker | Empaquetado reproducible de servicios |
+| Azure Machine Learning | Entrenamiento, registro de modelos, despliegue, monitoreo |
+| Azure OpenAI Service | Explicaciones y asistente en lenguaje natural |
+| Azure AI Search | Recuperación de conocimiento documental (RAG) |
+| Power BI | Analítica e indicadores para negocio |
+| GitHub | Control de versiones y colaboración |
+| GitHub Actions | Lint, tests, build, despliegue |
+| Microsoft Entra ID | Autenticación y autorización corporativa |
+| Scrum | Marco de gestión (épicas, historias, sprints) |
+
+**No se añaden tecnologías adicionales relevantes sin justificarlas primero** en
+`docs/15-decisiones-tecnicas.md` y obtener validación del responsable del proyecto.
+Librerías menores dentro de un lenguaje ya adoptado (p. ej. `pandas`, `pytest`) no requieren
+ADR, pero sí deben quedar registradas en el archivo de dependencias correspondiente.
+
+## 6. Reglas de desarrollo
+
+1. **Incremental siempre.** Un cambio = un propósito. Nada de refactorizaciones masivas no solicitadas.
+2. **Sin sobreingeniería.** No introducir colas, microservicios, orquestadores, capas de
+   abstracción o patrones que el alcance actual no exija. Si una carpeta o una capa no tiene
+   un uso hoy, no se crea.
+3. **No inventar requisitos.** Si algo no está en `docs/01-requerimientos.md` ni fue pedido
+   explícitamente, no se implementa.
+4. **No convertir hipótesis en requisitos.** Toda hipótesis se registra en `knowledge/assumptions.md`.
+   Un requisito que dependa de un supuesto debe marcarlo con `SUPUESTO` y enlazar su `ASSUMPTION-NNN`;
+   nunca se presenta una hipótesis como hecho confirmado ni como valor acordado con el negocio.
+5. **No eliminar funcionalidad existente sin autorización explícita** del responsable.
+6. **Investigar antes de implementar** cuando exista incertidumbre técnica (ver §7).
+7. **Determinismo donde importa.** Todo cálculo de abastecimiento debe ser reproducible:
+   mismas entradas → mismas salidas. Sin aleatoriedad no sembrada, sin LLM en la ruta de cálculo.
+8. **Trazabilidad.** Toda recomendación generada debe poder explicarse a partir de sus insumos
+   (versión de modelo, forecast usado, parámetros de política, inventario en el momento del cálculo).
+9. Código y comentarios en **inglés**; documentación de proyecto y de negocio en **español**.
+10. Formato: `black` + `ruff` (Python), `eslint` + `prettier` (JS/TS). Tipado obligatorio en
+    firmas públicas de Python y en componentes React.
+
+## 7. Comportamiento esperado ante información desconocida
+
+Cuando el agente no sepa algo, en este orden:
+
+1. **Buscar en el repositorio** (`docs/`, `knowledge/`, `project/`). La respuesta suele estar documentada.
+2. **Consultar documentación oficial** (ver §11). No asumir el comportamiento de una API de
+   Azure, de FastAPI o de PostgreSQL a partir de memoria o de blogs.
+3. Si sigue sin resolverse: **registrar la duda** en `knowledge/assumptions.md` o en
+   `project/status.md` (sección *Problemas conocidos*) y **preguntar al responsable**.
+4. **Nunca rellenar el vacío con datos de negocio inventados** (costos, márgenes, niveles de
+   servicio objetivo, nombres de proveedores, políticas de compra). Esos datos los define el negocio.
+
+Si se detecta una **contradicción** entre documentos o entre una instrucción y lo documentado:
+documentarla, no resolverla unilateralmente, y solicitar validación.
+
+## 8. Reglas de documentación
+
+- La documentación vive en `docs/`, `knowledge/` y `project/`. No se dispersa en el código.
+- **Si una decisión técnica cambia, se actualiza la documentación en el mismo cambio**, no después.
+- Toda decisión arquitectónica relevante se registra en `docs/15-decisiones-tecnicas.md`
+  (formato ADR: ID, decisión, contexto, alternativas, razón, consecuencias, estado).
+- Estados válidos de una decisión: `PROPUESTA` · `ACEPTADA` · `RECHAZADA` · `SUPERSEDIDA` · `PENDIENTE`.
+  Nada se marca `ACEPTADA` si todavía es una hipótesis.
+- Los supuestos se numeran `ASSUMPTION-NNN` y son **revocables**: cada uno indica cómo se valida
+  y qué se rompe si resulta falso.
+- Las fuentes externas usadas para decidir se registran en `knowledge/sources.md` con URL y fecha de consulta.
+- `project/status.md` se actualiza al cierre de cada bloque de trabajo.
+
+## 9. Reglas de seguridad
+
+1. **Nunca** almacenar en el repositorio: secretos, claves de API, tokens, cadenas de conexión
+   con credenciales, certificados o archivos `.env` reales. Solo `.env.example` con valores ficticios.
+2. Toda configuración sensible se lee de **variables de entorno**; en la nube, de un **almacén de
+   secretos gestionado** (producto sin fijar, `DT-022`) o de los *secrets* de GitHub Actions.
+3. Preferir **identidad administrada / Entra ID** sobre claves de API para acceder a servicios de Azure.
+4. Nunca registrar (log) secretos, tokens, ni datos personales. Los logs no incluyen cuerpos
+   de petición completos en producción.
+5. Toda ruta de la API es **autenticada por defecto**; la excepción (p. ej. `/health`) se declara explícitamente.
+6. Autorización por **roles** (`ADMIN`, `PLANNER`, `ANALYST`, `VIEWER`) validada en el backend,
+   nunca solo en el frontend.
+7. Sin datos reales de clientes/proveedores en entornos de desarrollo o pruebas.
+8. Cualquier hallazgo de seguridad se documenta y se reporta antes de continuar.
+
+Detalle en `docs/10-seguridad.md`.
+
+## 10. Reglas para Machine Learning
+
+1. **Validación temporal obligatoria.** Nunca `train_test_split` aleatorio sobre series
+   temporales: se usa *rolling origin* / *backtesting* con corte por fecha.
+2. **Prohibido el data leakage.** Ninguna feature puede contener información posterior al
+   instante de predicción (incluidas medias móviles mal alineadas y agregados globales).
+3. **Baseline primero.** Ningún modelo se acepta si no supera de forma medible a un baseline
+   simple (naïve estacional / media móvil). El baseline se conserva y se reporta siempre.
+4. **Métricas declaradas antes de entrenar**, no elegidas después según convenga.
+5. Todo entrenamiento es **reproducible**: semilla fija, versión de datos, versión de código,
+   hiperparámetros y entorno registrados.
+6. Todo modelo desplegado tiene **versión**, métricas de validación y fecha; se registra en
+   `ModelVersion` y en el registro de modelos de Azure ML.
+7. El modelo **no decide compras**: entrega demanda estimada e incertidumbre. La decisión es de la capa B.
+8. Si el modelo no está disponible o su calidad cae por debajo del umbral, el sistema
+   **degrada al baseline** y lo señala explícitamente en la salida. Nunca falla en silencio.
+9. Los datos sintéticos se marcan como tales y **jamás** se mezclan con datos reales en el mismo dataset sin bandera de origen.
+
+Detalle en `docs/05-motor-predictivo.md`.
+
+## 11. Reglas para Azure
+
+1. **Verificar la documentación oficial vigente antes de implementar** cualquier integración de
+   Azure. Las APIs, los nombres de servicio y las versiones cambian (ejemplo real: Azure OpenAI
+   pasó a exponerse como *Azure OpenAI in Microsoft Foundry Models* con una API `v1` GA que ya no
+   exige el parámetro `api-version`). No escribir código basado en memoria.
+2. Orden de fuentes: Microsoft Learn → referencia oficial del SDK → repositorio oficial de ejemplos.
+   Blogs y tutoriales no son fuente de decisión.
+3. **Ningún recurso real de Azure se aprovisiona en Etapa 0.** Las integraciones se diseñan
+   contra interfaces (`ports`) con implementación *fake* local hasta que el negocio autorice el gasto.
+4. Todo acceso a Azure desde CI se hace por **OIDC / federated credentials**, sin secretos de larga vida.
+5. Los costos son una restricción de diseño: cualquier propuesta que implique consumo relevante
+   (endpoints en línea, capacidad de Azure OpenAI, tier de AI Search) se documenta con su
+   implicación de costo antes de adoptarse.
+6. Toda dependencia de Azure debe estar **encapsulada** detrás de una interfaz propia para que el
+   sistema sea ejecutable y testeable en local sin conexión.
+
+## 12. Reglas para testing
+
+1. Todo cambio de comportamiento viene acompañado de pruebas.
+2. **Ejecutar las pruebas relevantes después de cada cambio.** No se reporta trabajo terminado
+   con pruebas en rojo.
+3. La lógica del motor de abastecimiento requiere pruebas unitarias **determinísticas** con
+   casos límite: inventario cero, lead time cero, demanda cero, demanda constante, MOQ mayor
+   que la necesidad, tránsito **efectivo** superior al punto de reorden, y tránsito **total** superior al
+   punto de reorden con efectivo insuficiente.
+4. Las pruebas de ML no verifican una métrica exacta sino **propiedades e invariantes**
+   (no hay leakage, el modelo supera al baseline, la salida tiene la forma y el rango esperados).
+5. Sin llamadas de red reales en pruebas unitarias: Azure OpenAI, AI Search y Azure ML se
+   sustituyen por dobles de prueba.
+6. Cobertura como señal, no como objetivo. Prioridad: motor de abastecimiento > API > ETL > UI.
+
+Detalle en `docs/13-testing.md`.
+
+## 13. Reglas para Git
+
+1. **El agente no hace commit ni push automáticamente.** Prepara los cambios y los reporta;
+   el commit lo autoriza el responsable.
+2. Nunca trabajar directamente sobre `main`. Rama por unidad de trabajo:
+   `feature/`, `fix/`, `docs/`, `chore/`, `exp/`.
+3. Mensajes de commit en formato *Conventional Commits*: `feat:`, `fix:`, `docs:`, `test:`,
+   `refactor:`, `chore:`.
+4. Un Pull Request por historia de usuario, con descripción, alcance y evidencia de pruebas.
+5. Nunca reescribir historia publicada (`push --force` sobre ramas compartidas).
+6. Nunca commitear: `.env`, datos reales, artefactos de modelos pesados, `node_modules/`, `__pycache__/`, credenciales.
+7. Los datasets y modelos no van al repositorio; se referencian por versión.
+
+## 14. Estructura del proyecto
+
+```
+.
+├── CLAUDE.md                  # Esta guía (fuente de verdad operativa)
+├── AGENTS.md                  # Protocolo de trabajo de los agentes de IA
+├── README.md                  # Presentación del proyecto
+├── .gitignore
+├── docs/                      # Documentación técnica
+│   ├── 01-requerimientos.md
+│   ├── 02-propuesta-tecnica.md
+│   ├── 03-arquitectura.md
+│   ├── 04-modelo-datos.md
+│   ├── 05-motor-predictivo.md
+│   ├── 06-motor-abastecimiento.md
+│   ├── 07-api.md
+│   ├── 08-frontend.md
+│   ├── 09-ia-generativa.md
+│   ├── 10-seguridad.md
+│   ├── 11-power-bi.md
+│   ├── 12-devops.md
+│   ├── 13-testing.md
+│   ├── 14-mantenimiento.md
+│   ├── 15-decisiones-tecnicas.md
+│   ├── architecture/          # Diagramas y vistas de detalle
+│   ├── decisions/             # ADRs individuales (plantilla incluida)
+│   └── reports/               # Reportes de cierre de etapa
+├── knowledge/                 # Conocimiento de dominio
+│   ├── glossary.md
+│   ├── assumptions.md
+│   ├── business-rules.md
+│   └── sources.md
+├── project/                   # Gestión (Scrum)
+│   ├── roadmap.md
+│   ├── backlog.md
+│   └── status.md
+└── tests/                     # Estrategia y pruebas transversales
+    └── README.md
+```
+
+> Nota: `architecture/`, `decisions/` y `reports/` se ubican **dentro de `docs/`** para mantener
+> toda la documentación técnica bajo una sola raíz. Ver `DT-013` en `docs/15-decisiones-tecnicas.md`.
+
+`data/` existe desde el inicio de la Fase 1 y contiene, por ahora, solo el componente implementado:
+
+```
+data/
+└── synthetic/
+    ├── config/          # Componente 1 — DatasetConfig (dataset_config.yaml + config.py)
+    ├── generator/       # Componentes 2 a 8 y W1 (catalog, demand, supplier_behaviour, inventory, orders, scenarios, validator, pipeline, …)
+    ├── output/          # Dataset generado — NO se versiona (ver .gitignore)
+    └── tests/           # Pruebas del generador, junto a su código
+```
+
+> `output/` lo crea el generador la primera vez que se ejecuta y está excluido en
+> `.gitignore`: `CLAUDE.md` §13.7 mantiene los datasets fuera del repositorio. Recogerlo
+> aquí era una tarea pendiente declarada en `DT-024`, *Costos aceptados*, punto 4.
+>
+> Con `DT-040` (W1), cada ejecución trabaja en `data/synthetic/tmp/<id_de_ejecución>/` y solo al
+> final promociona el resultado a `output/`. El directorio existe **solo durante la ejecución**: se
+> elimina al terminar, bien o mal, y está excluido de Git por la regla `tmp/` del `.gitignore`.
+
+Carpetas que **aún no existen** y se crearán cuando su fase comience: `backend/`, `frontend/`,
+`ml/`, `infra/`, `.github/workflows/`.
+
+## 15. Flujo de trabajo esperado del agente
+
+```mermaid
+flowchart TD
+    L[1. Leer CLAUDE.md, AGENTS.md, project/status.md] --> E[2. Explorar el estado real del repo]
+    E --> R{3. ¿Hay incertidumbre técnica?}
+    R -->|Sí| I[Investigar documentación oficial<br/>y registrar fuentes]
+    R -->|No| P[4. Plan explícito y mínimo]
+    I --> P
+    P --> C{5. ¿Cambia arquitectura, alcance<br/>o borra funcionalidad?}
+    C -->|Sí| V[Pedir confirmación al responsable]
+    C -->|No| IM[6. Implementar incremental]
+    V --> IM
+    IM --> T[7. Ejecutar pruebas relevantes]
+    T --> D[8. Actualizar documentación y status.md]
+    D --> RE[9. Reportar: hecho, decidido, supuesto, pendiente]
+```
+
+## 16. Criterios para modificar archivos
+
+| Situación | Acción permitida |
+|---|---|
+| Archivo no existe y es parte del plan aprobado | Crear |
+| Archivo existe y el cambio es aditivo y acotado | Editar, preservando lo existente |
+| Archivo existe y el cambio elimina comportamiento | **Pedir confirmación primero** |
+| Archivo de documentación con decisión vigente | Editar solo si se actualiza también el ADR correspondiente |
+| Archivo generado o de terceros (`node_modules/`, lockfiles) | No editar a mano |
+| Archivo con secretos o `.env` | No crear, no leer para copiar valores, no commitear |
+
+Antes de sobrescribir **cualquier** archivo existente: leerlo completo y verificar su contenido.
+
+## 17. Restricciones vigentes
+
+La Etapa 0 está superada y la **Etapa 1 — Datos fue autorizada explícitamente por el responsable
+el 2026-09-14**. Las restricciones que siguen vigentes se levantan solo por instrucción explícita:
+
+- No desarrollar todavía la aplicación: el trabajo actual es el **generador de datos sintéticos**.
+  Backend, frontend, base de datos, ML, Azure, contenedores y CI/CD llegan en sus propias fases.
+- No configurar servicios reales de Azure.
+- No crear credenciales.
+- No hacer commits automáticamente.
+- No instalar dependencias innecesarias.
+- No iniciar una fase posterior sin autorización.
+
+**Estado de la Fase 1 — Datos (en progreso).** Se avanza componente a componente, con autorización
+para cada uno:
+
+| Componente | Estado |
+|---|---|
+| 1 — `DatasetConfig` (contrato de configuración) | ✅ Implementado y probado |
+| 2 — Catalog Generator (cinco entidades maestras + `manifest.json`) | ✅ Implementado y probado |
+| 3 — Demand Generator (`demand.csv`, demanda **latente**) | ✅ Implementado y probado |
+| 6 — Supplier Behaviour Generator (perfiles en memoria, **sin archivos**) | ✅ Implementado y probado (2026-09-28, `DT-037`) |
+| 4 — Inventory Simulator (`consumption.csv`, `inventory.csv`, `inventory_movements.csv`) | ✅ Implementado y probado (2026-09-26, `DT-036`, `DT-038`) |
+| 5 — Purchase Order Generator (órdenes, líneas y recepciones) | ✅ Implementado y probado (2026-09-28, `DT-039`) |
+| W1 — Publicación del dataset (workspace temporal → verificación → promoción) | ✅ Implementado (2026-09-29, `DT-040`); `__main__` ejecuta C2 → C3 → C6 → C4 → C5 → C7 → C8 a través de él |
+| 7 — Scenario Assignment (`manifest.scenario_assignment`, **sin archivos**) | ✅ Implementado y probado (2026-09-29, `DT-041`); integrado en W1 |
+| 8 — Dataset Validator + informe de calidad (`manifest.quality_report`, **sin archivos**) | ✅ Implementado y probado (2026-09-29, `DT-042`); integrado en W1 |
+
+**El generador está terminado.** El dataset está publicado **y validado** en `data/synthetic/output/`
+(2026-09-29, `ds-6c8ad65b4999`, `generator_version` **0.4.0**): catálogo, demanda latente, consumo,
+inventario y órdenes, con `scenario_assignment` y un `quality_report` de 51/51 comprobaciones sin
+fallos en el manifiesto:
+
+```text
+C2 → products.csv, locations.csv → C3 → demand.csv → C4 → consumption.csv
+                                        demanda            demanda
+                                        latente            satisfecha
+```
+
+**`demand.csv` es demanda latente** —lo que se habría demandado si el inventario nunca hubiera
+limitado nada— y **`consumption.csv` es demanda satisfecha**, con su bandera de desabasto. Los
+produce componentes distintos y no deben confundirse (`DT-034`). El Componente 4, que es el dueño del
+inventario, de los desabastos y del consumo observado, recibe los perfiles del Componente 6 y entrega
+las órdenes al Componente 5; los cinco se ejecutan con `python3 -m data.synthetic.generator` a través
+de W1 (`DT-040`), seguidos del Componente 7, que registra `scenario_assignment` (`DT-041`), y del
+Componente 8, que valida el workspace y registra `quality_report` (`DT-042`); ningún dataset que falle
+C8 se publica. Los criterios `SYNTHETIC_COVERAGE_CRITERION` de `DT-041` demuestran cobertura del
+dataset y **no son reglas de negocio**.
+
+**Orden de ejecución aprobado para los tres siguientes** (2026-09-24), distinto del orden de
+numeración:
+
+```text
+C6 → C4 → C5
+perfiles   simulación   materialización
+de          causal       de órdenes
+proveedor
+```
+
+C6 entrega parámetros y no escribe archivos; C4 ejecuta el bucle causal completo y **calcula** las
+órdenes causales, sus recepciones y sus identificadores; C5 las **escribe sin recalcular nada**,
+añade las órdenes `CANCELLED` sintéticas y **forma el `order_number` de todas**. Las políticas
+sintéticas están en `DT-036` y `DT-037`, y **no son reglas de negocio**: `s` no es un punto de
+reorden, `Q` no es una recomendación de compra y `C` no es un horizonte de cobertura. Los **contratos
+de salida** —columnas, claves, orden de filas e identificadores— están en `DT-038` (Componente 4) y
+`DT-039` (Componente 5). **Autoría de los identificadores:** C4 asigna los de todo lo causal y los de
+sus propias entidades; C5, solo los de las filas sintéticas que él mismo crea. Ningún `id` tiene dos
+autoridades.
+
+**Publicación (`DT-040`).** Ningún componente escribe en `output/`. Cada ejecución trabaja en su
+propio workspace y el dataset solo se publica cuando la ejecución **completa** termina bien y el
+workspace se promociona. Una ejecución fallida deja `output/` intacto.

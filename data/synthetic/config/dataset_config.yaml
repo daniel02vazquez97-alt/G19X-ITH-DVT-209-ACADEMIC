@@ -1,0 +1,100 @@
+# Configuración del generador de dataset sintético
+# Fase 1 — Datos · Componente 1: DatasetConfig
+#
+# ALCANCE DE ESTE ARCHIVO
+# Contiene únicamente lo que el generador necesita para producir datos reproducibles:
+#   A. parámetros técnicos      (reproducibilidad y ventana temporal)
+#   B. parámetros estructurales (tamaño del catálogo sintético)
+#   C. cobertura de escenarios  (qué situaciones debe representar el dataset)
+#
+# NO contiene parámetros de negocio. Nivel de servicio, z, stock de seguridad, punto de
+# reorden, periodo de revisión, cobertura objetivo, costos de faltante o de mantener
+# inventario, MOQ, umbrales de riesgo y políticas de compra **no van aquí**: son decisiones
+# del negocio, hoy pendientes (`knowledge/business-rules.md` §3), y pertenecen al motor de
+# abastecimiento, no al generador de datos.
+#
+# Los valores de este archivo son una configuración inicial reproducible del dataset
+# sintético. **No son datos reales de la empresa ni requisitos de negocio** (ASSUMPTION-001).
+
+# ---------------------------------------------------------------------------
+# A. Parámetros técnicos
+# ---------------------------------------------------------------------------
+
+# Semilla del generador. Fija la reproducibilidad: misma semilla y misma configuración
+# producen el mismo dataset. Su valor concreto es arbitrario y no significa nada.
+seed: 20260913
+
+period:
+  start_date: "2023-01-01"
+  end_date: "2026-01-01"
+
+# ---------------------------------------------------------------------------
+# B. Parámetros estructurales
+# ---------------------------------------------------------------------------
+# Tamaño del catálogo sintético. Deliberadamente menor que el volumen de referencia del
+# proyecto (~5.000 SKU, ASSUMPTION-012): esto es una configuración de trabajo para
+# desarrollar y probar el generador, no una simulación a escala de producción.
+# location_count: 1 es coherente con ASSUMPTION-006 (ubicación única en la primera versión).
+
+scale:
+  product_count: 100
+  supplier_count: 10
+  category_count: 10
+  location_count: 1
+
+# ---------------------------------------------------------------------------
+# C. Cobertura de escenarios — ejes de generación (Nivel A)
+# ---------------------------------------------------------------------------
+# Cada entrada es un **requisito de cobertura**: el dataset generado deberá contener al
+# menos un caso que lo represente. NO son parámetros de negocio ni reglas de inventario.
+#
+# Los escenarios NO son mutuamente excluyentes. Un mismo SKU puede representar varios a la
+# vez; por ejemplo: HIGH_ROTATION + SEASONAL_DEMAND + STOCKOUT + DELAYED_SUPPLIER + IN_TRANSIT.
+#
+# La asignación de escenarios a SKU concretos es responsabilidad de un componente posterior
+# del generador. Aquí solo se declara qué debe quedar cubierto.
+#
+# ESTA LISTA NO ES LA DE §25 de knowledge/dataset-specification.md, y no pretende serlo.
+# Son 16 entradas; las 26 situaciones de §25 son otra cuenta. De estas 16, trece corresponden a
+# situaciones de §25 y las otras tres —HIGH_ROTATION, LOW_ROTATION y MULTIPLE_LEAD_TIMES— están
+# respaldadas por otras secciones (DT-023 §7). 26 y 16 no son comparables.
+#
+# Las 26 situaciones de §25 se reparten en tres niveles (decisión DT-023):
+#
+#   Nivel A — ejes de generación (13) ....... trece de las entradas de esta lista
+#   Nivel B — atributos y estados (9) ....... campos del modelo de datos (MOQ, múltiplo de
+#                                             compra, proveedor preferente, producto activo,
+#                                             estado de la orden de compra)
+#   Nivel C — propiedades emergentes (4) .... las verifica el validador del dataset
+#                                             (demanda censurada, tránsito total frente a
+#                                             efectivo, conflicto MOQ/sobreinventario,
+#                                             producto inactivo con histórico)
+#
+#   13 + 9 + 4 = 26.
+#
+# Una situación de Nivel C no puede figurar aquí: etiquetarla obligaría a fijar una regla de
+# negocio todavía pendiente, que es justo lo que §3.5, §27 y §37 de la especificación prohíben.
+# Ver docs/decisions/DT-023-clasificacion-escenarios.md
+
+scenarios:
+  required:
+    # Rotación
+    - HIGH_ROTATION
+    - LOW_ROTATION
+    # Forma de la demanda
+    - STABLE_DEMAND
+    - GROWING_DEMAND
+    - DECLINING_DEMAND
+    - SEASONAL_DEMAND
+    - INTERMITTENT_DEMAND
+    - ERRATIC_DEMAND
+    # Situaciones de inventario
+    - STOCKOUT
+    - OVERSTOCK
+    - LOW_INVENTORY          # §10.2 — existencias cercanas al nivel de reposición
+    # Comportamiento de proveedores y aprovisionamiento
+    - RELIABLE_SUPPLIER
+    - DELAYED_SUPPLIER
+    - PARTIAL_DELIVERY       # §12.3 — déficit en cantidad, distinto del retraso en tiempo
+    - MULTIPLE_LEAD_TIMES
+    - IN_TRANSIT

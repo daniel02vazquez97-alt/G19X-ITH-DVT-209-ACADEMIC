@@ -1,0 +1,303 @@
+# Roadmap del proyecto
+
+**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1
+
+## Principios de secuenciación
+
+1. **Los datos primero.** Sin datos no hay modelo, y sin modelo no hay recomendación con sentido.
+2. **Valor antes que sofisticación.** El motor de abastecimiento (Fase 4) entrega valor real usando
+   solo un baseline, antes de que exista ningún modelo de ML.
+3. **Cada fase termina con algo verificable.** No se avanza sin cumplir el criterio de finalización.
+4. **Azure al final.** Se construye primero un sistema completo y ejecutable en local; los servicios
+   de Azure se integran cuando hay algo que integrar y un motivo para pagarlo.
+5. **Sin estimaciones de tiempo todavía.** No hay información suficiente para estimarlas con honestidad.
+
+> **Orden deliberado:** el motor de abastecimiento (Fase 4) va **antes** que el Machine Learning
+> (Fase 5). El motor consume un forecast; ese forecast puede ser un baseline. Así el sistema entrega
+> recomendaciones útiles y auditables desde temprano, y cuando llegue el modelo solo mejora una
+> entrada de un motor ya probado. Invertir el orden retrasaría todo el valor hasta que el ML funcione.
+
+---
+
+## FASE 0 — Preparación 🟡 (etapa actual — entregables completos, pendiente de aprobación)
+
+- **Objetivo:** dejar el repositorio preparado para un desarrollo ordenado, incremental y documentado.
+- **Entradas:** definición de alcance del responsable del proyecto.
+- **Actividades:** inspección del repositorio; estructura documental; `CLAUDE.md` y `AGENTS.md`;
+  requisitos; propuesta técnica; arquitectura; modelo de datos; estrategias de ML, abastecimiento,
+  API, frontend, IA generativa, seguridad, Power BI, DevOps, testing y mantenimiento; decisiones
+  técnicas; glosario, supuestos y reglas de negocio; roadmap, backlog y estado.
+- **Entregables:** 32 archivos — los 31 listados en `docs/reports/etapa-0-reporte.md` §1 más
+  `docs/reports/etapa-0-1-reporte.md`, añadido en la revisión 0.1 (31 documentos markdown y `.gitignore`).
+- **Dependencias:** ninguna.
+- **Criterio de finalización:** todos los documentos existen, son coherentes entre sí, los supuestos
+  están marcados como tales y no hay hipótesis presentadas como requisitos.
+
+## FASE 1 — Datos
+
+- **Objetivo:** disponer de un dataset sintético que represente un escenario empresarial verosímil, y
+  del proceso de ingesta que permitirá sustituirlo por datos reales.
+- **Entradas:** **`knowledge/dataset-specification.md`** (especificación del dataset, 2026-09-09),
+  `docs/04-modelo-datos.md`, `docs/05-motor-predictivo.md`, `knowledge/assumptions.md`.
+- **Actividades:**
+  - Diseñar el dataset: productos de alta y baja rotación, demanda estable, creciente y decreciente,
+    estacionalidad, variabilidad, periodos de desabasto, exceso de inventario, proveedores confiables
+    y con retrasos, distintos lead times, órdenes de compra e inventario en tránsito.
+  - Construir el generador con **parámetros explícitos y semilla fija** (los datos deben ser
+    reproducibles y sus propiedades, conocidas).
+  - Definir el proceso de ingesta y validación con marca de origen.
+  - Producir un informe de calidad del dataset.
+  - Fijar los umbrales de aceptación del modelo (pendiente `DT-P04`).
+- **Entregables:** especificación del dataset, generador, dataset generado, proceso de ingesta,
+  informe de calidad.
+- **Dependencias:** Fase 0.
+- **Criterio de finalización:** el dataset contiene todos los escenarios previstos y sus propiedades
+  son verificables; los datos se cargan y validan sin errores; el origen queda marcado.
+
+## FASE 2 — PostgreSQL
+
+- **Objetivo:** materializar el modelo de datos con integridad y migraciones versionadas.
+- **Entradas:** `docs/04-modelo-datos.md`, dataset de la Fase 1.
+- **Actividades:** esquema físico; restricciones e índices; migraciones; vistas analíticas para
+  Power BI; fotografía diaria de inventario; carga del dataset; pruebas de integración.
+- **Entregables:** esquema, migraciones, vistas, datos cargados, pruebas.
+- **Dependencias:** Fase 1.
+- **Criterio de finalización:** el dataset se carga íntegramente; **la posición de inventario
+  almacenada coincide con la reconstruida desde el histórico de movimientos**; las migraciones se
+  aplican desde cero de forma reproducible.
+
+## FASE 3 — FastAPI
+
+- **Objetivo:** exponer los datos mediante una API con contrato explícito.
+- **Entradas:** `docs/07-api.md`, base de datos de la Fase 2.
+- **Actividades:** estructura del proyecto backend; **endpoints de lectura** de productos, inventario,
+  proveedores, órdenes y consumo; **endpoints de escritura** de datos maestros (`US-034`), órdenes de
+  compra (`US-035`) y registro de movimientos, consumo y recepciones (`US-032`); validación con
+  Pydantic; manejo uniforme de errores; paginación; OpenAPI; pruebas de contrato.
+  **Autenticación aún simulada** (se integra en la Fase 8).
+- **Entregables:** API funcional en local, especificación OpenAPI, pruebas.
+- **Dependencias:** Fase 2.
+- **Criterio de finalización:** los endpoints de lectura y de escritura responden conforme al contrato;
+  los registros históricos son inmutables por diseño (sin `PUT`/`DELETE`); las pruebas de contrato y de
+  error pasan; la documentación de la API está generada.
+- **Nota de la revisión 0.1:** el cálculo del **lead time observado** a partir de las recepciones
+  pertenece a la Fase 4, no a esta.
+
+## FASE 4 — Motor de abastecimiento
+
+- **Objetivo:** calcular stock de seguridad, punto de reorden, cantidad recomendada y riesgos de forma
+  determinística. **Primera entrega de valor real del proyecto.**
+- **Entradas:** `docs/06-motor-abastecimiento.md`, `knowledge/business-rules.md`, API de la Fase 3.
+- **Actividades:** implementar un **baseline de pronóstico simple** —naïve, naïve estacional y media
+  móvil (`US-050`)— como primera implementación de `ForecastProvider`, suficiente para alimentar el
+  motor; implementar `supply_engine` como **biblioteca pura**; **fijar la conversión entre pronóstico
+  semanal y lead time en días en una única función** (`DT-019`); **implementar el tránsito efectivo
+  como magnitud derivada, sin columna nueva** (`DT-012`); pruebas unitarias exhaustivas con casos
+  calculados a mano y los casos límite de `docs/06` §14; cálculo de lead time observado y métricas de
+  proveedor; proceso batch de generación de recomendaciones; persistencia con desglose completo;
+  endpoints de recomendaciones y riesgos; **explicación por plantilla determinística** (`DT-018`).
+- **Entregables:** motor, pruebas, proceso batch, endpoints, explicaciones.
+- **Dependencias:** Fase 3. **No depende de la Fase 5**: el baseline se construye aquí (`US-050`) y la
+  Fase 5 lo sustituye después por un modelo que debe superarlo.
+- **Criterio de finalización:** el motor produce recomendaciones reproducibles con desglose completo;
+  todos los casos límite pasan; una recomendación puede reconstruirse a partir de lo almacenado; la
+  conversión de granularidad existe **en un solo lugar** del código; la recomendación registra tanto el
+  tránsito total como el efectivo.
+
+## FASE 5 — Machine Learning
+
+- **Objetivo:** sustituir el baseline por un modelo de predicción de demanda que lo supere de forma demostrada.
+- **Entradas:** `docs/05-motor-predictivo.md`, datos de la Fase 2.
+- **Actividades:** segmentación del catálogo; pipeline de features con pruebas de ausencia de leakage;
+  ampliación del conjunto de baselines iniciado en la Fase 4; backtesting con *rolling origin*; modelos candidatos por niveles con criterio de parada;
+  evaluación por segmento; cuantificación de la incertidumbre; decisión sobre demanda censurada
+  (`DT-011`); **decisión sobre la metodología del stock de seguridad** (`DT-010`); **elección de la
+  métrica primaria** (`DT-021`); **evaluación de Nivel 2 y comparación end-to-end baseline vs. ML**
+  (`US-058`, `DT-020`); registro de versiones; integración tras `ForecastProvider`.
+- **Entregables:** pipeline, modelos evaluados, informe de evaluación **de Nivel 1 y Nivel 2**, modelo
+  seleccionado, pruebas de ML.
+- **Dependencias:** Fase 2 (datos) y Fase 4 (consumidor del forecast).
+- **Criterio de finalización:** el modelo supera al baseline en la métrica primaria de forma
+  consistente, sin degradar segmentos relevantes; **supera o iguala al baseline en la evaluación de
+  Nivel 2** (`docs/05` §9.4–9.5) con idénticas reglas y parámetros; las pruebas de leakage y
+  reproducibilidad pasan; el sistema degrada correctamente al baseline si el modelo no está.
+  Si la mejora de Nivel 1 **no** se traduce en mejora de Nivel 2, ese hallazgo se documenta y el modelo
+  **no se promueve**.
+
+## FASE 6 — Azure Machine Learning
+
+- **Objetivo:** llevar el ciclo de vida del modelo a una plataforma gestionada.
+- **Entradas:** pipeline de la Fase 5.
+- **Actividades:** **verificar la documentación oficial vigente**; configurar el espacio de trabajo;
+  entrenamiento como job; registro de modelos; seguimiento con MLflow; decidir inferencia en línea vs.
+  batch (`DT-P02`); configurar monitoreo de deriva; procedimiento de reentrenamiento y promoción con
+  aprobación humana.
+- **Entregables:** pipeline en Azure ML, modelos registrados, monitoreo, procedimiento documentado.
+- **Dependencias:** Fase 5. **Requiere autorización para provisionar recursos.**
+- **Criterio de finalización:** el entrenamiento se ejecuta en Azure ML; los modelos quedan
+  registrados y versionados; el monitoreo emite señales; el sistema sigue funcionando si Azure ML no está.
+
+## FASE 7 — React
+
+- **Objetivo:** interfaz web operativa.
+- **Entradas:** `docs/08-frontend.md`, API de las Fases 3–4.
+- **Actividades:** estructura del proyecto; componentes base; dashboard; productos; inventario;
+  proveedores; predicciones; recomendaciones; detalle de producto; riesgos; estados de carga, vacío y
+  error; **`CalculationBreakdown`** (componente clave para la confianza); pruebas de componentes.
+  Autenticación simulada hasta la Fase 8.
+- **Entregables:** aplicación web funcional, componentes, pruebas.
+- **Dependencias:** Fases 3 y 4; además la Fase 5 para la vista de predicciones con incertidumbre
+  (`US-075` necesita el intervalo de `US-055`).
+- **Criterio de finalización:** todas las vistas navegables con datos reales de la API; el desglose
+  del cálculo es visible en el detalle de producto; sin lógica de negocio duplicada en el cliente.
+
+## FASE 8 — Microsoft Entra ID
+
+- **Objetivo:** autenticación y autorización corporativas reales.
+- **Entradas:** `docs/10-seguridad.md`.
+- **Actividades:** **verificar la documentación oficial vigente**; registrar las aplicaciones; definir
+  app roles; integrar MSAL en el frontend; validar tokens en el backend; aplicar la matriz de
+  autorización a todos los endpoints; pruebas de seguridad completas.
+- **Entregables:** autenticación y autorización operativas, matriz aplicada, pruebas.
+- **Dependencias:** Fases 3 y 7. **Requiere validación de los roles con el negocio** (ASSUMPTION-010, RS-002).
+- **Criterio de finalización:** ningún endpoint responde sin token válido; cada rol accede exactamente
+  a lo previsto; las pruebas de la matriz rol × endpoint pasan.
+
+## FASE 9 — Azure AI Search
+
+- **Objetivo:** recuperación de conocimiento documental.
+- **Entradas:** `docs/09-ia-generativa.md`, corpus documental.
+- **Actividades:** **confirmar primero que el corpus existe** (ASSUMPTION-008); definir el índice;
+  fragmentación; búsqueda híbrida; filtro de permisos en la consulta; implementación de
+  `DocumentRetriever`; evaluación de relevancia.
+- **Entregables:** índice, integración, conjunto de evaluación.
+- **Dependencias:** Fase 8 (permisos). **Bloqueada si no existe corpus documental.**
+- **Criterio de finalización:** las consultas devuelven fragmentos relevantes con cita; los permisos
+  se aplican en la consulta; la evaluación de relevancia alcanza el nivel acordado.
+
+## FASE 10 — Azure OpenAI
+
+- **Objetivo:** explicaciones y asistente en lenguaje natural.
+- **Entradas:** `docs/09-ia-generativa.md`, Fases 4 y 9.
+- **Actividades:** **verificar la documentación oficial vigente** (la API ha cambiado); sustituir el
+  generador por plantilla por Azure OpenAI tras la misma interfaz; construcción del prompt con
+  guardarraíles; verificación de salida; asistente conversacional; consultas predefinidas (`DT-007`);
+  pruebas de inyección de prompt y de fuga; límites de tasa y control de costo.
+- **Entregables:** servicio de IA generativa, asistente, pruebas de seguridad, conjunto de evaluación.
+- **Dependencias:** Fases 4, 8 y (para RAG) 9. **Requiere autorización de gasto.**
+- **Criterio de finalización:** las explicaciones son fieles a las cifras entregadas; la verificación
+  de salida detecta cifras ajenas; las pruebas de inyección y de fuga pasan; el sistema funciona sin
+  el servicio.
+
+## FASE 11 — Power BI
+
+- **Objetivo:** analítica para el público de negocio.
+- **Entradas:** `docs/11-power-bi.md`, vistas de la Fase 2.
+- **Actividades:** modelo dimensional; conexión; los cinco informes previstos; validar la **coherencia
+  de cada KPI con la aplicación**; decidir Import vs. DirectQuery (`DT-014`); seguridad de acceso.
+- **Entregables:** modelo, informes, documentación de métricas.
+- **Dependencias:** Fases 2, 4 y 5.
+- **Criterio de finalización:** los informes muestran los KPIs definidos; **cada métrica coincide con
+  su equivalente en la aplicación**; sin lógica de negocio reimplementada en DAX.
+
+## FASE 12 — Docker
+
+- **Objetivo:** empaquetado reproducible.
+- **Entradas:** `docs/12-devops.md`.
+- **Actividades:** Dockerfiles multi-stage para backend, frontend y jobs; `docker compose` para
+  desarrollo local; endurecimiento de imágenes; healthchecks; documentación de arranque.
+- **Entregables:** imágenes, compose, documentación.
+- **Dependencias:** Fases 3 y 7.
+- **Criterio de finalización:** un desarrollador nuevo levanta el sistema completo con un comando y
+  **sin credenciales de Azure**.
+
+## FASE 13 — GitHub Actions
+
+- **Objetivo:** automatizar verificación y despliegue.
+- **Entradas:** `docs/12-devops.md`, `docs/13-testing.md`.
+- **Actividades:** workflow de CI (lint, tipado, pruebas, detección de secretos, dependencias);
+  workflow de build; **OIDC con credenciales federadas hacia Azure**; despliegue por entorno con
+  aprobación; migraciones automatizadas; protección de `main`; decidir el destino de despliegue (`DT-P01`).
+- **Entregables:** workflows, entornos configurados, documentación.
+- **Dependencias:** Fase 12. **Requiere decisión sobre infraestructura y presupuesto.**
+- **Criterio de finalización:** el pipeline falla cuando debe fallar; el despliegue a `dev` es
+  automático; staging y producción requieren aprobación; **no existe ningún secreto de larga vida**.
+
+## FASE 14 — QA
+
+- **Objetivo:** verificación integral antes de la entrega.
+- **Entradas:** `docs/13-testing.md`, sistema completo.
+- **Actividades:** pruebas end-to-end de los flujos críticos; rendimiento con volumen representativo;
+  seguridad integral (autorización, inyección, inyección de prompt, fuga); pruebas de degradación con
+  servicios caídos; **simulación retrospectiva del motor** sobre el histórico; revisión de coherencia
+  entre aplicación y Power BI; corrección de hallazgos.
+- **Entregables:** suite E2E, informes de rendimiento y seguridad, informe de simulación, hallazgos resueltos.
+- **Dependencias:** Fases 1–13.
+- **Criterio de finalización:** todos los flujos críticos pasan; los objetivos de rendimiento se
+  cumplen; sin hallazgos de seguridad abiertos de severidad alta; la degradación funciona en todos los escenarios.
+
+## FASE 15 — Documentación y entrega
+
+- **Objetivo:** dejar el sistema operable y mantenible por terceros.
+- **Entradas:** todo lo anterior.
+- **Actividades:** actualizar toda la documentación al estado real; guía de usuario para el
+  planificador; manual de operación; procedimientos de reentrenamiento, respaldo y restauración; guía
+  de resolución de incidencias; formación; revisión final de coherencia; cierre de supuestos y
+  decisiones pendientes.
+- **Entregables:** documentación completa y actualizada, manuales, material de formación, informe de cierre.
+- **Dependencias:** Fase 14.
+- **Criterio de finalización:** la documentación refleja el sistema real; los procedimientos operativos
+  están probados; no quedan supuestos sin resolver o sin registrar explícitamente como abiertos.
+
+---
+
+## Dependencias entre fases
+
+```mermaid
+flowchart LR
+    F0[0 Preparación] --> F1[1 Datos]
+    F1 --> F2[2 PostgreSQL]
+    F2 --> F3[3 FastAPI]
+    F3 --> F4[4 Motor abastecimiento]
+    F2 --> F5[5 ML]
+    F4 --> F5
+    F5 --> F6[6 Azure ML]
+    F3 --> F7[7 React]
+    F4 --> F7
+    F5 --> F7
+    F7 --> F8[8 Entra ID]
+    F3 --> F8
+    F8 --> F9[9 AI Search]
+    F4 --> F10[10 Azure OpenAI]
+    F8 --> F10
+    F9 -.opcional.-> F10
+    F2 --> F11[11 Power BI]
+    F4 --> F11
+    F5 --> F11
+    F3 --> F12[12 Docker]
+    F7 --> F12
+    F12 --> F13[13 GitHub Actions]
+    F13 --> F14[14 QA]
+    F11 --> F14
+    F10 --> F14
+    F6 --> F14
+    F14 --> F15[15 Entrega]
+```
+
+## Bloqueos externos
+
+Estas fases **no pueden completarse** sin una decisión o una entrega del negocio:
+
+| Fase | Bloqueo |
+|---|---|
+| 4 — Motor de abastecimiento | Parámetros de política: nivel de servicio, política de revisión, umbrales de riesgo y horizonte de cobertura (BR-X01, BR-X02, BR-X03, BR-X13); calendario laboral para fijar la conversión de granularidad (BR-X06, `DT-019`) |
+| 5 — Machine Learning | Ninguno del negocio para avanzar; los **objetivos** de Nivel 2 sí requieren BR-X01 y BR-X04, pero la comparación contra el baseline es relativa y no los necesita |
+| 6 — Azure ML | Autorización para provisionar recursos y presupuesto |
+| 8 — Entra ID | Validación de roles y mapeo con grupos organizacionales |
+| 9 — Azure AI Search | **Confirmación de que existe corpus documental** (ASSUMPTION-008) |
+| 10 — Azure OpenAI | Autorización de gasto; elección de modelo y región |
+| 11 — Power BI | Licencia y capacidad disponibles |
+| 13 — GitHub Actions | Decisión sobre infraestructura de despliegue |
+
+Las Fases 1 a 5, 7 y 12 pueden avanzar íntegramente sin decisiones externas, salvo la parametrización
+final del motor. Es una razón adicional para el orden elegido.

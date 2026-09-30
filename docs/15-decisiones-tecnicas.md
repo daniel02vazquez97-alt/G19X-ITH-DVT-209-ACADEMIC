@@ -1,0 +1,1610 @@
+# 15 — Decisiones técnicas (ADR)
+
+**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-18) — `DT-024` a `DT-030`, preparación del Componente 2 · **Versión 1.3** (2026-09-19) — `DT-031`, reglas mínimas de V1 · **Versión 1.4** (2026-09-21) — cierre de las reglas V1: `DT-031` pasa a `ACEPTADA` con trece reglas · **Versión 1.5** (2026-09-21) — `DT-032` y `DT-033`, decisiones que el Componente 2 tenía que tomar al implementarse · **Versión 1.6** (2026-09-21) — tabla canónica de identificadores de componente en `DT-030` · **Versión 1.7** (2026-09-23) — `DT-034` y `DT-035`, demanda latente persistente y sus políticas de generación · **Versión 1.8** (2026-09-24) — `DT-036` y `DT-037`, políticas sintéticas de inventario y comportamiento de proveedores; **enmienda de `DT-027`** (restricción 3) y cierre del pendiente de `data_origin` de `DT-026` · **Versión 1.9** (2026-09-24) — `DT-038` y `DT-039`, contratos de salida de los Componentes 4 y 5, tras la auditoría pre-implementación; cierre de los pendientes de `DT-034` (recorte de la demanda y contrato de `consumption.csv`) y correcciones a `DT-036` y `DT-037` · **Versión 1.10** (2026-09-26) — cierre de D-01: `DT-040` (publicación atómica del dataset, W1), regla general de incremento de `generator_version` en `DT-033`, y actualizaciones de `DT-036`, `DT-038` y `DT-039` (A2, B2, `expected_at`, autoría de los identificadores) · **Versión 1.11** (2026-09-26) — implementación del Componente 4: enmienda de `DT-037` §3 (D-C4-1, reparto de la entrega partida) y actualización de `DT-038` (D-C4-2 precondiciones, D-C4-3 lead time y disparo diario, flujos pseudoaleatorios, `metrics` pendiente) · **Versión 1.12** (2026-09-27) — cierre de D-01, opción A: elegibilidad de las órdenes `CANCELLED` sintéticas respecto de `valid_to` (`DT-039` §5.2) · **Versión 1.13** (2026-09-28) — implementación del Componente 5 (`DT-039` §13), sin cambios en ninguna regla · **Versión 1.14** (2026-09-28) — implementación del Componente 6 (`DT-037` §6, decisiones A1 y A2) y corrección de texto en `DT-040` §3 · **Versión 1.15** (2026-09-29) — implementación de W1 (`DT-040` §9, detalles pendientes resueltos) y `generator_version` 0.3.0 · **Versión 1.16** (2026-09-29) — `DT-041`, contrato e implementación del Componente 7 (sin integrar en W1); notas de redacción en `DT-030` y `DT-031` (`V1-07`, `V1-08`) · **Versión 1.17** (2026-09-29) — `DT-042`, validador del dataset e informe de calidad; integración de C7 y C8 en W1 (`DT-040`); `generator_version` 0.4.0 (`DT-033`); formas de `scenario_assignment` y `quality_report` (`DT-025`); `metrics` de `DT-038` §12 cerrado
+
+Registro de decisiones arquitectónicas. Formato: ID, decisión, contexto, alternativas, razón,
+consecuencias, estado.
+
+## Estados
+
+| Estado | Significado |
+|---|---|
+| `ACEPTADA` | Decisión tomada y vigente. Cambiarla requiere un nuevo ADR |
+| `PROPUESTA` | Dirección razonada pero **no confirmada**. Es una hipótesis, no un requisito |
+| `PENDIENTE` | Decisión identificada y deliberadamente **no tomada** todavía |
+| `RECHAZADA` | Evaluada y descartada; se registra para no volver a debatirla sin nueva información |
+| `SUPERSEDIDA` | Sustituida por otro ADR |
+
+> Solo se marcan como `ACEPTADA` las decisiones que se derivan directamente del alcance dado por el
+> responsable del proyecto o que son consecuencia necesaria de él. Todo lo demás es `PROPUESTA` o
+> `PENDIENTE`. Confundir una hipótesis con una decisión firme es el error que este registro evita.
+
+---
+
+## DT-001 — Separación estricta entre predicción ML, reglas de negocio e IA generativa
+
+- **Decisión:** El sistema mantiene tres capas con responsabilidades disjuntas. El modelo de ML solo
+  estima demanda e incertidumbre; las reglas determinísticas calculan las cifras de abastecimiento;
+  la IA generativa solo explica resultados ya calculados. Ningún LLM interviene en la ruta de cálculo.
+- **Contexto:** Requisito explícito del alcance del proyecto. Es viable técnicamente pedirle a un LLM
+  que recomiende cantidades de compra.
+- **Alternativas:** (a) LLM como orquestador que calcula y decide. (b) Modelo de ML que predice
+  directamente la cantidad a comprar. (c) Separación estricta.
+- **Razón:** Las cifras de inventario deben ser exactas, reproducibles, auditables y defendibles. Un
+  LLM no ofrece determinismo ni trazabilidad. Un modelo que predice la cantidad a comprar mezcla la
+  incertidumbre estadística con la política de negocio y hace imposible ajustar una sin reentrenar la otra.
+- **Consecuencias:** `supply_engine` es una biblioteca pura, testeable con casos exactos. Mayor
+  disciplina de diseño. Toda recomendación es explicable término a término. El LLM aporta comprensión, no cálculo.
+- **Estado:** `ACEPTADA`
+
+## DT-002 — Monolito modular en el backend
+
+- **Decisión:** Backend único en FastAPI con módulos internos de frontera clara, en lugar de microservicios.
+- **Contexto:** Equipo pequeño, alcance en definición, sin requisitos de escala independiente.
+- **Alternativas:** (a) Microservicios por dominio. (b) Monolito modular. (c) Funciones sin servidor.
+- **Razón:** Los microservicios aportan escalado y despliegue independientes a cambio de complejidad
+  operativa, latencia de red y consistencia distribuida. Nada en el alcance actual lo justifica. La
+  modularidad interna preserva la opción de extraer un servicio más adelante si aparece la necesidad.
+- **Consecuencias:** Despliegue y depuración simples. Exige disciplina en las fronteras de módulo. Se
+  acepta la posibilidad de una extracción futura.
+- **Estado:** `ACEPTADA`
+
+## DT-003 — Dependencias de Azure encapsuladas tras interfaces propias
+
+- **Decisión:** Azure ML, Azure OpenAI, Azure AI Search y Key Vault se consumen a través de interfaces
+  propias (`ForecastProvider`, `TextGenerator`, `DocumentRetriever`, `SecretProvider`) con
+  implementación local sustituta.
+- **Contexto:** Etapa 0 prohíbe configurar servicios reales de Azure. Además, el sistema debe ser
+  ejecutable y testeable en local (RNF-006) y degradar sin ellos (RNF-010).
+- **Alternativas:** (a) Uso directo de los SDK en la lógica de negocio. (b) Encapsulación tras interfaces.
+- **Razón:** Permite desarrollar y probar sin costos ni credenciales, aísla los cambios de API de los
+  servicios (la superficie de Azure OpenAI ya ha cambiado de forma relevante) y hace posible la
+  degradación controlada.
+- **Consecuencias:** Una capa de indirección adicional, justificada. Pruebas sin red. Sustitución de
+  proveedor acotada a una implementación.
+- **Estado:** `ACEPTADA`
+
+## DT-004 — Datos sintéticos en las primeras fases, con marca de origen
+
+- **Decisión:** Se trabajará con datos sintéticos; toda entidad cargada lleva `data_origin`
+  (`SYNTHETIC` / `REAL`) y ninguna regla de negocio depende de ese valor.
+- **Contexto:** No hay datos reales disponibles (ASSUMPTION-001), y deben poder sustituirse sin
+  rediseñar la aplicación (RF-023).
+- **Alternativas:** (a) Esperar a datos reales. (b) Sintéticos sin marca. (c) Sintéticos con marca de origen.
+- **Razón:** Esperar bloquea el proyecto. Sin marca de origen, mezclar sintéticos y reales corrompe el
+  entrenamiento de forma indetectable.
+- **Consecuencias:** Un campo adicional en las entidades cargadas. Ninguna métrica obtenida con datos
+  sintéticos puede presentarse como evidencia de desempeño real.
+- **Estado:** `ACEPTADA`
+
+## DT-005 — Comunicación síncrona; sin mensajería asíncrona
+
+- **Decisión:** Toda la comunicación entre componentes es síncrona. Los procesos largos se resuelven
+  con un patrón de trabajo asíncrono sobre la propia base de datos (`202` + consulta de estado), sin
+  intermediario de mensajería.
+- **Contexto:** El sistema tiene procesos largos (recálculo, cargas) pero no eventos entre servicios
+  independientes.
+- **Alternativas:** (a) Cola de mensajes. (b) Orquestador de flujos. (c) Síncrono con seguimiento en base de datos.
+- **Razón:** Una cola introduce un componente que operar, monitorear y depurar, y resuelve un problema
+  que hoy no existe. Regla anti-sobreingeniería.
+- **Consecuencias:** Menos piezas móviles. Si aparecen múltiples consumidores o necesidades de
+  reintento sofisticado, se revisará esta decisión.
+- **Estado:** `ACEPTADA`
+
+## DT-006 — Histórico inmutable (append-only)
+
+- **Decisión:** `InventoryMovement`, `Consumption` y `PurchaseOrderReceipt` no se actualizan ni se
+  borran. Las correcciones se registran como nuevos hechos.
+- **Contexto:** El sistema debe ser auditable y las predicciones y recomendaciones pasadas
+  reconstruibles (RF-024, RNF-013).
+- **Alternativas:** (a) Registros editables. (b) Editables con tabla de auditoría. (c) Inmutables.
+- **Razón:** Si el histórico cambia, el entrenamiento deja de ser reproducible y una recomendación
+  pasada no puede explicarse. Un ajuste registrado como hecho conserva además la información de que
+  hubo una corrección, que en sí misma es un dato de calidad.
+- **Consecuencias:** Mayor volumen. La posición de inventario se mantiene como estado calculado y debe
+  conciliarse periódicamente.
+- **Estado:** `ACEPTADA`
+
+## DT-007 — Sin generación de SQL libre a partir de lenguaje natural
+
+- **Decisión:** El asistente de IA no genera SQL. Las preguntas sobre datos se resuelven con un
+  conjunto acotado de consultas predefinidas y parametrizadas.
+- **Contexto:** El asistente debe responder preguntas sobre datos estructurados (CU-3).
+- **Alternativas:** (a) *Text-to-SQL* con ejecución directa. (b) Consultas predefinidas parametrizadas.
+- **Razón:** El SQL generado por un modelo es una superficie de ataque y, sobre todo, una fuente de
+  respuestas **plausibles pero incorrectas** que nadie revisa. Un JOIN mal planteado devuelve un número
+  creíble y equivocado.
+- **Consecuencias:** Menor flexibilidad en las preguntas admitidas; el catálogo de consultas crece con
+  el uso. Se gana seguridad y corrección verificable.
+- **Estado:** `ACEPTADA`
+
+## DT-008 — Granularidad semanal para el modelado
+
+- **Decisión:** Almacenar el consumo en granularidad diaria y modelar en semanal.
+- **Contexto:** La decisión de compra opera en escala de semanas; la demanda diaria por SKU suele tener muchos ceros.
+- **Alternativas:** (a) Diaria. (b) Semanal. (c) Mensual.
+- **Razón:** La semanal equilibra ruido y señal para el horizonte de decisión. Conservar el detalle
+  diario permite cambiar de criterio sin recargar datos.
+- **Consecuencias:** Menor resolución temporal en el pronóstico. Revisable por segmento con datos
+  reales. **Consecuencia no trivial:** obliga a definir cómo se convierte un pronóstico semanal en
+  demanda esperada sobre un lead time expresado en días — problema tratado por separado en `DT-019`,
+  que esta decisión no puede dar por resuelto.
+- **Estado:** `PROPUESTA` — a confirmar en la Fase 5 con datos.
+
+## DT-009 — Progresión incremental de modelos con criterio de parada
+
+- **Decisión:** Explorar los modelos por niveles (baseline → estadísticos → métodos para demanda
+  intermitente → modelos tabulares globales → redes neuronales) y detenerse cuando un nivel no aporte
+  mejora medible sobre el anterior.
+- **Contexto:** Existe presión implícita hacia modelos sofisticados en proyectos con etiqueta de "IA".
+- **Alternativas:** (a) Empezar por deep learning. (b) Elegir un modelo y ajustarlo. (c) Progresión con criterio de parada.
+- **Razón:** La complejidad se paga en mantenimiento, tiempo de entrenamiento, explicabilidad y riesgo.
+  Solo se justifica con mejora demostrada. Con muchas series de histórico corto, los métodos simples
+  suelen ser competitivos.
+- **Consecuencias:** Resultados útiles antes. Posible techo de desempeño si se detiene demasiado
+  pronto; mitigado por la evaluación por segmento.
+- **Estado:** `ACEPTADA`
+
+## DT-010 — Fuente de la incertidumbre para el stock de seguridad
+
+- **Decisión:** El **error de pronóstico observado** es una fuente legítima —y probablemente la más
+  pertinente— de información sobre la incertidumbre que el stock de seguridad debe cubrir.
+  **La metodología exacta para convertirlo en un valor de stock de seguridad queda PENDIENTE**: se
+  determinará con datos, mediante backtesting, y se juzgará por su efecto sobre las métricas de
+  abastecimiento, no solo sobre el error de pronóstico.
+
+- **Contexto — cuatro conceptos que no deben confundirse.** La versión anterior de esta decisión los
+  trataba de forma imprecisa. Son magnitudes distintas, con orígenes y usos distintos:
+
+  | # | Concepto | Qué es | De dónde sale |
+  |---|---|---|---|
+  | 1 | **Variabilidad de la demanda** (`σ_D`) | Dispersión del fenómeno observado alrededor de su media | Serie histórica de consumo |
+  | 2 | **Error de pronóstico** | Dispersión de los fallos del sistema al predecir, **a un horizonte dado** | Residuos del backtesting |
+  | 3 | **Incertidumbre declarada por el modelo** | Intervalo de predicción que el propio modelo emite | Salida del modelo; **puede estar mal calibrada** |
+  | 4 | **Variabilidad del lead time** (`σ_L`) | Dispersión del tiempo de entrega | Histórico de recepciones |
+
+  Los cuatro son diferentes. (1) mide cuánto varía el mundo; (2) mide cuánto nos equivocamos al
+  anticiparlo; (3) es lo que el modelo *cree* que se equivoca, que no es lo mismo que lo que se
+  equivoca; (4) es independiente de los tres anteriores y entra en el cálculo por su propia vía.
+
+- **Punto técnico determinante.** Lo que el stock de seguridad debe cubrir es el error **acumulado
+  sobre el intervalo de protección** (`L`, o `L + R` en revisión periódica), no el error a un paso.
+  Escalar el error de un paso multiplicándolo por `√L` **no es una identidad general**: en la
+  literatura de referencia esa relación (`σ_h = σ·√h`) se deriva explícitamente para el método naïve
+  y **bajo el supuesto de residuos no correlacionados y de varianza constante**, supuestos que los
+  errores multi-horizonte suelen violar. Aplicarla sin comprobarla subestimaría el stock de seguridad
+  justo donde más importa.
+
+- **Alternativas:**
+  | | Enfoque | Observación |
+  |---|---|---|
+  | (a) | Desviación histórica de la demanda (`σ_D`) | Sobreestima cuando el modelo predice bien una demanda variable |
+  | (b) | Error de un paso escalado por `√L` | Descansa en supuestos que hay que verificar, no asumir |
+  | (c) | Error **acumulado** sobre el intervalo de protección, estimado por backtesting a ese horizonte | Mide directamente lo que se quiere cubrir |
+  | (d) | Cuantiles empíricos de la distribución de errores acumulados (no paramétrico) | No exige normalidad; adecuado en demanda asimétrica o intermitente |
+  | (e) | Intervalo declarado por el modelo (concepto 3) | Solo válido si se verifica su calibración contra la cobertura observada |
+
+- **Razón:** (c) y (d) son conceptualmente las más defendibles porque estiman la magnitud que
+  realmente se quiere proteger, y (d) además evita el supuesto de normalidad, que no se sostiene en
+  demanda intermitente. Pero **ninguna puede elegirse sin datos**: la comparación exige un backtesting
+  al horizonte del intervalo de protección que todavía no existe.
+
+- **Consecuencias:**
+  1. El backtesting debe evaluarse **al horizonte del intervalo de protección**, no solo a un paso
+     (afecta al diseño de la validación temporal, `docs/05-motor-predictivo.md` §8).
+  2. La **calibración del intervalo** pasa a ser una métrica de primera clase, no un extra.
+  3. La elección se decide comparando el efecto sobre las **métricas de Nivel 2** (`DT-020`):
+     desabastos, inventario medio, nivel de servicio. Una fuente de incertidumbre que reduce el error
+     de pronóstico pero empeora el servicio no es la correcta.
+  4. Hasta que se decida, `docs/06-motor-abastecimiento.md` §6 documenta la formulación estándar como
+     **punto de partida verificable**, no como fórmula oficial.
+
+- **Estado:** `PENDIENTE DE VALIDACIÓN` — se resuelve en la Fase 5, con datos y con evaluación de
+  Nivel 2. **Ninguna de las variantes (a)–(e) es todavía la fórmula del proyecto.**
+
+## DT-011 — Tratamiento de la demanda censurada por desabasto
+
+- **Decisión:** Marcar los periodos afectados por desabasto (`is_stockout_affected`) y darles un
+  tratamiento explícito en el entrenamiento. El método concreto se decidirá con datos.
+- **Contexto:** El histórico registra demanda satisfecha, no demanda real. Durante un desabasto, la
+  demanda observada es una cota inferior.
+- **Alternativas:** (a) Ignorarlo. (b) Excluir esos periodos. (c) Imputar. (d) Tratar como observación censurada.
+- **Razón:** Ignorarlo enseña al modelo que la demanda cayó justo cuando faltó producto, sesgándolo a
+  la baja precisamente en los SKU más críticos y perpetuando el desabasto. Elegir el método sin datos
+  sería prematuro; **marcar el dato ahora** es lo que mantiene abiertas todas las opciones.
+- **Consecuencias:** Un campo adicional que la ingesta debe poder derivar. Decisión de método diferida
+  a la Fase 5.
+- **Estado:** `PENDIENTE` (el marcado del dato es `ACEPTADA`; el método de tratamiento, pendiente)
+
+## DT-012 — Tránsito total frente a tránsito efectivo
+
+- **Decisión:** Distinguir **conceptualmente** dos magnitudes que la versión anterior mezclaba:
+  - **`total_in_transit`** — todo lo pedido y aún no recibido. Es un **hecho** sobre el mundo,
+    independiente de cualquier decisión. Es lo que almacena `Inventory.quantity_in_transit`.
+  - **`effective_in_transit`** — la parte de ese tránsito que se espera recibir **dentro del intervalo
+    de protección de la decisión que se está evaluando**. Es una magnitud **relativa a una decisión**.
+
+  `effective_in_transit` es un valor **derivado, calculado por `supply_engine`** en cada evaluación.
+  **No se añade ninguna columna a la base de datos.**
+
+- **Contexto:** Una orden cuya llegada se espera después del agotamiento previsto no evita el
+  desabasto, pero sí eleva la posición de inventario y suprime la recomendación. Ese es un fallo
+  silencioso: el sistema no recomienda comprar porque "ya viene en camino" algo que llegará tarde.
+
+- **Por qué son conceptos distintos y no dos formas de contar lo mismo:** la misma orden es efectiva
+  para un producto con lead time largo y no efectiva para otro con lead time corto, y puede dejar de
+  serlo mañana sin que nada haya cambiado en la orden. Depende del horizonte de quien pregunta. Un
+  valor que depende de la pregunta no es un estado del inventario.
+
+- **Alternativas:**
+  | | Enfoque | Observación |
+  |---|---|---|
+  | (a) | Usar solo el tránsito total | Produce el fallo silencioso descrito |
+  | (b) | Almacenar también el efectivo como columna | Congela un valor que depende del horizonte: sería incorrecto casi siempre, y añadiría estado que hay que reconciliar |
+  | (c) | Almacenar el total; derivar el efectivo en el cálculo | Cada decisión usa el valor que le corresponde, sin duplicar estado |
+
+- **Razón:** (c). Es la única que respeta la naturaleza de cada magnitud. Además evita añadir una
+  columna "por si acaso", que la regla anti-sobreingeniería del proyecto prohíbe.
+
+- **Consecuencias:**
+  1. `Inventory.quantity_in_transit` conserva su significado actual: **tránsito total**. No cambia el
+     modelo de datos.
+  2. `supply_engine` recibe las líneas de orden pendientes con su fecha esperada y calcula el efectivo.
+  3. La recomendación almacena **ambos valores** en `calculation_inputs`, de modo que el planificador
+     vea que hay tránsito que no se ha contado y por qué.
+  4. La posición de inventario tiene entonces dos lecturas —contable (con el total) y de decisión (con
+     el efectivo)— y la documentación debe decir siempre cuál usa (`docs/06-motor-abastecimiento.md` §4).
+
+- **Pendiente de definir en la Fase 4:** la fecha de corte exacta y el tratamiento de las órdenes ya
+  atrasadas (una orden vencida y no recibida, ¿cuenta como efectiva?). Requiere criterio de negocio.
+
+- **Estado:** `PROPUESTA` — la distinción conceptual es firme; el criterio de corte, pendiente.
+
+## DT-013 — Ubicación de `architecture/`, `decisions/` y `reports/` dentro de `docs/`
+
+- **Decisión:** Estas tres carpetas se sitúan bajo `docs/` en lugar de en la raíz del repositorio.
+- **Contexto:** La estructura solicitada las enumeraba junto a `docs/`, `project/` y `knowledge/`,
+  sin especificar el nivel.
+- **Alternativas:** (a) En la raíz. (b) Dentro de `docs/`.
+- **Razón:** Su contenido es documentación técnica; agruparlo bajo una sola raíz mantiene la raíz del
+  repositorio despejada para el código que llegará en fases posteriores (`backend/`, `frontend/`,
+  `ml/`, `infra/`). La instrucción admitía modificación con razón técnica clara.
+- **Consecuencias:** Las rutas son `docs/architecture/`, `docs/decisions/`, `docs/reports/`. Revisable
+  si el responsable prefiere la raíz.
+- **Estado:** `PROPUESTA` — pendiente de confirmación del responsable.
+
+## DT-014 — Modo de conexión de Power BI
+
+- **Decisión:** Usar modo *Import* con actualización programada como opción por defecto, sobre vistas
+  analíticas dedicadas.
+- **Contexto:** El volumen de referencia es moderado y los indicadores no requieren tiempo real.
+- **Alternativas:** (a) Import. (b) DirectQuery. (c) Modelo compuesto.
+- **Razón:** Import ofrece mejor rendimiento y flexibilidad de modelado; DirectQuery añade carga sobre
+  la base operativa y restricciones de modelado que no se justifican sin necesidad de latencia baja.
+- **Consecuencias:** Los informes reflejan el estado de la última actualización; la fecha debe ser visible.
+- **Estado:** `PROPUESTA` — revisar en la Fase 11.
+
+## DT-015 — Sin promoción automática de modelos a producción
+
+- **Decisión:** La promoción de un modelo a producción requiere aprobación humana, aunque supere todos
+  los criterios automáticos.
+- **Contexto:** El pipeline puede evaluar y decidir por métrica.
+- **Alternativas:** (a) Promoción automática por métrica. (b) Aprobación humana.
+- **Razón:** El costo de un modelo malo en producción son desabastos y sobreinventario reales. Una
+  métrica puede mejorar por un artefacto de datos. El costo de una revisión humana mensual es
+  despreciable frente a ese riesgo.
+- **Consecuencias:** Ciclo de actualización algo más lento. Requiere un responsable identificado.
+- **Estado:** `ACEPTADA`
+
+## DT-016 — El sistema recomienda; no ejecuta compras
+
+- **Decisión:** El sistema no emite órdenes de compra automáticamente. La conversión de una
+  recomendación en orden es siempre una acción humana explícita.
+- **Contexto:** Requisito del alcance (RF-015) y condición de adopción.
+- **Alternativas:** (a) Ejecución automática con umbrales. (b) Automática con aprobación. (c) Siempre humana.
+- **Razón:** El sistema desconoce restricciones que el comprador sí conoce (negociaciones en curso,
+  situación del proveedor, decisiones comerciales). Además, la aceptación o el descarte con motivo son
+  el mecanismo principal de retroalimentación para mejorar las reglas.
+- **Consecuencias:** El sistema no elimina trabajo de decisión; lo hace mejor informado. Se obtiene un
+  registro valioso de discrepancias entre el motor y el criterio humano.
+- **Estado:** `ACEPTADA`
+
+## DT-017 — Documentación de negocio en español, código en inglés
+
+- **Decisión:** Documentación de proyecto y de dominio en español; código, identificadores, esquema de
+  base de datos y comentarios en inglés.
+- **Contexto:** Equipo hispanohablante; ecosistema técnico en inglés.
+- **Alternativas:** (a) Todo en español. (b) Todo en inglés. (c) Separación por ámbito.
+- **Razón:** La documentación debe ser accesible a los interesados de negocio; el código debe ser
+  coherente con las librerías y convenciones del ecosistema. Mezclar idiomas dentro del código produce
+  identificadores híbridos difíciles de mantener.
+- **Consecuencias:** El glosario debe mapear los términos entre ambos idiomas.
+- **Estado:** `ACEPTADA`
+
+## DT-018 — Explicación por plantilla determinística antes que por LLM
+
+- **Decisión:** La primera implementación de la explicación de recomendaciones usará un generador
+  determinístico por plantilla; Azure OpenAI se incorporará después, tras la misma interfaz.
+- **Contexto:** La explicación es un caso de uso de alta prioridad, y Azure no puede configurarse todavía.
+- **Alternativas:** (a) Esperar a Azure OpenAI. (b) Plantilla determinística primero.
+- **Razón:** Obliga a que el desglose del cálculo sea completo y correcto antes de añadir lenguaje
+  natural. Si la explicación no puede escribirse con una plantilla, faltan datos en la recomendación.
+  Además, aporta valor sin costo ni dependencia externa.
+- **Consecuencias:** Trabajo adicional que después se sustituye, compensado por un contrato validado y
+  una vía de degradación ya construida (RNF-010).
+- **Estado:** `ACEPTADA`
+
+## DT-019 — Conversión entre el pronóstico semanal y un lead time expresado en días
+
+- **Decisión:** **Pendiente.** Se documentan las alternativas y se recomienda una, pero la elección
+  requiere el calendario laboral del negocio (`BR-X06`), que no está definido.
+
+- **Contexto:** `DT-008` modela en semanas; los lead times se registran en días. Un lead time de 10
+  días no equivale a un número entero de semanas, de modo que **la demanda esperada durante el lead
+  time no se deduce del pronóstico semanal sin una regla explícita**. Sin esa regla, dos personas
+  implementarán dos fórmulas distintas y el sistema producirá dos cifras para la misma pregunta.
+
+- **Alternativas:**
+
+  | | Regla | Cómo se calcula con `L = 10 días` y forecast semanal `F₁, F₂, …` | Observación |
+  |---|---|---|---|
+  | (a) | **Prorrateo uniforme** | `F₁ + (3/7)·F₂` — semanas completas más la fracción proporcional de la siguiente | Simple y continua. Supone demanda uniforme dentro de la semana (`ASSUMPTION-019`) |
+  | (b) | **Prorrateo por perfil intra-semanal** | Reparte cada `Fₖ` según el patrón día-de-semana observado en el histórico diario, y suma los 10 días | Más fiel si hay perfil semanal marcado. Requiere estimar y mantener el perfil |
+  | (c) | **Redondeo conservador al alza** | `F₁ + F₂` (⌈10/7⌉ = 2 semanas completas) | Sesga sistemáticamente al alza el inventario. Simple pero caro |
+  | (d) | **Modelar en diario los SKU afectados** | No hay conversión | Resuelve el problema eliminándolo, a costa de renunciar a `DT-008` en esos SKU |
+
+- **Recomendación:** **(a) como definición por defecto**, porque el detalle diario se conserva en la
+  base (`DT-008`) y (b) puede sustituirla más adelante **sin cambiar la interfaz de la función**. (c)
+  se descarta salvo que el negocio pida explícitamente un sesgo conservador. (d) queda como excepción
+  por segmento, coherente con la excepción ya prevista en `docs/05-motor-predictivo.md` §3.
+
+- **Condición que invalida la recomendación:** si el negocio no opera todos los días de la semana, o
+  si el histórico muestra un perfil intra-semanal marcado, (a) sesga el resultado y (b) pasa a ser la
+  opción correcta. Por eso depende de `BR-X06`.
+
+- **Consecuencia de implementación (obligatoria):** la conversión vive en **una única función** del
+  `supply_engine` —conceptualmente `demand_over_horizon(forecast, start_date, days)`— que es el
+  **único** punto del sistema autorizado a traducir entre granularidades. Ningún otro módulo, consulta
+  SQL, informe de Power BI ni pantalla puede reimplementarla. La regla aplicada y el valor resultante
+  se registran en `calculation_inputs` de la recomendación.
+
+- **Estado:** `PENDIENTE DE VALIDACIÓN` — depende de `BR-X06` (calendario laboral). La recomendación
+  (a) **no es todavía la fórmula del proyecto**; se confirma en la Fase 4.
+
+## DT-020 — Evaluación en dos niveles y comparación end-to-end
+
+- **Decisión:** El proyecto evalúa en **dos niveles** y considera el **Nivel 2 como decisorio**:
+  - **Nivel 1 — calidad del pronóstico:** ¿acierta el forecast? (métricas de error, `docs/05` §9)
+  - **Nivel 2 — calidad de la decisión:** ¿el forecast produce **mejores decisiones de
+    abastecimiento**? (desabastos, nivel de servicio alcanzado, inventario medio, exceso, órdenes
+    urgentes, costo — `docs/05` §9.4)
+
+  Además, ningún modelo se promueve sin una **comparación end-to-end**:
+
+  ```
+  Baseline Forecast → Supply Engine → Recomendaciones → métricas de Nivel 2
+                                  vs
+  ML Forecast       → Supply Engine → Recomendaciones → métricas de Nivel 2
+  ```
+
+- **Contexto:** Es perfectamente posible que un modelo reduzca el error de pronóstico y **empeore** el
+  resultado de abastecimiento —por ejemplo, si mejora el promedio pero introduce sesgo a la baja en los
+  SKU críticos, o si reduce el error puntual a costa de una incertidumbre peor calibrada, de la que
+  depende el stock de seguridad—. Sin Nivel 2 ese caso pasa inadvertido y se promueve un modelo que
+  produce más desabastos.
+
+- **Alternativas:** (a) Evaluar solo el error de pronóstico. (b) Evaluar solo el resultado de
+  abastecimiento. (c) Ambos niveles, con el Nivel 2 como decisorio.
+
+- **Razón:** (a) mide un medio y lo confunde con el fin. (b) no permite diagnosticar **por qué** falla
+  una decisión ni mejorar el modelo. (c) conserva la capacidad de diagnóstico del Nivel 1 y sitúa el
+  criterio de aceptación donde está el objetivo real del proyecto.
+
+- **Consecuencias:**
+  1. El motor de abastecimiento debe poder ejecutarse **en modo simulación retrospectiva** sobre el
+     histórico, con un forecast intercambiable. Es un requisito de diseño de `supply_engine`, no un extra.
+  2. Los criterios de aceptación de un modelo (`docs/05` §10) incluyen el Nivel 2.
+  3. Se mide, no se fija un objetivo: **no se establece ningún valor objetivo** (del tipo
+     "desabasto < 5 %") porque el negocio no lo ha proporcionado. Se define **qué medir**, no cuánto.
+
+- **Estado:** `ACEPTADA` — es la única forma de responder a la pregunta que el proyecto debe
+  responder: si el motor predictivo sirve para abastecer mejor.
+
+## DT-021 — Selección de la métrica primaria de pronóstico
+
+- **Decisión:** **No se fija todavía la métrica primaria.** Se fija el **procedimiento** para elegirla
+  y se descarta explícitamente una candidata.
+
+- **Contexto:** La versión anterior de `docs/05-motor-predictivo.md` §9 designaba MASE como "métrica
+  primaria propuesta". Es una candidata razonable, pero elegir la métrica primaria antes de conocer la
+  composición real del catálogo —qué proporción es intermitente, qué dispersión de escalas hay— es
+  fijar un criterio de aceptación sin la información que lo justifica.
+
+- **Descartada de forma firme:** **MAPE no puede ser métrica de decisión.** Queda indefinida cuando la
+  demanda es cero —situación frecuente y esperada en este catálogo— y penaliza de forma asimétrica la
+  sobre y la subestimación, lo que en abastecimiento sesga sistemáticamente hacia el desabasto. Se
+  admite únicamente como cifra informativa.
+
+- **Criterios que deberá cumplir la métrica primaria:**
+  1. Definida y estable cuando la demanda es cero.
+  2. Comparable entre series de escalas distintas (el catálogo mezcla unidades y volúmenes).
+  3. Interpretable frente al baseline: debe dejar claro si el modelo aporta o no.
+  4. Coherente con el Nivel 2 (`DT-020`): su mejora debe correlacionar con mejores decisiones.
+  5. Robusta a valores atípicos, o acompañada de una métrica que lo sea.
+
+- **Candidatas que cumplen los criterios 1–3:** MASE y RMSSE (errores escalados frente a un baseline
+  ingenuo, definidos precisamente para permitir la comparación entre series). WAPE como métrica
+  agregada ponderada por volumen. La elección entre ellas se hará con datos.
+
+- **Consecuencias:** hasta la decisión, el informe de evaluación reporta **el conjunto** de métricas de
+  `docs/05` §9 y ninguna se presenta como criterio único de aceptación.
+
+- **Estado:** `PENDIENTE` — se decide al cerrar la Fase 1 (composición del catálogo) y confirmar en la
+  Fase 5. El descarte de MAPE como métrica de decisión sí es `ACEPTADA`.
+
+## DT-022 — Almacén de secretos gestionado
+
+- **Decisión:** La configuración sensible se obtiene de un **almacén de secretos gestionado** en los
+  entornos desplegados. **Azure Key Vault es el candidato natural**, por coherencia con el resto del
+  stack, pero no se fija todavía como obligatorio.
+
+- **Contexto:** `docs/10-seguridad.md` y `RS-006` nombraban Azure Key Vault directamente. Key Vault
+  **no figura en la lista de tecnologías obligatorias** del alcance, y la regla del proyecto exige
+  justificar y registrar toda tecnología adicional relevante antes de adoptarla (`CLAUDE.md` §5).
+
+- **Alternativas:** (a) Variables de entorno del servicio de cómputo. (b) *Secrets* de GitHub como
+  única fuente. (c) Almacén gestionado (Azure Key Vault u otro).
+
+- **Razón:** (a) y (b) sirven en desarrollo y CI pero no ofrecen rotación, auditoría de acceso ni
+  integración con identidad administrada. (c) es lo indicado en producción. La elección concreta del
+  producto depende del destino de despliegue, que es `DT-P01` y también está pendiente.
+
+- **Consecuencias:** el diseño se expresa contra la interfaz `SecretProvider` (`DT-003`), de modo que
+  el producto concreto es sustituible. Ningún documento debe presentar Key Vault como decidido.
+
+- **Estado:** `PROPUESTA` — se confirma junto con `DT-P01` en las Fases 12–13.
+
+## DT-023 — Clasificación en tres niveles de las situaciones de §25 del dataset
+
+> **Documento completo:** [`docs/decisions/DT-023-clasificacion-escenarios.md`](decisions/DT-023-clasificacion-escenarios.md).
+> Vive como archivo propio porque incluye la matriz de las 26 situaciones, que no cabe aquí sin
+> inflar el registro.
+
+- **Decisión:** Las **26 situaciones mínimas obligatorias** de `knowledge/dataset-specification.md`
+  §25 **no son 26 valores del enum `Scenario`**. Se reparten en tres niveles:
+
+  | Nivel | Qué es | Dónde vive | Cuántas de las 26 |
+  |---|---|---|---|
+  | **A — Ejes de generación** | Comportamientos que el generador produce deliberadamente | Enum `Scenario` y `scenarios.required` | 13 |
+  | **B — Atributos y estados** | Campos del modelo que deben tomar valores variados | Entidades de `docs/04-modelo-datos.md` | 9 |
+  | **C — Propiedades emergentes** | Situaciones que surgen de combinar entidades | Las verifica el **validador (Componente 8)** | 4 |
+
+  13 + 9 + 4 = 26.
+
+  En consecuencia se amplía el enum de **14 a 16** valores: `LOW_INVENTORY` (§10.2) y
+  `PARTIAL_DELIVERY` (§12.3), ambos ejes de Nivel A que el generador sí puede producir.
+
+  **Las dos cifras no son la misma.** El enum tiene **16 valores**: los **13** que corresponden a
+  situaciones de §25 más **tres** —`HIGH_ROTATION`, `LOW_ROTATION` y `MULTIPLE_LEAD_TIMES`— que no
+  son filas de §25 y están respaldados por otras secciones (ADR §7). «26» cuenta situaciones de la
+  especificación; «16» cuenta valores del enum.
+
+- **Contexto:** Una auditoría detectó que §25 exige 26 situaciones y el enum tenía 14, con quince sin
+  representación. Había que determinar si el enum estaba incompleto o si ambas listas describían
+  cosas distintas.
+
+- **Alternativas:** (a) Ampliar el enum a 26. (b) Dejarlo en 14 y verificar §25 en otro lugar.
+  (c) Tres niveles. (d) Aplazar la decisión al Componente 7.
+
+- **Razón:** La especificación **ya usa tres niveles**; §25 es una tabla-resumen que los mezcla. §32
+  agrupa los escenarios en familias, no en una lista plana; §35 pide «distribución de escenarios» y
+  «cantidad de productos por patrón de demanda» como ítems **separados**; §26 se solapa con §25 y
+  llama a esas mismas situaciones *casos límite para pruebas*.
+  **El argumento decisivo:** cuatro de las 26 dependen de reglas pendientes — `DT-P11` (corte del
+  tránsito efectivo), `BR-X03` (umbrales de clasificación de riesgo), `BR-P10` (productos
+  descontinuados), `DT-011` (demanda censurada). **Una etiqueta obliga a decidir:** marcar un SKU como
+  `TRANSIT_EFFECTIVE_INSUFFICIENT` exigiría saber qué cuenta como «efectivo», que es justo lo que
+  `DT-P11` mantiene abierto y lo que §3.5, §27 y §37 de la especificación prohíben fijar.
+
+- **Consecuencias:** El validador del Componente 8 recibe un contrato explícito (comprobar las
+  **cuatro** propiedades de Nivel C: situaciones 8, 12, 18 y 20). El Componente 7 sabe qué puede
+  asignar: los 16 valores del enum, nada más. A cambio,
+  la correspondencia entre §25 y los tres niveles hay que mantenerla en la matriz del ADR.
+  **Qué la invalidaría:** que se cierren `DT-P11`, `BR-X03`, `BR-P10` y `DT-011`; entonces cabría
+  reconsiderar si las situaciones de Nivel C se promueven a ejes.
+
+- **No resuelve:** si §25 debe ampliarse con `HIGH_ROTATION` y `LOW_ROTATION`, presentes en el enum,
+  en `docs/02` §8, en el roadmap y en §10.4 de la propia especificación, pero ausentes de la tabla
+  §25. La discrepancia queda documentada en el ADR §7, **sin modificar §25**.
+
+- **Estado:** `ACEPTADA`
+
+---
+
+> **`DT-024` a `DT-030` — bloque de preparación del Componente 2 (2026-09-18).** Las siete decisiones
+> siguientes resuelven los bloqueantes B-1 a B-7 identificados en la auditoría del Componente 2
+> (2026-09-17). Se tomaron juntas porque se condicionan entre sí, y todas afectan al mismo contrato.
+> **Ninguna implementa nada: el Componente 2 no está implementado.**
+
+## DT-024 — Formato de salida del dataset: un CSV por entidad
+
+> **Documento completo:** [`docs/decisions/DT-024-contrato-salida-componente-2.md`](decisions/DT-024-contrato-salida-componente-2.md).
+> Vive como archivo propio porque incluye el contrato de columnas de las cinco entidades maestras.
+
+- **Decisión:** El dataset sintético se materializa como **un archivo CSV independiente por
+  entidad** (`categories.csv`, `products.csv`, `suppliers.csv`, `product_suppliers.csv`,
+  `locations.csv`), más un `manifest.json` con la metadata de generación (`DT-025`). **JSON no es el
+  formato de los datos de las entidades.** El ADR fija además las convenciones sin las cuales «CSV»
+  no sería un contrato: UTF-8 sin BOM, separador `,`, RFC 4180, LF, cabecera obligatoria, nulos como
+  campo vacío, fechas ISO-8601, booleanos en minúscula e importes con dos decimales.
+
+- **Contexto:** §40 de `knowledge/dataset-specification.md` condiciona la implementación del
+  generador a que se definan antes la «estructura física de los archivos generados» y el «formato de
+  intercambio». La auditoría del Componente 2 verificó que **ningún documento los definía**
+  (bloqueante **B-1**). Sin ellos el Componente 2 no tiene salida que producir.
+
+- **Alternativas:** (a) Un CSV por entidad. (b) Un único JSON con las cinco colecciones.
+  (c) Parquet. (d) Aplazarlo al implementar.
+
+- **Razón:** El destino declarado es PostgreSQL (Fase 2) y el modelo de `docs/04` es relacional: una
+  entidad, una tabla. El CSV por entidad es la representación más directa de esa forma y la que menos
+  transformación exige en la ingesta. Pesó además el costo de dependencias: `CLAUDE.md` §17 prohíbe
+  instalar dependencias innecesarias y hoy solo existe PyYAML; CSV se escribe con la biblioteca
+  estándar, Parquet no. (b) se descartó porque obligaría a aplanar el documento en la ingesta.
+
+- **Consecuencias:** Contrato verificable sin ejecutar nada; carga directa con `COPY`; cero
+  dependencias nuevas. A cambio, el CSV no lleva tipos y la corrección depende de respetar las
+  convenciones, lo que se mitiga con la validación del Componente 8. **Tarea pendiente:** `.gitignore`
+  ignora `*.csv` pero no `manifest.json`; hay que excluir el directorio de salida antes de la primera
+  generación (`CLAUDE.md` §13.7). No se modifica ahora porque todavía no existe ningún archivo generado.
+
+- **No decide:** los tipos SQL ni el esquema físico de PostgreSQL (Fase 2); ni las columnas de los
+  componentes 3 a 8.
+
+- **Estado:** `ACEPTADA`
+
+## DT-025 — `manifest.json`: la metadata de generación vive fuera de las entidades
+
+> **Documento completo:** [`docs/decisions/DT-025-manifest-metadata-generacion.md`](decisions/DT-025-manifest-metadata-generacion.md).
+
+- **Decisión:** La metadata de generación se escribe en un **único `manifest.json`** junto a los CSV.
+  **Ninguna entidad de negocio lleva metadata de generación**, y en particular **no se añade un campo
+  `scenario` a `Product`, `Supplier`, `Category`, `ProductSupplier` ni `Location`**. Campos
+  obligatorios desde el Componente 2: `dataset_version`, `generator_version`, `seed`, `generated_at`,
+  `time_range`, `data_origin`, `config` (el `to_dict()` íntegro de `DatasetConfig`), `components` y
+  `files`. `scenario_assignment` y `quality_report` los aportan los Componentes 7 y 8.
+
+- **Contexto:** §19 exige poder identificar «semilla utilizada; versión del generador; escenario
+  sintético asociado» y §33 añade `dataset_version` y `generated_at`. `DataLoad` (`docs/04` §4) no
+  contiene ninguno de esos campos, ni ninguna otra entidad (bloqueante **B-4**).
+
+- **Alternativas:** (a) Archivo `manifest.json` separado. (b) Campos de generación en cada entidad.
+  (c) Ampliar `DataLoad`. (d) Un CSV de metadata.
+
+- **Razón:** La propia §19 cierra la salida fácil: «La información adicional de generación no debe
+  confundirse con información empresarial». Un archivo separado la mantiene separada por
+  construcción. (b) tiene además un problema de futuro: un campo `scenario` en `Product` no tendría
+  ningún valor posible con datos reales y quedaría huérfano en el esquema definitivo, contra `BR-007`
+  y `DT-004`. (c) mezclaría generación con ingesta, que son responsabilidades distintas.
+
+- **Consecuencias:** §19 y §33 quedan satisfechas sin tocar el modelo de negocio, y `DatasetConfig.to_dict()`
+  gana un consumidor real. A cambio, hay un archivo más cuya coherencia con los CSV hay que mantener,
+  mitigado con `files[].sha256`. Los campos no reproducibles del manifiesto son `generated_at` y los
+  que dependen del conjunto de componentes ejecutados (`files`, `components`, `generator_version`);
+  los archivos de datos sí son idénticos byte a byte.
+
+- **No decide:** los valores de `dataset_version` ni `generator_version`; ni el contenido de
+  `scenario_assignment` y `quality_report`.
+
+- **Actualización del 2026-09-29.** Ambos campos quedan definidos como campos del manifiesto:
+  `scenario_assignment` en `DT-041` §4 y `quality_report` en `DT-042` §5 (no un archivo aparte).
+
+- **Estado:** `ACEPTADA`
+
+## DT-026 — `data_origin` en las cinco entidades maestras
+
+- **Decisión:** `Category`, `Product`, `Supplier`, `ProductSupplier` y `Location` llevan el campo
+  `data_origin` (`SYNTHETIC` / `REAL`), igual que las entidades históricas. La marca es **por
+  registro** y no debe confundirse con la metadata de generación, que vive en `manifest.json`
+  (`DT-025`).
+
+- **Contexto:** `docs/04` §5.2 establece que «toda entidad con datos cargados lleva `data_origin`», y
+  `DT-004`, §19 y §34 de la especificación lo refuerzan. Pero las fichas §§3.1–3.5 **no lo listaban**:
+  el campo solo aparecía en `InventoryMovement` y `Consumption`. La auditoría del Componente 2 registró
+  la contradicción como bloqueante **B-2**, porque determina el esquema de las cinco colecciones.
+
+- **Alternativas:** (a) Añadirlo a las cinco fichas. (b) Restringir la regla §5.2 a las entidades
+  históricas. (c) Dejar la contradicción y decidir al implementar.
+
+- **Razón:** (b) rompería §34 —«Todos los registros sintéticos deben identificarse correctamente como
+  `SYNTHETIC`»— y `BR-007`, que exige poder sustituir datos sintéticos por reales sin rediseñar nada.
+  Si un `Product` no lleva marca de origen, un catálogo mixto es indistinguible, que es justo el
+  riesgo que `CLAUDE.md` §10.9 prohíbe. (c) es lo que bloqueó al componente.
+
+- **Consecuencias:** Una columna más en cada una de las cinco entidades y en sus CSV. La regla
+  transversal §5.2 pasa a ser cierta literalmente **para las cinco entidades maestras**.
+  **Pendiente registrado** (auditoría de consistencia, 2026-09-18): las fichas de `PurchaseOrder`,
+  `PurchaseOrderItem`, `PurchaseOrderReceipt` e `InventoryPolicy` **seguían sin listar `data_origin`**
+  pese a ser entidades cargadas que la especificación exige en el dataset. Es el mismo defecto que
+  motivó B-2, desplazado a los Componentes 5 y 6.
+
+  **Pendiente cerrado el 2026-09-24**, antes de autorizar los Componentes 4 y 5. Se añade
+  `data_origin` a `PurchaseOrder` (§3.9), `PurchaseOrderItem` (§3.10), `PurchaseOrderReceipt` (§3.11)
+  y también a `Inventory` (§3.6), que no figuraba en el pendiente y tenía la misma carencia.
+  **`InventoryPolicy` queda deliberadamente fuera**: no es un dato cargado ni forma parte del dataset
+  sintético —ningún componente del generador la escribe—, de modo que RF-023 no la sustituye. El
+  criterio general queda enunciado en `docs/04` §5.2 y en §34 de la especificación: lleva
+  `data_origin` la entidad que se carga como histórico; no lo llevan las salidas calculadas del
+  sistema.
+
+- **No decide:** ninguna regla de negocio depende de este valor (`DT-004`, `BR-007`); sigue siendo
+  solo trazabilidad y limpieza.
+
+- **Estado:** `ACEPTADA`
+
+## DT-027 — Vigencia de `Product`: `valid_from` y `valid_to`
+
+> **Documento completo:** [`docs/decisions/DT-027-vigencia-producto.md`](decisions/DT-027-vigencia-producto.md).
+
+- **Decisión:** `Product` incorpora `valid_from` (fecha, obligatorio) y `valid_to` (fecha, nulo =
+  vigente sin fecha de fin prevista). Son campos de **dominio**, distintos de `created_at` /
+  `updated_at`, que siguen siendo auditoría técnica y **no se reutilizan** como sustituto.
+
+- **Contexto:** §7.2 de la especificación pide «fechas de creación o vigencia» y §20 exige que «el
+  consumo ocurra dentro del periodo de existencia del producto». `docs/04` §3.2 solo ofrecía
+  `created_at` / `updated_at`, etiquetados «Auditoría»: §20 no era comprobable (bloqueante **B-3**).
+
+- **Alternativas:** (a) Añadir `valid_from` / `valid_to`. (b) Reutilizar `created_at`. (c) Derivar la
+  vigencia del histórico. (d) Usar solo `is_active`.
+
+- **Razón:** (b), (c) y (d) hacen imposible la validación de §20, cada una por un motivo distinto:
+  (b) mide otra cosa —con una carga histórica, `created_at` es la fecha de la carga—, (c) es circular
+  porque §20 quiere validar el histórico *contra* la vigencia, y (d) no tiene resolución temporal.
+  Pesó además la coherencia interna: `InventoryPolicy` (§3.12) ya usa `valid_from` / `valid_to` para
+  su vigencia, de modo que no se introduce vocabulario nuevo.
+
+- **Consecuencias:** §20 pasa a ser comprobable y `created_at` recupera su significado. A cambio, dos
+  columnas más en la entidad más usada y una validación más para el Componente 8. **La relación entre
+  `is_active` y la vigencia queda deliberadamente sin definir**: depende de `BR-P10`, regla propuesta
+  y no confirmada, y fijarla ahora sería convertir una hipótesis en requisito.
+
+- **No decide:** ninguna política de altas y bajas de productos; ni añade vigencia a las otras cuatro
+  entidades maestras, que ninguna sección exige.
+
+- **Enmienda del 2026-09-24 (restricción 3).** El diseño del Componente 4 (`DT-036`) hizo aflorar una
+  contradicción: un producto dado de baja con una orden en vuelo recibe mercancía después de su
+  `valid_to`, y la restricción 3 original —«todo evento asociado al producto ocurre dentro del
+  intervalo de vigencia»— lo prohibía. El responsable aprobó acotar la restricción con **una única
+  excepción**: una orden emitida **dentro** de la vigencia completa su ciclo causal, de modo que sus
+  recepciones y los movimientos `RECEIPT` derivados pueden ocurrir después de `valid_to`, conservando
+  la trazabilidad con la orden. **No** autoriza demanda, consumo, órdenes nuevas ni ningún otro
+  movimiento posterior a `valid_to`, ni cancelar la orden, truncar el movimiento o convertir la
+  recepción en un ajuste. La decisión original **no se sustituye**: el ADR completo registra la
+  trazabilidad original → enmienda → nueva restricción 3, y §34 de la especificación queda
+  sincronizada.
+
+- **Estado:** `ACEPTADA` — enmendada el 2026-09-24
+
+## DT-028 — Políticas de generación sintética del Componente 2
+
+> **Documento completo:** [`docs/decisions/DT-028-politicas-generacion-sintetica.md`](decisions/DT-028-politicas-generacion-sintetica.md).
+> Vive como archivo propio porque contiene los conjuntos, rangos y pesos concretos, con la
+> advertencia de lectura que los identifica como sintéticos.
+
+- **Decisión:** Seis políticas sintéticas deterministas para las entidades maestras: valores
+  comerciales de `ProductSupplier` (**B-5**), asignación producto ↔ proveedor (**B-6**), distribución
+  ponderada de productos por categoría (**B-7**), nomenclatura neutra, vocabulario de
+  `unit_of_measure` y vocabulario de `Location.type`. **Todos sus valores son `synthetic generation
+  parameters`: parámetros técnicos del generador, no políticas comerciales de la organización.**
+
+- **Contexto:** El modelo exige escribir `moq`, `order_multiple`, `unit_cost` y
+  `agreed_lead_time_days`, y ninguna fuente define valor, rango ni regla. Lo mismo con el número de
+  proveedores por producto, el reparto entre categorías y la proporción de productos inactivos. Sin
+  ellos, §16, §13 y §25 no son satisfacibles.
+
+- **Alternativas:** (a) Políticas sintéticas documentadas, fijas en el Componente 2. (b) Esperar al
+  negocio. (c) Añadirlas a `DatasetConfig`. (d) Valores aleatorios sin rango declarado.
+
+- **Razón:** §3.5 de la especificación autoriza expresamente usar valores sintéticos para construir
+  escenarios técnicos «siempre que se identifiquen explícitamente como tales», y el ADR es esa
+  identificación. (b) se descarta porque **pediría al negocio una decisión que no le corresponde**:
+  nadie acuerda el MOQ de un producto que no existe, y §37 excluye «costos reales» del alcance.
+  (c) se descarta porque §32 no lista estos parámetros entre los mínimos del generador, y ampliar el
+  contrato del Componente 1 por un componente inexistente sería especular (`CLAUDE.md` §6.2).
+
+- **Consecuencias:** B-5, B-6 y B-7 resueltos y ocho escenarios de §25 y tres casos límite de §26
+  pasan a ser construibles. Los valores quedan en un solo documento, etiquetados, de modo que se sabe
+  exactamente qué sustituir cuando haya datos reales. A cambio, son constantes del código y cambiarlos
+  exige regenerar; y el ADR impone **cinco** precondiciones —`product_count ≥ category_count`,
+  `product_count ≥ 4`, `supplier_count ≥ 3`, `supplier_count < R` y `period.days ≥ 2`— que el
+  Componente 2 debe rechazar explícitamente en vez de degradar el dataset en silencio. Las dos
+  últimas las añadió la auditoría de consistencia del 2026-09-18.
+
+- **No decide:** ninguna política empresarial; ni lógica de selección o scoring de proveedores
+  (`BR-X05` pendiente, `BR-P07` propuesta); ni la asignación de escenarios a SKU (Componente 7).
+
+- **Estado:** `ACEPTADA`
+
+## DT-029 — Alcance del Componente 2: lo que no genera
+
+- **Decisión:** El Componente 2 genera **exclusivamente** las cinco entidades maestras. No escribe:
+
+  | Elemento | Por qué |
+  |---|---|
+  | `abc_class`, `rotation_class` | `docs/04` §3.2 los declara **derivados**, y dependen del consumo, que no existe todavía. Sus umbrales «se calibrarán con datos reales» (`docs/05` §4) |
+  | `shelf_life_days` | `docs/04` §8.4 («¿Existen productos con vida útil?») sigue sin responder. Queda `NULL` |
+  | `Supplier.currency` | `docs/04` §8.5 («¿Se requiere multi-moneda?») sigue sin responder. Queda `NULL` |
+  | `Supplier.contact_info` | §7.3 no lo exige y `CLAUDE.md` §9.7 prohíbe datos de proveedores en desarrollo. Queda `NULL` |
+  | Cualquier campo `scenario` | Los 16 ejes permanecen separados de las entidades maestras (`DT-023`, `DT-025`) |
+  | `created_at` / `updated_at` | Auditoría técnica del registro: los fija la ingesta, no el generador |
+  | `Category.parent_id` | Jerarquía plana mientras rija `ASSUMPTION-009` |
+  | `Product.description` | §7.2 pide «nombre **o** descripción»; basta `name` |
+
+  Además, **el Componente 2 rechaza con error explícito una configuración con `location_count > 1`**.
+
+- **Contexto:** La auditoría advirtió un riesgo concreto: que el Componente 2 escriba
+  `rotation_class` a partir del eje asignado, contaminando una entidad maestra con información que
+  pertenece al histórico. Por otro lado, `_check_scale` acepta cualquier `location_count` positivo,
+  de modo que una configuración con 5 ubicaciones valida sin error pese a contradecir `ASSUMPTION-006`
+  y a que `DT-P09` está aplazada.
+
+- **Alternativas:** (a) Registrar la exclusión y que el Componente 2 falle ante `location_count > 1`.
+  (b) Rellenar los campos derivados con valores provisionales. (c) Restringir `location_count` en
+  `config.py`. (d) Que el Componente 2 genere N ubicaciones silenciosamente.
+
+- **Razón:** (b) presentaría como dato lo que es una suposición, y un `abc_class` provisional acabaría
+  citado como real. (d) produciría un dataset que contradice el alcance sin avisar, que es la peor de
+  las opciones. (c) se descarta por **dónde vive la limitación**: `location_count` es un parámetro de
+  escala legítimo del contrato de configuración; lo que no soporta multi-ubicación es *esta versión
+  del generador*, no la configuración. Restringirlo en `config.py` pondría la restricción en la capa
+  equivocada y habría que retirarla al cerrar `DT-P09`. **Por eso `config.py` no se modifica.**
+
+- **Consecuencias:** `products.csv` y `suppliers.csv` tienen columnas permanentemente vacías, lo que
+  es información honesta: el generador no produjo ese dato. El esquema del archivo sigue siendo el de
+  la entidad. Queda registrado para una tarea posterior que, si se implementa el Componente 2, debe
+  incluir la comprobación de `location_count` y su prueba.
+
+- **No decide:** `DT-P09` (multi-ubicación) sigue aplazada; `docs/04` §8.4 y §8.5 siguen abiertas.
+
+- **Estado:** `ACEPTADA`
+
+## DT-030 — Determinismo por sub-semillas derivadas de la semilla común
+
+- **Decisión:** Cada componente del generador deriva su propio flujo pseudoaleatorio mediante una
+  sub-semilla determinista:
+
+  ```text
+  sub_seed(id) = int.from_bytes(sha256(f"{seed}:{id}".encode("utf-8")).digest()[:8], "big")
+  ```
+
+  donde `seed` se serializa como el entero en base 10 sin relleno, e `id` es el **identificador
+  canónico** del componente: una cadena ASCII corta, en minúsculas, estable y **distinta de su
+  número**. El del Componente 2 es `catalog`.
+
+  La comprobación práctica de la reproducibilidad es: **misma configuración + misma semilla + misma
+  versión del generador → archivos de datos idénticos byte a byte**. El manifiesto difiere en
+  `generated_at` y en los campos que dependen del conjunto de componentes ejecutados (`files`,
+  `components`, `generator_version`). Cada sub-semilla usada queda registrada en `manifest.json`
+  (`DT-025`).
+
+  **Tabla canónica de identificadores** (aprobada por el responsable el 2026-09-21, antes de que el
+  Componente 3 extraiga nada):
+
+  | # | Componente | Identificador | Estado |
+  |---|---|---|---|
+  | 1 | `DatasetConfig` | **ninguno** | Implementado. No extrae del flujo pseudoaleatorio, luego no tiene sub-semilla que derivar |
+  | 2 | Catalog Generator | `catalog` | Implementado. **Sin cambios**: ya estaba en uso |
+  | 3 | Demand Generator | `demand` | Pendiente |
+  | 4 | Inventory Simulator | `inventory` | Pendiente |
+  | 5 | Purchase Order Generator | `orders` | Pendiente |
+  | 6 | Supplier Behaviour Generator | `supplier_behaviour` | Pendiente |
+  | 7 | Scenario Assignment | `scenarios` | Pendiente |
+  | 8 | Dataset Validator **+ informe de calidad** | `validator` | Pendiente |
+
+  Vive en `data/synthetic/generator/rng.py` como `COMPONENT_IDS`, con una constante por componente, y
+  cada identificador está fijado por una prueba contra la fórmula de arriba.
+
+  **Por qué la tabla tenía que fijarse ahora.** La sub-semilla es función de la cadena, de modo que un
+  identificador decidido *después* de que un componente haya generado datos cambiaría esos datos. Con
+  el Componente 3 sin empezar, se está a tiempo; el Componente 2 no se ve afectado porque conserva
+  `catalog`, y se comprobó que sus cinco CSV salen byte a byte idénticos tras el cambio.
+
+  **El informe de calidad es parte del Componente 8, no un noveno componente.** Lo sostienen cuatro
+  fuentes: `DT-023` («Validador del dataset (**Componente 8**)», y su §Consecuencias 2), `DT-025`
+  (`quality_report` → «**Componente 8**»), `project/status.md` («Dataset Validator **+ informe de
+  calidad**») y `DT-031` (los casos de prueba 12 y 13 → «Componente 8 (validador)»). La ambigüedad que
+  este ADR registraba venía de la prosa de `CLAUDE.md` §17 —corregida el 2026-09-21 al implementar el
+  Componente 2—, no de ninguna decisión: **ninguna decisión aceptada propuso nunca un noveno
+  componente.**
+
+  El único identificador con guion bajo es `supplier_behaviour`, y es deliberado: `supplier` a secas se
+  confundiría con la entidad maestra que ya genera el Componente 2, y `behaviour` a secas no dice de
+  quién. Los patrones son sustantivos cortos, independientes del nombre del archivo que cada componente
+  escriba, para que renombrar un archivo no toque los datos.
+
+  Lo que **sigue pendiente** y no decide esta tabla: si `quality_report` se escribe dentro de
+  `manifest.json` o como archivo aparte. `DT-025` lo aplaza expresamente al autorizar el Componente 8.
+
+  **Nota del 2026-09-29 (`DT-041` §2, decisión C7/C8-13).** Un componente que no sortea registra
+  igualmente su sub-semilla en `manifest.components`, por uniformidad de la entrada: el Componente 7
+  (`scenarios`) la registra y **no la usa**. La excepción de la fila 1 de la tabla se refiere a
+  `DatasetConfig`, que no figura en `components`.
+
+- **Contexto:** §3.3 exige que «una misma configuración y una misma semilla produzcan el mismo
+  dataset», y `CLAUDE.md` §6.7 prohíbe la aleatoriedad no sembrada. Pero si todos los componentes
+  comparten un único flujo pseudoaleatorio, **implementar un componente nuevo altera los datos que
+  producían los anteriores**, porque cambia el número de extracciones previas. La auditoría lo
+  registró como decisión técnica pendiente.
+
+- **Alternativas:** (a) Sub-semillas derivadas por hash del nombre del componente. (b) Un único flujo
+  compartido. (c) Sub-semillas por desplazamiento (`seed + 1`, `seed + 2`…). (d) Una semilla por
+  componente en `dataset_config.yaml`.
+
+- **Razón:** (b) es exactamente el problema. (c) depende del **orden** en que se numeren los
+  componentes: insertar uno en medio renumera el resto y cambia todo lo posterior. (d) multiplica la
+  configuración por ocho sin ganar nada. (a) solo depende de la semilla y del nombre, de modo que
+  añadir un componente no altera la sub-semilla de ninguno de los existentes. Se usa SHA-256 explícito
+  y no `hash()` de Python, que varía entre ejecuciones con `PYTHONHASHSEED`.
+
+- **Consecuencias:** Los componentes son independientes entre sí en cuanto a aleatoriedad, y el orden
+  de generación deja de ser parte del contrato reproducible. El orden **de las filas** sí lo es, y
+  `DT-024` lo fija como ascendente por clave. Cuesta una función de tres líneas y una entrada más en
+  el manifiesto.
+
+- **No decide:** el algoritmo pseudoaleatorio concreto. Lo fijó **`DT-032`** al implementar el
+  Componente 2: un contador sobre SHA-256, sin `random`.
+
+- **Estado:** `ACEPTADA`
+
+---
+
+## DT-031 — V1: reglas mínimas funcionales del cálculo de abastecimiento
+
+> **Documento completo:** [`docs/decisions/DT-031-reglas-minimas-v1.md`](decisions/DT-031-reglas-minimas-v1.md).
+> Vive como archivo propio porque contiene trece reglas con su fórmula, ejemplo y ruta de reemplazo.
+
+- **Decisión:** Se adopta un conjunto de **trece reglas técnicas provisionales** que hacen calculable
+  la cadena `Forecast → Inventory → Supply Engine → Recommendation` sobre el dataset sintético, sin
+  fijar ninguna política empresarial: necesidad bruta (`V1-01`), posición de inventario (`V1-02`),
+  horizonte de cobertura (`V1-03`), demanda sobre el horizonte (`V1-04`), stock de seguridad
+  (`V1-05`), MOQ y múltiplo (`V1-06`), escenarios mínimos de demostración (`V1-07`), alcance del
+  validador (`V1-08`), lead time observado (`V1-09`, con `V1-09.1` ventana de 12 y `V1-09.2` techo de
+  90 días), elección de proveedor (`V1-10`), **sin diferenciación ABC (`V1-11`)**, **sin
+  sobre-recepción (`V1-12`)** y **sin inventario negativo (`V1-13`)**.
+
+  **Revisión del 2026-09-19** (decisiones A–F del responsable): se confirman los ocho componentes de
+  la Fase 1 sin cambios, `R_v1 = 7`, `z_v1 = 1,65` y la independencia de `MOQ` y `order_multiple`; y
+  se **sustituye el lead time acordado por el observado** en el horizonte de cobertura, con fallback
+  al acordado mientras no haya histórico suficiente. Además se cierran cuatro reglas pendientes
+  —`BR-X05`, `BR-X07`, `BR-X08`, `BR-X09`— con interpretaciones técnicas, no con políticas.
+
+  **Cierre del 2026-09-21.** El responsable confirma `V1-09` (mínimo de tres observaciones),
+  `V1-09.1` (ventana de doce, ordenada por fecha de finalización), `V1-09.2` (techo de 90 días con
+  marca `LEAD_TIME_CAPPED` y trazabilidad del valor sin topar) y `V1-10` (proveedor preferente
+  activo; sin él, no se recomienda), y añade `V1-11`, `V1-12` y `V1-13`, que explicitan las tres
+  interpretaciones que ya cerraban `BR-X07`, `BR-X08` y `BR-X09`. `V1-11` **no elimina** `abc_class`
+  ni `rotation_class` del modelo: los deja fuera del cálculo. El conjunto queda cerrado.
+
+- **Contexto:** Trece reglas de negocio siguen pendientes (`knowledge/business-rules.md` §3) y cuatro
+  decisiones técnicas están sin cerrar (`DT-010`, `DT-019`, `DT-P05`, `DT-P11`). Sin alguna forma de
+  puentearlas, `raw_need` no es calculable y no puede construirse ni probarse el flujo completo. La
+  auditoría del 2026-09-19 verificó que «necesidad» aparece en la especificación con **seis
+  redacciones distintas** y que el glosario no define ninguna.
+
+- **Alternativas:** (a) Un conjunto acotado de reglas provisionales, declaradas y reemplazables —ocho
+  en la versión inicial, trece tras el cierre del 2026-09-21—. (b) Esperar a que el
+  negocio cierre las trece reglas. (c) Implementar el generador sin definir el cálculo y decidir al
+  llegar al motor.
+
+- **Razón:** (b) bloquea el proyecto por tiempo indefinido y pide al negocio decisiones que no
+  necesita tomar para un dataset sintético. (c) es lo que produjo los bloqueantes B-1 a B-7. La vía
+  (a) tiene un rasgo que la hace defendible: **diez de las trece reglas ya estaban documentadas** y
+  solo necesitaban nombre y parámetros. `V1-01` es literalmente la rama periódica de `docs/06` §§7-8;
+  `V1-02` es `docs/06` §4.2 sin cambios; `V1-04` es la recomendación provisional de `DT-019`;
+  `V1-06` es `docs/06` §8 Paso 2; `V1-08` recoge invariantes ya enunciadas en §§20, 21 y 34 de la
+  especificación; `V1-09` implementa `BR-P01`; `V1-10` adopta `BR-P07`; y `V1-11`, `V1-12` y `V1-13`
+  se apoyan respectivamente en `DT-029`, en §21 y en §26 junto con `docs/06` §14. Solo `V1-03`,
+  `V1-05` y `V1-07` introducen algo nuevo, y las tres lo declaran.
+
+- **Consecuencias:** La cadena queda calculable de extremo a extremo. Se cierra la cuestión **C** de
+  la auditoría anterior: «MOQ > necesidad» pasa de no computable a computable. Se corrige una
+  contradicción interna de `docs/06` §14 anterior a este bloque de trabajo. El glosario gana la
+  definición de «necesidad bruta» con sus tres alias.
+  **Costos:** dos parámetros sin respaldo del negocio (`R_v1 = 7`, `z_v1 = 1,65`, registrados como
+  `ASSUMPTION-021` y `ASSUMPTION-022`); V1 elige implícitamente revisión periódica; y V1 mide la
+  incertidumbre sobre la demanda y no sobre el error de pronóstico (`ASSUMPTION-023`), porque sin
+  modelo entrenado la segunda no existe.
+  **La consecuencia que más importa:** ninguna salida de V1 puede presentarse como recomendación de
+  negocio. `BR-009` sigue rigiendo sin excepción fuera del entorno sintético.
+
+- **No resuelve:** ninguna de las trece reglas pendientes de `business-rules.md` §3 —cuatro tienen
+  una interpretación técnica de V1, que no es una confirmación del negocio—; ni `DT-010`, `DT-019`,
+  `DT-P05` ni `DT-P11`. Tampoco si `MOQ` debe ser múltiplo de `order_multiple` (parte de negocio de
+  la cuestión **B**). La cuestión **A** (descomposición de componentes) la resolvió el responsable el
+  2026-09-19, no este ADR.
+
+- **Cobertura de pruebas:** los trece casos de prueba enumerados en el cierre **no son ejecutables
+  hoy y no se han escrito**: once pertenecen al motor de abastecimiento (Fase 4, no autorizada) y dos
+  al Componente 8 (validador, no iniciado). El ADR los registra uno a uno con su dueño para que
+  lleguen con su componente. La suite actual sigue siendo de 54 pruebas de `DatasetConfig`.
+
+- **Notas de redacción del 2026-09-29 (`DT-041`).** `V1-07`: el Componente 7 **registra** las
+  decisiones de C3 y C6 y **mide** los ejes emergentes; no «asigna». `V1-08`: el validador no clasifica
+  sobreinventario según `BR-X03`; la cobertura de `OVERSTOCK` y de la situación 18 usa solo el
+  criterio sintético de `DT-041`. Ninguna regla V1 cambia.
+
+- **Estado:** `ACEPTADA` **como conjunto de reglas de V1** (2026-09-21). El matiz es necesario y está
+  desarrollado en el ADR: lo aceptado es «estas son las reglas que rigen V1», **no** «estas son las
+  políticas de la organización». Ninguna de las trece reglas pendientes de `business-rules.md` §3
+  queda confirmada, y los parámetros `R_v1`, `z_v1`, `N_v1`, `N_MIN_v1` y `LT_MAX_v1` siguen siendo
+  técnicos y provisionales. Desde su creación el 2026-09-19 y hasta ese cierre el estado fue `PROPUESTA`; el cambio se justifica en
+  que el responsable decidió expresamente estas reglas, y `CLAUDE.md` §8 solo prohíbe marcar
+  `ACEPTADA` lo que **todavía es una hipótesis** — provisional no es hipotético.
+
+---
+
+## DT-032 — Algoritmo pseudoaleatorio: flujo contador sobre SHA-256
+
+- **Decisión:** El flujo pseudoaleatorio del generador es un **contador sobre SHA-256**. Cada
+  extracción calcula
+
+  ```text
+  raw = int.from_bytes(sha256(f"{sub_seed}:{label}:{counter}").digest()[:8], "big")
+  ```
+
+  y avanza el contador. El `label` separa flujos independientes dentro de un mismo componente
+  —`moq`, `unit-cost`, `agreed-lead-time`…—, de modo que cambiar el número de extracciones de uno
+  no desplaza los valores de otro. Los enteros acotados se obtienen por **muestreo con rechazo**,
+  no por módulo. Las permutaciones son Fisher-Yates escrito a mano.
+
+  Vive en `data/synthetic/generator/rng.py`, junto a la derivación de sub-semillas de `DT-030`.
+
+- **Contexto:** `DT-030` fija cómo se deriva la sub-semilla de cada componente, pero declara
+  expresamente que «no decide el algoritmo pseudoaleatorio concreto». §44 de la especificación va
+  más lejos y lo registra como un **límite conocido**: la sub-semilla sí es estable entre versiones
+  de Python y plataformas porque solo depende de SHA-256, pero «el flujo pseudoaleatorio derivado de
+  ella **no lo está necesariamente**, porque la implementación de las funciones de la biblioteca
+  estándar puede cambiar entre versiones». Y añade: «fijar el algoritmo pseudoaleatorio concreto es
+  trabajo del Componente 2». Esta decisión es ese trabajo.
+
+- **Alternativas:** (a) Flujo contador sobre SHA-256. (b) `random.Random(sub_seed)` de la biblioteca
+  estándar. (c) `numpy.random.Generator` con un *bit generator* de estabilidad declarada.
+
+- **Razón:** (b) es lo natural y es exactamente lo que §44 advierte. `random.Random.random()` es
+  estable en la práctica, pero `shuffle`, `randrange` y `choice` han cambiado de implementación entre
+  versiones de Python más de una vez, y la documentación oficial solo garantiza la reproducibilidad
+  «dentro de una misma versión». El invariante de §44 es **igualdad byte a byte**, no «casi siempre
+  igual». (c) añadiría NumPy, y `CLAUDE.md` §17 prohíbe dependencias innecesarias: hoy la única
+  dependencia externa del proyecto es PyYAML.
+
+  (a) cuesta unas quince líneas y convierte cada extracción en una **función pura de
+  `(sub_seed, label, counter)`**. Eso cierra el límite de §44 en lugar de documentarlo: el mismo
+  dataset sale idéntico en cualquier Python 3.11+, en cualquier plataforma, indefinidamente.
+  Verificado además con `PYTHONHASHSEED` distinto en cada ejecución.
+
+  El muestreo con rechazo no es purismo: `raw % bound` sobre-representa los valores bajos cuando
+  `bound` no divide 2⁶⁴. El sesgo es pequeño, pero es real y evitable por el coste de un bucle que
+  casi siempre termina en la primera pasada.
+
+- **Consecuencias:** El generador no usa `random` en ninguna parte. El coste es un SHA-256 por
+  extracción —irrelevante a esta escala: el catálogo completo son unas 700 extracciones—. El límite
+  conocido de §44 deja de aplicar al flujo; sigue aplicando, por definición, a cualquier código
+  futuro que use `random`, de modo que la regla operativa es: **en el generador no se usa `random`**.
+
+- **No decide:** nada sobre las distribuciones estadísticas de los Componentes 3 en adelante. Si la
+  demanda necesita una normal o una Poisson, habrá que derivarlas de este flujo uniforme y
+  registrarlo; esta decisión solo fija la fuente de uniformes.
+
+- **Estado:** `ACEPTADA`
+
+## DT-033 — Esquema de versionado del dataset y del generador
+
+- **Decisión:** Dos campos del manifiesto, con naturalezas distintas:
+
+  | Campo | Valor | Quién lo fija |
+  |---|---|---|
+  | `generator_version` | Versión semántica del generador. **`0.1.0`** con el Componente 2 | Constante del código, se sube a mano |
+  | `dataset_version` | `ds-` + los 12 primeros hex de `sha256(config_canónica + "\|" + generator_version)` | **Derivado**, nunca asignado |
+
+  La configuración canónica es `DatasetConfig.to_dict()` serializado como JSON con claves ordenadas
+  y sin espacios. `dataset_version` **no incluye `generated_at`**: nombra al dataset, no a la
+  ejecución.
+
+  Criterio para `generator_version`: **sube la minor cuando el generador produce datos distintos para
+  la misma configuración y semilla** —un componente nuevo, una política cambiada, un orden de
+  extracción distinto—. Es la versión de la *salida observable*, no la del código fuente.
+
+- **Contexto:** `DT-025` define los dos campos como obligatorios desde el Componente 2 y su regla 5
+  aplaza expresamente el esquema: «no se fijan valores concretos de `dataset_version` ni
+  `generator_version`; su esquema de versionado se decidirá al implementar el generador, porque hoy
+  no existe ninguna versión que registrar». Hoy ya existe.
+
+- **Alternativas:** (a) `dataset_version` derivada por hash. (b) Un contador manual (`v1`, `v2`…).
+  (c) Una marca de tiempo. (d) Un UUID por ejecución.
+
+- **Razón:** (b) no tiene ninguna de las dos propiedades que hacen útil al campo: nada obliga a
+  nadie a subirlo, y dos datasets distintos pueden acabar con el mismo número. (c) y (d) cambian en
+  cada ejecución, de modo que regenerar el mismo dataset produciría un identificador distinto y el
+  campo dejaría de poder compararse — justo lo contrario de lo que §3.3 pide.
+
+  (a) es **reproducible** —regenerar el mismo dataset da el mismo identificador— y **cambia
+  exactamente cuando cambian los datos**, porque sus dos entradas son los dos términos del invariante
+  de §44: configuración y versión del generador. La semilla entra por la configuración, que la
+  contiene.
+
+- **Consecuencias:** `dataset_version` es comparable entre ejecuciones y entre máquinas, y sirve como
+  huella del dataset sin tener que leer los cinco `sha256` de `files`. El precio es que no es legible
+  para un humano: `ds-a4e50751841e` no dice nada por sí solo. Se acepta porque el manifiesto lleva al
+  lado la configuración íntegra, que sí lo dice todo.
+
+  Consecuencia operativa que conviene no olvidar: **al añadir el Componente 3 hay que subir
+  `generator_version`**. Si no se sube, dos datasets con contenidos distintos declararán el mismo
+  `dataset_version`, y el invariante de §44 —que menciona la versión del generador precisamente por
+  esto— dejaría de cumplirse.
+
+  Hay un tercer número, distinto de los dos anteriores: **`components[].version`**, la versión de cada
+  componente por separado. `DT-028` §8 se apoya en ese campo para saber qué políticas sintéticas
+  produjeron un dataset, y esa es una pregunta sobre *el Componente 2*, no sobre el generador entero.
+  Hoy vale `0.1.0` igual que `generator_version` porque solo hay un componente; se mantienen separados
+  precisamente para que dejen de confundirse cuando haya varios.
+
+- **Regla operativa de incremento — añadida el 2026-09-26.** El criterio de arriba («datos distintos
+  para la misma configuración y semilla») se concreta así, para que pueda aplicarse de forma
+  reproducible. **Es la única regla de incremento del generador**: `DT-036` §8 y `DT-039` §12 remiten
+  aquí, y ya no existe ninguna enumeración cerrada de parámetros.
+
+  **Artefacto publicado** de una ejecución con una configuración dada:
+
+  1. el **conjunto de archivos de datos** del directorio publicado, por nombre;
+  2. el **contenido byte a byte** de cada archivo de datos —columnas, orden de columnas, filas,
+     valores, formato, orden de filas e identificadores—, que el propio manifiesto registra en
+     `files[].sha256`;
+  3. **`manifest.json`**, excluidos `generated_at` (fuera por diseño, §44 y `DT-025` regla 4) y
+     `generator_version`, `dataset_version` y `components[].version`, que son **consecuencia** del
+     cambio y no causa: incluirlos haría la regla circular.
+
+  > **Se incrementa la versión *minor* de `generator_version` cuando un cambio en el generador —en
+  > cualquier módulo, parámetro o literal, no solo en `policies.py`— altera el artefacto publicado de
+  > al menos una configuración aceptada tanto antes como después del cambio.**
+
+  **La versión depende del artefacto, no del archivo donde vive el parámetro.** Verificado en el
+  código: además de las políticas de `policies.py`, alteran el artefacto los identificadores
+  canónicos de `rng.py` (entran en `sub_seed`), las etiquetas de flujo aleatorio de `catalog.py` y
+  `demand.py`, las tuplas de columnas y nombres de archivo, y las funciones de formato de `writer.py`.
+  Una regla limitada a `policies.py` no los cubriría.
+
+  **No requieren incremento** —ejemplos verificados en el código—:
+
+  | Tipo | Ejemplo | Por qué |
+  |---|---|---|
+  | Precondición de configuración | `DEMAND_MIN_PRODUCTS` (usado solo en la comprobación de P-6) | Cambia qué configuraciones se aceptan; el artefacto de una configuración aceptada antes y después es idéntico |
+  | Comprobación de cobertura | `ORDER_MULTIPLE_LARGE_THRESHOLD` (usado solo en la comprobación final del Componente 2) | No genera ningún valor; decide si un catálogo ya generado pasa la comprobación |
+  | Constante declarativa | `DEMAND_QUANTITY_IS_INTEGER` (no la lee ningún módulo del generador) | Cambiarla no altera ningún byte |
+  | Refactorización interna | Renombrados privados, comentarios, reorganización sin alterar el orden de extracción | Artefacto idéntico |
+
+  Los dos primeros casos se **registran** igualmente en el ADR del componente, porque cambian el
+  dominio de lo reproducible aunque no cambien ningún artefacto.
+
+  **Casos límite.** Cambiar el orden de filas o la asignación de identificadores **sí** requiere
+  incremento, y además es un cambio de contrato que exige su propio ADR. Cambiar cómo
+  `DatasetConfig.to_dict()` normaliza la configuración **sí** lo requiere: altera `manifest.config`
+  aunque los datos no cambien. Un cambio que solo afecta a configuraciones antes rechazadas **no** lo
+  requiere: no existía ningún artefacto con el que colisionar. Cambiar la **fórmula** de
+  `dataset_version` queda fuera de esta regla: altera la semántica de la identidad, no un dato, y
+  necesita su propio ADR. Corregir un error que altera los datos **sí** requiere incremento.
+
+  **Procedimiento de verificación.** Sin incrementar la versión, se genera el artefacto de cada
+  configuración de referencia antes y después del cambio, y se comparan el conjunto de archivos,
+  `files[]` y el resto del manifiesto con las exclusiones indicadas. **Cualquier diferencia obliga a
+  incrementar.** La igualdad es **evidencia, no prueba**: si el cambio afecta a una rama que ninguna
+  configuración de referencia ejercita, se añade una que la ejercite o se incrementa por precaución.
+  El procedimiento se aplica al decidir un incremento, no en cada ejecución de las pruebas.
+
+  **Configuraciones de referencia** *(auditadas el 2026-09-26)*:
+
+  | | Configuración | Qué ejercita |
+  |---|---|---|
+  | R1 | `data/synthetic/config/dataset_config.yaml` | La escala por defecto y el periodo completo: régimen proporcional de las canceladas, productos descatalogados con órdenes en vuelo, pares con demanda reciente nula, productos sin proveedor, sobreinventario por MOQ |
+  | R2 | Fixture `SMALL` de `test_demand.py` (12 productos, 4 proveedores, 3 categorías, 59 días) | Los suelos de uno de todas las mezclas y el suelo de `K`, a coste mínimo |
+  | R3 | **Escala ancha**: la de `test_ordering_survives_a_scale_that_overflows_the_width` de `test_catalog.py` (1 200 productos, 1 000 categorías) con el periodo de `SMALL` | El **ensanchado de códigos** de `DT-028` §4, que R1 y R2 no alcanzan, recorriendo todo el pipeline a coste moderado |
+
+  *La propuesta anterior incluía la configuración por defecto de `test_catalog.py`. Se descarta por
+  **redundante**: su `BASE_CONFIG` es idéntica, campo por campo, a `dataset_config.yaml` —verificado—.*
+
+  **Ramas que ninguna configuración de referencia puede ejercitar**, y que deben cubrir pruebas
+  unitarias: más de una ubicación (el Componente 2 rechaza `location_count > 1`, `DT-029`); productos
+  con `valid_from` posterior al inicio del periodo (el Componente 2 no los genera, `DT-028` §7.2); el
+  fallo B2 (no produce artefacto por diseño); y un `order_number` de más de seis dígitos, que exigiría
+  un millón de órdenes.
+
+- **Historial de `generator_version`.** 0.1.0 (C2) · 0.2.0 (C3) · 0.3.0 (C6 + C4 + C5 por W1) ·
+  **0.4.0 (2026-09-29): C7 + C8 integrados en W1**, en un único incremento (decisión C7/C8-11,
+  `DT-042` §9). Con 0.4.0 el artefacto cambia en el manifiesto —`scenario_assignment`,
+  `quality_report` y dos componentes— y **no** en los datos: los doce CSV de la configuración
+  vigente son byte a byte los de 0.3.0. `dataset_version` pasa de `ds-269a698250db` a
+  `ds-6c8ad65b4999`.
+
+- **No decide:** cómo se versiona el **código** del repositorio (etiquetas de Git, releases). Es
+  trabajo de la Fase 12 (`docs/12-devops.md`) y no tiene por qué coincidir con `generator_version`.
+
+- **Estado:** `ACEPTADA`
+
+## DT-034 — `Demand`: la demanda latente se persiste, separada del consumo observado
+
+> **Documento completo:** [`docs/decisions/DT-034-demanda-latente-persistente.md`](decisions/DT-034-demanda-latente-persistente.md).
+
+- **Decisión:** El generador persiste **dos series**: `demand.csv` (**demanda latente** — lo que se
+  habría demandado si el inventario nunca hubiera limitado nada), que produce el **Componente 3**; y
+  `consumption.csv` (**demanda satisfecha**, con `is_stockout_affected`), que produce el
+  **Componente 4**.
+
+  ```text
+  C2 → products.csv, locations.csv → C3 → demand.csv → C4 → consumption.csv
+  ```
+
+  `demand.csv` **no es un intermedio desechable**: es un dataset persistente con contrato de columnas,
+  entrada en `manifest.json` y `sha256`. Se añade la entidad `Demand` a `docs/04` §3.7-bis. El
+  Componente 3 **no escribe `consumption.csv`**, no conoce las existencias y no lleva
+  `is_stockout_affected`.
+
+  El ADR fija además tres cosas que estaban sin enunciar: el periodo es **semiabierto** `[start, end)`;
+  la serie es **densa** (una fila por día vigente, con `quantity = 0` los días sin demanda); y
+  `quantity` es **entero** para toda unidad de medida en V1.
+
+- **Contexto:** `docs/04` §3.8 advierte que lo registrado es la demanda **satisfecha** y que durante un
+  desabasto la real fue mayor, de modo que un modelo entrenado sobre ella «aprende que la demanda bajó»
+  justo en los productos más críticos. El modelo tenía una sola entidad para las dos cosas, lo que
+  dejaba la circularidad demanda→inventario→desabasto→consumo sin dueño y, sobre todo, dejaba el sesgo
+  **reconocido pero no medible**.
+
+- **Alternativas:** (a) C3 persiste la latente y C4 la transforma. (b) C3 la produce en memoria y solo
+  C4 escribe. (c) C3 escribe `consumption.csv` y C4 lo reescribe. (d) Ambos generan desabastos.
+
+- **Razón:** (a) es la única que **hace medible el sesgo por censura** en lugar de advertirlo.
+  `DT-011` está pendiente de método y exige decidirlo «con datos»; con ambas series en disco ese método
+  puede evaluarse comparando lo entrenado contra la verdad, cosa imposible en (b) y (c). El dataset
+  sintético es además el **único** lugar donde la demanda latente es conocible: con datos reales no lo
+  será nunca. (d) se descarta sin más: dos componentes dueños de la misma verdad.
+
+- **Consecuencias:** Una entidad nueva en el modelo; el archivo más grande del dataset (108 235 filas,
+  ~3,5 MB con la escala vigente, no versionado); y una entidad **sin equivalente con datos reales**,
+  que conviene que nadie lea como registro histórico. A cambio, C3 y C4 quedan disjuntos y la Fase 5
+  puede entrenar sobre la definición correcta de demanda.
+
+- **No decide:** `DT-011`, que sigue pendiente de método.
+
+- **Pendientes cerrados el 2026-09-24:** el contrato de `consumption.csv` está en `DT-038` §4, y el
+  mecanismo de recorte quedó fijado por decisión del responsable como
+  `consumption = min(demanda latente, existencia antes del consumo)`, **por día y sin backlog**: la
+  demanda no satisfecha se pierde y `lost_sales` es derivable, no almacenada.
+
+- **Estado:** `ACEPTADA`
+
+## DT-035 — Políticas sintéticas de generación de demanda
+
+> **Documento completo:** [`docs/decisions/DT-035-politicas-generacion-demanda.md`](decisions/DT-035-politicas-generacion-demanda.md).
+
+- **Decisión:** El Componente 3 genera la demanda con políticas sintéticas documentadas, al amparo de
+  §3.5 de la especificación y siguiendo el patrón de `DT-028`. **Dos ejes ortogonales**: cada producto
+  recibe una **forma** de las seis de §8 y una **rotación** de las dos de `DT-023` §7.2, cada eje con
+  su propia mezcla que suma 100 % y con suelo de un producto por clase.
+
+  | Forma | % | | Rotación | % |
+  |---|--:|---|---|--:|
+  | `STABLE_DEMAND` | 30 | | `HIGH_ROTATION` | 30 |
+  | `GROWING_DEMAND` | 15 | | `LOW_ROTATION` | 70 |
+  | `DECLINING_DEMAND` | 15 | | | |
+  | `SEASONAL_DEMAND` | 20 | | | |
+  | `INTERMITTENT_DEMAND` | 10 | | | |
+  | `ERRATIC_DEMAND` | 10 | | | |
+
+  Mecanismo: `cantidad(t) = max(0, redondeo(nivel · tendencia(t) · estación(t) · ruido(t)))`, todo en
+  **aritmética entera en por mil**, sin un solo flotante. La estacionalidad usa una **onda triangular
+  y no un seno**, porque `math.sin` lo calcula la `libm` de la plataforma y sus últimos bits no están
+  garantizados entre versiones — lo que desharía la identidad byte a byte de `DT-032` para cada
+  producto estacional. `INTERMITTENT_DEMAND` sigue una ruta propia: sus ceros son días sin evento, no
+  un nivel que redondea a cero. Precondición **P-6**: `product_count ≥ 6`.
+
+- **Contexto:** §8 describe las seis formas **cualitativamente** y no fija ninguna fórmula ni ningún
+  número; §32 lista cinco parámetros que el generador «deberá permitir controlar» y les asigna cero
+  valores. El nivel base de demanda —sin el cual no hay serie— no lo nombra nadie. Sin esto, C3 no es
+  implementable.
+
+- **Alternativas:** (a) Políticas sintéticas documentadas, constantes del componente. (b) Preguntar al
+  negocio. (c) Añadirlas a `DatasetConfig` ahora. (d) Valores aleatorios sin rango.
+
+- **Razón:** (a), por §3.5 y por el precedente de `DT-028`. (b) pediría al negocio volúmenes de un
+  catálogo que no existe, y §6 ya dice que el dataset «no debe pretender representar el volumen real».
+  Cada número se eligió para que el comportamiento sea **falsable midiendo la serie**: el ruido
+  errático es cuatro veces el estable, los niveles de rotación están separados por un orden de
+  magnitud, y la intermitencia tiene mecanismo propio. Un generador que produjera ruido plano bajo los
+  ocho nombres pasaría una comprobación de etiquetas y fallaría todas las pruebas de comportamiento.
+
+- **Consecuencias:** Los ocho comportamientos son verificables sobre los datos — con la escala vigente,
+  CV estable 0,06 frente a errática 0,36; creciente termina en 1,53× y decreciente en 0,46×;
+  intermitente con 85 % de ceros frente a 0 %; autocorrelación anual estacional 0,46 frente a −0,00; y
+  rotación alta 41,7 unidades/día frente a 3,0 de la baja. A cambio, son constantes del código y P-6
+  hace inatendibles algunas configuraciones válidas.
+
+- **No decide:** ninguna política empresarial; ni el contrato de `demand.csv` (`DT-034`); ni la
+  asignación de escenarios, que es del Componente 7; ni `DT-P12`.
+
+- **Estado:** `ACEPTADA`
+
+## DT-036 — Políticas sintéticas de inventario y reabastecimiento
+
+> **Documento completo:** [`docs/decisions/DT-036-politicas-sinteticas-inventario.md`](decisions/DT-036-politicas-sinteticas-inventario.md).
+
+- **Decisión:** El Componente 4 simula el ciclo causal completo —existencia → disparo → orden → lead
+  time → recepción → movimiento → existencia— con políticas sintéticas documentadas, al amparo de
+  §3.5 de la especificación y siguiendo el patrón de `DT-028` y `DT-035`. Viven en `policies.py`,
+  **no** en `dataset_config.yaml`.
+
+  ```text
+  on_hand_base(i) = ceil( d̄_i × (L_i + M) )        W = 28   M = 7   C = 21
+  on_hand(i)      = ceil( on_hand_base(i) × factor )   AJUSTADO 750‰ · NORMAL 1000‰ · HOLGADO 1500‰
+  disparo:  on_hand_después_del_consumo + quantity_in_transit ≤ s(t)     mezcla 30 / 40 / 30
+  s(t)      = ceil( d̄_recent(t) × L_i )
+  raw_need  = Q = ceil( d̄_recent(t) × C )
+  si raw_need ≤ 0: NO HAY ORDEN                                          (guarda de V1-06)
+  Q_final   = ceil( max(raw_need, MOQ) / order_multiple ) × order_multiple
+  ```
+
+  `d̄_i` y `d̄_recent` se calculan como **racional exacto**, por par `(product_id, location_id)` y sin
+  redondeo intermedio.
+
+  Fija además: el **saldo de apertura** como movimiento `ADJUSTMENT` con
+  `reference_type = INITIAL_INVENTORY`, `reference_id` vacío y `reason_code = OPENING_BALANCE`; el
+  **warm-up** de `W` días de `d̄_recent`, continuo con la ventana móvil en su punto de empalme; la
+  regla de los **cinco productos sin proveedor activo** (`L_i` de su relación inactiva, solo para
+  dimensionar la apertura); la **convención temporal** de documentos y movimientos, con los campos de
+  auditoría **vacíos**; y la versión destino de `GENERATOR_VERSION` para el lote C6 + C4 + C5,
+  **`0.3.0`**. La regla de cuándo incrementar la versión es la **regla general de `DT-033`**, basada en
+  el artefacto publicado; *la enumeración de parámetros que tenía `DT-036` §8 quedó retirada el
+  2026-09-26*.
+
+  *Correcciones del 2026-09-24, tras la auditoría pre-implementación:* se incorpora la guarda
+  `raw_need ≤ 0` de `V1-06`, que faltaba; se sustituye `inventory_on_order` por el nombre canónico
+  `quantity_in_transit`; se fija que el disparo se evalúa **después** del consumo del día; y se
+  retira `updated_at` de los campos con instante, por coherencia con `DT-024`.
+
+- **Contexto:** §§10, 11 y 14 de la especificación describen qué situaciones de inventario deben poder
+  observarse, sin una sola fórmula ni un solo número. `docs/06` sí las tiene, pero son las del motor
+  real y dependen de un pronóstico que en la Fase 1 no existe y de parámetros de negocio pendientes
+  (`BR-X01`, `BR-X02`, `BR-X13`, `DT-010`, `DT-P05`).
+
+- **Alternativas:** (a) Políticas sintéticas documentadas. (b) Reutilizar las fórmulas de `docs/06`.
+  (c) Añadir `W`, `M`, `C` a `DatasetConfig`. (d) Generar inventario sin bucle causal.
+
+- **Razón:** (a), por §3.5 y por precedente. (b) exigiría inventar parámetros de negocio **y** borraría
+  la frontera entre el generador y el motor. (c) reabriría el Componente 1, cerrado. (d) la prohíbe
+  §14: «No se debe generar tránsito artificial independiente de las órdenes de compra».
+
+- **Consecuencias:** El Componente 4 es implementable sin inventar ningún parámetro de negocio, y
+  `inventory.csv` queda reconstruible desde `inventory_movements.csv`. A cambio, los parámetros son
+  constantes del código que el manifiesto no registra —de ahí la regla de `GENERATOR_VERSION`—, seis
+  productos quedarán con sobreinventario permanente por MOQ y cinco sin proveedor terminarán en cero.
+  Ambas cosas son correctas y están declaradas para que no se lean como defectos.
+
+- **No decide:** ninguna política empresarial. **`s` no es un punto de reorden, `Q` no es una
+  recomendación de compra y `C` no es `target_coverage_days`.** No escribe `InventoryPolicy`, no
+  altera `DT-031`, no asigna escenarios (Componente 7) y no fija ningún porcentaje obligatorio de
+  desabasto.
+
+- **Estado:** `ACEPTADA`
+
+## DT-037 — Comportamiento sintético de proveedores
+
+> **Documento completo:** [`docs/decisions/DT-037-comportamiento-sintetico-proveedores.md`](decisions/DT-037-comportamiento-sintetico-proveedores.md).
+
+- **Decisión:** El Componente 6 entrega **perfiles deterministas por proveedor** y nada más. **No
+  escribe ningún archivo** (§42.1: sería metadata de generación en una entidad de negocio) y **no
+  conoce ninguna orden**; figura en `manifest.components` con cero archivos. Dos ejes ortogonales,
+  patrón de `DT-035`:
+
+  | Puntualidad | `on_time_permille` | retraso | % | | Integridad | `partial_permille` | % |
+  |---|--:|---|--:|---|---|--:|--:|
+  | `PUNCTUAL` | 900 | 1–3 d | 40 | | `COMPLETE` | 0 | 70 |
+  | `IRREGULAR` | 650 | 1–7 d | 40 | | `SPLIT` | 250 | 30 |
+  | `LATE` | 250 | 3–14 d | 20 | | | | |
+
+  En `SPLIT`, la primera recepción se lleva entre 400 ‰ y 800 ‰ y el faltante llega entre 1 y 10 días
+  después, con `q1 + q2 = Q_final` exacto. **C4 aplica estos parámetros a órdenes concretas**, porque
+  la decisión depende de la orden y C6 no conoce ninguna.
+
+- **Contexto:** §12 describe los tres comportamientos de proveedor de forma puramente cualitativa y no
+  contiene un solo número; §13 exige variación suficiente sin decir cuánta. Sin estos parámetros, C6
+  no es implementable y C4 no puede fechar ninguna recepción.
+
+- **Alternativas:** (a) Dos ejes ortogonales documentados. (b) Un eje con cinco perfiles combinados.
+  (c) Que C6 escriba `supplier_behaviour.csv`. (d) Que C6 genere las recepciones. (e) Derivar el
+  comportamiento de un atributo real del proveedor.
+
+- **Razón:** (a), por §3.5 y por el precedente inmediato de `DT-035`. (c) la prohíbe §42.1; (d) haría
+  de C6 una segunda simulación; (e) exigiría inventar una calificación de proveedor que el negocio no
+  ha definido.
+
+- **Consecuencias:** `RELIABLE_SUPPLIER`, `DELAYED_SUPPLIER` y `PARTIAL_DELIVERY` quedan cubiertos por
+  **construcción del reparto** (4/4/2 y 7/3 con diez proveedores), y el lead time observado pasa a
+  existir y a diferir del acordado. **Tres limitaciones conocidas de V1, declaradas y no corregidas:**
+  no hay entregas anticipadas (O-1); `LEAD_TIME_CAPPED` no se ejercita, porque el observado máximo es
+  58 días frente al techo de 90 (O-2); y la cobertura debe medirse sobre productos, no sobre
+  proveedores (O-3).
+
+- **No decide:** ningún nivel de servicio, acuerdo comercial ni calificación de proveedor; no describe
+  a ningún proveedor real; no genera órdenes, recepciones, movimientos, tránsito ni inventario; no
+  modifica `V1-09` ni su techo.
+
+- **Implementación del 2026-09-28.** El Componente 6 queda implementado en
+  `generator/supplier_behaviour.py` (`DT-037` §6), sin cambiar ninguna regla. **A1:** no escribe
+  archivos de datos y añade él mismo su entrada a `manifest.components`. **A2:** importa
+  `SupplierProfile` de `generator/inventory.py`, solo el tipo. No está conectado a `__main__`: el
+  lote C6 → C4 → C5 se conecta con W1 (`DT-040`), y `generator_version` sigue en 0.2.0.
+
+- **Enmienda del 2026-09-26 (D-C4-1, opción O1).** La primera recepción de una entrega partida pasa a
+  `q1 = min(Q_final − 1, max(1, ceil(Q_final × split / 1000)))`, con `q2 = Q_final − q1`. Sin la cota,
+  `Q_final` de 2 a 4 con `split = 800` daba una segunda recepción de cero unidades. Ningún valor
+  aprobado cambia; para `Q_final ≥ 5` dentro de 400–800 ‰ el resultado es el mismo que antes.
+
+- **Estado:** `ACEPTADA`
+
+## DT-038 — Contrato de salida del Componente 4
+
+> **Documento completo:** [`docs/decisions/DT-038-contrato-salida-c4.md`](decisions/DT-038-contrato-salida-c4.md).
+
+- **Decisión:** El Componente 4 tiene contrato de salida propio, con el patrón de `DT-024`. Fija las
+  columnas, tipos, nulabilidad, claves de negocio, orden de filas, identificadores y precisión de
+  `consumption.csv`, `inventory_movements.csv` e `inventory.csv`, y la estructura en memoria que
+  entrega al Componente 5. Cierra además seis puntos que no estaban escritos en ninguna parte:
+
+  | Punto | Regla |
+  |---|---|
+  | Unidad de cálculo | El par `(product_id, location_id)`, nunca el producto aislado |
+  | Orden causal del día | recepciones → demanda → consumo → **disparo, después del consumo** → orden |
+  | Consumo | `min(demanda latente, existencia antes del consumo)`, **sin backlog**; `lost_sales` derivable |
+  | Signo de los movimientos | `ADJUSTMENT` de apertura y `RECEIPT` positivos; `ISSUE` negativo |
+  | Referencias | `INITIAL_INVENTORY` (sin `reference_id`), `PURCHASE_ORDER_RECEIPT`, `CONSUMPTION` |
+  | Identificadores | Los asigna C4 para las seis entidades, con clave de ordenamiento total y desempate explícito |
+
+  `consumption.csv` es **densa**, con la misma rejilla que `demand.csv`. `inventory.csv` es un
+  **snapshot final**, una fila por par, reconstruible desde los movimientos. Incorpora la guarda
+  `raw_need ≤ 0` de `V1-06`, el corte del periodo y el contrato del directorio de salida.
+
+- **Contexto:** `DT-024` cubre solo las cinco entidades maestras y `DT-034` solo `demand.csv`; §41.3
+  de la especificación declaraba el resto pendiente «al autorizar cada uno». La auditoría
+  pre-implementación del 2026-09-24 lo encontró como bloqueante: la regla de identificadores de
+  `DT-024` **no tiene orden al que referirse** mientras la clave de negocio de cada entidad nueva no
+  esté declarada, lo que dejaba la reproducibilidad del `id` colgando del orden del bucle.
+
+- **Alternativas:** (a) Un ADR de contrato por componente. (b) Ampliar `DT-024`. (c) Dejar los
+  contratos en el código. (d) Heredar implícitamente las reglas de `DT-024`.
+
+- **Razón:** (a). (d) es la que la auditoría descartó con evidencia; (b) alteraría una decisión
+  aceptada cuyo alcance es otro componente; (c) contradice `CLAUDE.md` §8.
+
+- **Consecuencias:** El Componente 8 tiene contra qué validar y los casos degenerados —consumo cero,
+  apertura cero, `d̄_recent` cero— tienen regla escrita. A cambio, la asignación de identificadores en
+  seis pasos obliga a completar la simulación antes de escribir: el generador deja de poder escribir
+  en streaming.
+
+- **No decide:** ninguna política de negocio; ni el contrato del Componente 5 (`DT-039`); ni estados
+  de orden que `docs/04` §3.9 no tenga.
+
+- **Actualización del 2026-09-26 (D-01).** `SimulatedOrder` **ya no lleva `order_number`**: lo forma
+  el Componente 5 (decisión A2), y el Componente 4 no conoce ninguna política de cancelaciones.
+  `expected_on` es la única fuente de la fecha comprometida y el Componente 5 la copia. Se corrige la
+  autoría de los identificadores: C4 numera todo lo causal y sus propias entidades; **no** las filas
+  sintéticas que crea C5. Y §13 pasa a remitir a `DT-040`: ningún componente escribe en `output/`.
+
+- **Actualización del 2026-09-26 (implementación de C4).** **D-C4-2 = P1**: precondiciones P-C4-2
+  (`period.days ≥ W`) y P-C4-3 (cada producto vigente al menos `W` días del periodo); si fallan, la
+  generación falla y la ventana nunca se acorta, rellena ni extrapola (§16). **D-C4-3**: `L` es el
+  lead time acordado de la relación preferente activa, sin `V1-09` ni `R_v1`; `M` solo interviene en
+  la apertura; el disparo se evalúa todos los días (§§3 y 7). Se documentan los flujos
+  pseudoaleatorios del componente (§17). El miembro `metrics` de `SimulationResult` queda **pendiente**:
+  remite a una «`DT-036` §17 del acuerdo» que no existe, y no se implementa (§12).
+
+- **Cierre del 2026-09-29.** `metrics` de §12 no se implementará: el Componente 4 no cambia y el
+  Componente 8 deriva de los archivos lo que el informe necesita (decisión C7/C8-09, `DT-042`).
+
+- **Estado:** `ACEPTADA`
+
+## DT-039 — Contrato de salida del Componente 5
+
+> **Documento completo:** [`docs/decisions/DT-039-contrato-salida-c5.md`](decisions/DT-039-contrato-salida-c5.md).
+
+- **Decisión:** El Componente 5 **materializa y no simula**. Fija las columnas, tipos, claves, orden
+  de filas y estados de `purchase_orders.csv`, `purchase_order_items.csv` y
+  `purchase_order_receipts.csv`; conserva literalmente los identificadores que le pasa el
+  Componente 4 y numera, a continuación, solo las filas sintéticas que él mismo crea; y **forma el
+  `order_number` de todas las órdenes** como `"PO-" + id` con relleno de ceros de ancho
+  `max(6, dígitos del id más alto de la ejecución)`, ensanchable con la misma regla de `DT-028` §4.
+  `issued_at` y `expected_at` se **copian** de lo que calculó el Componente 4; no se recalculan.
+
+  **Órdenes `CANCELLED` sintéticas.** §14 de la especificación exige que el dataset contenga órdenes
+  canceladas y ninguna política las generaba. Se adopta un conjunto **acotado, no causal y separado**:
+  el Componente 5 copia una plantilla de entre las órdenes causales y emite una gemela con
+  `status = CANCELLED`, sin recepciones y sin movimientos, gobernada por
+  `ORDERS_CANCELLED_PERMILLE` y `ORDERS_CANCELLED_CLOSE_LAG_DAYS` en `policies.py` y por la
+  sub-semilla `orders`. Son **neutras para el inventario por construcción**: `docs/04` §3.9 limita el
+  tránsito a `ISSUED` y `PARTIALLY_RECEIVED`. **`DRAFT` no se emite**, porque ninguna sección lo
+  exige.
+
+- **Contexto:** sin contrato, los tres archivos de órdenes quedaban sin columnas, sin `order_number`
+  y sin autoridad única sobre los identificadores; y la exigencia de órdenes canceladas de §14 no
+  tenía ningún mecanismo, de modo que el implementador solo podía incumplir la especificación o
+  inventar una probabilidad de cancelación.
+
+- **Alternativas:** (a) C5 materializa y las canceladas se copian de una plantilla causal. (b) C4
+  cancela causalmente. (c) C5 calcula la cantidad con `V1-06`. (d) No emitir ninguna cancelada.
+  (e) Emitir también `DRAFT`.
+
+- **Razón:** (a). (b) exigiría una condición de cancelación, es decir una regla de negocio que nadie
+  ha declarado; (c) convertiría a C5 en un segundo simulador; (d) incumple §14; (e) amplía sin
+  necesidad.
+
+- **Consecuencias:** el dataset cubre las cuatro situaciones de órdenes de §14 y la frontera «C4
+  calcula, C5 materializa» pasa a ser comprobable. A cambio, las órdenes canceladas son el único dato
+  del dataset que no procede del bucle causal, y `currency` y `total_amount` quedan vacíos.
+
+- **No decide:** ninguna regla de negocio. `ORDERS_CANCELLED_PERMILLE` **no es una tasa de
+  cancelación de ninguna organización**.
+
+- **Actualización del 2026-09-26 (D-01).** El responsable aprobó `ORDERS_CANCELLED_PERMILLE = 20` y
+  `ORDERS_CANCELLED_CLOSE_LAG_DAYS = 1` como parámetros sintéticos de cobertura; `closed_at` **no se
+  recorta nunca**. Regla **B2**: si `K > 0` y no hay ninguna orden elegible —incluido `N = 0`—, el
+  Componente 5 lanza `GeneratorError`, la ejecución falla y **no hay promoción** (`DT-040`), de modo
+  que `output/` queda intacto. Con `0 < elegibles < K` se emiten tantas como elegibles haya.
+  `expected_at` pasa a figurar entre los campos que la orden gemela copia de su plantilla.
+
+- **Actualización del 2026-09-27 (cierre de D-01, opción A).** Una orden causal solo es elegible como
+  plantilla si su cierre previsto, `issued_on + ORDERS_CANCELLED_CLOSE_LAG_DAYS`, cumple a la vez
+  `< end_date` (condición existente, estricta) y `<= valid_to` del producto, o `valid_to` nulo. Es una
+  restricción sintética de elegibilidad, aplicada **antes** de calcular `K` y de seleccionar; B2 se
+  aplica sobre el conjunto resultante. `closed_at` sigue siendo `issued_at + 1 día`, sin recorte.
+  **`DT-027` no cambia**: la cancelación sintética no usa la excepción de recepciones en vuelo.
+  Autoridad: `DT-039` §5.2, punto 1.
+
+- **Implementación del 2026-09-28.** El Componente 5 queda implementado en `generator/orders.py`
+  (`DT-039` §13), sin cambiar ninguna regla: universo de plantillas filtrado primero, después `K`
+  (sobre el número de órdenes causales, acotado por el de elegibles), B2 y `cancelled-selection`;
+  gemelas con `closed_at = issued_at + 1 día` sin recorte; `order_number` para todas. No está
+  conectado a `__main__` porque el Componente 6 no existe; `generator_version` sigue en 0.2.0.
+
+- **Estado:** `ACEPTADA`
+
+## DT-040 — Publicación atómica del dataset: workspace de ejecución y promoción final
+
+> **Documento completo:** [`docs/decisions/DT-040-publicacion-atomica-dataset.md`](decisions/DT-040-publicacion-atomica-dataset.md).
+
+- **Decisión (W1):** cada ejecución completa del generador trabaja en su propio workspace,
+  `data/synthetic/tmp/<id_de_ejecución>/`, y `data/synthetic/output/` solo cambia cuando el
+  orquestador **promociona el workspace entero**, después de que todos los componentes hayan
+  terminado y la verificación final haya pasado. Ningún componente escribe en `output/`; los
+  componentes no cambian de interfaz, porque ya reciben el directorio como parámetro, y el modelo de
+  archivos intermedios se mantiene. La promoción es un **renombrado de directorios** en el mismo
+  sistema de archivos, nunca una copia archivo a archivo. `tmp/` es la convención del `.gitignore`
+  existente para directorios temporales.
+
+  > Un dataset solo se considera **publicado** cuando la ejecución completa ha terminado bien y su
+  > workspace ha sido promocionado.
+
+- **Contexto:** la regla B2 de `DT-039` exige que un fallo por cero órdenes elegibles no publique
+  nada, pero C2, C3 y C4 escribían en `output/` antes de que C5 pudiera evaluarla. El resultado era
+  un dataset parcial en un directorio vacío, o un dataset **mezclado** —contra la regla 5 de
+  `DT-038` §13— en un directorio con un dataset anterior, que además se perdía.
+
+- **Alternativas:** (W1) workspace y promoción al final. (W2) Todo en memoria y escritura al final.
+  (W3) Escribir en `output/` y borrar lo escrito si algo falla.
+
+- **Razón:** W1. W2 refactoriza la entrada de C3 y C4, que leen de disco. W3 no es atómica y no
+  recupera un dataset anterior ya sobrescrito.
+
+- **Consecuencias:** fallar implica no publicar, y un dataset válido anterior sobrevive a cualquier
+  ejecución fallida. A cambio, el disco aloja dos datasets durante una ejecución, `output/` no existe
+  durante un instante de la promoción y no se admiten ejecuciones concurrentes sobre el mismo
+  `output/`.
+
+- **Pendiente de confirmación:** si el dataset sustituido se elimina tras una promoción correcta, y si
+  el workspace de una ejecución fallida se conserva para diagnóstico. Ambos propuestos, no aprobados.
+
+- **Implementación del 2026-09-29.** W1 queda implementado en `generator/pipeline.py` y
+  `__main__.py` lo usa: comprobación previa de `output/`, workspace `tmp/<uuid>/`, C2 → C3 → C6 → C4
+  → C5, verificación final (versiones, conjunto de archivos, `sha256`, filas, cabeceras, existencia
+  sin negativos) y promoción por los renombrados de §5. **Detalles pendientes resueltos por el
+  responsable:** el `.anterior` se elimina tras una promoción correcta y el workspace de una
+  ejecución fallida también se elimina (no se conserva). La promoción **no** es atómica: entre (a) y
+  (b) `output/` no existe un instante, y si fallan (b) y (c) el dataset anterior queda íntegro en
+  `tmp/<id>.anterior/`. `GENERATOR_VERSION` pasa a **0.3.0** (`DT-036` §8, regla de `DT-033`).
+
+- **Corrección de texto del 2026-09-28.** `DT-040` §3 hablaba de «Componentes C2 a C5»; ahora nombra
+  los cinco del flujo aprobado, C2, C3, C6, C4 y C5, y precisa que C6 solo añade su entrada al
+  manifiesto. Sin cambios en la decisión.
+
+- **Integración de C7 y C8 (2026-09-29, `DT-042` §8).** El flujo es C2 → C3 → C6 → C4 → C5 → C7 →
+  C8 → verificación → promoción. `verify` exige además `scenario_assignment` y un `quality_report`
+  sin fallos, y `COMPONENT_VERSIONS` lista los siete componentes.
+
+- **Estado:** `ACEPTADA` (con dos detalles de operación pendientes de confirmación)
+
+## DT-041 — Scenario Assignment: contrato del Componente 7
+
+> **Documento completo:** [`docs/decisions/DT-041-asignacion-escenarios-c7.md`](decisions/DT-041-asignacion-escenarios-c7.md).
+
+- **Decisión:** el Componente 7 (`scenarios`, versión `0.1.0`) **registra** en
+  `manifest.scenario_assignment` los 16 ejes de nivel A de `DT-023`, en el orden canónico del enum,
+  cada uno con seis campos —`unit`, `basis`, `criterion`, `source`, `suppliers`, `products`—, y
+  **mide** los ejes que emergen de la simulación. No escribe ningún CSV, no sortea, no genera ni
+  corrige datos y no etiqueta el nivel C.
+  - **Forma y rotación:** la decisión de C3, reconstruida con `build_demand` y aceptada solo si la
+    demanda reconstruida coincide byte a byte (`sha256`) con `demand.csv` y con su entrada del
+    manifiesto.
+  - **Proveedores:** unidad primaria `supplier` (el perfil de C6); `products` son la evidencia de
+    manifestación que exige §12. `RELIABLE = PUNCTUAL ∧ COMPLETE`, `DELAYED = LATE`,
+    `PARTIAL = SPLIT`; `IRREGULAR` no recibe etiqueta.
+  - **Observados:** `STOCKOUT` e `IN_TRANSIT` con los datos almacenados; `MULTIPLE_LEAD_TIMES` con
+    `DT-028` §1.6.3; `LOW_INVENTORY` y `OVERSTOCK` con criterios marcados
+    **`SYNTHETIC_COVERAGE_CRITERION`**, que no son reglas de negocio ni cierran `BR-X03`.
+  - **Nivel C:** criterios de detección de las situaciones 8, 12, 18 y 20 en una función pura que C7
+    no publica; los reportará el Componente 8.
+  - **Vacío:** se registra (`[]`), no falla; `null` significa «no aplicable». Comprobar
+    `scenarios.required` es del Componente 8.
+
+- **Contexto:** `DT-025` aplazó la forma de `scenario_assignment` a la autorización de C7; `DT-035` y
+  `DT-037` dejaron escrito que registrar las decisiones de C3 y C6 es de C7. La auditoría C7/C8 del
+  2026-09-29 cerró las decisiones C7/C8-01 a 14.
+
+- **Alternativas:** archivo aparte; índice producto → escenarios o recuentos; devolver los perfiles
+  desde C3; inferir la forma del CSV; umbrales de N días; cobertura de proveedores por producto
+  servido. Todas descartadas (documento completo).
+
+- **Razón:** es la única forma que respeta `DT-025` y `DT-023`, no modifica C2–C6 y no introduce
+  ningún número nuevo.
+
+- **Consecuencias:** C7 queda implementado y probado **sin integrarse en W1**: `generate_into` no lo
+  ejecuta, `GENERATOR_VERSION` sigue en 0.3.0 y el dataset publicado no cambia. La integración y la
+  subida única a 0.4.0 llegan con el Componente 8.
+
+- **Integración del 2026-09-29:** C7 se ejecuta en W1 después de C5 y antes de C8, con
+  `generator_version` 0.4.0 (`DT-042`).
+
+- **Estado:** `ACEPTADA`
+
+## DT-042 — Dataset Validator e informe de calidad: contrato del Componente 8
+
+> **Documento completo:** [`docs/decisions/DT-042-validador-dataset-quality-report.md`](decisions/DT-042-validador-dataset-quality-report.md).
+
+- **Decisión:** el Componente 8 (`validator`, versión `0.1.0`) valida el **dataset materializado en
+  el workspace** —los doce CSV y `manifest.json`— con un catálogo de **51 comprobaciones** en 16
+  familias (manifiesto, formato, origen, identidad, referencias, comerciales, recepciones,
+  canceladas, `order_number`, inventario, consumo, temporal, maestros, escenarios, cobertura y nivel
+  C). Solo si todas pasan escribe `manifest.quality_report` con los veinte ítems de §35; si alguna
+  falla, lanza `GeneratorError` con **todos** los hallazgos y no escribe nada. No repara, no genera,
+  no re-selecciona y no sortea. El informe es determinista, sin flotantes ni campos volátiles, con
+  `anomalies: []` y la limitación declarada. C7 y C8 se integran en W1 y `generator_version` sube
+  una sola vez a **0.4.0**.
+- **Contexto:** `DT-023`, `DT-025`, `DT-030` y `V1-08` encargaron al Componente 8 la validación, el
+  nivel C y el informe; la auditoría C7/C8 cerró las decisiones restantes.
+- **Alternativas:** informe en archivo aparte; validar objetos en memoria; publicar con avisos;
+  catálogo de anomalías propio. Descartadas (documento completo).
+- **Consecuencias:** ningún dataset que incumpla un contrato llega a `output/`; un dataset publicado
+  siempre muestra `failed = 0`. Con escalas muy pequeñas la cobertura depende de la semilla y C8 puede
+  rechazar la ejecución (es visible y no silencioso).
+- **Estado:** `ACEPTADA`
+
+## Decisiones deliberadamente NO tomadas
+
+| ID | Tema | Se decidirá en | Por qué no ahora |
+|---|---|---|---|
+| `DT-P01` | Servicio de cómputo en Azure (App Service / Container Apps / AKS) | Fase 12–13 | Requiere carga real y presupuesto |
+| `DT-P02` | Inferencia en línea vs. solo por lotes | Fase 5–6 | Depende del tiempo de cálculo real |
+| `DT-P03` | Algoritmo concreto del modelo de producción | Fase 5 | Se decide con datos, no por preferencia |
+| `DT-P04` | Umbrales numéricos de aceptación del modelo | Fase 1–5 | Fijarlos sin datos sería inventar un requisito |
+| `DT-P05` | Política de revisión (continua o periódica) | Definición del negocio | Es una decisión de negocio, no técnica |
+| `DT-P06` | Estrategia de particionamiento en PostgreSQL | Fase 2, si el volumen lo exige | No justificado con el volumen de referencia |
+| `DT-P07` | Herramientas de E2E y de pruebas de carga | Fases 7 y 14 | Dependen del stack ya construido |
+| `DT-P08` | Modelo de Azure OpenAI y región | Fase 10 | Depende de costo, cumplimiento y disponibilidad |
+| `DT-P09` | Multi-ubicación / multi-almacén | Fase posterior | ASSUMPTION-006 pendiente de validación |
+| `DT-P10` | Seguridad a nivel de fila en Power BI | Fase 11 | Depende del modelo de permisos del negocio |
+| `DT-P11` | Criterio de corte del tránsito efectivo (órdenes atrasadas) | Fase 4 | Requiere criterio de negocio (`DT-012`). Es además la razón de que la situación 12 de §25 sea Nivel C y no un eje (`DT-023`) |
+| `DT-P12` | Si §25 debe incluir «alta rotación» y «baja rotación» como filas | Pendiente del responsable | Decisión sobre la especificación, no sobre el Componente 1 (`DT-023` §7) |
