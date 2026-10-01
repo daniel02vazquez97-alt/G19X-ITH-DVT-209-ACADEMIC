@@ -1,6 +1,6 @@
 # 10 — Seguridad
 
-**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1
+**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §15, seguridad local de la Etapa 2; §§1–14 no cambian
 
 > No se crean credenciales, aplicaciones de Entra ID ni recursos de Azure en esta etapa.
 > Antes de implementar, verificar la documentación oficial vigente de Microsoft Entra ID.
@@ -260,3 +260,20 @@ Marcadas explícitamente como **pendientes**; no deben implementarse por defecto
 7. ¿Se requiere cifrado a nivel de columna para algún dato (p. ej. costos)?
 8. Procedimiento de respuesta ante incidentes y responsables.
 9. ¿Se exige revisión de seguridad externa antes del despliegue productivo?
+
+## 15. Etapa 2 — seguridad sin servicios reales
+
+*Añadido el 2026-09-30 (`DT-043`). **Diseñado, no implementado.** Ninguna credencial, ninguna
+aplicación de Entra ID, ningún recurso de Azure.*
+
+| Pieza | Etapa 2 (local) | Fase 8 (real) |
+|---|---|---|
+| Validación del token | `TokenValidator` de desarrollo: identidades ficticias (p. ej. un sujeto con rol `PLANNER`) definidas en las pruebas o en un `.env` local ignorado por Git. Solo se activa de forma explícita en local y en pruebas, y **se niega a arrancar en cualquier entorno desplegado** (`dev`, `staging` o `prod`, `docs/12` §5) | `TokenValidator` de Entra ID: firma, `iss`, `aud`, `exp`, `nbf` y roles (§2.3), implementado tras verificar Microsoft Learn |
+| Autorización | Dependencia de FastAPI por endpoint con los roles explícitos de `docs/07` §7.2; sin rol ⇒ 403 | La misma dependencia: solo cambia de dónde vienen los roles |
+| Rutas públicas | `/health` y, fuera de producción, la documentación interactiva (`docs/07` §1). Una prueba recorre **todas** las rutas registradas y falla si alguna otra responde sin token | Igual |
+| Configuración | Variables de entorno; `.env.example` con valores ficticios evidentes, creado con la primera unidad que lea configuración (U2) | Almacén gestionado (`DT-022`) tras `SecretProvider` |
+| PostgreSQL local | Contenedor de desarrollo; su contraseña llega por variable de entorno, nunca en un archivo versionado | Credenciales separadas de aplicación, migración y lectura analítica (§7) |
+| Datos | Solo `SYNTHETIC` (RS-012) | — |
+
+El rol del frontend (`RoleGate`) sigue siendo comodidad visual: las pruebas de autorización se hacen
+contra la API, no contra la interfaz (RS-003).

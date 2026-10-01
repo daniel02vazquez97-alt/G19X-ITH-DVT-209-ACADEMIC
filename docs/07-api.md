@@ -1,6 +1,6 @@
 # 07 — Diseño inicial de la API
 
-**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1
+**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §7, contrato inicial de solo lectura de la Etapa 2; §§1–6 siguen siendo el catálogo completo previsto
 
 > Ningún endpoint está implementado. Este documento define el contrato previsto para que el frontend,
 > Power BI y el asistente de IA se diseñen contra una interfaz estable.
@@ -291,3 +291,56 @@ Los recálculos y las cargas de datos son procesos largos. Patrón uniforme:
 - ¿Habrá notificaciones/alertas salientes (correo, Teams) ante riesgo crítico?
 - ¿Se necesitará una API de escritura para integrar un ERP en el futuro? (afecta al versionado)
 - Límites concretos de tasa por rol y por endpoint.
+
+---
+
+## 7. Contrato inicial V1 (Etapa 2)
+
+*Añadido el 2026-09-30. **Diseñado, no implementado** (unidad U5 de `DT-047`). Es un subconjunto de
+§2: no se construyen todos los endpoints. Todo lo no listado aquí queda como catálogo previsto.*
+
+### 7.1 Principios de esta primera versión
+
+1. **Solo lectura.** La API expone datos cargados y resultados ya calculados. Cargar, pronosticar y
+   recomendar son ejecuciones batch explícitas (`docs/03` §16.7). Un `GET` nunca recalcula (§5.2).
+2. **Autenticada por defecto.** Todo `/api/v1/*` exige `Authorization: Bearer`; las únicas
+   excepciones son las de §1: `/health` y, **solo fuera de producción**, la documentación interactiva. Hasta la Fase 8 el token lo valida un `TokenValidator` local de
+   desarrollo (`docs/10` §15); la autorización por rol se aplica igual, en el backend.
+3. **Roles explícitos por endpoint**, sin jerarquía implícita: cada endpoint enumera los roles que
+   admite, según la matriz de §3.
+4. **Procedencia visible.** Toda respuesta con forecast o recomendación incluye un bloque
+   `provenance`: `data_origin`, `dataset_version`, `generator_version`, `as_of_date`, `run_id`,
+   `model_version` o `engine_version`, `policy_set` y `notices` (`SYNTHETIC_DATA`,
+   `V1_PROVISIONAL_POLICY`). Con `V1_PROVISIONAL`, la recomendación **no** es una recomendación de
+   negocio (`DT-031`), y la respuesta lo dice.
+5. **Demanda latente fuera.** Ningún endpoint expone `demand`; el histórico es el consumo (`docs/04` §9.1).
+
+### 7.2 Endpoints
+
+| Método y ruta | Entrada | Salida | Errores | Roles | Fuente |
+|---|---|---|---|---|---|
+| `GET /health` | — | `{status, version}`; no toca la base | — | **Pública** | Proceso |
+| `GET /api/v1/me` | — | `{subject_id, roles[]}` | 401 | Cualquiera autenticado | Token |
+| `GET /api/v1/products` | `search`, `category_id`, `is_active`, `page`, `page_size`, `sort` | Página de `{id, sku, name, category, unit_of_measure, is_active, valid_from, valid_to, data_origin}` | 400, 401, 403, 422 | VIEWER, ANALYST, PLANNER, ADMIN | `products`, `categories` |
+| `GET /api/v1/products/{id}` | — | Producto + inventario al corte + relaciones con proveedor (`moq`, `order_multiple`, `unit_cost`, `agreed_lead_time_days`, `is_preferred`, `is_active`) | 401, 403, 404 | Los cuatro | `products`, `inventory`, `product_suppliers`, `suppliers` |
+| `GET /api/v1/products/{id}/history` | `date_from`, `date_to`, `granularity` (`daily`/`weekly`/`monthly`) | Serie de **consumo** con días afectados por desabasto por periodo + media, desviación, CV y periodos en cero (RF-009) | 400, 401, 403, 404, 422 | ANALYST, PLANNER, ADMIN | `consumption` |
+| `GET /api/v1/inventory` | `product_id`, `category_id`, `page`, `page_size`, `sort` | Página de `{product_id, sku, on_hand, reserved, available, in_transit_total, inventory_position_accounting, last_movement_at, data_origin}` | 400, 401, 403, 422 | Los cuatro | `inventory` |
+| `GET /api/v1/inventory/{product_id}` | — | Lo anterior + líneas abiertas `{order_number, supplier, status, expected_on, quantity_pending}` | 401, 403, 404 | Los cuatro | `inventory`, órdenes |
+| `GET /api/v1/forecasts` | `product_id`, `category_id`, `run_id` (por defecto, la última ejecución `FORECAST` completada), paginación | Periodos `{period_start, period_end, predicted_quantity, lower_bound, upper_bound, confidence_level, method_used, confidence_flag}` + `provenance` | 400, 401, 403, 404, 422 | Los cuatro | `forecasts`, `model_versions`, `calculation_runs`, `data_loads` |
+| `GET /api/v1/products/{id}/forecast` | `run_id` opcional | Serie del producto + `provenance` | 401, 403, 404 | Los cuatro | Ídem |
+| `GET /api/v1/recommendations` | `outcome` (por defecto `RECOMMEND`), `product_id`, `category_id`, `supplier_id`, `run_id`, paginación, `sort` (`sku`, `recommended_quantity`, `suggested_order_date`) | Página de `{id, product, supplier, recommended_quantity, raw_quantity, suggested_order_date, outcome, flags}` + `provenance` | 400, 401, 403, 422 | Los cuatro | `recommendations`, `calculation_runs`, `data_loads` |
+| `GET /api/v1/recommendations/{id}` | — | **Desglose completo** de `docs/06` §13 y §16.5, `policy_snapshot`, `reasons`, `flags` + `provenance` | 401, 403, 404 | Los cuatro | Ídem |
+| `GET /api/v1/products/{id}/recommendation` | `run_id` opcional | La evaluación del producto en la ejecución. Si fue `NO_NEED` o `NOT_CALCULABLE`, su resultado y razones **solo si `DT-P18` decide persistirlas**; si no, 404 con el motivo | 401, 403, 404 | Los cuatro | Ídem |
+| `GET /api/v1/runs/{run_id}` | — | `{run_type, status, as_of_date, data_load, versions, counts, started_at, finished_at, error}` | 401, 403, 404 | PLANNER, ADMIN | `calculation_runs`, `data_loads` |
+
+Paginación, ordenación, formato de error y `correlation_id`: los de §1, sin cambios.
+
+### 7.3 Diferencias con §2, y por qué
+
+| En §2 | En V1 | Motivo |
+|---|---|---|
+| `in_transit_effective`, `inventory_position_decision`, `coverage_days` y el filtro `below_reorder_point` en `/inventory` | Fuera del inventario | El tránsito efectivo es relativo a una decisión, no un estado (`DT-012`). Esos valores están en el desglose de cada recomendación |
+| Filtros `abc_class` y `rotation_class` | Fuera | Siempre nulos en el dataset (`DT-029`) y fuera del cálculo (`V1-11`) |
+| Orden por `urgency`, `/risks/*`, `/dashboard/summary` | Aplazados | Dependen de la clasificación de riesgo, pendiente de `BR-X03` |
+| Escrituras (maestros, movimientos, consumo, órdenes, recepciones, resolución de recomendaciones), `recalculate`, `data-loads`, `policies`, `models` | Aplazadas | V1 es de solo lectura. La resolución humana de recomendaciones espera a `DT-P18`; las escrituras de órdenes, a `DT-P13` |
+| `/assistant/*` | Aplazado | Llega con U6 (explicación por plantilla, `docs/09` §14) |

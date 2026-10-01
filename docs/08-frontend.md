@@ -1,6 +1,6 @@
 # 08 — Diseño del frontend
 
-**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-03
+**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-03 · **Versión 1.1** (2026-09-30) — §11, vistas frente a los contratos de la Etapa 2; §§1–10 no cambian
 
 > No se escribe código React en esta etapa. Este documento define vistas, componentes y flujos.
 
@@ -228,3 +228,26 @@ Disparar recálculo → confirmación con alcance → seguimiento asíncrono →
 - Necesidad de exportación a Excel desde las vistas.
 - ¿Notificaciones dentro de la aplicación para riesgos críticos?
 - Idiomas adicionales.
+
+## 11. Etapa 2 — vistas frente a los contratos
+
+*Añadido el 2026-09-30. **No se escribe código React** hasta que los contratos de `docs/07` §7 estén
+implementados y estables (Fase 7). Esta tabla fija qué consume cada vista y de dónde sale cada dato.*
+
+| Vista | Datos | Endpoints (`docs/07` §7.2) | Origen del dato | Roles | En V1 |
+|---|---|---|---|---|---|
+| Productos | Catálogo y estado | `/products` | Hechos (maestros) | Los cuatro | Sí |
+| Detalle de producto | Maestro, inventario, proveedores, consumo, forecast, evaluación del motor | `/products/{id}`, `/products/{id}/history`, `/products/{id}/forecast`, `/products/{id}/recommendation` | Hechos · ML (forecast) · motor (evaluación) | Los cuatro; el histórico, ANALYST+ | Sí |
+| Inventario | Existencia, tránsito total, posición contable, líneas abiertas | `/inventory`, `/inventory/{product_id}` | Hechos | Los cuatro | Sí, sin filtro «bajo el punto de reorden» (`docs/07` §7.3) |
+| Predicciones | Serie con banda de incertidumbre, método, versión | `/forecasts`, `/products/{id}/forecast` | ML / baseline | Los cuatro | Tras U3 |
+| Recomendaciones | Lista y detalle con `CalculationBreakdown` | `/recommendations`, `/recommendations/{id}` | Motor | Los cuatro | Tras U4; **sin** urgencia ni acciones |
+| Explicación | Texto verificado | `/assistant/explain/{id}` (U6) | IA explica cifras del motor | Los cuatro | Tras U6 |
+| Dashboard, Riesgos | Críticos, sobreinventario | — | Motor | — | **Aplazadas**: dependen de `BR-X03` |
+| Proveedores, Administración | — | — | — | — | **Aplazadas** con sus endpoints |
+
+**En V1 la interfaz no tiene acciones**: la API es de solo lectura. Cuando la respuesta trae
+`notices` `SYNTHETIC_DATA` o `V1_PROVISIONAL_POLICY`, la vista lo muestra de forma permanente y
+visible: la cantidad es provisional y no es una recomendación de negocio (`DT-031`). La vista de
+entrada que pedía RNF-012 («ordenada por urgencia») no puede construirse hasta que exista una escala
+de urgencia (`BR-X03`); mientras tanto, la lista de recomendaciones se ordena por los campos que la
+API admite y lo dice.

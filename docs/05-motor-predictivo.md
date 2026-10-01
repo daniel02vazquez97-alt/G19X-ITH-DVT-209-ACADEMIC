@@ -1,6 +1,6 @@
 # 05 — Motor predictivo (estrategia de Machine Learning)
 
-**Estado:** Versión 1.0 — Etapa 0 (estrategia, no implementada) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1
+**Estado:** Versión 1.0 — Etapa 0 (estrategia, no implementada) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §19, contrato de `ForecastProvider` para la Etapa 2 (`DT-046`); §§1–18 no cambian
 
 > **No se implementa ningún modelo en esta etapa.** Este documento fija la estrategia, las reglas de
 > evaluación y los criterios de aceptación **antes** de entrenar, para que la evaluación no se ajuste
@@ -455,3 +455,77 @@ El modelo reentrenado **no sustituye automáticamente** al vigente: pasa por la 
   que haya evidencia de que lo requiere).
 - Optimización de la decisión de compra.
 - Detección de anomalías como producto independiente (se usa internamente para limpiar el histórico).
+
+## 19. Contrato de `ForecastProvider` (Etapa 2)
+
+*Añadido el 2026-09-30. Decisión: `DT-046` (`PROPUESTA`). **Diseñado, no implementado.** Se fija el
+contrato antes que el modelo: ningún entrenamiento, ningún baseline implementado todavía.*
+
+### 19.1 Frontera
+
+```text
+consumo diario hasta as_of_date ──►  ForecastProvider  ──►  demanda semanal estimada + incertidumbre
+                                     (baseline o modelo)      + método + versión + as_of_date
+```
+
+El proveedor **solo** estima demanda. Su salida no contiene cantidades a comprar, puntos de reorden,
+stock de seguridad, proveedores ni fechas de pedido (RML-012). El motor la consume como una entrada
+más (`docs/06` §16).
+
+### 19.2 Petición
+
+| Campo | Contenido |
+|---|---|
+| Serie | `(product_id, location_id)`; con ubicación única equivale al producto (ASSUMPTION-006) |
+| `as_of_date` | Último día cuya información se conoce, incluido (`docs/06` §16.2, `DT-P15`) |
+| Histórico | Consumo **diario** con fecha ≤ `as_of_date`, con su `is_stockout_affected`. **El proveedor rechaza** una petición con cualquier fecha posterior: el corte se comprueba en el contrato, no se confía al llamador (RML-004) |
+| Horizonte | Número de semanas. Debe cubrir el horizonte de cobertura más largo del motor: con las reglas V1, `⌈(LT_MAX_v1 + R_v1) / 7⌉ = ⌈97 / 7⌉ = 14` semanas. Es un valor **derivado**, no elegido, y supera las 8–12 semanas de `ASSUMPTION-002`: es la limitación que `V1-03` ya declara |
+| Atributos | Opcionales (categoría, unidad), solo si el método los usa |
+
+### 19.3 Respuesta
+
+| Campo | Contenido |
+|---|---|
+| `as_of_date`, `granularity = WEEKLY` | — |
+| `periods[]` | `period_start`, `period_end` (excluido), `predicted_quantity ≥ 0`, `lower_bound ≤ predicted ≤ upper_bound`, `confidence_level`. Periodo `k` = `[horizon_start + 7(k−1), horizon_start + 7k)` con `horizon_start = as_of_date + 1` (`DT-P15`, cerrada): semanas **ancladas en el primer día del horizonte**, no de calendario, para que `demand_over_horizon` sea exacta (`V1-04`) |
+| `method_used` | `MODEL` · `BASELINE` · `INTERMITTENT_METHOD` (RML-007) |
+| `confidence_flag` | Confianza declarada o «histórico insuficiente» |
+| Versión | `model_version` → `model_versions` (el baseline también tiene versión, `is_baseline = true`) |
+
+El histórico se agrega a semanas con la misma alineación, hacia atrás desde `as_of_date`:
+`[as_of_date − 6, as_of_date]`, la anterior, etc. La agregación diaria → semanal del **histórico**
+es parte del proveedor; la conversión semanal → días del **forecast** es exclusiva del motor
+(`docs/06` §5.1).
+
+### 19.4 Persistencia y trazabilidad
+
+Cada ejecución es una `calculation_runs` de tipo `FORECAST` con `as_of_date`, `data_load_id` y
+`model_version_id`; cada periodo es una fila de `forecasts` que **nunca** se sobrescribe (§3.14 de
+`docs/04`). El forecast se persiste **antes** de que el motor lo consuma (`docs/03` §5.1). Desde
+cualquier recomendación se llega a la versión de modelo y al dataset (`docs/04` §9.6).
+
+### 19.5 Implementaciones
+
+| Implementación | Cuándo | Nota |
+|---|---|---|
+| Local, en proceso: baselines (`US-050`) | U3 | Naïve, naïve estacional, media móvil. Siempre disponible; es el respaldo (RNF-010) |
+| Modelo entrenado localmente | Fase 5 | Detrás de la misma interfaz; solo si supera al baseline en Nivel 1 y Nivel 2 (§10) |
+| Endpoint de Azure ML | Fase 6 | Detrás de la misma interfaz; ante fallo, baseline con `method_used = BASELINE` |
+
+### 19.6 Reglas que el contrato hace cumplir
+
+1. `demand` (demanda latente) **no** es entrada ni *feature* del proveedor: no existe con datos
+   reales (`DT-034`). Solo la lee la evaluación de Nivel 2 y el estudio de `DT-011`.
+2. `is_stockout_affected` sirve para **tratar** la observación como censurada (`DT-011`), nunca como
+   predictor del futuro (§5.3).
+3. En el dataset sintético, la precaución de *warm-up* de §5.5 aplica a las *features* de
+   abastecimiento, no a las de consumo.
+4. Reproducible: mismo histórico, mismo `as_of_date`, misma versión → mismo forecast.
+
+### 19.7 Pendiente
+
+`DT-P17` (método del intervalo del baseline, `k` de la media móvil, longitud estacional y baseline de
+referencia) antes de U3; `DT-P21` (cómo se concilia el forecast semanal de §2 con el recálculo diario
+de recomendaciones cuando las semanas se anclan en el primer día del horizonte) antes de U4; `DT-021` (métrica primaria) y `DT-P04` (umbrales de aceptación) siguen
+abiertos y se cierran en la Fase 5 con el dataset 0.4.0. RF-010 exige intervalo: **no se implementa
+un baseline sin decidir antes cómo lo produce**.

@@ -1,6 +1,6 @@
 # 13 — Estrategia de testing
 
-**Estado:** Versión 1.0 — Etapa 0 (estrategia, **no implementada**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1
+**Estado:** Versión 1.0 — Etapa 0 (estrategia, **no implementada**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §14, capas de prueba de la Etapa 2; §§1–13 no cambian · **Versión 1.3** (2026-10-01) — §3.1: aclaración de `InvalidInputError` y excepción de `on_hand < 0` para U1 (`DT-052`) · **Versión 1.4** (2026-10-01) — §3.1: sin monotonía global del punto de reorden frente al lead time en U1 (`DT-054`)
 
 ---
 
@@ -52,11 +52,13 @@ Cobertura obligatoria:
 | **Riesgos** | Cada nivel de clasificación en sus fronteras exactas |
 | **Casos límite** | Los catorce de `docs/06-motor-abastecimiento.md` §14 |
 | **Parámetros faltantes** | Sin nivel de servicio definido → no calcula y **declara qué falta**; nunca sustituye por un valor por defecto |
-| **Entradas inválidas** | Cantidades negativas, fechas incoherentes, unidades incompatibles → error explícito |
+| **Entradas inválidas** | Cantidades negativas, fechas incoherentes, unidades incompatibles → error explícito. En U1, el error es `InvalidInputError` con su catálogo y orden de validación (`docs/06` §16.11.5, `DT-052`). **Excepción normativa específica de U1:** `on_hand < 0` no es entrada inválida, sino `NOT_CALCULABLE` con `NEGATIVE_ON_HAND` (`V1-13`, `docs/06` §16.5); el resto de cantidades negativas sigue siendo error. V1 no tiene campo de unidad, de modo que «unidades incompatibles» no aplica a U1 |
 
 **Propiedades a verificar** (además de los casos puntuales): monotonía —a mayor variabilidad, mayor
 stock de seguridad; a mayor lead time, mayor punto de reorden—; no negatividad de toda cantidad
-recomendada; y determinismo estricto: la misma entrada produce siempre la misma salida.
+recomendada; y determinismo estricto: la misma entrada produce siempre la misma salida. **En U1 (V1)**, la
+monotonía del punto de reorden frente al lead time **no se exige**: `σ_H` depende de `H = L + R` y no es
+monótona en `H`; se prueban `H = L + R` y `H ≥ 7` (`DT-054`, `docs/06` §16.11.7).
 
 ### 3.2 Resto de módulos
 
@@ -229,3 +231,22 @@ puede arreglarse dentro del alcance, se reporta como bloqueo (`AGENTS.md` §6).
 - Umbral de cobertura exigido en CI, por módulo.
 - ¿Se requiere una revisión de seguridad externa antes de producción?
 - Herramientas concretas de E2E y de carga (se elegirán en las Fases 7 y 14).
+
+## 14. Etapa 2 — capas de prueba por unidad
+
+*Añadido el 2026-09-30 (`DT-047`). Mismo principio de §1: más pruebas donde el error cuesta más.*
+
+| Capa | Qué se prueba | Necesita | Unidad |
+|---|---|---|---|
+| Dominio | `supply_engine`: los once casos de motor de `DT-031`, los casos de `docs/06` §14 en su versión V1 (`docs/06` §16.8), propiedades (determinismo, no negatividad, monotonía) y que el paquete solo importa la biblioteca estándar | Python | U1 |
+| Contrato de datos | Ingesta frente al dataset 0.4.0 real y frente a copias alteradas (cabecera, `sha256`, filas, `quality_report`, vocabularios) | Python | U2 |
+| ETL / integración | Carga completa en PostgreSQL **real**; repetir la carga es un no-op; otro `dataset_version` se rechaza; reconciliación de inventario y tránsito; ninguna fila si falla | PostgreSQL local en contenedor | U2 |
+| Contrato de forecast | Forma y rango de la salida, rechazo de histórico posterior a `as_of_date`, reproducibilidad | Python | U3 |
+| Integración de ejecuciones | Base → forecast → motor → recomendaciones persistidas; cadena de trazabilidad completa hasta `dataset_version` | PostgreSQL local | U3–U4 |
+| API | Esquema OpenAPI, formato de error, paginación, **matriz rol × endpoint**, ninguna ruta sin autenticación salvo `/health` | PostgreSQL local + `TokenValidator` de desarrollo | U5 |
+| IA generativa | La verificación detecta una cifra ajena al contexto | Python | U6 |
+
+**Reglas de ejecución:** `unittest`, que es la convención vigente del repositorio (instalar `pytest`
+no está autorizado). Las pruebas que necesitan PostgreSQL forman una **suite separada** que se ejecuta
+explícitamente; no se «saltan» cuando falta la base, fallan. Ninguna prueba usa red, Azure ni el reloj
+del sistema: `as_of_date` es siempre explícito (§11).

@@ -1,12 +1,60 @@
 # Estado del proyecto
 
-**Última actualización:** 2026-09-29 (**Generador 0.4.0 terminado: C8 implementado, C7 y C8 integrados en W1, dataset `ds-6c8ad65b4999` validado y publicado** — `quality_report` 51/51, 0 fallos · 582 pruebas en verde) · 2026-09-29 (**Componente 7 implementado y probado, sin integrar en W1** — `DT-041`, `scenario_assignment` con los 16 ejes · `generator_version` sigue en 0.3.0 y el dataset publicado no cambia · 509 pruebas en verde) · 2026-09-29 (**W1 implementado; dataset completo publicado** — `ds-269a698250db`, `generator_version` 0.3.0, C2 → C3 → C6 → C4 → C5 · 463 pruebas en verde) · 2026-09-28 (**pendientes de C5 cerrados**: prueba permanente de la selección exacta de `CANCELLED` y frase de `DT-039` §13 corregida · W1 detenido antes de implementar, pendiente de dos decisiones · 434 pruebas en verde) · 2026-09-28 (**Componente 6 implementado y probado, sin conectar a `__main__`** · lote C6 → C4 → C5 completo, integración bloqueada por W1 · dataset publicado sin cambios · 430 pruebas en verde) · 2026-09-28 (**Componente 5 implementado y probado, sin conectar a `__main__`**) · 2026-09-27 (**D-01 cerrado: elegibilidad de las `CANCELLED` respecto de `valid_to`, opción A**, `DT-039` §5.2 · C5 sigue sin implementar) · 2026-09-26 (**Componente 4 implementado y probado, sin conectar a `__main__`** — decisiones D-C4-1 (O1), D-C4-2 (P1) y D-C4-3 · C5/C6 sin implementar · dataset publicado sin cambios · 323 pruebas en verde)
+**Última actualización:** 2026-10-01 (**U1 CERRADA** — auditoría post-implementación sin hallazgos BLOCKER/HIGH/MEDIUM; cantidades racionales y `model_version` ratificadas en `docs/06` §16.12 · sin commit) · 2026-10-01 (**U1 IMPLEMENTADA** — `backend/app/supply_engine`, 146 pruebas en verde; `DT-053` y `DT-054` cerradas; generador 582 en verde y dataset sin cambios · sin commit) · 2026-10-01 (**`DT-P22` cerrada** — `PRODUCT_OUT_OF_VALIDITY` cubre también la vigencia que termina dentro del horizonte; **contrato de U1 cerrado, sin pendientes** · **U1: AUTORIZADA — NO IMPLEMENTADA** · sin código) · 2026-10-01 (**contrato de U1 cerrado** — `DT-048` a `DT-052` `ACEPTADA`, `docs/06` §16.11; pendiente `DT-P22`, que bloquea una sola rama · **U1: AUTORIZADA — NO IMPLEMENTADA** · sin código) · 2026-10-01 (**`DT-P14` cerrada** — estimador poblacional, `INSUFFICIENT_HISTORY` para `n = 0` y evaluación exacta B3; `docs/06` §16.6 · **U1: AUTORIZADA — NO IMPLEMENTADA** · sin código) · 2026-09-30 (**U1 autorizada y detenida antes de escribir código** — `DT-P15` y `DT-P20` cerradas; `DT-P14` abierta en tres puntos sin respaldo documental; `DT-043` y `DT-045` `ACEPTADA`; PyYAML declarado en `data/synthetic/requirements.txt`; rama `feat/u1-supply-engine` creada en la copia local) · 2026-09-30 (**Etapa 1 COMPLETADA · Etapa 2 INICIADA** — arquitectura y fundación del sistema principal: `DT-043` a `DT-047` en `PROPUESTA`, contratos en `docs/03` §16, `docs/04` §9, `docs/05` §19, `docs/06` §16, `docs/07` §7 y `docs/09` §14 · sin código de aplicación · primera unidad propuesta: motor V1) · 2026-09-29 (**Generador 0.4.0 terminado: C8 implementado, C7 y C8 integrados en W1, dataset `ds-6c8ad65b4999` validado y publicado** — `quality_report` 51/51, 0 fallos · 582 pruebas en verde) · 2026-09-29 (**Componente 7 implementado y probado, sin integrar en W1** — `DT-041`, `scenario_assignment` con los 16 ejes · `generator_version` sigue en 0.3.0 y el dataset publicado no cambia · 509 pruebas en verde) · 2026-09-29 (**W1 implementado; dataset completo publicado** — `ds-269a698250db`, `generator_version` 0.3.0, C2 → C3 → C6 → C4 → C5 · 463 pruebas en verde) · 2026-09-28 (**pendientes de C5 cerrados**: prueba permanente de la selección exacta de `CANCELLED` y frase de `DT-039` §13 corregida · W1 detenido antes de implementar, pendiente de dos decisiones · 434 pruebas en verde) · 2026-09-28 (**Componente 6 implementado y probado, sin conectar a `__main__`** · lote C6 → C4 → C5 completo, integración bloqueada por W1 · dataset publicado sin cambios · 430 pruebas en verde) · 2026-09-28 (**Componente 5 implementado y probado, sin conectar a `__main__`**) · 2026-09-27 (**D-01 cerrado: elegibilidad de las `CANCELLED` respecto de `valid_to`, opción A**, `DT-039` §5.2 · C5 sigue sin implementar) · 2026-09-26 (**Componente 4 implementado y probado, sin conectar a `__main__`** — decisiones D-C4-1 (O1), D-C4-2 (P1) y D-C4-3 · C5/C6 sin implementar · dataset publicado sin cambios · 323 pruebas en verde)
 
 ---
 
 ## Estado actual
 
-> ## ETAPA 1 — DATOS · **EN PROGRESO**
+> ## ETAPA 1 — DATOS · **COMPLETADA**
+>
+> Cerrada el 2026-09-29 y cierre autorizado por el responsable el 2026-09-30, con:
+>
+> | | |
+> |---|---|
+> | `generator_version` | **0.4.0** |
+> | Dataset | **`ds-6c8ad65b4999`**, publicado en `data/synthetic/output/` |
+> | Validación | **51/51** comprobaciones del Componente 8, 0 fallos (`quality_report` `PASS`) |
+> | Pruebas | **582**, todas en verde |
+>
+> ## ETAPA 2 — SISTEMA PRINCIPAL · **INICIADA** (2026-09-30)
+>
+> **Bloque actual: arquitectura y fundación.** Se leyó toda la documentación, se auditó el dataset
+> 0.4.0 como fuente y se fijaron los contratos del sistema principal **sin escribir código**. Cinco
+> decisiones nuevas, todas `PROPUESTA` hasta que el responsable las apruebe: `DT-043` (estructura y
+> puertos locales), `DT-044` (ingesta y modelo físico mínimo), `DT-045` (contrato del motor V1),
+> `DT-046` (contrato de forecast) y `DT-047` (orden de implementación) *(después: `DT-043` y `DT-045`
+> `ACEPTADA` y `DT-047` aceptada en cuanto a U1, el 2026-09-30)*. Nueve decisiones pendientes
+> nuevas, `DT-P13` a `DT-P21`; una de ellas es una **contradicción entre documentos** que no se
+> resuelve aquí (`DT-P13`). Detalle en *Etapa 2 — arquitectura y fundación*, más abajo.
+>
+> **Estado del código de aplicación:** no existe. `backend/`, `frontend/`, `ml/` e `infra/` siguen sin
+> crearse.
+>
+> **U1 — motor V1: IMPLEMENTADA (2026-10-01).** `backend/app/supply_engine` (`contract`, `validation`,
+> `exact`, `rules`, `engine`), solo biblioteca estándar, Python ≥ 3.11; 146 pruebas en
+> `backend/tests/supply_engine` (`cd backend && python3 -m unittest discover -s tests -t .`). Antes de
+> codificar se cerraron `DT-053` (frontera de la salida parcial) y `DT-054` (sin monotonía global de `S`
+> frente a `L`). Interpretaciones de implementación ratificadas el 2026-10-01 (`docs/06` §16.12). *(Hasta el
+> 2026-10-01 este bloque decía «AUTORIZADA — NO IMPLEMENTADA».)* Sus tres decisiones previas están cerradas:
+> `DT-P15` (bordes temporales; la decisión es `as_of_date`, no `as_of_date + 1`, como dice `DT-031`) y
+> `DT-P20` (rigen las fórmulas V1 en los tres casos límite), el 2026-09-30; y **`DT-P14`**, el
+> 2026-10-01: `σ_H` con estimador poblacional, `n = 0` → `INSUFFICIENT_HISTORY`, `n = 1` → `σ_H = 0`,
+> y evaluación exacta **B3** —decisiones por comparación algebraica exacta, sin tolerancias; 28 cifras
+> significativas con `ROUND_HALF_EVEN` solo para informar— (`docs/06` §16.6). Ninguna fórmula V1
+> cambia. *(Hasta el 2026-10-01 este bloque decía que U1 estaba detenida por `DT-P14`.)*
+>
+> **Contrato de U1 cerrado el 2026-10-01** (`docs/06` §16.11, `docs/15` v1.21): `DT-048` (cobertura del
+> forecast), `DT-049` (vigencia; el horizonte que cruza `valid_to` da `NOT_CALCULABLE`), `DT-050` (orden de
+> las observaciones de lead time; aclaración A-1, techo de 90 con cualquier procedencia), `DT-051`
+> (tipos, `Fraction`/`Decimal`, `missing_policy_parameters`, orden de razones y marcas, salida parcial,
+> `engine_version = "0.1.0"`; aclaración A-2, sin `abc_class`) y `DT-052` (`InvalidInputError`; `on_hand < 0`
+> sigue siendo `NEGATIVE_ON_HAND`). **`DT-P22` cerrada el mismo día** (`docs/15` v1.22):
+> `PRODUCT_OUT_OF_VALIDITY` significa que el producto no es válido durante todo el periodo requerido
+> (de `as_of_date` a `as_of_date + H`), de modo que el horizonte que cruza `valid_to` da `NOT_CALCULABLE`
+> con esa razón, sin razón nueva y sin recortar `H`. **El contrato de U1 no tiene decisiones pendientes.**
+
+> ## ETAPA 1 — DATOS · registro de la etapa *(cerrada; el texto que sigue es su historial y no se reescribe)*
 >
 > La **Etapa 0 está superada** como condición para continuar: documentación base creada (2026-09-03),
 > auditada y corregida (revisión 0.1, 2026-09-04, *aprobada con observaciones*).
@@ -112,10 +160,11 @@
 | Etapa / Fase | Estado |
 |---|---|
 | **Fase 0 — Preparación** | ✅ Superada (documentada, auditada y aprobada con observaciones) |
-| **Fase 1 — Datos** | 🟡 **En progreso** — Componentes 1 a 6 de 8 implementados y conectados; W1 implementado; dataset completo publicado |
-| Fase 2 — PostgreSQL | ⬜ No iniciada |
-| Fase 3 — FastAPI | ⬜ No iniciada |
-| Fase 4 — Motor de abastecimiento | ⬜ No iniciada |
+| **Fase 1 — Datos** | ✅ **Completada** (2026-09-29) — generador 0.4.0, `ds-6c8ad65b4999`, 51/51, 582 pruebas. La ingesta pasa a la Etapa 2 (U2) |
+| **Etapa 2 — Sistema principal** | 🟡 **Iniciada** (2026-09-30) — arquitectura y fundación documentadas; ninguna unidad autorizada todavía |
+| Fase 2 — PostgreSQL | ⬜ No iniciada — diseñada (`docs/04` §9, U2) |
+| Fase 3 — FastAPI | ⬜ No iniciada — contrato inicial diseñado (`docs/07` §7, U5) |
+| Fase 4 — Motor de abastecimiento | ⬜ No iniciada — contrato aceptado (`docs/06` §16, `DT-045`); **U1 implementada** (2026-10-01; contrato `DT-048` a `DT-054` y `DT-P22`; 146 pruebas). Persistencia, batch y endpoints, en U4–U5 |
 | Fase 5 — Machine Learning | ⬜ No iniciada |
 | Fase 6 — Azure Machine Learning | ⬜ No iniciada |
 | Fase 7 — React | ⬜ No iniciada |
@@ -269,6 +318,9 @@ un motor ya probado.
 | 8 | ~~Desajuste entre los escenarios de `DatasetConfig` y §25~~ | — | ✅ **RESUELTO** el 2026-09-17 por `DT-023`: las 26 situaciones de §25 se reparten en tres niveles (13 A + 9 B + 4 C) y el enum `Scenario` queda en 16 valores |
 | 9 | `data/synthetic/generator/config.py`: archivo de 0 bytes que existía solo en el disco del proyecto (2026-09-13 20:58 UTC) y no formaba parte del Componente 1, cuyo `config.py` vive en `data/synthetic/config/` | Bajo, pero confundía: dos rutas con el mismo nombre de archivo y una vacía | **RESUELTO el 2026-09-21.** El responsable autorizó eliminarlo expresamente. Se comprobó antes que ningún import ni referencia de código dependía de él —las únicas menciones estaban en este archivo— y la suite siguió en verde |
 | 10 | **Seis documentos del disco del proyecto no tenían las correcciones del 2026-09-18** (detectado el 2026-09-21 comparando `md5sum` árbol contra árbol, y **resuelto el mismo día**): `docs/04-modelo-datos.md`, `knowledge/dataset-specification.md`, `DT-024`, `DT-025`, `DT-027` y `DT-028`. Faltaban, entre otras: el intervalo cerrado `valid_from ≤ valid_to` (`docs/04`, `DT-027`), las precondiciones **P-4** y **P-5** y el testigo de MOQ con `order_multiple = 1` (`DT-028`), el orden de filas por clave de negocio (`DT-024`) y el invariante de reproducibilidad con sus cuatro campos excluidos (`DT-025`). Nota: el primer recuento de esta sesión dijo «cuatro»; la comparación completa del árbol encontró **seis** | Era **alto**: `docs/15` y este archivo declaraban esas correcciones como hechas y el disco decía lo contrario. Un Componente 2 implementado desde el disco habría reintroducido bloqueantes ya corregidos | **RESUELTO.** El responsable autorizó sobrescribir el 2026-09-21 («siempre sobreescribe para que estén actualizadas ambas carpetas»). Los seis archivos se escribieron sobre el disco y **ambas copias coinciden byte a byte**, salvo `data/synthetic/generator/config.py`, que existe solo en el disco y sigue pendiente de decisión (punto 9) |
+| 11 | **Contradicción sobre la mutabilidad de las órdenes de compra** (detectada el 2026-09-30): `RNF-013` dice que «los movimientos de inventario y las órdenes de compra son registros históricos inmutables»; `docs/04` §1 clasifica `PurchaseOrder` y `PurchaseOrderItem` como mutables con auditoría, `DT-006` no los incluye entre los *append-only* y `docs/07` §2.7 prevé cambiar su estado | Medio — no afecta a U1–U5, que no escriben órdenes; sí a `US-035` | **Registrada como `DT-P13`. No se resuelve unilateralmente**: decide el responsable |
+| 12 | **PyYAML no figura en ningún archivo de dependencias.** `CLAUDE.md` §5 exige registrar las librerías menores en el archivo de dependencias; el repositorio no tiene ninguno | Bajo — el generador funciona, pero su entorno no es reproducible desde el repositorio | **RESUELTO el 2026-09-30** por instrucción del responsable: `data/synthetic/requirements.txt` declara `PyYAML==6.0.3` (la versión de `DT-024`, la instalada en ambos entornos). No había ningún archivo de dependencias oficial; se usa uno por componente. El del sistema llegará con `backend/pyproject.toml` |
+| 13 | **La carpeta del proyecto en el equipo del responsable es un repositorio Git en la rama `main`** (un commit, «Estructura del proyecto», con remoto en GitHub; la copia de trabajo del agente no lo es). `CLAUDE.md` §13.2 prohíbe trabajar sobre `main`, y el agente no puede crear ramas: por instrucción del responsable no ejecuta comandos de Git que cambien el estado (`checkout`, `add`, `commit`…) | Bajo — los cambios quedan sin commitear | **RESUELTO el 2026-09-30**: por instrucción expresa del responsable se creó la rama `feat/u1-supply-engine` (`git switch -c`) en la copia local. Los cambios de la Etapa 2 —que el responsable ya había añadido al índice— y los de U1 viajan en ella, sin commit |
 
 **Revisión 0.1 (2026-09-04):** quince problemas encontrados y corregidos. Los cinco críticos:
 `DT-010` confundía cuatro conceptos de incertidumbre distintos y daba por buena una fórmula (`√L`)
@@ -970,12 +1022,33 @@ manifiesto salvo `generated_at`; los doce CSV son byte a byte los del dataset 0.
 permaneció intacto hasta que el 0.4.0 superó todas las comprobaciones y la promoción lo sustituyó
 según `DT-040` §5. Informe breve en `docs/reports/dataset-sintetico-0.4.0-calidad.md`.
 
+### Etapa 2 — arquitectura y fundación (2026-09-30)
+
+**Documentado, no implementado.** Ningún archivo de código creado; la suite sigue en 582 pruebas.
+
+| Tema | Dónde | Resumen |
+|---|---|---|
+| Arquitectura de implementación | `docs/03` §16, `DT-043` | Un proyecto `backend/` con paquetes por responsabilidad; puertos en el paquete que los usa; nuevo `TokenValidator` local; reglas de dependencia verificables; el generador es *upstream* y no se importa |
+| Del dataset a PostgreSQL | `docs/04` §9, `DT-044` | Una tabla por archivo; `demand` separada de `consumption` y fuera del cálculo; un linaje por base; carga todo o nada con validación previa y posterior; `data_loads` con el manifiesto |
+| Contrato de forecast | `docs/05` §19, `DT-046` | Consumo hasta `as_of_date`, semanas ancladas en `as_of_date + 1`, 14 semanas derivadas de V1; nada de decisiones de compra |
+| Contrato del motor V1 | `docs/06` §16, `DT-045` | Evaluación pura; una función por regla de `DT-031`; `RECOMMEND` / `NO_NEED` / `NOT_CALCULABLE`; parámetros V1 en `policy_snapshot` con `policy_set = V1_PROVISIONAL`; sin urgencia |
+| API inicial | `docs/07` §7 | Solo lectura; autenticada por defecto salvo `/health`; bloque `provenance` con avisos de dato sintético y política provisional |
+| IA generativa | `docs/09` §14 | `ExplanationContext` con cifras almacenadas; plantilla primero; verificación de cifras |
+| Seguridad, frontend, Power BI, pruebas | `docs/10` §15, `docs/08` §11, `docs/11` §9, `docs/13` §14 | Dobles locales; vistas frente a contratos; KPIs calculables y bloqueados; capas de prueba por unidad |
+| Orden | `DT-047`, `project/roadmap.md` | U1 motor → U2 PostgreSQL + ingesta → U3 forecast → U4 recomendaciones → U5 API → U6 explicación |
+
+**Decisiones que esperan al responsable:** aprobar o cambiar `DT-043` a `DT-047`; cerrar `DT-P14` y
+`DT-P15` y `DT-P20` antes de U1; autorizar las dependencias de U2; y resolver la contradicción `DT-P13` antes de
+escribir órdenes. `BR-X03` sigue bloqueando cualquier clasificación de riesgo o urgencia.
+*(Actualización del 2026-10-01: `DT-P14`, `DT-P15` y `DT-P20` ya están cerradas.)*
+
 ## Próximos pasos
 
-1. **Cierre de la Fase 1 y autorización de la siguiente.** El generador está terminado (0.4.0). Lo
-   que la hoja de ruta de la Fase 1 lista fuera del generador —proceso de ingesta con marca de
-   origen (US-011) y umbrales de aceptación del modelo (`DT-P04`)— sigue pendiente y es decisión del
-   responsable cuándo abordarlo.
+1. **Revisar y aprobar la arquitectura de la Etapa 2** (`DT-043` a `DT-047`), o indicar qué cambiar.
+2. **Autorizar el commit de U1** y, después, la siguiente unidad (U2). U1 está cerrada técnica y
+   documentalmente: auditoría sin hallazgos BLOCKER, HIGH ni MEDIUM, e interpretaciones de `docs/06`
+   §16.12 ratificadas. *(Este punto pedía revisar U1 y ratificar sus interpretaciones; cumplido el
+   2026-10-01.)*
 3. **Recabar del negocio los parámetros pendientes** (`knowledge/business-rules.md` §3). Es el
    trabajo de mayor valor y no depende de programar nada: sin estos datos, la Fase 4 no puede
    parametrizarse de forma definitiva.
@@ -1052,3 +1125,10 @@ según `DT-040` §5. Informe breve en `docs/reports/dataset-sintetico-0.4.0-cali
 | 2026-09-29 | **W1 implementado; dataset completo publicado.** `pipeline.run` (comprobación previa, workspace `tmp/<uuid>/`, C2 → C3 → C6 → C4 → C5, verificación final, promoción de `DT-040` §5) y `__main__.py` conectado a él. `GENERATOR_VERSION` **0.2.0 → 0.3.0** (`DT-036` §8). Detalles pendientes de `DT-040` resueltos por el responsable (`.anterior` y workspace fallido se eliminan). Publicado `ds-269a698250db`. Pruebas: **434 → 463, todas en verde** |
 | 2026-09-29 | **Componente 7 implementado y probado, sin integrar en W1.** `DT-041` (contrato de `scenario_assignment`: 16 ejes × seis campos; unidad `supplier` para los ejes de proveedor; criterios `SYNTHETIC_COVERAGE_CRITERION` para `LOW_INVENTORY`, `OVERSTOCK` y las situaciones 12 y 18, que no son reglas de negocio). `scenarios.py`; `writer.py` gana `SCENARIOS_VERSION` y `add_manifest_field`. Notas en `DT-030` y `DT-031` (`V1-07`, `V1-08`); `docs/15` v1.16. C2–C6, `pipeline.py`, `generator_version` 0.3.0 y `output/` sin cambios. 19 de 19 mutaciones detectadas. Pruebas: **463 → 509, todas en verde**. Siguiente: C8 |
 | 2026-09-29 | **Generador 0.4.0 terminado.** `DT-042` y `validator.py` (51 comprobaciones sobre el workspace, `quality_report` con los veinte ítems de §35, `anomalies: []`); C7 y C8 integrados en W1; `verify` exige `scenario_assignment` y un informe sin fallos; `GENERATOR_VERSION` **0.3.0 → 0.4.0** (un solo incremento). Publicado `ds-6c8ad65b4999`: 51/51, 0 fallos, 16/16 escenarios, nivel C 4/4, reproducible salvo `generated_at`. Documentación: `DT-025`, `DT-033`, `DT-038` §12 (`metrics` cerrado), `DT-040`, `DT-041`, especificación §34/§35/§39/§40/§41.3/§42.3, `docs/15` v1.17, `CLAUDE.md`, informe en `docs/reports/`. Pruebas: **509 → 582, todas en verde** |
+| 2026-09-30 | **Etapa 1 COMPLETADA · Etapa 2 INICIADA — arquitectura y fundación.** Lectura completa de la documentación, auditoría del dataset `ds-6c8ad65b4999` como fuente y diseño del sistema principal sin código: `DT-043` a `DT-047` (`PROPUESTA`) y `DT-P13` a `DT-P21`. Actualizados `docs/03` §16, `docs/04` §9, `docs/05` §19, `docs/06` §16, `docs/07` §7, `docs/08` §11, `docs/09` §14, `docs/10` §15, `docs/11` §9, `docs/13` §14, `docs/15` v1.18, `project/roadmap.md`, `CLAUDE.md` (cabecera y §17), `README.md` (estado) y este archivo. Primera unidad propuesta: motor V1 (U1). Sin cambios en el generador ni en el dataset; **582 pruebas en verde** |
+| 2026-09-30 | **U1 autorizada; detenida antes de escribir código.** `DT-P15` cerrada (la decisión es `as_of_date`; `as_of_date + 1` es solo el inicio del horizonte; corrige la propuesta de `DT-045`) y `DT-P20` cerrada (rige V1 en demanda cero, lead time cero y `σ = 0`, `docs/06` §16.10). `DT-P14` resuelta en cinco de sus ocho elementos y **abierta** en tres sin respaldo documental. `DT-043` y `DT-045` `ACEPTADA`, `DT-047` aceptada en cuanto a U1 (`docs/15` v1.19). `PyYAML==6.0.3` en `data/synthetic/requirements.txt`. Rama `feat/u1-supply-engine`. Sin código nuevo; **582 pruebas en verde** |
+| 2026-10-01 | **`DT-P14` cerrada.** Estimador poblacional; `n = 0` → `NOT_CALCULABLE` (`INSUFFICIENT_HISTORY`), `n = 1` → `σ_H = 0`; evaluación exacta **B3** de `x = P + √B/D` para toda decisión, con `ceil` exacto por `isqrt` y comparación de signo antes del cuadrado; `z_v1 = 33/20`; entradas sin `float`; 28 cifras significativas y `ROUND_HALF_EVEN` solo para informar. Actualizados `docs/06` (v1.3: §16.3, §16.5, §16.6, §16.9, §16.10), `docs/15` (v1.20), `project/roadmap.md` y este archivo. Ninguna fórmula V1 cambia. **U1: AUTORIZADA — NO IMPLEMENTADA**; 582 pruebas en verde |
+| 2026-10-01 | **Contrato de U1 cerrado.** Nueve decisiones del responsable registradas como `DT-048` (cobertura del forecast: `K(H) = ⌈H/7⌉`), `DT-049` (vigencia en `as_of_date`; razones independientes; horizonte que cruza `valid_to` → `NOT_CALCULABLE` sin recortar `H`), `DT-050` (orden `completed_on ↓, issued_on ↑`; A-1: techo de 90 sobre cualquier procedencia), `DT-051` (tipos; `Fraction` decide y `Decimal` solo representa; `S` añadido a §16.6 punto 7; `missing_policy_parameters`; orden de razones y marcas; salida parcial con `NOT_CALCULABLE`; `engine_version = "0.1.0"`; A-2: sin `abc_class`) y `DT-052` (`InvalidInputError`, primer error en orden canónico; `on_hand < 0` → `NEGATIVE_ON_HAND`). Nuevo pendiente **`DT-P22`** (razón del cruce de `valid_to`). Actualizados `docs/06` (v1.4: §16 cabecera, §16.3, §16.4, §16.5, §16.6 punto 7, §16.8, §16.11), `docs/15` (v1.21), `docs/13` (v1.3, §3.1), `project/roadmap.md` (v1.3) y este archivo; correcciones de estado de `DT-043`/`DT-045`/`DT-047` en `docs/03` §16, `CLAUDE.md` §17 y `project/backlog.md`. Ninguna fórmula V1 ni regla B3 cambia; `DT-031` intacto. Sin código; **U1: AUTORIZADA — NO IMPLEMENTADA**; 582 pruebas en verde |
+| 2026-10-01 | **`DT-P22` cerrada (opción (a)).** `PRODUCT_OUT_OF_VALIDITY` pasa a significar que el producto no es válido durante todo el periodo requerido por U1: caso A (`as_of_date` fuera de vigencia) y caso B (`valid_to` no nulo, `as_of_date ≤ valid_to < as_of_date + H`). En ambos, `NOT_CALCULABLE` con esa razón; sin razón nueva, sin recortar `H` ni el forecast, sin extrapolar. Actualizados `docs/06` (v1.5: §16.5, §16.11, §16.11.2, §16.11.4), `docs/15` (v1.22: `DT-045`, `DT-049`, `DT-051`, tabla de pendientes), `CLAUDE.md` §17, `project/roadmap.md` y este archivo. **Contrato de U1 cerrado, sin pendientes.** Ninguna fórmula V1 ni regla B3 cambia; `DT-031` intacto. Sin código; **U1: AUTORIZADA — NO IMPLEMENTADA**; 582 pruebas en verde |
+| 2026-10-01 | **U1 implementada.** Antes de codificar: `DT-053` (frontera de la salida parcial: magnitudes descriptivas conservables, `raw_need`/`Q_moq`/`Q_final` solo sin razones; exclusión con `PRODUCT_INACTIVE` y caso A) y `DT-054` (se retira la monotonía global de `S` frente a `L`; contraejemplo auditado) en `docs/06` §16.8, §16.11.6, §16.11.7, `docs/13` §3.1 y `docs/15` v1.23. Código: `backend/pyproject.toml` (Python ≥ 3.11, sin dependencias) y `backend/app/supply_engine/` (`contract`, `validation`, `exact`, `rules`, `engine`). **146 pruebas** en `backend/tests/supply_engine` (pureza, contrato, B3 contra oráculo, validación, reglas, evaluación, invariantes sembrados). `docs/06` §16.12 (v1.7), `CLAUDE.md` §14 y §17, `project/roadmap.md` (v1.5) y este archivo. Generador: **582 pruebas en verde**; dataset sin cambios. Sin commit ni push |
+| 2026-10-01 | **U1 cerrada.** Auditoría contractual post-implementación (solo lectura): contrato, pureza, validación, B3, lead time, horizonte, forecast, `σ_H`/`SS`/`S`, `DT-P22`, `DT-053`, `DT-054`, MOQ y múltiplo, `NO_NEED` e invariantes en PASS; sin hallazgos BLOCKER, HIGH ni MEDIUM. Hallazgo LOW no bloqueante F-1: `as_of_date = date.max` lanza `OverflowError` al calcular `as_of_date + 1`; no se corrige porque exigiría una regla nueva sobre el dominio temporal, sin necesidad en el proyecto. El responsable ratificó las dos interpretaciones de `docs/06` §16.12 (cantidades racionales con `Fraction`; `model_version` como identificador entero opaco); `NO_NEED` ya era normativo. Solo documentación: `docs/06` §16.12 y este archivo. Código, pruebas, generador y dataset sin cambios; U1 146/146 y generador 582/582. Sin commit ni push |

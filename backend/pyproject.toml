@@ -1,0 +1,17 @@
+# Sistema principal (Etapa 2). Un único proyecto Python (`docs/03` §16.6, `DT-043`).
+#
+# U1 — `app.supply_engine`: biblioteca pura, solo biblioteca estándar. Sin dependencias: cada unidad
+# posterior declara las suyas con autorización expresa (`DT-043`).
+#
+# `version` es la del paquete `backend`, no la del motor: la versión de las reglas que viaja en cada
+# resultado es `app.supply_engine.ENGINE_VERSION` (`DT-051`).
+#
+# Pruebas (unittest, `docs/13` §14), desde este directorio:
+#     python3 -m unittest discover -s tests -t .
+
+[project]
+name = "inventory-supply-backend"
+version = "0.0.0"
+description = "Sistema principal del Motor Predictivo de Abastecimiento de Inventarios"
+requires-python = ">=3.11"
+dependencies = []

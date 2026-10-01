@@ -1,6 +1,6 @@
 # Roadmap del proyecto
 
-**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1
+**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — cierre de la Etapa 1, inicio de la Etapa 2 y orden de implementación propuesto (`DT-047`) · **Versión 1.3** (2026-10-01) — contrato de U1 cerrado (`DT-048` a `DT-052`) y pendiente `DT-P22` · **Versión 1.4** (2026-10-01) — `DT-P22` cerrada; contrato de U1 sin pendientes · **Versión 1.5** (2026-10-01) — U1 implementada
 
 ## Principios de secuenciación
 
@@ -17,9 +17,44 @@
 > recomendaciones útiles y auditables desde temprano, y cuando llegue el modelo solo mejora una
 > entrada de un motor ya probado. Invertir el orden retrasaría todo el valor hasta que el ML funcione.
 
+## Etapas
+
+| Etapa | Fases | Estado |
+|---|---|---|
+| **Etapa 0 — Preparación** | Fase 0 | ✅ Superada (2026-09-04, aprobada con observaciones) |
+| **Etapa 1 — Datos** | Fase 1 | ✅ **COMPLETADA** (2026-09-29). Generador terminado: `generator_version` **0.4.0**, dataset **`ds-6c8ad65b4999`** publicado y validado (**51/51** comprobaciones del Componente 8, 0 fallos), **582 pruebas** en verde. Cierre autorizado por el responsable el 2026-09-30 |
+| **Etapa 2 — Sistema principal** | Fases 2 a 15 | 🟡 **INICIADA** (2026-09-30). Primer bloque: arquitectura y fundación — contratos y orden de construcción, sin código de aplicación todavía |
+
+**Lo que la Fase 1 listaba y pasa a la Etapa 2.** El «proceso de ingesta y validación con marca de
+origen» (`US-011`) se diseña en la Etapa 2 (`docs/04` §9, `DT-044`) y se implementa en su unidad U2.
+Los umbrales de aceptación del modelo (`DT-P04`) siguen pendientes y se fijan en la Fase 5, con el
+dataset 0.4.0. El resto de criterios de la Fase 1 se cumplió con el generador.
+
+### Orden de implementación de la Etapa 2 (`DT-047`: `ACEPTADA` en cuanto a U1, `PROPUESTA` para U2–U6)
+
+Las fases siguen siendo el mapa; las **unidades** son el orden en que se construye. Cada unidad
+requiere su propia autorización.
+
+| Unidad | Contenido | Fase | Historias | Necesita antes |
+|---|---|---|---|---|
+| **U1** | `supply_engine` V1: biblioteca pura + pruebas calculadas a mano (`docs/06` §16) | 4 (parte pura) | US-040 (parcial: V1 no usa `σ_L`, `BR-P02`), US-041, US-042, US-045 (cálculo) | `DT-P14`, `DT-P15` y `DT-P20` cerradas (2026-09-30 y 2026-10-01); contrato cerrado con `DT-048` a `DT-052` (2026-10-01, `docs/06` §16.11). `DT-P22`, `DT-053` y `DT-054` cerradas (2026-10-01). **Ninguna dependencia nueva**. ✅ **Implementada** (2026-10-01): `backend/app/supply_engine`, 146 pruebas |
+| U2 | PostgreSQL + migraciones + ingesta validada del 0.4.0 (`docs/04` §9) | 2 | US-011, US-020, US-021 | Autorizar el controlador de PostgreSQL y el PostgreSQL local en contenedor |
+| U3 | `ForecastProvider` + baselines + forecasts persistidos (`docs/05` §19) | 4 (baseline) | US-050, US-057 (parcial) | `DT-P17` |
+| U4 | Ejecución de recomendaciones: base → forecast → motor → persistencia con trazabilidad | 4 | US-045, US-046 | `DT-P18`, `DT-P21` |
+| U5 | API de solo lectura con autenticación local y roles (`docs/07` §7) | 3 | US-030, US-033 (US-031 queda para después: V1 no expone proveedores ni órdenes) | FastAPI y Pydantic (stack) |
+| U6 | Explicación por plantilla + verificación de cifras (`docs/09` §14) | 4 | US-048 | — |
+| Después | Interfaz (7) · ML (5) · Power BI (11) · Entra ID (8) · AI Search y OpenAI (9–10) · Docker y CI/CD (12–13) · QA (14) · Entrega (15) | — | — | Sus bloqueos de la tabla final |
+
+**Por qué el motor va primero** aunque el mapa ponga la Fase 4 después de las Fases 2 y 3: la parte
+pura del motor no depende técnicamente de ninguna de ellas (RNF-001) —sí su persistencia, su batch y
+sus endpoints, que van después— y no requiere dependencias nuevas. Sus **reglas** están cerradas
+(`DT-031`); su contrato de implementación (`DT-045`) quedó aceptado al autorizar U1, y `DT-P14`,
+`DT-P15` y `DT-P20` ya están cerradas. Los detalles del contrato se cerraron con `DT-048` a `DT-052`
+(2026-10-01) y `DT-P22`; no queda ninguna decisión pendiente. Razonamiento completo en `DT-047`.
+
 ---
 
-## FASE 0 — Preparación 🟡 (etapa actual — entregables completos, pendiente de aprobación)
+## FASE 0 — Preparación ✅ (superada)
 
 - **Objetivo:** dejar el repositorio preparado para un desarrollo ordenado, incremental y documentado.
 - **Entradas:** definición de alcance del responsable del proyecto.
@@ -33,7 +68,7 @@
 - **Criterio de finalización:** todos los documentos existen, son coherentes entre sí, los supuestos
   están marcados como tales y no hay hipótesis presentadas como requisitos.
 
-## FASE 1 — Datos
+## FASE 1 — Datos ✅ (completada el 2026-09-29; ingesta trasladada a la Etapa 2)
 
 - **Objetivo:** disponer de un dataset sintético que represente un escenario empresarial verosímil, y
   del proceso de ingesta que permitirá sustituirlo por datos reales.
@@ -290,7 +325,7 @@ Estas fases **no pueden completarse** sin una decisión o una entrega del negoci
 
 | Fase | Bloqueo |
 |---|---|
-| 4 — Motor de abastecimiento | Parámetros de política: nivel de servicio, política de revisión, umbrales de riesgo y horizonte de cobertura (BR-X01, BR-X02, BR-X03, BR-X13); calendario laboral para fijar la conversión de granularidad (BR-X06, `DT-019`) |
+| 4 — Motor de abastecimiento | Parámetros de política: nivel de servicio, política de revisión, umbrales de riesgo y horizonte de cobertura (BR-X01, BR-X02, BR-X03, BR-X13); calendario laboral para fijar la conversión de granularidad (BR-X06, `DT-019`). **Dentro del entorno sintético, V1 los puentea** con las reglas provisionales de `DT-031`, salvo los umbrales de riesgo: sin `BR-X03` no hay clasificación de riesgo ni urgencia |
 | 5 — Machine Learning | Ninguno del negocio para avanzar; los **objetivos** de Nivel 2 sí requieren BR-X01 y BR-X04, pero la comparación contra el baseline es relativa y no los necesita |
 | 6 — Azure ML | Autorización para provisionar recursos y presupuesto |
 | 8 — Entra ID | Validación de roles y mapeo con grupos organizacionales |

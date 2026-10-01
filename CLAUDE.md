@@ -2,7 +2,7 @@
 
 > Este archivo es la **fuente de verdad operativa** para cualquier agente de IA que trabaje sobre este repositorio.
 > Debe leerse **completo** al inicio de cada sesión, antes de cualquier modificación.
-> Última actualización: 2026-09-29 · Etapa vigente: **ETAPA 1 — Datos** (Fase 1, en progreso)
+> Última actualización: 2026-09-30 · Etapa vigente: **ETAPA 2 — Sistema principal** (iniciada: arquitectura y fundación) · Etapa 1 — Datos: **completada**
 
 ---
 
@@ -287,8 +287,11 @@ data/
 > final promociona el resultado a `output/`. El directorio existe **solo durante la ejecución**: se
 > elimina al terminar, bien o mal, y está excluido de Git por la regla `tmp/` del `.gitignore`.
 
-Carpetas que **aún no existen** y se crearán cuando su fase comience: `backend/`, `frontend/`,
-`ml/`, `infra/`, `.github/workflows/`.
+`backend/` existe desde U1 (2026-10-01): `backend/app/supply_engine/` (motor V1, solo biblioteca
+estándar) y `backend/tests/`, con `backend/pyproject.toml` (Python ≥ 3.11, sin dependencias).
+
+Carpetas que **aún no existen** y se crearán cuando su fase comience: `frontend/`, `ml/`, `infra/`,
+`.github/workflows/`.
 
 ## 15. Flujo de trabajo esperado del agente
 
@@ -323,8 +326,34 @@ Antes de sobrescribir **cualquier** archivo existente: leerlo completo y verific
 
 ## 17. Restricciones vigentes
 
+**Etapa 2 — Sistema principal: iniciada el 2026-09-30** por autorización explícita del responsable.
+La **Etapa 1 — Datos está completada**: `generator_version` 0.4.0, dataset `ds-6c8ad65b4999`
+validado (51/51 comprobaciones, 0 fallos) y 582 pruebas en verde.
+
+El primer bloque de la Etapa 2 es **arquitectura y fundación**: los contratos del sistema principal
+están en `docs/03` §16, `docs/04` §9, `docs/05` §19, `docs/06` §16, `docs/07` §7 y `docs/09` §14, y el
+orden de construcción en `DT-047` (`DT-043` y `DT-045` `ACEPTADA`; `DT-047` `ACEPTADA` en cuanto a U1;
+`DT-044` y `DT-046` en `PROPUESTA`). El contrato de U1 está cerrado en `docs/06` §16.11 (`DT-048` a
+`DT-052`, `DT-P22`, `DT-053` y `DT-054`), sin decisiones pendientes. **U1 está implementada**
+(`backend/app/supply_engine`, 146 pruebas en verde); U2 a U6 requieren su propia autorización.
+Restricciones vigentes, que se levantan solo por instrucción explícita:
+
+- **No escribir código de aplicación** hasta que el responsable autorice la primera unidad de
+  `DT-047`. Cada unidad (U1, U2, …) requiere su propia autorización.
+- El generador (`data/synthetic/`) y el dataset 0.4.0 son **upstream terminado**: no se modifican, y
+  el código del sistema consume su contrato, no su código.
+- No configurar servicios reales de Azure. No crear credenciales. No hacer commits automáticamente.
+- No instalar dependencias sin autorización: cada unidad declara las suyas (`DT-043`).
+- Las reglas V1 (`DT-031`) y los criterios `SYNTHETIC_COVERAGE_CRITERION` (`DT-041`) **no son
+  políticas de negocio**; toda recomendación calculada con ellas se marca como provisional.
+
+### Registro de la Etapa 1 — Datos (completada)
+
+*Texto con el que se trabajó durante la Etapa 1; se conserva como historial. Sus restricciones quedan
+sustituidas por la lista anterior.*
+
 La Etapa 0 está superada y la **Etapa 1 — Datos fue autorizada explícitamente por el responsable
-el 2026-09-14**. Las restricciones que siguen vigentes se levantan solo por instrucción explícita:
+el 2026-09-14**. Durante la Etapa 1 rigieron estas restricciones:
 
 - No desarrollar todavía la aplicación: el trabajo actual es el **generador de datos sintéticos**.
   Backend, frontend, base de datos, ML, Azure, contenedores y CI/CD llegan en sus propias fases.

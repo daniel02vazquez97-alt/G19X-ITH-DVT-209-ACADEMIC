@@ -1,9 +1,13 @@
 # 03 — Arquitectura
 
-**Estado:** Versión 1.0 — Etapa 0 (diseño, no implementado) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1
+**Estado:** Versión 1.0 — Etapa 0 (diseño, no implementado) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §16, arquitectura de implementación de la Etapa 2 (`DT-043`, `DT-047`); §§1–15 no cambian
 
 > Este documento describe la arquitectura **objetivo**. Nada de lo aquí descrito está implementado
 > todavía. Las decisiones que lo sustentan están en `docs/15-decisiones-tecnicas.md`.
+>
+> **Etapa 2 (2026-09-30):** §16 traduce esta arquitectura a paquetes, contratos y orden de
+> construcción. Sigue sin existir código de aplicación; lo único ejecutable del repositorio es el
+> generador de datos sintéticos, terminado en la Etapa 1.
 
 ---
 
@@ -353,3 +357,128 @@ Se documentan aquí para que no se tomen implícitamente durante la implementaci
 | Caché de respuestas de la API | Cuando exista evidencia de latencia | Evitar complejidad prematura |
 | Multi-ubicación / multi-almacén | Fase posterior | ASSUMPTION-006 |
 | Modelo analítico dedicado para Power BI (más allá de vistas) | Fase 11 | Depende del volumen y del comportamiento del informe |
+
+## 16. Etapa 2 — arquitectura de implementación
+
+*Añadido el 2026-09-30. Decisiones: `DT-043` (estructura), `ACEPTADA` el 2026-09-30, y `DT-047` (orden),
+`ACEPTADA` en cuanto a U1 y `PROPUESTA` para U2–U6.
+Lo descrito aquí está **diseñado**; nada está implementado (actualización del 2026-10-01: U1,
+`backend/app/supply_engine`, está implementada; el resto sigue diseñado).*
+
+### 16.1 Estado real del que se parte
+
+| Existe | No existe |
+|---|---|
+| Documentación de las Etapas 0 y 1 | `backend/`, `frontend/`, `ml/`, `infra/`, `.github/workflows/` |
+| Generador de datos sintéticos (`data/synthetic/`), terminado: `generator_version` 0.4.0, 582 pruebas | Base de datos, esquema, migraciones |
+| Dataset `ds-6c8ad65b4999` en `data/synthetic/output/` (no versionado), validado por C8 (51/51) | API, motor, forecast, interfaz, integraciones de Azure |
+| Única dependencia externa del código: PyYAML (generador) | Archivo de dependencias del proyecto (ver *Problemas conocidos* de `project/status.md`) |
+
+El generador es un sistema **upstream**: el sistema principal consume su **contrato** (los CSV y el
+manifiesto), nunca su código.
+
+### 16.2 Componentes
+
+| Componente (§3) | Paquete | Responsabilidad | Depende de | Se crea en |
+|---|---|---|---|---|
+| `supply_engine` | `backend/app/supply_engine/` | Reglas V1, puras y deterministas (`docs/06` §16) | Solo la biblioteca estándar | U1 |
+| Ingesta y validación | `backend/app/ingestion/` | Dataset → PostgreSQL con validación previa y posterior (`docs/04` §9.5) | `db` | U2 |
+| Repositorios / acceso a datos | `backend/app/db/` | Conexión, migraciones SQL versionadas, consultas parametrizadas | Controlador de PostgreSQL | U2 |
+| `forecast_service` | `backend/app/forecasting/` | `ForecastProvider` y baselines (`docs/05` §19) | Biblioteca estándar | U3 |
+| Servicios de aplicación (batch) | `backend/app/runs/` | Ejecuciones de forecast y de recomendaciones: leer, llamar, persistir con trazabilidad | `db`, `forecasting`, `supply_engine` | U3–U4 |
+| Routers + Auth | `backend/app/api/` | Contrato HTTP de solo lectura en V1 (`docs/07` §7), autenticación y roles | `db` | U5 |
+| `genai_service` | `backend/app/genai/` | Contexto de explicación, `TextGenerator` (plantilla primero), verificación de cifras (`docs/09` §14) | Nada con escritura en la base | U6 |
+| Interfaz | `frontend/` | Vistas de `docs/08` §11 | API | Fase 7 |
+| Entrenamiento y evaluación | `ml/` | Backtesting, Nivel 1 y Nivel 2 | `app.forecasting`, `app.supply_engine` | Fase 5 |
+
+Los «servicios de aplicación» y los «repositorios» de §3 **no** se convierten en carpetas genéricas:
+el único caso de uso con orquestación real —las ejecuciones batch— vive en `runs/`, y las consultas
+viven en `db/` agrupadas por entidad. Las lecturas de la API llaman a esas consultas directamente.
+Cuando aparezca un segundo caso de uso que lo justifique, se revisa.
+
+### 16.3 Flujo de la Etapa 2
+
+```mermaid
+flowchart LR
+    DS[(dataset 0.4.0<br/>CSV + manifest)] -->|ingestion| PG[(PostgreSQL<br/>un linaje por base)]
+    PG -->|consumo ≤ as_of| FC[forecasting<br/>ForecastProvider]
+    FC -->|forecasts persistidos| PG
+    PG -->|inventario, órdenes, recepciones,<br/>consumo, forecast| RUN[runs<br/>ejecución de recomendaciones]
+    RUN -->|entradas puras| SE[[supply_engine]]
+    SE -->|resultado + desglose| RUN
+    RUN -->|recommendations +<br/>calculation_runs| PG
+    PG --> API[api · solo lectura] --> UI[frontend]
+    PG --> PBI[vistas → Power BI]
+    API -->|cifras ya calculadas| GEN[genai · explica]
+```
+
+Tres flechas que **no** existen: `genai → PG` (sin escritura), `genai → supply_engine` (el LLM no
+invoca el cálculo) y `demand → forecasting/supply_engine` (la demanda latente no entra al cálculo).
+
+### 16.4 Reglas de dependencia (verificables por prueba)
+
+1. `supply_engine` importa **solo** la biblioteca estándar. Una prueba recorre sus imports.
+2. Nada en `backend/` importa `data.synthetic`. La ingesta lee archivos, no módulos.
+3. `api` no importa `supply_engine` ni `forecasting`: en V1 lee resultados persistidos; recalcular
+   es una ejecución batch explícita (§5.2).
+4. `genai` no recibe una conexión con permisos de escritura ni ninguna función de cálculo.
+5. Nada importa `api`.
+
+### 16.5 Puertos y dobles locales
+
+Toda dependencia externa tiene una implementación local con la que el sistema arranca y se prueba
+sin red y sin credenciales (`DT-003`, RNF-006).
+
+| Puerto | Paquete | Local / doble | Real (fase) |
+|---|---|---|---|
+| `ForecastProvider` | `forecasting` | Baselines en proceso | Endpoint de Azure ML (6) |
+| `TextGenerator` | `genai` | Plantilla determinista (`DT-018`) | Azure OpenAI (10) |
+| `DocumentRetriever` | `genai` | Índice en memoria para pruebas | Azure AI Search (9), **si existe corpus** |
+| `TokenValidator` *(nuevo, `DT-043`)* | `api` | Validador de desarrollo con identidades de prueba; solo en local y en pruebas, **se niega a arrancar en cualquier entorno desplegado** | Microsoft Entra ID (8) |
+| `SecretProvider` | configuración | Variables de entorno | Almacén gestionado (`DT-022`) |
+| `DataSource` | `ingestion` | Directorio de un dataset publicado | Archivos reales / ERP (futuro) |
+
+### 16.6 Estructura de carpetas propuesta
+
+```text
+.
+├── backend/                  U1 — el único proyecto Python del sistema
+│   ├── pyproject.toml        U1 — Python ≥ 3.11; sin dependencias en U1; cada unidad añade las suyas con autorización
+│   ├── app/
+│   │   ├── supply_engine/    U1
+│   │   ├── ingestion/        U2
+│   │   ├── db/               U2 — incluye migrations/*.sql
+│   │   ├── forecasting/      U3
+│   │   ├── runs/             U3–U4
+│   │   ├── api/              U5
+│   │   └── genai/            U6
+│   └── tests/                espejo de app/, unittest
+├── frontend/                 Fase 7
+├── ml/                       Fase 5
+├── infra/                    U2 — solo PostgreSQL local; Azure en Fases 12–13
+└── data/synthetic/           upstream terminado — no se modifica
+```
+
+**Deliberadamente ausentes:** `services/`, `managers/`, `processors/`, `orchestrators/`,
+`adapters/`, `handlers/`, `repositories/`, `factories/`, `builders/`, `ports/`, `domain/` genérico.
+Cada puerto vive en el paquete que lo usa. Cada carpeta se crea con la unidad que le da uso, no antes.
+
+### 16.7 Ejecución
+
+| Qué | Cómo | Por qué |
+|---|---|---|
+| Carga del dataset | Comando de línea (`python -m app.ingestion …`) | Acción de administración; no requiere API |
+| Forecast y recomendaciones | Comandos batch con `as_of_date` explícito | RNF-005: independiente de la API. Sin colas ni orquestadores (`DT-005`) |
+| Consulta | API de solo lectura | La lectura nunca recalcula (§5.2) |
+
+### 16.8 Qué se ejecuta y se prueba en local
+
+Todo. El motor, el forecast y la explicación por plantilla, sin nada instalado aparte de Python. La
+ingesta y la API, con un PostgreSQL local en contenedor. Ninguna prueba necesita Azure, internet,
+OpenAI, AI Search, Azure ML ni Entra ID (`docs/13` §14).
+
+### 16.9 Qué no se construye en esta fase
+
+Ni la API completa, ni la interfaz, ni Power BI, ni RAG, ni autenticación real, ni CI/CD, ni
+recursos de Azure, ni entrenamiento. Esta fase deja **contratos y orden**; la primera línea de código
+llega con la autorización de U1 (`DT-047`).

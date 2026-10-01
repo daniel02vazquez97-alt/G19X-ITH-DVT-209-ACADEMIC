@@ -1,6 +1,6 @@
 # 09 — IA generativa (Azure OpenAI + Azure AI Search)
 
-**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1
+**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §14, punto de integración de la Etapa 2; §§1–13 no cambian
 
 > No se configura ningún recurso de Azure en esta etapa. Antes de implementar, verificar la
 > documentación oficial vigente: la superficie de Azure OpenAI ha cambiado (hoy se expone como
@@ -242,3 +242,49 @@ plantilla, es que faltan datos en la recomendación, no elocuencia en el modelo.
 - Presupuesto asignado al uso del servicio.
 - ¿Requisitos de residencia de datos o restricciones de cumplimiento?
 - ¿Se conservan las conversaciones? ¿Por cuánto tiempo y con qué finalidad?
+
+## 14. Punto de integración (Etapa 2)
+
+*Añadido el 2026-09-30. **Diseñado, no implementado** (unidad U6 de `DT-047`). Se diseña el punto de
+integración, no el asistente: sin LLM, sin RAG y sin ningún recurso de Azure.*
+
+### 14.1 Flujo
+
+```text
+recommendations (persistida, con su desglose)
+        │  el backend construye el contexto SOLO con cifras almacenadas
+        ▼
+ExplanationContext  ──►  TextGenerator  ──►  texto  ──►  verificación de cifras  ──►  respuesta
+                          plantilla (U6)                 toda cifra ∈ contexto        o degradación:
+                          Azure OpenAI (Fase 10)                                      desglose sin narrativa
+        ▲
+DocumentRetriever (Fase 9, solo si existe corpus — ASSUMPTION-008): fragmentos marcados como datos
+```
+
+### 14.2 `ExplanationContext`
+
+| Campo | Contenido |
+|---|---|
+| `kind` | `RECOMMENDATION_EXPLANATION` (CU-1). Los demás casos de uso añadirán su propio tipo |
+| `recommendation_id` | La recomendación explicada |
+| `facts[]` | Pares `{clave, valor, unidad}` con **todas** las cifras que el texto puede mencionar, copiadas del desglose (`docs/06` §16.5): cantidad, necesidad bruta, `SS`, `S`, `L` y su procedencia, `R`, `H`, demanda sobre el horizonte, posición de decisión y contable, tránsito total y efectivo, `MOQ`, múltiplo, `Q_moq` |
+| `flags`, `reasons` | Tal como los devolvió el motor |
+| `provenance`, `notices` | Los de `docs/07` §7.1; con `SYNTHETIC_DATA` y `V1_PROVISIONAL_POLICY` el texto **debe** decir que la cifra es provisional y no es una recomendación de negocio |
+
+El contexto es **inmutable** y se construye a partir de lo que la API ya devuelve. `genai` no abre
+conexión con la base ni recibe ninguna función del motor.
+
+### 14.3 `TextGenerator` y verificación
+
+- `generate(contexto) → {texto, generador}`; `generador` identifica la plantilla o el despliegue.
+- **U6** implementa la plantilla determinista (`DT-018`): obliga a que el desglose sea completo antes
+  de que exista un LLM.
+- La **verificación** extrae todas las cifras del texto y exige que cada una esté en `facts[]`. Si
+  falla, la respuesta se degrada a los datos sin narrativa, con aviso (§8). Se prueba también contra
+  la plantilla, con un generador de prueba que introduce una cifra ajena (RS-010).
+- Sin llamadas a funciones ni herramientas: el modelo no puede pedir un cálculo.
+
+### 14.4 Qué no se hace ahora
+
+Asistente conversacional (`RF-021`, clase D), consultas predefinidas (CU-3), RAG (CU-4, bloqueado por
+ASSUMPTION-008), elección de modelo y región (`DT-P08`) y cualquier costo de Azure.

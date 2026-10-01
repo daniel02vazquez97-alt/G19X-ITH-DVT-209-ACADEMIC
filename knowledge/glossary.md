@@ -258,6 +258,13 @@ cubrir al menos el lead time más el periodo de revisión.
 
 **`as_of_date`** — Fecha de corte de la información utilizada para generar una predicción. Fundamental
 para demostrar que no se usó información futura y para evaluar después la calidad del pronóstico.
+En los contratos de la Etapa 2 es el **último día cuya información se conoce, incluido**, y la **fecha
+de la decisión**, que se toma al cierre de ese día (`DT-P15`, cerrada; `DT-031` §`V1-09`): una
+evaluación con `as_of_date = 2025-12-31` usa los hechos hasta ese día inclusive.
+
+**Inicio del horizonte** *(Horizon start)* — `as_of_date + 1`: primer día cuya demanda es desconocida
+y primer día del horizonte de cobertura y del forecast. No es una segunda fecha de decisión
+(`docs/06` §16.2).
 
 **Intervalo de predicción** *(Prediction interval)* — Rango dentro del cual se espera que caiga la
 demanda real, con un nivel de confianza declarado. Es **una de las fuentes candidatas** de la
@@ -311,3 +318,14 @@ Propiedad exigida a todo el motor de abastecimiento.
 
 **Trazabilidad** *(Traceability)* — Capacidad de reconstruir por qué el sistema produjo un resultado
 concreto en una fecha pasada, con los insumos y versiones vigentes en aquel momento.
+
+**Carga de datos** *(Data load)* — Cada entrada de datos en PostgreSQL, registrada en `data_loads`
+con su `dataset_version`, su `data_origin` y el manifiesto íntegro. Toda ejecución de cálculo apunta a
+la carga sobre la que se hizo (`docs/04` §9.4).
+
+**Linaje de datos** *(Data lineage)* — El conjunto de datos que contiene una base: en la Etapa 2, **un
+solo** dataset por base (`DT-044`, propuesta). Otro `dataset_version`, o datos reales, es otra base.
+
+**Conjunto de política V1 provisional** *(`policy_set = V1_PROVISIONAL`)* — Los parámetros técnicos
+de `DT-031` (`R_v1`, `z_v1`, `N_v1`, `N_MIN_v1`, `LT_MAX_v1`) tal como viajan en cada resultado del
+motor. **No es una política de la organización**: marca la recomendación como provisional.

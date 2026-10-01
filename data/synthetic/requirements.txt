@@ -1,0 +1,7 @@
+# Dependencias del generador de datos sintéticos (data/synthetic/).
+#
+# CLAUDE.md §5: las librerías menores de un lenguaje ya adoptado se registran en el archivo de
+# dependencias de su componente. PyYAML lo usa DatasetConfig (config/config.py) para leer
+# dataset_config.yaml, y las pruebas de test_config.py para escribir configuraciones.
+# Versión fijada (RS-013) a la registrada en DT-024: 6.0.3.
+PyYAML==6.0.3
