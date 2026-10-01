@@ -825,12 +825,17 @@ máximo 1 000 errores por intento; el resultado devuelto los conserva todos.
 `backend/tests/db` (PostgreSQL real, suite explícita que exige `U2_TEST_ADMIN_DSN`; cada prueba trabaja en
 una base temporal propia y en copias temporales del dataset). Comandos en `backend/pyproject.toml`.
 
-**Validación (2026-10-01):** U2 se validó contra un **PostgreSQL 16 real** instalado localmente: primera carga
-`COMPLETED`, idempotencia, conflictos, *rollback* y reintento, con la suite de integración completa en verde.
-**Verificación de infraestructura pendiente: el entorno Docker.** `infra/docker-compose.yml` es sintácticamente
-válido (`docker compose config`), pero no se ha podido levantar: en el contenedor de trabajo el *daemon* de
-Docker arranca, y la política de red rechaza con 403 la descarga de `postgres:16-alpine` desde
-`registry-1.docker.io` (también desde `public.ecr.aws` y `mirror.gcr.io`); en la máquina del responsable, el
-entorno de trabajo de los agentes no tiene Docker. Es un bloqueo externo, no un fallo de U2. Queda por
-ejecutar en una máquina con Docker: `docker compose -f infra/docker-compose.yml up -d`, `python -m app.db
-migrate` y la suite `tests/db` con `U2_TEST_ADMIN_DSN=postgresql://postgres@127.0.0.1:5432/postgres`.
+**Validación (2026-10-01):** U2 se validó contra **dos instancias de PostgreSQL 16**:
+
+1. **PostgreSQL 16.13 instalado localmente** en el entorno de trabajo: primera carga `COMPLETED`, idempotencia,
+   conflictos, *rollback* y reintento; suite de integración 43/43.
+2. **El entorno Docker de `infra/docker-compose.yml`**, en la máquina del responsable (Docker Desktop 4.93.0,
+   Engine 29.8.1, Compose v5.5.1): `docker compose -f infra/docker-compose.yml up -d --wait` descargó
+   `postgres:16-alpine` (PostgreSQL 16.15) y dejó el contenedor `healthy` en `127.0.0.1:5432`, con la base
+   `inventory` y autenticación `trust`, sin contraseña. Desde un contenedor `python:3.11-slim` en la red del
+   compose y con el repositorio montado en solo lectura: `python -m app.db migrate` aplicó `0001` y la
+   repetición no aplicó nada; la primera carga dio `COMPLETED` con las 321 043 filas y la segunda,
+   `ALREADY_LOADED`; suite de integración 43/43 y suite por defecto 181/181.
+
+*(Hasta este cierre, el entorno Docker figuraba como verificación pendiente: el contenedor de trabajo no podía
+descargar la imagen.)*
