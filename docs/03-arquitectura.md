@@ -1,6 +1,6 @@
 # 03 — Arquitectura
 
-**Estado:** Versión 1.0 — Etapa 0 (diseño, no implementado) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §16, arquitectura de implementación de la Etapa 2 (`DT-043`, `DT-047`); §§1–15 no cambian
+**Estado:** Versión 1.0 — Etapa 0 (diseño, no implementado) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §16, arquitectura de implementación de la Etapa 2 (`DT-043`, `DT-047`); §§1–15 no cambian · **Versión 1.3** (2026-10-01) — §16.6: migraciones en `backend/db/migrations/` (`DT-055`)
 
 > Este documento describe la arquitectura **objetivo**. Nada de lo aquí descrito está implementado
 > todavía. Las decisiones que lo sustentan están en `docs/15-decisiones-tecnicas.md`.
@@ -443,21 +443,25 @@ sin red y sin credenciales (`DT-003`, RNF-006).
 ```text
 .
 ├── backend/                  U1 — el único proyecto Python del sistema
-│   ├── pyproject.toml        U1 — Python ≥ 3.11; sin dependencias en U1; cada unidad añade las suyas con autorización
+│   ├── pyproject.toml        U1 — Python ≥ 3.11; sin dependencias en U1; cada unidad añade las suyas con autorización (U2: grupo opcional `db`)
 │   ├── app/
 │   │   ├── supply_engine/    U1
 │   │   ├── ingestion/        U2
-│   │   ├── db/               U2 — incluye migrations/*.sql
+│   │   ├── db/               U2 — conexión y ejecutor de migraciones
 │   │   ├── forecasting/      U3
 │   │   ├── runs/             U3–U4
 │   │   ├── api/              U5
 │   │   └── genai/            U6
+│   ├── db/migrations/        U2 — NNNN_nombre.sql, fuera del paquete Python (`DT-055`)
 │   └── tests/                espejo de app/, unittest
 ├── frontend/                 Fase 7
 ├── ml/                       Fase 5
 ├── infra/                    U2 — solo PostgreSQL local; Azure en Fases 12–13
 └── data/synthetic/           upstream terminado — no se modifica
 ```
+
+*(Actualización del 2026-10-01, `DT-055`: las migraciones SQL salen de `app/db/` a `backend/db/migrations/`
+por instrucción del responsable; `app/db/` conserva la conexión y el ejecutor.)*
 
 **Deliberadamente ausentes:** `services/`, `managers/`, `processors/`, `orchestrators/`,
 `adapters/`, `handlers/`, `repositories/`, `factories/`, `builders/`, `ports/`, `domain/` genérico.

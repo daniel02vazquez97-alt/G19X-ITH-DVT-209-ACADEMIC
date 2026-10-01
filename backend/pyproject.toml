@@ -6,8 +6,15 @@
 # `version` es la del paquete `backend`, no la del motor: la versión de las reglas que viaja en cada
 # resultado es `app.supply_engine.ENGINE_VERSION` (`DT-051`).
 #
+# U2 — `app.db` y `app.ingestion`: PostgreSQL con `psycopg` como dependencia OPCIONAL del grupo `db`
+# (`DT-055`), para que `app.supply_engine` siga sin dependencias. Instalación:
+#     pip install -e ".[db]"
+#
 # Pruebas (unittest, `docs/13` §14), desde este directorio:
 #     python3 -m unittest discover -s tests -t .
+# Integración contra PostgreSQL real (U2), suite aparte; exige U2_TEST_ADMIN_DSN:
+#     U2_TEST_ADMIN_DSN=postgresql://postgres@127.0.0.1:5432/postgres \
+#         python3 -m unittest discover -s tests/db -t tests/db
 
 [project]
 name = "inventory-supply-backend"
@@ -15,3 +22,6 @@ version = "0.0.0"
 description = "Sistema principal del Motor Predictivo de Abastecimiento de Inventarios"
 requires-python = ">=3.11"
 dependencies = []
+
+[project.optional-dependencies]
+db = ["psycopg[binary]==3.3.6"]

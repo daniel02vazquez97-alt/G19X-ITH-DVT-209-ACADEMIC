@@ -1,6 +1,6 @@
 # 15 — Decisiones técnicas (ADR)
 
-**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-18) — `DT-024` a `DT-030`, preparación del Componente 2 · **Versión 1.3** (2026-09-19) — `DT-031`, reglas mínimas de V1 · **Versión 1.4** (2026-09-21) — cierre de las reglas V1: `DT-031` pasa a `ACEPTADA` con trece reglas · **Versión 1.5** (2026-09-21) — `DT-032` y `DT-033`, decisiones que el Componente 2 tenía que tomar al implementarse · **Versión 1.6** (2026-09-21) — tabla canónica de identificadores de componente en `DT-030` · **Versión 1.7** (2026-09-23) — `DT-034` y `DT-035`, demanda latente persistente y sus políticas de generación · **Versión 1.8** (2026-09-24) — `DT-036` y `DT-037`, políticas sintéticas de inventario y comportamiento de proveedores; **enmienda de `DT-027`** (restricción 3) y cierre del pendiente de `data_origin` de `DT-026` · **Versión 1.9** (2026-09-24) — `DT-038` y `DT-039`, contratos de salida de los Componentes 4 y 5, tras la auditoría pre-implementación; cierre de los pendientes de `DT-034` (recorte de la demanda y contrato de `consumption.csv`) y correcciones a `DT-036` y `DT-037` · **Versión 1.10** (2026-09-26) — cierre de D-01: `DT-040` (publicación atómica del dataset, W1), regla general de incremento de `generator_version` en `DT-033`, y actualizaciones de `DT-036`, `DT-038` y `DT-039` (A2, B2, `expected_at`, autoría de los identificadores) · **Versión 1.11** (2026-09-26) — implementación del Componente 4: enmienda de `DT-037` §3 (D-C4-1, reparto de la entrega partida) y actualización de `DT-038` (D-C4-2 precondiciones, D-C4-3 lead time y disparo diario, flujos pseudoaleatorios, `metrics` pendiente) · **Versión 1.12** (2026-09-27) — cierre de D-01, opción A: elegibilidad de las órdenes `CANCELLED` sintéticas respecto de `valid_to` (`DT-039` §5.2) · **Versión 1.13** (2026-09-28) — implementación del Componente 5 (`DT-039` §13), sin cambios en ninguna regla · **Versión 1.14** (2026-09-28) — implementación del Componente 6 (`DT-037` §6, decisiones A1 y A2) y corrección de texto en `DT-040` §3 · **Versión 1.15** (2026-09-29) — implementación de W1 (`DT-040` §9, detalles pendientes resueltos) y `generator_version` 0.3.0 · **Versión 1.16** (2026-09-29) — `DT-041`, contrato e implementación del Componente 7 (sin integrar en W1); notas de redacción en `DT-030` y `DT-031` (`V1-07`, `V1-08`) · **Versión 1.17** (2026-09-29) — `DT-042`, validador del dataset e informe de calidad; integración de C7 y C8 en W1 (`DT-040`); `generator_version` 0.4.0 (`DT-033`); formas de `scenario_assignment` y `quality_report` (`DT-025`); `metrics` de `DT-038` §12 cerrado · **Versión 1.18** (2026-09-30) — Etapa 2, arquitectura y fundación: `DT-043` a `DT-047` (todas `PROPUESTA`) y pendientes `DT-P13` a `DT-P21` · **Versión 1.19** (2026-09-30) — autorización de U1: `DT-043` y `DT-045` `ACEPTADA`, `DT-047` `ACEPTADA` en cuanto a U1; `DT-P15` y `DT-P20` cerradas; `DT-P14` abierta en parte y **bloquea U1** · **Versión 1.20** (2026-10-01) — `DT-P14` **cerrada** con el estimador poblacional, `INSUFFICIENT_HISTORY` para `n = 0` y la evaluación exacta B3 (`docs/06` §16.6); ninguna fórmula V1 cambia · **Versión 1.21** (2026-10-01) — cierre del contrato de U1: `DT-048` a `DT-052` `ACEPTADA` (aclaraciones A-1 en `DT-050` y A-2 en `DT-051`), y pendiente `DT-P22`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.22** (2026-10-01) — `DT-P22` `ACEPTADA` (opción (a)): `PRODUCT_OUT_OF_VALIDITY` cubre también la vigencia que termina dentro del horizonte; cierre de `DT-049`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.23** (2026-10-01) — `DT-053` (frontera de la salida parcial) y `DT-054` (sin monotonía global de `S` frente a `L` en V1), tras el audit de pre-codificación de U1; ninguna fórmula cambia
+**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-18) — `DT-024` a `DT-030`, preparación del Componente 2 · **Versión 1.3** (2026-09-19) — `DT-031`, reglas mínimas de V1 · **Versión 1.4** (2026-09-21) — cierre de las reglas V1: `DT-031` pasa a `ACEPTADA` con trece reglas · **Versión 1.5** (2026-09-21) — `DT-032` y `DT-033`, decisiones que el Componente 2 tenía que tomar al implementarse · **Versión 1.6** (2026-09-21) — tabla canónica de identificadores de componente en `DT-030` · **Versión 1.7** (2026-09-23) — `DT-034` y `DT-035`, demanda latente persistente y sus políticas de generación · **Versión 1.8** (2026-09-24) — `DT-036` y `DT-037`, políticas sintéticas de inventario y comportamiento de proveedores; **enmienda de `DT-027`** (restricción 3) y cierre del pendiente de `data_origin` de `DT-026` · **Versión 1.9** (2026-09-24) — `DT-038` y `DT-039`, contratos de salida de los Componentes 4 y 5, tras la auditoría pre-implementación; cierre de los pendientes de `DT-034` (recorte de la demanda y contrato de `consumption.csv`) y correcciones a `DT-036` y `DT-037` · **Versión 1.10** (2026-09-26) — cierre de D-01: `DT-040` (publicación atómica del dataset, W1), regla general de incremento de `generator_version` en `DT-033`, y actualizaciones de `DT-036`, `DT-038` y `DT-039` (A2, B2, `expected_at`, autoría de los identificadores) · **Versión 1.11** (2026-09-26) — implementación del Componente 4: enmienda de `DT-037` §3 (D-C4-1, reparto de la entrega partida) y actualización de `DT-038` (D-C4-2 precondiciones, D-C4-3 lead time y disparo diario, flujos pseudoaleatorios, `metrics` pendiente) · **Versión 1.12** (2026-09-27) — cierre de D-01, opción A: elegibilidad de las órdenes `CANCELLED` sintéticas respecto de `valid_to` (`DT-039` §5.2) · **Versión 1.13** (2026-09-28) — implementación del Componente 5 (`DT-039` §13), sin cambios en ninguna regla · **Versión 1.14** (2026-09-28) — implementación del Componente 6 (`DT-037` §6, decisiones A1 y A2) y corrección de texto en `DT-040` §3 · **Versión 1.15** (2026-09-29) — implementación de W1 (`DT-040` §9, detalles pendientes resueltos) y `generator_version` 0.3.0 · **Versión 1.16** (2026-09-29) — `DT-041`, contrato e implementación del Componente 7 (sin integrar en W1); notas de redacción en `DT-030` y `DT-031` (`V1-07`, `V1-08`) · **Versión 1.17** (2026-09-29) — `DT-042`, validador del dataset e informe de calidad; integración de C7 y C8 en W1 (`DT-040`); `generator_version` 0.4.0 (`DT-033`); formas de `scenario_assignment` y `quality_report` (`DT-025`); `metrics` de `DT-038` §12 cerrado · **Versión 1.18** (2026-09-30) — Etapa 2, arquitectura y fundación: `DT-043` a `DT-047` (todas `PROPUESTA`) y pendientes `DT-P13` a `DT-P21` · **Versión 1.19** (2026-09-30) — autorización de U1: `DT-043` y `DT-045` `ACEPTADA`, `DT-047` `ACEPTADA` en cuanto a U1; `DT-P15` y `DT-P20` cerradas; `DT-P14` abierta en parte y **bloquea U1** · **Versión 1.20** (2026-10-01) — `DT-P14` **cerrada** con el estimador poblacional, `INSUFFICIENT_HISTORY` para `n = 0` y la evaluación exacta B3 (`docs/06` §16.6); ninguna fórmula V1 cambia · **Versión 1.21** (2026-10-01) — cierre del contrato de U1: `DT-048` a `DT-052` `ACEPTADA` (aclaraciones A-1 en `DT-050` y A-2 en `DT-051`), y pendiente `DT-P22`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.22** (2026-10-01) — `DT-P22` `ACEPTADA` (opción (a)): `PRODUCT_OUT_OF_VALIDITY` cubre también la vigencia que termina dentro del horizonte; cierre de `DT-049`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.23** (2026-10-01) — `DT-053` (frontera de la salida parcial) y `DT-054` (sin monotonía global de `S` frente a `L` en V1), tras el audit de pre-codificación de U1; ninguna fórmula cambia · **Versión 1.24** (2026-10-01) — `DT-044` `ACEPTADA` (cantidades en `numeric`; `quantity_on_hand ≥ 0` compatible con `BR-X09`/`V1-13`); `DT-047` aceptada para U2; `DT-055` (entorno técnico de U2)
 
 Registro de decisiones arquitectónicas. Formato: ID, decisión, contexto, alternativas, razón,
 consecuencias, estado.
@@ -1651,7 +1651,15 @@ consecuencias, estado.
 - **Consecuencias:** Cambiar de dataset es cambiar de base (en desarrollo, recrearla con las
   migraciones). Las cargas incrementales de datos reales se diseñan cuando exista una fuente real.
   `numeric` en cantidades no decide `docs/04` §7; lo deja abierto sin exigir rediseño.
-- **Estado:** `PROPUESTA`. Detalle: `docs/04` §9.
+- **Ratificación al aceptarla (2026-10-01, decisión del responsable).**
+  - *Cantidades:* las cantidades físicas de los CSV se almacenan como `numeric` **sin precisión fija**;
+    no se usa `integer`. El dataset 0.4.0 solo trae enteros, pero el contrato admite cantidades
+    racionales (`docs/06` §16.12) y `integer` obligaría a una migración estructural.
+  - *`quantity_on_hand ≥ 0`:* compatible con el estado documental de `BR-X09`, cerrada para V1 por
+    `V1-13` («no se permite inventario negativo; es incidente de datos»). Si el negocio la cierra de
+    otro modo, es una migración (`docs/04` §9.3).
+  - El resto del texto se acepta sin cambios. Implementación: U2 (`DT-055`).
+- **Estado:** `ACEPTADA` (2026-10-01, decisión del responsable al abrir U2). Detalle: `docs/04` §9.
 
 ## DT-045 — Contrato de implementación del motor de abastecimiento V1
 
@@ -1727,7 +1735,7 @@ consecuencias, estado.
   arrastra más decisiones abiertas. (c) no tiene nada que servir.
 - **Consecuencias:** El valor llega primero como biblioteca probada, no como pantalla. U2 puede
   prepararse en paralelo en cuanto se autoricen sus dependencias.
-- **Estado:** `ACEPTADA` en cuanto a la primera unidad: el responsable autorizó U1 el 2026-09-30. El orden de U2 a U6 sigue `PROPUESTA`.
+- **Estado:** `ACEPTADA` en cuanto a U1 (autorizada el 2026-09-30) y a U2 (autorizada el 2026-10-01). El orden de U3 a U6 sigue `PROPUESTA`.
 
 ## DT-048 — Cobertura del forecast y significado de `FORECAST_TOO_SHORT`
 
@@ -1958,6 +1966,37 @@ consecuencias, estado.
   puede conservarse como prueba de regresión que documenta que la monotonía global no es un
   invariante de V1. Es una decisión de **alcance** del contrato, no un cambio de fórmula.
 - **Estado:** `ACEPTADA` (2026-10-01, decisión del responsable). Detalle: `docs/06` §16.11.7.
+
+## DT-055 — Entorno técnico de U2: PostgreSQL, `psycopg`, migraciones SQL y Docker
+
+- **Decisión:**
+  1. **PostgreSQL 16** es la base de desarrollo e integración.
+  2. **`psycopg` 3** (`psycopg[binary]==3.3.6`) es el único controlador, declarado como dependencia
+     **opcional** del grupo `db` de `backend/pyproject.toml`. `dependencies` sigue vacío: U1 no gana
+     ninguna dependencia y sigue siendo una biblioteca pura.
+  3. **Migraciones SQL versionadas y explícitas** en `backend/db/migrations/NNNN_nombre.sql`, aplicadas
+     en orden por un ejecutor mínimo propio (`app.db.migrations`). Cada migración se aplica en su propia
+     transacción y queda registrada en `schema_migrations` con su `sha256`; una migración aplicada cuyo
+     archivo cambia es un error. Sin ORM y sin Alembic (`DT-043`).
+  4. **Entorno local con Docker:** `infra/docker-compose.yml` levanta `postgres:16-alpine` solo en
+     `127.0.0.1`, con autenticación `trust` y **sin contraseña**: no se versiona ninguna credencial
+     (`CLAUDE.md` §9). La conexión se lee de la variable `DATABASE_URL`.
+  5. **Pruebas en dos suites:** `backend/tests/ingestion` no necesita base y forma parte de la suite por
+     defecto; `backend/tests/db` es la suite de integración contra un PostgreSQL real, se ejecuta de
+     forma explícita y **falla** —no se salta— si falta `U2_TEST_ADMIN_DSN` (`docs/13` §14).
+- **Contexto:** `DT-043` prevé para U2 «un controlador de PostgreSQL y un PostgreSQL local en
+  contenedor, y migraciones como SQL versionado con un ejecutor mínimo propio», y deja cada
+  dependencia a la autorización de su unidad (`docs/04` §9.8).
+- **Alternativas:** controlador `psycopg2` o `asyncpg`; Alembic o un ORM; PostgreSQL instalado en el
+  sistema; dependencia obligatoria en `dependencies`.
+- **Razón:** `psycopg` 3 es el controlador mantenido de referencia y su `COPY` carga las tablas grandes
+  sin una capa extra; la API de U1 no lo necesita, de ahí el grupo opcional. Las migraciones SQL a mano
+  bastan para un esquema de trece tablas y no añaden herramientas. Docker hace reproducible la versión
+  de PostgreSQL.
+- **Consecuencias:** Instalación de U2: `pip install -e "backend[db]"` (o el controlador fijado).
+  `docs/03` §16.6 situaba las migraciones dentro de `app/db/`; pasan a `backend/db/migrations/`, fuera
+  del paquete Python, por instrucción del responsable. Detalle de uso: `docs/04` §9.9.
+- **Estado:** `ACEPTADA` (2026-10-01, decisión del responsable al abrir U2).
 
 ## Decisiones deliberadamente NO tomadas
 

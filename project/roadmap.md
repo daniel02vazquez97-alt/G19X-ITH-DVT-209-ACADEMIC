@@ -23,14 +23,14 @@
 |---|---|---|
 | **Etapa 0 — Preparación** | Fase 0 | ✅ Superada (2026-09-04, aprobada con observaciones) |
 | **Etapa 1 — Datos** | Fase 1 | ✅ **COMPLETADA** (2026-09-29). Generador terminado: `generator_version` **0.4.0**, dataset **`ds-6c8ad65b4999`** publicado y validado (**51/51** comprobaciones del Componente 8, 0 fallos), **582 pruebas** en verde. Cierre autorizado por el responsable el 2026-09-30 |
-| **Etapa 2 — Sistema principal** | Fases 2 a 15 | 🟡 **INICIADA** (2026-09-30). Primer bloque: arquitectura y fundación — contratos y orden de construcción, sin código de aplicación todavía |
+| **Etapa 2 — Sistema principal** | Fases 2 a 15 | 🟡 **INICIADA** (2026-09-30). Primer bloque: arquitectura y fundación — contratos y orden de construcción. U1 (motor V1) y U2 (PostgreSQL + ingesta) implementadas el 2026-10-01 |
 
 **Lo que la Fase 1 listaba y pasa a la Etapa 2.** El «proceso de ingesta y validación con marca de
 origen» (`US-011`) se diseña en la Etapa 2 (`docs/04` §9, `DT-044`) y se implementa en su unidad U2.
 Los umbrales de aceptación del modelo (`DT-P04`) siguen pendientes y se fijan en la Fase 5, con el
 dataset 0.4.0. El resto de criterios de la Fase 1 se cumplió con el generador.
 
-### Orden de implementación de la Etapa 2 (`DT-047`: `ACEPTADA` en cuanto a U1, `PROPUESTA` para U2–U6)
+### Orden de implementación de la Etapa 2 (`DT-047`: `ACEPTADA` en cuanto a U1 y U2, `PROPUESTA` para U3–U6)
 
 Las fases siguen siendo el mapa; las **unidades** son el orden en que se construye. Cada unidad
 requiere su propia autorización.
@@ -38,7 +38,7 @@ requiere su propia autorización.
 | Unidad | Contenido | Fase | Historias | Necesita antes |
 |---|---|---|---|---|
 | **U1** | `supply_engine` V1: biblioteca pura + pruebas calculadas a mano (`docs/06` §16) | 4 (parte pura) | US-040 (parcial: V1 no usa `σ_L`, `BR-P02`), US-041, US-042, US-045 (cálculo) | `DT-P14`, `DT-P15` y `DT-P20` cerradas (2026-09-30 y 2026-10-01); contrato cerrado con `DT-048` a `DT-052` (2026-10-01, `docs/06` §16.11). `DT-P22`, `DT-053` y `DT-054` cerradas (2026-10-01). **Ninguna dependencia nueva**. ✅ **Implementada** (2026-10-01): `backend/app/supply_engine`, 146 pruebas |
-| U2 | PostgreSQL + migraciones + ingesta validada del 0.4.0 (`docs/04` §9) | 2 | US-011, US-020, US-021 | Autorizar el controlador de PostgreSQL y el PostgreSQL local en contenedor |
+| **U2** | PostgreSQL + migraciones + ingesta validada del 0.4.0 (`docs/04` §9) | 2 | US-011, US-020, US-021 | Controlador de PostgreSQL y PostgreSQL local en contenedor, autorizados el 2026-10-01 (`DT-055`); `DT-044` `ACEPTADA`. ✅ **Implementada** (2026-10-01): `backend/app/db`, `backend/app/ingestion`, `backend/db/migrations/0001_dataset_tables.sql`, `infra/docker-compose.yml`; dataset `ds-6c8ad65b4999` cargado e idempotente; 35 pruebas sin base + 43 de integración (`docs/04` §9.9) |
 | U3 | `ForecastProvider` + baselines + forecasts persistidos (`docs/05` §19) | 4 (baseline) | US-050, US-057 (parcial) | `DT-P17` |
 | U4 | Ejecución de recomendaciones: base → forecast → motor → persistencia con trazabilidad | 4 | US-045, US-046 | `DT-P18`, `DT-P21` |
 | U5 | API de solo lectura con autenticación local y roles (`docs/07` §7) | 3 | US-030, US-033 (US-031 queda para después: V1 no expone proveedores ni órdenes) | FastAPI y Pydantic (stack) |

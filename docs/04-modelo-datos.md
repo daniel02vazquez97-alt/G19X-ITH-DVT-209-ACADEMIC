@@ -1,6 +1,6 @@
 # 04 — Modelo de datos conceptual
 
-**Estado:** Versión 1.0 — Etapa 0 (conceptual, no implementado) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-18) — `data_origin` en las entidades maestras (`DT-026`) y vigencia de `Product` (`DT-027`) · **Versión 1.3** (2026-09-24) — `data_origin` en `Inventory`, `PurchaseOrder`, `PurchaseOrderItem` y `PurchaseOrderReceipt`; semántica diaria de `is_stockout_affected` (`DT-036`); enmienda de la restricción 3 de vigencia (`DT-027`) · **Versión 1.4** (2026-09-30) — Etapa 2: §9, del dataset 0.4.0 a PostgreSQL (modelo físico mínimo, ingesta, trazabilidad), `DT-044`. §§1–8 no cambian
+**Estado:** Versión 1.0 — Etapa 0 (conceptual, no implementado) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-18) — `data_origin` en las entidades maestras (`DT-026`) y vigencia de `Product` (`DT-027`) · **Versión 1.3** (2026-09-24) — `data_origin` en `Inventory`, `PurchaseOrder`, `PurchaseOrderItem` y `PurchaseOrderReceipt`; semántica diaria de `is_stockout_affected` (`DT-036`); enmienda de la restricción 3 de vigencia (`DT-027`) · **Versión 1.4** (2026-09-30) — Etapa 2: §9, del dataset 0.4.0 a PostgreSQL (modelo físico mínimo, ingesta, trazabilidad), `DT-044`. §§1–8 no cambian · **Versión 1.5** (2026-10-01) — U2: `DT-044` `ACEPTADA` e implementada; §9.9, implementación (`DT-055`). §§1–8 no cambian
 
 > Modelo **conceptual**. No define todavía tipos SQL definitivos, índices ni migraciones; eso
 > corresponde a la Fase 2. Los nombres de entidad se expresan en inglés (convención de código);
@@ -570,9 +570,10 @@ Se anotan aquí como orientación; **no se decide nada todavía**:
 
 ## 9. Etapa 2 — del dataset 0.4.0 a PostgreSQL
 
-*Añadido el 2026-09-30 (Etapa 2, arquitectura y fundación). Decisión: `DT-044` (`PROPUESTA`).
-**Diseñado, no implementado**: no existe esquema, migración ni código de ingesta. §§1–8 siguen siendo
-el modelo conceptual; esta sección fija cómo se materializa la parte que el sistema necesita primero.*
+*Añadido el 2026-09-30 (Etapa 2, arquitectura y fundación). Decisión: `DT-044`, **`ACEPTADA` el
+2026-10-01** e **implementada en U2** el mismo día (`DT-055`; detalle en §9.9). §§1–8 siguen siendo el
+modelo conceptual; esta sección fija cómo se materializa la parte que el sistema necesita primero.
+(Hasta el 2026-10-01 decía «`PROPUESTA` — diseñado, no implementado».)*
 
 ### 9.1 La fuente: el dataset `ds-6c8ad65b4999`
 
@@ -633,7 +634,7 @@ La tabla conserva **las columnas del contrato, con su nombre y su orden**; lo qu
 | `YYYY-MM-DD` | `date` | — |
 | `YYYY-MM-DDTHH:MM:SSZ` | `timestamptz` | UTC (§5.7); la zona de presentación sigue pendiente |
 | `true` / `false` | `boolean` | — |
-| Cantidades | `numeric` sin precisión fija | **Propuesta** (`DT-044`): 0.4.0 solo trae enteros, pero §7 deja pendiente si alguna unidad (`KG`) admite fracciones. `numeric` sirve para ambos casos sin rediseño; `integer` obligaría a migrar |
+| Cantidades | `numeric` sin precisión fija | **Decidido** (`DT-044`, `ACEPTADA` 2026-10-01; no `integer`): 0.4.0 solo trae enteros, pero §7 deja pendiente si alguna unidad (`KG`) admite fracciones. `numeric` sirve para ambos casos sin rediseño; `integer` obligaría a migrar |
 | Importes (`unit_cost`) | `numeric` | Exacto; la ingesta valida los dos decimales de `DT-024` |
 | Vocabularios cerrados (`movement_type`, `status`, `data_origin`) | `text` + `CHECK` | El `CHECK` recoge el vocabulario **del modelo** (§3), no solo el subconjunto que emite 0.4.0: `DRAFT`, `RETURN` o `SCRAP` son válidos aunque el dataset no los tenga. `Location.type` y `unit_of_measure` son vocabularios **abiertos** en el modelo (§3.5) y no llevan `CHECK` |
 | `id` | `bigint`, **conservado** | En la carga de un *snapshot* el `id` del dataset es la clave primaria. Mantiene válidas las referencias polimórficas de los movimientos sin renumerar nada y hace la carga verificable fila a fila. Las secuencias se ajustan al terminar |
@@ -644,8 +645,8 @@ Restricciones que el esquema declara, todas ya documentadas: claves de negocio �
 producto–proveedor único y como máximo un preferente activo por producto (§3.4, índice parcial);
 `valid_from ≤ valid_to` (§3.2); `moq ≥ 0` y `order_multiple ≥ 1` (§3.4); `quantity ≠ 0` en
 movimientos (§3.7); `quantity_ordered > 0` y `0 ≤ quantity_received ≤ quantity_ordered` por línea
-(§3.10, `V1-12`); `quantity_on_hand ≥ 0` (`V1-13`; si `BR-X09` se cierra de otro modo, es una
-migración); `demand.data_origin = 'SYNTHETIC'` (§3.7-bis).
+(§3.10, `V1-12`); `quantity_on_hand ≥ 0` (`V1-13`; compatible con `BR-X09`, cerrada para V1 por `V1-13`, según se
+verificó al aceptar `DT-044`; si se reabre de otro modo, es una migración); `demand.data_origin = 'SYNTHETIC'` (§3.7-bis).
 
 ### 9.4 Marca de origen y linaje
 
@@ -760,5 +761,76 @@ se crean** `ForecastRun` ni `RecommendationRun` como tablas separadas: §4 ya de
 ### 9.8 Pendiente
 
 `DT-P13` (mutabilidad de las órdenes: `RNF-013` frente a `DT-006` y §1) y `DT-P18` (persistencia de
-las evaluaciones sin recomendación). Autorizaciones que requiere U2: el controlador de PostgreSQL y
-el entorno local de base de datos (`DT-043`).
+las evaluaciones sin recomendación). *Las autorizaciones que requería U2 —el controlador de PostgreSQL
+y el entorno local de base de datos (`DT-043`)— se concedieron el 2026-10-01: `DT-055`.*
+
+### 9.9 Implementación (U2, 2026-10-01)
+
+*Decisiones: `DT-044` (modelo y flujo) y `DT-055` (entorno). Nada de lo anterior cambia; esta sección
+dice dónde está cada pieza y las decisiones menores tomadas al implementar.*
+
+| Pieza | Dónde |
+|---|---|
+| Esquema: las doce tablas y `data_loads` | `backend/db/migrations/0001_dataset_tables.sql` |
+| Ejecutor de migraciones (`schema_migrations` con `sha256`) | `backend/app/db/migrations.py` · `python -m app.db migrate` |
+| Conexión (`DATABASE_URL`, nunca en el repositorio) | `backend/app/db/connection.py` |
+| Contrato de columnas que consume la ingesta | `backend/app/ingestion/contract.py` |
+| Validación previa (paso 3) y mapeo (paso 4), solo biblioteca estándar | `backend/app/ingestion/dataset.py`, `mapping.py` |
+| Carga, detección, validación posterior y `data_loads` (pasos 1, 2, 5–7) | `backend/app/ingestion/loader.py` · `python -m app.ingestion <directorio>` |
+| PostgreSQL 16 local | `infra/docker-compose.yml` |
+
+**Uso**, desde `backend/` con `DATABASE_URL` definida: `python -m app.db migrate` y después
+`python -m app.ingestion ../data/synthetic/output`. Termina con 0 en `COMPLETED` y `ALREADY_LOADED`, y con
+1 en cualquier rechazo o fallo, enumerando los errores.
+
+**Resultados de la ingesta** (`LoadOutcome`) y su rastro en `data_loads`:
+
+| Resultado | Cuándo | `data_loads` |
+|---|---|---|
+| `COMPLETED` | Carga y validación posterior correctas | Una fila `COMPLETED`, en la misma transacción que los datos |
+| `ALREADY_LOADED` | Mismo `dataset_version`, mismo `sha256` del manifiesto y de cada archivo en disco | Nada |
+| `INTEGRITY_CONFLICT` · `LINEAGE_CONFLICT` | Tabla de detección de §9.5 | Una fila `FAILED` |
+| `INVALID_DATASET` | Falla la validación previa o el mapeo | Una fila `FAILED` con cada error (archivo, línea, columna, motivo) |
+| `LOAD_FAILED` | La base rechaza una fila (clave, `CHECK`, FK) | Una fila `FAILED`; *rollback* de todo |
+| `POST_VALIDATION_FAILED` | Falla una invariante del paso 6 | Una fila `FAILED`; *rollback* de todo |
+
+Con el manifiesto ilegible o sin `dataset_version` no hay a qué atribuir el intento y no se escribe fila.
+`data_loads.status` es `COMPLETED` o `FAILED`; `outcome` guarda el resultado preciso. Se guardan como
+máximo 1 000 errores por intento; el resultado devuelto los conserva todos.
+
+**Decisiones menores de implementación:**
+
+- **Bloqueo:** *advisory lock* de sesión de PostgreSQL con una clave fija; una sola carga a la vez por base.
+  Además, un índice único parcial sobre `data_loads` impide una segunda fila `COMPLETED`.
+- **Detección:** compara el `sha256` del `manifest.json` y el de cada archivo **tal como está en disco**,
+  no solo el declarado: un archivo alterado bajo el mismo manifiesto es `INTEGRITY_CONFLICT`.
+- **Validación previa:** además de §9.5, exige UTF-8 sin BOM, fin de línea LF, número de campos por fila, un
+  `data_origin` del vocabulario y `time_range` con `start_date < end_date`. Rechaza cualquier archivo del
+  directorio que el manifiesto no liste.
+- **Mapeo:** cantidades como `Decimal` (enteras o con decimales: `numeric`, `DT-044`); importes con exactamente
+  dos decimales; instantes `YYYY-MM-DDTHH:MM:SSZ` en UTC. Comprueba por fila las restricciones de §9.3 que no
+  dependen de otras filas (`valid_from ≤ valid_to`, `order_multiple ≥ 1`, `quantity_received ≤
+  quantity_ordered`, `demand` solo `SYNTHETIC`, dominios de cada cantidad); claves y FK quedan a la base.
+- **Carga:** `COPY` por tabla en el orden de §9.5; las columnas técnicas `created_at` / `updated_at` reciben
+  el instante de la transacción (`transaction_timestamp()`), igual en todas las filas de la carga; las
+  secuencias de identidad se ajustan al `id` máximo cargado.
+- **Validación posterior:** pendiente de las líneas abiertas = `quantity_ordered − quantity_received`, por
+  producto y por la ubicación de la orden; un par de inventario sin movimientos o sin líneas abiertas se
+  compara con 0, y un par con movimientos o tránsito pero sin fila de inventario es un error. Se informan
+  hasta 20 filas por comprobación.
+- **`time_range`** se guarda como `daterange` `[start_date, end_date)`: `end_date` es exclusivo: el periodo dura `end_date − start_date` días (`DatasetConfig`) y la última fecha del
+  dataset 0.4.0 es 2025-12-31.
+
+**Pruebas** (`docs/13` §14): `backend/tests/ingestion` (sin base, en la suite por defecto) y
+`backend/tests/db` (PostgreSQL real, suite explícita que exige `U2_TEST_ADMIN_DSN`; cada prueba trabaja en
+una base temporal propia y en copias temporales del dataset). Comandos en `backend/pyproject.toml`.
+
+**Validación (2026-10-01):** U2 se validó contra un **PostgreSQL 16 real** instalado localmente: primera carga
+`COMPLETED`, idempotencia, conflictos, *rollback* y reintento, con la suite de integración completa en verde.
+**Verificación de infraestructura pendiente: el entorno Docker.** `infra/docker-compose.yml` es sintácticamente
+válido (`docker compose config`), pero no se ha podido levantar: en el contenedor de trabajo el *daemon* de
+Docker arranca, y la política de red rechaza con 403 la descarga de `postgres:16-alpine` desde
+`registry-1.docker.io` (también desde `public.ecr.aws` y `mirror.gcr.io`); en la máquina del responsable, el
+entorno de trabajo de los agentes no tiene Docker. Es un bloqueo externo, no un fallo de U2. Queda por
+ejecutar en una máquina con Docker: `docker compose -f infra/docker-compose.yml up -d`, `python -m app.db
+migrate` y la suite `tests/db` con `U2_TEST_ADMIN_DSN=postgresql://postgres@127.0.0.1:5432/postgres`.

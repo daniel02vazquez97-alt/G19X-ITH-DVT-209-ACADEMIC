@@ -1,6 +1,6 @@
 # 13 — Estrategia de testing
 
-**Estado:** Versión 1.0 — Etapa 0 (estrategia, **no implementada**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §14, capas de prueba de la Etapa 2; §§1–13 no cambian · **Versión 1.3** (2026-10-01) — §3.1: aclaración de `InvalidInputError` y excepción de `on_hand < 0` para U1 (`DT-052`) · **Versión 1.4** (2026-10-01) — §3.1: sin monotonía global del punto de reorden frente al lead time en U1 (`DT-054`)
+**Estado:** Versión 1.0 — Etapa 0 (estrategia, **no implementada**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §14, capas de prueba de la Etapa 2; §§1–13 no cambian · **Versión 1.3** (2026-10-01) — §3.1: aclaración de `InvalidInputError` y excepción de `on_hand < 0` para U1 (`DT-052`) · **Versión 1.4** (2026-10-01) — §3.1: sin monotonía global del punto de reorden frente al lead time en U1 (`DT-054`) · **Versión 1.5** (2026-10-01) — §14: dónde viven las suites de U2 (`DT-055`)
 
 ---
 
@@ -250,3 +250,10 @@ puede arreglarse dentro del alcance, se reporta como bloqueo (`AGENTS.md` §6).
 no está autorizado). Las pruebas que necesitan PostgreSQL forman una **suite separada** que se ejecuta
 explícitamente; no se «saltan» cuando falta la base, fallan. Ninguna prueba usa red, Azure ni el reloj
 del sistema: `as_of_date` es siempre explícito (§11).
+
+*Implementación en U2 (2026-10-01, `DT-055`):* la capa «Contrato de datos» está en
+`backend/tests/ingestion` (suite por defecto, sin base; las pruebas que leen el dataset se saltan solo si
+el dataset 0.4.0 no está publicado) y la capa «ETL / integración», en `backend/tests/db` (sin
+`__init__.py`, fuera de la suite por defecto): `U2_TEST_ADMIN_DSN=… python3 -m unittest discover -s
+tests/db -t tests/db`, desde `backend/`. Cada prueba crea su propia base temporal y altera solo copias
+temporales del dataset.

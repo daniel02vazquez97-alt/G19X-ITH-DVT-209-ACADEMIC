@@ -2,7 +2,7 @@
 
 > Este archivo es la **fuente de verdad operativa** para cualquier agente de IA que trabaje sobre este repositorio.
 > Debe leerse **completo** al inicio de cada sesión, antes de cualquier modificación.
-> Última actualización: 2026-09-30 · Etapa vigente: **ETAPA 2 — Sistema principal** (iniciada: arquitectura y fundación) · Etapa 1 — Datos: **completada**
+> Última actualización: 2026-10-01 · Etapa vigente: **ETAPA 2 — Sistema principal** (iniciada: arquitectura y fundación) · Etapa 1 — Datos: **completada**
 
 ---
 
@@ -288,9 +288,13 @@ data/
 > elimina al terminar, bien o mal, y está excluido de Git por la regla `tmp/` del `.gitignore`.
 
 `backend/` existe desde U1 (2026-10-01): `backend/app/supply_engine/` (motor V1, solo biblioteca
-estándar) y `backend/tests/`, con `backend/pyproject.toml` (Python ≥ 3.11, sin dependencias).
+estándar) y `backend/tests/`, con `backend/pyproject.toml` (Python ≥ 3.11, sin dependencias
+obligatorias). U2 (2026-10-01) añade `backend/app/db/` (conexión y ejecutor de migraciones),
+`backend/app/ingestion/` (ingesta del dataset 0.4.0), `backend/db/migrations/` (SQL versionado),
+`backend/tests/ingestion/` y `backend/tests/db/`, y el grupo opcional `db` (`psycopg`) del `pyproject`.
+`infra/` existe desde U2 y contiene solo `docker-compose.yml` (PostgreSQL 16 local, `DT-055`).
 
-Carpetas que **aún no existen** y se crearán cuando su fase comience: `frontend/`, `ml/`, `infra/`,
+Carpetas que **aún no existen** y se crearán cuando su fase comience: `frontend/`, `ml/`,
 `.github/workflows/`.
 
 ## 15. Flujo de trabajo esperado del agente
@@ -332,10 +336,12 @@ validado (51/51 comprobaciones, 0 fallos) y 582 pruebas en verde.
 
 El primer bloque de la Etapa 2 es **arquitectura y fundación**: los contratos del sistema principal
 están en `docs/03` §16, `docs/04` §9, `docs/05` §19, `docs/06` §16, `docs/07` §7 y `docs/09` §14, y el
-orden de construcción en `DT-047` (`DT-043` y `DT-045` `ACEPTADA`; `DT-047` `ACEPTADA` en cuanto a U1;
-`DT-044` y `DT-046` en `PROPUESTA`). El contrato de U1 está cerrado en `docs/06` §16.11 (`DT-048` a
+orden de construcción en `DT-047` (`DT-043` y `DT-045` `ACEPTADA`; `DT-047` `ACEPTADA` en cuanto a U1
+y U2; `DT-044` `ACEPTADA` el 2026-10-01; `DT-046` en `PROPUESTA`). El contrato de U1 está cerrado en `docs/06` §16.11 (`DT-048` a
 `DT-052`, `DT-P22`, `DT-053` y `DT-054`), sin decisiones pendientes. **U1 está implementada**
-(`backend/app/supply_engine`, 146 pruebas en verde); U2 a U6 requieren su propia autorización.
+(`backend/app/supply_engine`, 146 pruebas en verde). **U2 está implementada** (2026-10-01, `DT-044`,
+`DT-055`): PostgreSQL 16, migraciones SQL y la ingesta validada, atómica e idempotente del 0.4.0
+(`docs/04` §9.9). U3 a U6 requieren su propia autorización.
 Restricciones vigentes, que se levantan solo por instrucción explícita:
 
 - **No escribir código de aplicación** hasta que el responsable autorice la primera unidad de
