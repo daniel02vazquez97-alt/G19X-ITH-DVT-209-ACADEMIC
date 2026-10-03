@@ -1,6 +1,6 @@
 # 04 — Modelo de datos conceptual
 
-**Estado:** Versión 1.0 — Etapa 0 (conceptual, no implementado) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-18) — `data_origin` en las entidades maestras (`DT-026`) y vigencia de `Product` (`DT-027`) · **Versión 1.3** (2026-09-24) — `data_origin` en `Inventory`, `PurchaseOrder`, `PurchaseOrderItem` y `PurchaseOrderReceipt`; semántica diaria de `is_stockout_affected` (`DT-036`); enmienda de la restricción 3 de vigencia (`DT-027`) · **Versión 1.4** (2026-09-30) — Etapa 2: §9, del dataset 0.4.0 a PostgreSQL (modelo físico mínimo, ingesta, trazabilidad), `DT-044`. §§1–8 no cambian · **Versión 1.5** (2026-10-01) — U2: `DT-044` `ACEPTADA` e implementada; §9.9, implementación (`DT-055`). §§1–8 no cambian
+**Estado:** Versión 1.0 — Etapa 0 (conceptual, no implementado) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-18) — `data_origin` en las entidades maestras (`DT-026`) y vigencia de `Product` (`DT-027`) · **Versión 1.3** (2026-09-24) — `data_origin` en `Inventory`, `PurchaseOrder`, `PurchaseOrderItem` y `PurchaseOrderReceipt`; semántica diaria de `is_stockout_affected` (`DT-036`); enmienda de la restricción 3 de vigencia (`DT-027`) · **Versión 1.4** (2026-09-30) — Etapa 2: §9, del dataset 0.4.0 a PostgreSQL (modelo físico mínimo, ingesta, trazabilidad), `DT-044`. §§1–8 no cambian · **Versión 1.5** (2026-10-01) — U2: `DT-044` `ACEPTADA` e implementada; §9.9, implementación (`DT-055`). §§1–8 no cambian · **Versión 1.6** (2026-10-02) — U3 autorizada: §9.10, modelo físico de U3 (`DT-057`); nota en §3.14 y §9.6
 
 > Modelo **conceptual**. No define todavía tipos SQL definitivos, índices ni migraciones; eso
 > corresponde a la Fase 2. Los nombres de entidad se expresan en inglés (convención de código);
@@ -398,6 +398,9 @@ Predicción de demanda. Se persiste **antes** de ser consumida por el motor.
 **Restricciones:** único por (`product_id`, `location_id`, `as_of_date`, `period_start`, `granularity`,
 `model_version_id`). `lower_bound ≤ predicted_quantity ≤ upper_bound`. `predicted_quantity ≥ 0`.
 **Nunca se sobrescribe** un forecast anterior: una nueva ejecución crea registros nuevos con otro `as_of_date`.
+*(Actualización del 2026-10-02, `DT-057`: en el modelo físico la clave única pasa a ser por ejecución,
+`(calculation_run_id, model_version_id, product_id, location_id, period_start)`; repetir una ejecución
+con la misma configuración no escribe nada. Detalle en §9.10.)*
 
 ### 3.15 `RiskAssessment`
 
@@ -746,6 +749,11 @@ y sin depender del estado actual de las tablas (§3.18).
 `forecast_run_id` y `engine_version`. **No
 se crean** `ForecastRun` ni `RecommendationRun` como tablas separadas: §4 ya define `CalculationRun`.
 
+*Actualización del 2026-10-02 (`DT-057`): para U3 se confirman `forecasts.calculation_run_id` y las columnas
+de `calculation_runs`; en las ejecuciones de forecast, `model_version_id` se sustituye por
+`reference_model_version_id`, porque una ejecución produce varias series y cada fila de `forecasts` lleva
+su propia versión. Detalle en §9.10. Las columnas de U4 siguen siendo propuestas.*
+
 ### 9.7 Lo que el dataset 0.4.0 **no** contiene, y no se inventa
 
 | Ausente | Consecuencia |
@@ -839,3 +847,18 @@ una base temporal propia y en copias temporales del dataset). Comandos en `backe
 
 *(Hasta este cierre, el entorno Docker figuraba como verificación pendiente: el contenedor de trabajo no podía
 descargar la imagen.)*
+
+### 9.10 Modelo físico de U3 (`DT-057`, autorizado, no implementado)
+
+*Aceptado el 2026-10-02 al autorizar U3; se implementa en la migración `0002`. Confirma y concreta las
+propuestas de §9.6 para U3; las columnas de U4 se deciden con U4.*
+
+| Tabla | Columnas y restricciones |
+|---|---|
+| `model_versions` | `id` (identidad), `name`, `version` (único `(name, version)`), `algorithm`, `trained_at`, `training_data_from`, `training_data_to`, `metrics`, `baseline_metrics`, `hyperparameters` (`jsonb`, obligatorio), `status`, `external_ref`, `is_baseline`, `created_at`. En los baselines, `trained_at`, ventana, métricas, `status` y `external_ref` son `NULL` (no hay entrenamiento ni evaluación); CHECK `is_baseline = (status IS NULL)` |
+| `calculation_runs` | `id`, `run_type` (`FORECAST` · `RECOMMENDATION`), `status` (`COMPLETED` · `FAILED`), `as_of_date`, `data_load_id` (FK → `data_loads`), `reference_model_version_id` (FK → `model_versions`, obligatoria en `FORECAST`), `config_sha256`, `summary` (`jsonb`), `error` (solo en `FAILED`), `started_at`, `finished_at`. Único parcial `(run_type, as_of_date, data_load_id, config_sha256) WHERE status = 'COMPLETED'` |
+| `forecasts` | `id`, `calculation_run_id` (FK), `product_id`, `location_id`, `model_version_id` (FK), `as_of_date`, `generated_at`, `period_start`, `period_end` (`= period_start + 7`), `granularity`, `predicted_quantity`, `lower_bound`, `upper_bound` (`numeric`; `0 ≤ lower ≤ predicted ≤ upper`; escala `≤ 6`), `confidence_level` (`0 < c < 1`, nominal), `method_used`, `confidence_flag` (`STANDARD` · `INSUFFICIENT_HISTORY`), `is_primary`. Único `(calculation_run_id, model_version_id, product_id, location_id, period_start)`; único parcial `(calculation_run_id, product_id, location_id, period_start) WHERE is_primary` |
+
+`forecasts` y `calculation_runs` son inmutables: un *trigger* rechaza `UPDATE` y `DELETE`. Ninguna de las
+tres tablas lleva `data_origin` (§5.2): llegan al origen a través de `calculation_runs.data_load_id`.
+Repetir una ejecución con la misma configuración da `ALREADY_COMPUTED` sin escribir (`DT-057`).

@@ -1,6 +1,6 @@
 # Roadmap del proyecto
 
-**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — cierre de la Etapa 1, inicio de la Etapa 2 y orden de implementación propuesto (`DT-047`) · **Versión 1.3** (2026-10-01) — contrato de U1 cerrado (`DT-048` a `DT-052`) y pendiente `DT-P22` · **Versión 1.4** (2026-10-01) — `DT-P22` cerrada; contrato de U1 sin pendientes · **Versión 1.5** (2026-10-01) — U1 implementada
+**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — cierre de la Etapa 1, inicio de la Etapa 2 y orden de implementación propuesto (`DT-047`) · **Versión 1.3** (2026-10-01) — contrato de U1 cerrado (`DT-048` a `DT-052`) y pendiente `DT-P22` · **Versión 1.4** (2026-10-01) — `DT-P22` cerrada; contrato de U1 sin pendientes · **Versión 1.5** (2026-10-01) — U1 implementada · **Versión 1.6** (2026-10-02) — U2 implementada (2026-10-01) y U3 autorizada para implementación (`DT-056`, `DT-057`)
 
 ## Principios de secuenciación
 
@@ -30,7 +30,7 @@ origen» (`US-011`) se diseña en la Etapa 2 (`docs/04` §9, `DT-044`) y se impl
 Los umbrales de aceptación del modelo (`DT-P04`) siguen pendientes y se fijan en la Fase 5, con el
 dataset 0.4.0. El resto de criterios de la Fase 1 se cumplió con el generador.
 
-### Orden de implementación de la Etapa 2 (`DT-047`: `ACEPTADA` en cuanto a U1 y U2, `PROPUESTA` para U3–U6)
+### Orden de implementación de la Etapa 2 (`DT-047`: `ACEPTADA` en cuanto a U1, U2 y U3, `PROPUESTA` para U4–U6)
 
 Las fases siguen siendo el mapa; las **unidades** son el orden en que se construye. Cada unidad
 requiere su propia autorización.
@@ -39,7 +39,7 @@ requiere su propia autorización.
 |---|---|---|---|---|
 | **U1** | `supply_engine` V1: biblioteca pura + pruebas calculadas a mano (`docs/06` §16) | 4 (parte pura) | US-040 (parcial: V1 no usa `σ_L`, `BR-P02`), US-041, US-042, US-045 (cálculo) | `DT-P14`, `DT-P15` y `DT-P20` cerradas (2026-09-30 y 2026-10-01); contrato cerrado con `DT-048` a `DT-052` (2026-10-01, `docs/06` §16.11). `DT-P22`, `DT-053` y `DT-054` cerradas (2026-10-01). **Ninguna dependencia nueva**. ✅ **Implementada** (2026-10-01): `backend/app/supply_engine`, 146 pruebas |
 | **U2** | PostgreSQL + migraciones + ingesta validada del 0.4.0 (`docs/04` §9) | 2 | US-011, US-020, US-021 | Controlador de PostgreSQL y PostgreSQL local en contenedor, autorizados el 2026-10-01 (`DT-055`); `DT-044` `ACEPTADA`. ✅ **Implementada** (2026-10-01): `backend/app/db`, `backend/app/ingestion`, `backend/db/migrations/0001_dataset_tables.sql`, `infra/docker-compose.yml`; dataset `ds-6c8ad65b4999` cargado e idempotente; 35 pruebas sin base + 43 de integración (`docs/04` §9.9) |
-| U3 | `ForecastProvider` + baselines + forecasts persistidos (`docs/05` §19) | 4 (baseline) | US-050, US-057 (parcial) | `DT-P17` |
+| **U3** | `ForecastProvider` + baselines + forecasts persistidos (`docs/05` §19) | 4 (baseline) | US-050, US-057 (parcial) | `DT-P17` cerrada por `DT-056`; `DT-046` `ACEPTADA`; `DT-057` (persistencia y ejecución). 🟡 **Autorizada para implementación (2026-10-02), no implementada.** Criterios de cierre: `docs/05` §19.9 |
 | U4 | Ejecución de recomendaciones: base → forecast → motor → persistencia con trazabilidad | 4 | US-045, US-046 | `DT-P18`, `DT-P21` |
 | U5 | API de solo lectura con autenticación local y roles (`docs/07` §7) | 3 | US-030, US-033 (US-031 queda para después: V1 no expone proveedores ni órdenes) | FastAPI y Pydantic (stack) |
 | U6 | Explicación por plantilla + verificación de cifras (`docs/09` §14) | 4 | US-048 | — |

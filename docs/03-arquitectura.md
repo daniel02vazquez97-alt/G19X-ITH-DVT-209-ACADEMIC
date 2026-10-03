@@ -1,6 +1,6 @@
 # 03 — Arquitectura
 
-**Estado:** Versión 1.0 — Etapa 0 (diseño, no implementado) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §16, arquitectura de implementación de la Etapa 2 (`DT-043`, `DT-047`); §§1–15 no cambian · **Versión 1.3** (2026-10-01) — §16.6: migraciones en `backend/db/migrations/` (`DT-055`)
+**Estado:** Versión 1.0 — Etapa 0 (diseño, no implementado) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §16, arquitectura de implementación de la Etapa 2 (`DT-043`, `DT-047`); §§1–15 no cambian · **Versión 1.3** (2026-10-01) — §16.6: migraciones en `backend/db/migrations/` (`DT-055`) · **Versión 1.4** (2026-10-02) — notas en §4 y §5.1: frontera de `forecasting` y `runs` (`DT-046` `ACEPTADA`); estado de §16
 
 > Este documento describe la arquitectura **objetivo**. Nada de lo aquí descrito está implementado
 > todavía. Las decisiones que lo sustentan están en `docs/15-decisiones-tecnicas.md`.
@@ -133,6 +133,10 @@ una real y una local/sustituta para desarrollo y pruebas.
 | `SecretProvider` | `get(nombre) -> valor` | Variables de entorno · almacén gestionado (producto sin fijar, `DT-022`) |
 | `DataSource` (ingesta) | `load(origen) -> registros validados + reporte` | Archivos sintéticos · Archivos reales · (futuro) ERP |
 
+*Nota del 2026-10-02 (`DT-046`, `ACEPTADA`): la firma de `ForecastProvider` de esta tabla es conceptual.
+En la Etapa 2 el proveedor recibe la serie diaria de consumo ya preparada, no un identificador de SKU
+(`docs/05` §19).*
+
 Consecuencia práctica: el sistema arranca y funciona sin ninguna credencial de Azure. Esto es un
 requisito operativo (RNF-006), no una comodidad de desarrollo.
 
@@ -163,6 +167,10 @@ sequenceDiagram
 
 Punto clave: el forecast se **persiste** antes de ser consumido. Así la recomendación queda anclada
 a una predicción concreta e identificable, y es reconstruible meses después (RF-024).
+
+*Nota del 2026-10-02 (`DT-046`, `ACEPTADA`): este flujo es conceptual (Etapa 0). En la Etapa 2 prevalece
+§16: `forecasting` es puro y no lee ni escribe en PostgreSQL; la ejecución de forecast (`runs`) lee el
+consumo, llama al proveedor y persiste el resultado con su ejecución (`DT-057`).*
 
 ### 5.2 Flujo de consulta interactiva
 
@@ -361,9 +369,12 @@ Se documentan aquí para que no se tomen implícitamente durante la implementaci
 ## 16. Etapa 2 — arquitectura de implementación
 
 *Añadido el 2026-09-30. Decisiones: `DT-043` (estructura), `ACEPTADA` el 2026-09-30, y `DT-047` (orden),
-`ACEPTADA` en cuanto a U1 y `PROPUESTA` para U2–U6.
+`ACEPTADA` en cuanto a U1 y `PROPUESTA` para U2–U6 (desde el 2026-10-02: `ACEPTADA` en cuanto a U1, U2 y U3,
+`PROPUESTA` para U4–U6).
 Lo descrito aquí está **diseñado**; nada está implementado (actualización del 2026-10-01: U1,
-`backend/app/supply_engine`, está implementada; el resto sigue diseñado).*
+`backend/app/supply_engine`, está implementada; el resto sigue diseñado; actualización del 2026-10-02: U2
+—`app/db`, `app/ingestion`— está implementada, y U3 —`forecasting` y la ejecución de forecast en `runs`— está
+autorizada y no implementada, `DT-046`, `DT-056`, `DT-057`).*
 
 ### 16.1 Estado real del que se parte
 

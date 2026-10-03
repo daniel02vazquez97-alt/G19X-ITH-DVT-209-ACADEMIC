@@ -1,6 +1,6 @@
 # 05 — Motor predictivo (estrategia de Machine Learning)
 
-**Estado:** Versión 1.0 — Etapa 0 (estrategia, no implementada) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §19, contrato de `ForecastProvider` para la Etapa 2 (`DT-046`); §§1–18 no cambian
+**Estado:** Versión 1.0 — Etapa 0 (estrategia, no implementada) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §19, contrato de `ForecastProvider` para la Etapa 2 (`DT-046`); §§1–18 no cambian · **Versión 1.3** (2026-10-02) — `DT-046` `ACEPTADA`; §19.8 y §19.9, decisiones y criterios de cierre de U3 (`DT-056`, `DT-057`); nota de V1 en §6
 
 > **No se implementa ningún modelo en esta etapa.** Este documento fija la estrategia, las reglas de
 > evaluación y los criterios de aceptación **antes** de entrenar, para que la evaluación no se ajuste
@@ -179,6 +179,12 @@ Baselines a implementar:
 
 El baseline de referencia oficial se elige entre estos según su desempeño global, y queda registrado
 en `ModelVersion` con `is_baseline = true`.
+
+> **V1 (U3, `DT-056`, 2026-10-02).** La media móvil de 13 semanas se registra como referencia
+> provisional de V1. Esta elección es operativa y reversible y no implica que sea el baseline de mejor
+> desempeño. La selección definitiva por desempeño corresponde a la Fase 5, con la regla de este
+> apartado. En V1 las tres versiones de baseline llevan `is_baseline = true` y la condición de
+> referencia queda en cada ejecución (`calculation_runs.reference_model_version_id`, `DT-057`).
 
 ## 7. Modelos candidatos
 
@@ -458,8 +464,10 @@ El modelo reentrenado **no sustituye automáticamente** al vigente: pasa por la 
 
 ## 19. Contrato de `ForecastProvider` (Etapa 2)
 
-*Añadido el 2026-09-30. Decisión: `DT-046` (`PROPUESTA`). **Diseñado, no implementado.** Se fija el
-contrato antes que el modelo: ningún entrenamiento, ningún baseline implementado todavía.*
+*Añadido el 2026-09-30. Decisión: `DT-046`, **`ACEPTADA` el 2026-10-02** al autorizar U3, junto con
+`DT-056` (baselines) y `DT-057` (persistencia y ejecución); detalle en §19.8 y §19.9. **U3 está
+autorizada y no implementada**: ningún baseline está implementado todavía y no hay entrenamiento.
+(Hasta el 2026-10-02 decía «`PROPUESTA` — diseñado, no implementado».)*
 
 ### 19.1 Frontera
 
@@ -524,8 +532,69 @@ cualquier recomendación se llega a la versión de modelo y al dataset (`docs/04
 
 ### 19.7 Pendiente
 
-`DT-P17` (método del intervalo del baseline, `k` de la media móvil, longitud estacional y baseline de
-referencia) antes de U3; `DT-P21` (cómo se concilia el forecast semanal de §2 con el recálculo diario
+`DT-P17` quedó **cerrada** el 2026-10-02 por `DT-056` (§19.8). Siguen abiertos: `DT-P21` (cómo se concilia el forecast semanal de §2 con el recálculo diario
 de recomendaciones cuando las semanas se anclan en el primer día del horizonte) antes de U4; `DT-021` (métrica primaria) y `DT-P04` (umbrales de aceptación) siguen
-abiertos y se cierran en la Fase 5 con el dataset 0.4.0. RF-010 exige intervalo: **no se implementa
-un baseline sin decidir antes cómo lo produce**.
+abiertos y se cierran en la Fase 5 con el dataset 0.4.0; `DT-011` (tratamiento del desabasto) y `DT-P23`
+(productos sin histórico suficiente) también siguen abiertos. RF-010 exige intervalo: **no se implementa
+un baseline sin decidir antes cómo lo produce** —decidido en `DT-056`—.
+
+### 19.8 Decisiones de U3 (`DT-056`, `DT-057`)
+
+*Aceptadas el 2026-10-02 al autorizar U3. U3 está **autorizada y no implementada**. Etiquetas:
+**Aceptado** = respaldado por una decisión aceptada o cerrada antes de U3; **Derivado** = se sigue de
+reglas aceptadas; **Nueva** = decisión tomada al autorizar U3.*
+
+| ID | Decisión | Contenido | Fuente | Tipo |
+|---|---|---|---|---|
+| D-01 | Referencia | La media móvil de 13 semanas se registra como referencia provisional de V1. Esta elección es operativa y reversible y no implica que sea el baseline de mejor desempeño. La selección definitiva por desempeño corresponde a la Fase 5 (§6) | US-050; `DT-056` | Nueva |
+| D-02 | Intervalo | Cuantiles empíricos nearest-rank del error histórico del mismo método a cada horizonte; `L_h = max(0, F_h + min(q_lo, 0))`, `U_h = F_h + max(q_hi, 0)` | RF-010; `DT-010` (c)/(d) | Nueva |
+| D-03 | `confidence_level` | `0.80`, con cuantiles del 10 % y el 90 %. Es el nivel nominal del intervalo: no constituye una garantía ni una medición empírica de cobertura, no es un nivel de servicio y no está calibrado; la calibración y validación de cobertura corresponden a la Fase 5. No se reutiliza `z_v1 = 1,65` | `DT-056` | Nueva |
+| D-04 | Mínimo de errores | Con la regla de cuantiles nearest-rank 10/90 adoptada para el nivel nominal 0.80, mínimo operacional de 11 errores por horizonte para que exista al menos una observación en cada cola (`m = 11` → `q_lo = e_(2)`, `q_hi = e_(10)`). No es una estimación universal; la cobertura real se evalúa en la Fase 5 | D-03 | Derivado de D-02 y D-03 |
+| D-05 | Longitud estacional | `L = 52` semanas | `DT-046` (anclaje) | Nueva |
+| D-06 | Media móvil | `k = 13` semanas; sin reducir la ventana | §6 | Nueva |
+| D-07 | Fórmulas y agregación | Semanas completas ancladas en `A`; naïve `F_h = Y_n`; estacional `F_h = Y_{n+h−52}`; media móvil `F_h = media(Y_{n−12} … Y_n)`; días sobrantes más antiguos descartados | `DT-046`; `DT-048` | Nueva (detalle) |
+| D-08 | Mínimos y respaldo | Naïve 25 semanas, media móvil 37, naïve estacional 63; serie primaria: media móvil → naïve → sin forecast | RF-010; RML-007 | Nueva |
+| D-09 | Sin histórico suficiente | Menos de 25 semanas: sin forecast, motivo en la ejecución; U1 devolverá `FORECAST_MISSING`; la estimación para este caso es `DT-P23` | RML-007; US-056 | Nueva |
+| D-10 | Desabasto | El consumo observado puede subrepresentar la demanda potencial durante episodios de desabasto. En V1 se utiliza como proxy observable del consumo/demanda satisfecha, sin corrección ni imputación (`stockout_treatment = "NONE_RAW_CONSUMPTION_V1"`); `is_stockout_affected` viaja en la petición y no modifica el cálculo; cambiarlo exige versión nueva; `DT-011` sigue abierta | `DT-011`; `DT-P14` | Nueva (provisional) |
+| D-11 | Catálogo | U3 pronostica productos activos y vigentes en `as_of_date`, con histórico contiguo; U1 realiza posteriormente su propia validación de vigencia sobre el horizonte concreto de la recomendación. Exclusiones con motivo (`INACTIVE_OR_OUT_OF_VALIDITY`, `INVALID_HISTORY`), sin imputar | `DT-049`; §4 | Nueva |
+| D-12 | Precisión | `Fraction` interna; salida `Decimal` con 6 decimales, `ROUND_HALF_EVEN`; nunca `float` | `DT-051`; `DT-052` | Nueva |
+| D-13 | `model_versions` | Una fila por baseline, `1.0.0`; campos de entrenamiento, métricas y `status` en `NULL` | `docs/04` §3.13; §13 | Nueva |
+| D-14 | `calculation_runs` | Columnas de `DT-057`; `reference_model_version_id`; `config_sha256`; `summary` | `docs/04` §4 y §9.6 | Nueva |
+| D-15 | `forecasts` | Clave única por ejecución; CHECK de orden y escala; inmutables | `docs/04` §3.14 y §9.6 | Nueva |
+| D-16 | C9 | Una ejecución; tres series por producto; `is_primary` | `docs/04` §9.6 | Nueva |
+| D-17 | C8 | `ALREADY_COMPUTED` con la misma `config_sha256`, sin escribir | Patrón de U2 | Nueva |
+| D-18 | Frontera | `forecasting` puro; `runs` lee, registra y persiste (C4, C5) | `DT-043`; `DT-046` | Aclaración |
+| D-19 | `as_of_date` | `python -m app.runs forecast --as-of AAAA-MM-DD`; primera ejecución `2025-12-31`; sin backtesting | `docs/03` §16.7 | Nueva |
+| D-20 | Horizonte | 14 semanas; prevalece `DT-046` sobre `ASSUMPTION-002` (C3) | `V1-03`; `DT-048` | Derivado |
+| D-21 | `confidence_flag` | `STANDARD` · `INSUFFICIENT_HISTORY` | `docs/04` §3.14 | Nueva |
+| D-22 | Cierre de U3 | Criterios de §19.9 | `DT-047` | Nueva |
+
+### 19.9 Criterios de cierre de U3
+
+1. **Contrato:** 14 semanas ancladas en `A + 1`, rechazo de fechas `> A`, salida `Decimal`, sin `float`
+   (`DT-046`).
+2. **Baselines:** pruebas con valores calculados a mano para los tres; fronteras de 24/25, 36/37 y 62/63
+   semanas; semana parcial más antigua descartada.
+3. **Intervalos:** regla nearest-rank con `m = 11` y con `m` grande; recorte en 0; inclusión del punto con
+   errores del mismo signo; series constante, de ceros e intermitente.
+4. **Respaldo:** cadena media móvil → naïve → sin forecast; `confidence_flag` y motivos en `summary`.
+5. **Leakage:** alterar el consumo posterior a `A` no cambia la salida; fechas `> A` rechazadas.
+6. **Reproducibilidad:** dos ejecuciones dan salida idéntica; `0 ≤ L ≤ F ≤ U` y escala `≤ 6`.
+7. **Pureza:** `forecasting` solo importa la biblioteca estándar (ni `db` ni `supply_engine`).
+8. **Migración `0002`:** desde cero y sobre `0001`; idempotente; control `sha256`.
+9. **Esquema:** restricciones, FK, índices parciales y *triggers* de inmutabilidad probados.
+10. **Versionado:** tres filas en `model_versions`, registradas una vez; `hyperparameters` distintos para
+    la misma versión → error.
+11. **Ejecución real** sobre el dataset 0.4.0 con `A = 2025-12-31`: una ejecución `COMPLETED`; 95
+    productos con forecast y 5 excluidos (`INACTIVE_OR_OUT_OF_VALIDITY`); 3 990 filas (95 × 3 × 14);
+    1 330 primarias de la media móvil; ningún respaldo.
+12. **Idempotencia y *rollback*:** la repetición da `ALREADY_COMPUTED` sin escribir; un fallo inyectado
+    deja `FAILED` y ninguna fila de forecast.
+13. **Trazabilidad:** `forecast → calculation_run → data_load` devuelve `ds-6c8ad65b4999`.
+14. **Pruebas:** suite por defecto, integración contra PostgreSQL (local y Docker), U1 en verde y
+    generador sin tocar.
+15. **Compatibilidad con U1, solo en pruebas:** con las series primarias se construye el `Forecast` de U1
+    y `evaluate()` no lanza `InvalidInputError` en ninguno de los 95 productos. Ninguna ruta de producción
+    entre U1 y U3.
+
+No se exige ninguna métrica de calidad del forecast: pertenecen a la Fase 5.

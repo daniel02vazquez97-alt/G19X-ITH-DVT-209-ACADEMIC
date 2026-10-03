@@ -1,6 +1,6 @@
 # 15 — Decisiones técnicas (ADR)
 
-**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-18) — `DT-024` a `DT-030`, preparación del Componente 2 · **Versión 1.3** (2026-09-19) — `DT-031`, reglas mínimas de V1 · **Versión 1.4** (2026-09-21) — cierre de las reglas V1: `DT-031` pasa a `ACEPTADA` con trece reglas · **Versión 1.5** (2026-09-21) — `DT-032` y `DT-033`, decisiones que el Componente 2 tenía que tomar al implementarse · **Versión 1.6** (2026-09-21) — tabla canónica de identificadores de componente en `DT-030` · **Versión 1.7** (2026-09-23) — `DT-034` y `DT-035`, demanda latente persistente y sus políticas de generación · **Versión 1.8** (2026-09-24) — `DT-036` y `DT-037`, políticas sintéticas de inventario y comportamiento de proveedores; **enmienda de `DT-027`** (restricción 3) y cierre del pendiente de `data_origin` de `DT-026` · **Versión 1.9** (2026-09-24) — `DT-038` y `DT-039`, contratos de salida de los Componentes 4 y 5, tras la auditoría pre-implementación; cierre de los pendientes de `DT-034` (recorte de la demanda y contrato de `consumption.csv`) y correcciones a `DT-036` y `DT-037` · **Versión 1.10** (2026-09-26) — cierre de D-01: `DT-040` (publicación atómica del dataset, W1), regla general de incremento de `generator_version` en `DT-033`, y actualizaciones de `DT-036`, `DT-038` y `DT-039` (A2, B2, `expected_at`, autoría de los identificadores) · **Versión 1.11** (2026-09-26) — implementación del Componente 4: enmienda de `DT-037` §3 (D-C4-1, reparto de la entrega partida) y actualización de `DT-038` (D-C4-2 precondiciones, D-C4-3 lead time y disparo diario, flujos pseudoaleatorios, `metrics` pendiente) · **Versión 1.12** (2026-09-27) — cierre de D-01, opción A: elegibilidad de las órdenes `CANCELLED` sintéticas respecto de `valid_to` (`DT-039` §5.2) · **Versión 1.13** (2026-09-28) — implementación del Componente 5 (`DT-039` §13), sin cambios en ninguna regla · **Versión 1.14** (2026-09-28) — implementación del Componente 6 (`DT-037` §6, decisiones A1 y A2) y corrección de texto en `DT-040` §3 · **Versión 1.15** (2026-09-29) — implementación de W1 (`DT-040` §9, detalles pendientes resueltos) y `generator_version` 0.3.0 · **Versión 1.16** (2026-09-29) — `DT-041`, contrato e implementación del Componente 7 (sin integrar en W1); notas de redacción en `DT-030` y `DT-031` (`V1-07`, `V1-08`) · **Versión 1.17** (2026-09-29) — `DT-042`, validador del dataset e informe de calidad; integración de C7 y C8 en W1 (`DT-040`); `generator_version` 0.4.0 (`DT-033`); formas de `scenario_assignment` y `quality_report` (`DT-025`); `metrics` de `DT-038` §12 cerrado · **Versión 1.18** (2026-09-30) — Etapa 2, arquitectura y fundación: `DT-043` a `DT-047` (todas `PROPUESTA`) y pendientes `DT-P13` a `DT-P21` · **Versión 1.19** (2026-09-30) — autorización de U1: `DT-043` y `DT-045` `ACEPTADA`, `DT-047` `ACEPTADA` en cuanto a U1; `DT-P15` y `DT-P20` cerradas; `DT-P14` abierta en parte y **bloquea U1** · **Versión 1.20** (2026-10-01) — `DT-P14` **cerrada** con el estimador poblacional, `INSUFFICIENT_HISTORY` para `n = 0` y la evaluación exacta B3 (`docs/06` §16.6); ninguna fórmula V1 cambia · **Versión 1.21** (2026-10-01) — cierre del contrato de U1: `DT-048` a `DT-052` `ACEPTADA` (aclaraciones A-1 en `DT-050` y A-2 en `DT-051`), y pendiente `DT-P22`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.22** (2026-10-01) — `DT-P22` `ACEPTADA` (opción (a)): `PRODUCT_OUT_OF_VALIDITY` cubre también la vigencia que termina dentro del horizonte; cierre de `DT-049`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.23** (2026-10-01) — `DT-053` (frontera de la salida parcial) y `DT-054` (sin monotonía global de `S` frente a `L` en V1), tras el audit de pre-codificación de U1; ninguna fórmula cambia · **Versión 1.24** (2026-10-01) — `DT-044` `ACEPTADA` (cantidades en `numeric`; `quantity_on_hand ≥ 0` compatible con `BR-X09`/`V1-13`); `DT-047` aceptada para U2; `DT-055` (entorno técnico de U2)
+**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-18) — `DT-024` a `DT-030`, preparación del Componente 2 · **Versión 1.3** (2026-09-19) — `DT-031`, reglas mínimas de V1 · **Versión 1.4** (2026-09-21) — cierre de las reglas V1: `DT-031` pasa a `ACEPTADA` con trece reglas · **Versión 1.5** (2026-09-21) — `DT-032` y `DT-033`, decisiones que el Componente 2 tenía que tomar al implementarse · **Versión 1.6** (2026-09-21) — tabla canónica de identificadores de componente en `DT-030` · **Versión 1.7** (2026-09-23) — `DT-034` y `DT-035`, demanda latente persistente y sus políticas de generación · **Versión 1.8** (2026-09-24) — `DT-036` y `DT-037`, políticas sintéticas de inventario y comportamiento de proveedores; **enmienda de `DT-027`** (restricción 3) y cierre del pendiente de `data_origin` de `DT-026` · **Versión 1.9** (2026-09-24) — `DT-038` y `DT-039`, contratos de salida de los Componentes 4 y 5, tras la auditoría pre-implementación; cierre de los pendientes de `DT-034` (recorte de la demanda y contrato de `consumption.csv`) y correcciones a `DT-036` y `DT-037` · **Versión 1.10** (2026-09-26) — cierre de D-01: `DT-040` (publicación atómica del dataset, W1), regla general de incremento de `generator_version` en `DT-033`, y actualizaciones de `DT-036`, `DT-038` y `DT-039` (A2, B2, `expected_at`, autoría de los identificadores) · **Versión 1.11** (2026-09-26) — implementación del Componente 4: enmienda de `DT-037` §3 (D-C4-1, reparto de la entrega partida) y actualización de `DT-038` (D-C4-2 precondiciones, D-C4-3 lead time y disparo diario, flujos pseudoaleatorios, `metrics` pendiente) · **Versión 1.12** (2026-09-27) — cierre de D-01, opción A: elegibilidad de las órdenes `CANCELLED` sintéticas respecto de `valid_to` (`DT-039` §5.2) · **Versión 1.13** (2026-09-28) — implementación del Componente 5 (`DT-039` §13), sin cambios en ninguna regla · **Versión 1.14** (2026-09-28) — implementación del Componente 6 (`DT-037` §6, decisiones A1 y A2) y corrección de texto en `DT-040` §3 · **Versión 1.15** (2026-09-29) — implementación de W1 (`DT-040` §9, detalles pendientes resueltos) y `generator_version` 0.3.0 · **Versión 1.16** (2026-09-29) — `DT-041`, contrato e implementación del Componente 7 (sin integrar en W1); notas de redacción en `DT-030` y `DT-031` (`V1-07`, `V1-08`) · **Versión 1.17** (2026-09-29) — `DT-042`, validador del dataset e informe de calidad; integración de C7 y C8 en W1 (`DT-040`); `generator_version` 0.4.0 (`DT-033`); formas de `scenario_assignment` y `quality_report` (`DT-025`); `metrics` de `DT-038` §12 cerrado · **Versión 1.18** (2026-09-30) — Etapa 2, arquitectura y fundación: `DT-043` a `DT-047` (todas `PROPUESTA`) y pendientes `DT-P13` a `DT-P21` · **Versión 1.19** (2026-09-30) — autorización de U1: `DT-043` y `DT-045` `ACEPTADA`, `DT-047` `ACEPTADA` en cuanto a U1; `DT-P15` y `DT-P20` cerradas; `DT-P14` abierta en parte y **bloquea U1** · **Versión 1.20** (2026-10-01) — `DT-P14` **cerrada** con el estimador poblacional, `INSUFFICIENT_HISTORY` para `n = 0` y la evaluación exacta B3 (`docs/06` §16.6); ninguna fórmula V1 cambia · **Versión 1.21** (2026-10-01) — cierre del contrato de U1: `DT-048` a `DT-052` `ACEPTADA` (aclaraciones A-1 en `DT-050` y A-2 en `DT-051`), y pendiente `DT-P22`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.22** (2026-10-01) — `DT-P22` `ACEPTADA` (opción (a)): `PRODUCT_OUT_OF_VALIDITY` cubre también la vigencia que termina dentro del horizonte; cierre de `DT-049`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.23** (2026-10-01) — `DT-053` (frontera de la salida parcial) y `DT-054` (sin monotonía global de `S` frente a `L` en V1), tras el audit de pre-codificación de U1; ninguna fórmula cambia · **Versión 1.24** (2026-10-01) — `DT-044` `ACEPTADA` (cantidades en `numeric`; `quantity_on_hand ≥ 0` compatible con `BR-X09`/`V1-13`); `DT-047` aceptada para U2; `DT-055` (entorno técnico de U2) · **Versión 1.25** (2026-10-02) — U3 autorizada para implementación: `DT-P17` cerrada por `DT-056` (baselines V1); `DT-046` `ACEPTADA`; `DT-057` (persistencia y ejecución del forecast); `DT-047` aceptada para U3; pendiente nueva `DT-P23`
 
 Registro de decisiones arquitectónicas. Formato: ID, decisión, contexto, alternativas, razón,
 consecuencias, estado.
@@ -1703,17 +1703,45 @@ consecuencias, estado.
   cualquier fecha posterior— y devuelve periodos semanales **anclados en `horizon_start = as_of_date +
   1`**, con intervalo, método, confianza y versión de modelo. El horizonte de V1 es el derivado de las
   reglas del motor: 14 semanas. La demanda latente no es entrada ni *feature*.
+
+  **Frontera (aceptada el 2026-10-02, al autorizar U3).** `ForecastProvider` es una biblioteca **pura**
+  en `backend/app/forecasting/`, que solo usa la biblioteca estándar: no importa `db` ni
+  `supply_engine`, no accede a PostgreSQL, no persiste, no conoce `data_loads`, no calcula métricas de
+  evaluación y no decide compras.
+  - **Recibe** un `ForecastRequest` ya preparado: `product_id`, `location_id`, `as_of_date`,
+    `history_start` y la serie diaria **contigua** de consumo —cantidades `int`, `Decimal` finito o
+    `Fraction`, nunca `float`— con sus banderas `is_stockout_affected`, todo con fecha `≤ as_of_date`.
+  - **Devuelve** un `ForecastResult`: por cada baseline calculable, su definición (`name`, `version`,
+    `hyperparameters`) y los 14 periodos `(period_start, period_end, predicted_quantity, lower_bound,
+    upper_bound)` en `Decimal`; los baselines no calculables, con su motivo; y la serie primaria con su
+    `confidence_flag` (`DT-056`).
+  - Valida su entrada (contigüidad, fechas `≤ as_of_date`, tipos) y los invariantes de su salida antes
+    de devolverla.
+  - Leer la base, construir la petición, registrar `model_versions`, crear `calculation_runs` y persistir
+    `forecasts` corresponde a `backend/app/runs/` (`DT-057`).
 - **Contexto:** `V1-04` suma semanas completas desde el inicio del horizonte; con semanas de
-  calendario, la primera sería parcial y la fórmula dejaría de ser la de `DT-019`.
+  calendario, la primera sería parcial y la fórmula dejaría de ser la de `DT-019`. Al autorizar U3 se
+  resolvieron dos contradicciones documentales sin decisión de negocio: el flujo conceptual de `docs/03`
+  §5.1 (Etapa 0), en el que `forecast_service` lee y guarda en PostgreSQL, y la firma conceptual
+  `predict(sku, horizon, as_of)` de `docs/03` §4. Prevalecen `docs/03` §16 (`DT-043`, `ACEPTADA`), más
+  específico y posterior, y este contrato.
 - **Alternativas:** (a) Semanas ISO de calendario. (b) Semanas ancladas en el primer día del horizonte.
+  Para la frontera: (c) proveedor con acceso directo a la base; (d) proveedor puro que recibe la serie
+  preparada.
 - **Razón:** (b) hace exacta `demand_over_horizon` sin una segunda regla de conversión; (a) exigiría
-  prorratear la primera semana, que es justo lo que `docs/06` §5.1 prohíbe reimplementar.
+  prorratear la primera semana, que es justo lo que `docs/06` §5.1 prohíbe reimplementar. (d) permite
+  probar los baselines sin PostgreSQL, respeta las reglas de dependencia de `docs/03` §16.4 y deja
+  sustituir el baseline por un modelo (Fases 5 y 6) detrás de la misma interfaz; (c) acoplaría el
+  cálculo a la base.
 - **Consecuencias:** Los periodos de un forecast dependen de su `as_of_date`; dos forecasts con cortes
   distintos no comparten periodos. Es coherente con que un forecast nunca se sobrescribe. **Queda
   abierto** cómo se concilia con `docs/05` §2 (forecast semanal, recálculo diario de recomendaciones):
   generar un forecast por cada corte de recomendación, o que `demand_over_horizon` admita un inicio
-  desplazado con el mismo prorrateo uniforme. Es `DT-P21`, antes de U4.
-- **Estado:** `PROPUESTA`. Detalle: `docs/05` §19.
+  desplazado con el mismo prorrateo uniforme. Es `DT-P21`, antes de U4. El horizonte de 14 semanas
+  prevalece en V1 sobre el valor de trabajo de 8–12 semanas de `ASSUMPTION-002` (`docs/05` §2), como ya
+  reconoce `docs/05` §19.2; `ASSUMPTION-002` sigue vigente como supuesto.
+- **Estado:** `ACEPTADA` (2026-10-02, al autorizar U3; hasta entonces `PROPUESTA`). Detalle: `docs/05`
+  §19.
 
 ## DT-047 — Orden de implementación de la Etapa 2 y primera unidad
 
@@ -1735,7 +1763,13 @@ consecuencias, estado.
   arrastra más decisiones abiertas. (c) no tiene nada que servir.
 - **Consecuencias:** El valor llega primero como biblioteca probada, no como pantalla. U2 puede
   prepararse en paralelo en cuanto se autoricen sus dependencias.
-- **Estado:** `ACEPTADA` en cuanto a U1 (autorizada el 2026-09-30) y a U2 (autorizada el 2026-10-01). El orden de U3 a U6 sigue `PROPUESTA`.
+- **Autorización de U3 (2026-10-02).** U3 = `backend/app/forecasting/` (contrato de `DT-046`,
+  baselines de `DT-056`) + ejecución de forecast en `backend/app/runs/` + migración `0002` (`DT-057`).
+  Sin dependencias nuevas: `forecasting` solo usa la biblioteca estándar y `runs`, el grupo opcional
+  `db` de `DT-055`. U1 y U2 no se modifican y no se crea ninguna ruta de producción entre U1 y U3.
+  **Autorizar U3 significa que su implementación puede comenzar; U3 no está implementada.** Criterios
+  de cierre: `docs/05` §19.9.
+- **Estado:** `ACEPTADA` en cuanto a U1 (autorizada el 2026-09-30), a U2 (autorizada el 2026-10-01) y a U3 (autorizada para implementación el 2026-10-02; no implementada). El orden de U4 a U6 sigue `PROPUESTA`.
 
 ## DT-048 — Cobertura del forecast y significado de `FORECAST_TOO_SHORT`
 
@@ -1998,6 +2032,159 @@ consecuencias, estado.
   del paquete Python, por instrucción del responsable. Detalle de uso: `docs/04` §9.9.
 - **Estado:** `ACEPTADA` (2026-10-01, decisión del responsable al abrir U2).
 
+## DT-056 — Baselines V1 de U3: definición, intervalo, histórico mínimo y respaldo
+
+*Cierra `DT-P17`. Notación: `A` = `as_of_date`; `d(t)` = consumo diario; `Y_1 … Y_n` = semanas completas
+del histórico en orden cronológico, con `Y_n` la que termina en `A`; `F_h`, `L_h`, `U_h` = punto,
+límite inferior y límite superior de la semana `h` del horizonte, `h = 1 … 14`. Tabla de decisiones
+D-01 a D-22 y criterios de cierre: `docs/05` §19.8 y §19.9.*
+
+- **Decisión:**
+  1. **Histórico.** `consumption.quantity` diario y **contiguo**, solo con fecha `≤ A`, desde el primer
+     día con fila `S`. Se agrega en semanas completas ancladas en `A`: `n = ⌊(A − S + 1) / 7⌋` y
+     `Y_j = Σ d(t)` para `t ∈ [A − 7(n − j) − 6, A − 7(n − j)]`, `j = 1 … n`. Los `(A − S + 1) mod 7`
+     días más antiguos se descartan. Nada posterior a `A` interviene (RML-004).
+  2. **Horizonte.** 14 semanas; la semana `h` es `[A + 1 + 7(h − 1), A + 1 + 7h)` (`DT-046`, `DT-048`).
+  3. **Baselines.**
+     - Naïve: `F_h = Y_n` para todo `h`.
+     - Naïve estacional, con `L = 52` semanas: `F_h = Y_{n+h−52}`; usa `Y_{n−51} … Y_{n−38}`.
+     - Media móvil, con `k = 13`: `F_h = (Y_{n−12} + … + Y_n) / 13` para todo `h`. No se reduce la ventana.
+  4. **Intervalo: cuantiles empíricos del error histórico a cada horizonte.** Desde cada origen `t` del
+     histórico (se conocen `Y_1 … Y_t`) el mismo método predice la semana `t + h`: naïve `Y_t`;
+     estacional `Y_{t+h−52}`, con `t ≥ 53 − h`; media móvil `media(Y_{t−12} … Y_t)`, con `t ≥ 13`. El
+     error es `e = Y_{t+h} − ŷ_{t,h}`, y `E_h` reúne los de todos los orígenes válidos con `t + h ≤ n`.
+     Con `E_h` ordenado, `e_(1) ≤ … ≤ e_(m)`, la regla **nearest-rank** sin interpolación da
+     `q_lo = e_(⌈m/10⌉)` y `q_hi = e_(⌈9m/10⌉)`, y
+     `L_h = max(0, F_h + min(q_lo, 0))`, `U_h = F_h + max(q_hi, 0)`. Se cumple siempre
+     `0 ≤ L_h ≤ F_h ≤ U_h`: el `min` y el `max` amplían el intervalo hasta incluir el punto cuando todos
+     los errores tienen el mismo signo.
+  5. **`confidence_level = 0.80`.** `confidence_level = 0.80` es el nivel nominal del intervalo. No
+     constituye una garantía ni una medición empírica de cobertura. La calibración y validación de
+     cobertura corresponden a la Fase 5. Tampoco es un nivel de servicio. No se reutiliza
+     `z_v1 = 1,65`: es un parámetro del motor para el stock de seguridad de U1 (`DT-031` §`V1-05`), y el
+     método de este intervalo no usa ningún `z`.
+  6. **Mínimo de errores.** Con la regla de cuantiles nearest-rank 10/90 adoptada para el nivel nominal
+     0.80, se exige un mínimo operacional de 11 errores por horizonte (`m ≥ 11` para cada `h = 1 … 14`)
+     para que exista al menos una observación en cada cola. Con `m = 11`, `q_lo = e_(2)` y
+     `q_hi = e_(10)`: queda una observación extrema fuera del intervalo en cada cola. 11 es un mínimo
+     operacional de esta regla concreta, no una estimación universal; la cobertura real se evaluará en
+     la Fase 5.
+  7. **Histórico mínimo**, para producir punto e intervalo en las 14 semanas: naïve, 25 semanas completas
+     (`m_h = n − h`); media móvil, 37 (`m_h = n − h − 12`); naïve estacional, 63 (`m_h = n − 52`).
+  8. **Referencia provisional y respaldo.** La media móvil de 13 semanas se registra como referencia
+     provisional de V1. Esta elección es operativa y reversible y no implica que sea el baseline de mejor
+     desempeño. La selección definitiva por desempeño corresponde a la Fase 5. Cadena de la serie
+     **primaria** de cada producto: media móvil → naïve → sin forecast. Naïve estacional no forma parte
+     de la cadena. `confidence_flag`: `STANDARD` en general; `INSUFFICIENT_HISTORY` en la serie primaria
+     que procede del respaldo naïve. Un producto sin ningún baseline calculable (menos de 25 semanas) no
+     recibe forecast; el motivo queda en la ejecución (`DT-057`) y la estimación para ese caso es
+     `DT-P23`.
+  9. **Desabasto: tratamiento provisional de V1.** El consumo observado puede subrepresentar la demanda
+     potencial durante episodios de desabasto. En V1 se utiliza como proxy observable del
+     consumo/demanda satisfecha, sin corrección ni imputación: `consumption.quantity` bruto, sin excluir
+     días. `stockout_treatment = "NONE_RAW_CONSUMPTION_V1"`. `is_stockout_affected` viaja en la petición
+     (`docs/05` §19.2), pero V1 no la usa para modificar el cálculo. Cambiar este tratamiento exige una
+     versión nueva de cada baseline. La solución metodológica definitiva sigue siendo `DT-011`, que **no**
+     se cierra. `demand` nunca se usa (`DT-034`).
+  10. **Catálogo.** U3 pronostica productos activos y vigentes en `as_of_date`
+      (`is_active = true` y `valid_from ≤ A ≤ valid_to`, o `valid_to` nulo). U1 realiza posteriormente su
+      propia validación de vigencia sobre el horizonte concreto de la recomendación (`DT-049`,
+      `DT-P22`). Los inactivos o fuera de vigencia se excluyen con el motivo
+      `INACTIVE_OR_OUT_OF_VALIDITY`; un producto con huecos en el histórico, o sin fila el día `A`, se
+      excluye con el motivo `INVALID_HISTORY` y no se imputa. En el dataset 0.4.0, los 5 productos
+      descontinuados no tienen consumo después del 2025-04-02 y no se usan para generar forecasts
+      posteriores a esa fecha.
+  11. **Precisión.** Cálculo en `Fraction` exacta. `F_h`, `L_h` y `U_h` se cuantizan una sola vez, a la
+      salida del proveedor, al múltiplo de `10⁻⁶` más cercano con `ROUND_HALF_EVEN` y aritmética entera,
+      y se devuelven como `Decimal`. Nunca `float`. Sin redondeo a enteros ni reglas por unidad
+      (`EACH`, `BOX`, `KG`): no hay reglas de fraccionamiento documentadas. La cuantización es monótona y
+      conserva `0 ≤ L_h ≤ F_h ≤ U_h`.
+  12. **Versiones.** Cada baseline es una versión `1.0.0` con todos estos valores en `hyperparameters`
+      (`DT-057`); cambiar cualquiera exige una versión nueva.
+- **Contexto:** `DT-P17` bloqueaba U3. RF-010 exige intervalo, versión y fecha de generación, y respaldo
+  señalado; RML-007 exige que el método y la confianza consten; US-050 pide en la Fase 4 naïve, naïve
+  estacional y media móvil, con la referencia registrada, y aplaza a la Fase 5 la elección por
+  desempeño (`docs/05` §6).
+- **Alternativas:** intervalo normal con `σ` a un paso escalado por `√h`, o con un `σ` por horizonte;
+  nivel del 95 %; reutilizar `z_v1`; longitud estacional de 365 días; `k` = 4 u 8; excluir o imputar
+  los días con desabasto; redondear a enteros; persistir racionales exactos.
+- **Razón:** El intervalo empírico es exacto, no supone ninguna distribución (`DT-010`, alternativas
+  (c) y (d)) y funciona igual con ceros e intermitencia; el `√h` es la relación que `DT-010` advierte
+  que no es general. 52 semanas es un número entero de periodos del forecast: la semana `h` menos 52
+  cae sobre una semana histórica completa, sin prorratear; 365 días exigiría una segunda regla de
+  conversión. `k = 13` es un trimestre (`52/4`) y su ventana es comparable al horizonte. La referencia
+  provisional es una elección operativa: la media móvil exige menos histórico que naïve estacional (37
+  frente a 63 semanas) y su definición no depende de una única semana; no hay todavía evaluación de
+  desempeño que permita compararlos. El consumo bruto es el que usa U1 para `σ_H` (`DT-P14`); excluir
+  días rompería las semanas completas y la imputación es el método que `DT-011` aplaza. Ningún valor es
+  una política de negocio.
+- **Consecuencias:** En V1, U1 no consume el intervalo: calcula el stock de seguridad con la
+  variabilidad del consumo (`DT-031` §`V1-05`); el uso del intervalo por el motor (RML-006) sigue para
+  la Fase 5 (`DT-010`). Los productos con desabasto intenso pueden quedar subestimados, limitación
+  declarada hasta `DT-011`. Con el dataset 0.4.0 en `A = 2025-12-31`, los 95 productos elegibles tienen
+  156 semanas: no hay respaldos. `DT-011`, `DT-P23`, `DT-021`, `DT-P04` y la elección de la referencia
+  por desempeño siguen abiertos.
+- **Estado:** `ACEPTADA` (2026-10-02, decisión del responsable al autorizar U3). Detalle: `docs/05`
+  §19.8.
+
+## DT-057 — Persistencia y ejecución del forecast de U3
+
+- **Decisión:**
+  1. **Migración `0002`** con tres tablas, siguiendo `DT-055`:
+     - `model_versions`: clave única `(name, version)` y `created_at` técnico. Una fila por baseline
+       (`baseline.naive`, `baseline.seasonal_naive`, `baseline.moving_average`; `version = 1.0.0`;
+       `algorithm` = `NAIVE`, `SEASONAL_NAIVE`, `MOVING_AVERAGE`; `is_baseline = true`). En los
+       baselines, `trained_at`, `training_data_from`, `training_data_to`, `metrics`,
+       `baseline_metrics`, `status` y `external_ref` son `NULL`: no hay entrenamiento ni evaluación, y
+       el ciclo de vida de `docs/05` §13 es el de «cada modelo entrenado». CHECK
+       `is_baseline = (status IS NULL)`. `hyperparameters` (`jsonb`, obligatorio) lleva la definición
+       completa de `DT-056`.
+     - `calculation_runs`: `run_type` (`FORECAST` · `RECOMMENDATION`), `status` (`COMPLETED` ·
+       `FAILED`), `as_of_date`, `data_load_id` (FK, la carga `COMPLETED`), `reference_model_version_id`
+       (FK, obligatoria en `FORECAST`; sustituye al `model_version_id` propuesto en `docs/04` §9.6),
+       `config_sha256`, `summary` (`jsonb`: recuentos, productos excluidos o sin forecast con su motivo,
+       respaldos y versiones ejecutadas), `error` (solo en `FAILED`), `started_at`, `finished_at`.
+       Índice único parcial `(run_type, as_of_date, data_load_id, config_sha256) WHERE status =
+       'COMPLETED'`. Las columnas propias de U4 se añaden con U4.
+     - `forecasts`: `calculation_run_id`, `product_id`, `location_id`, `model_version_id` (FK),
+       `as_of_date`, `generated_at`, `period_start`, `period_end` (`= period_start + 7`),
+       `granularity`, `predicted_quantity`, `lower_bound`, `upper_bound` (`numeric`, CHECK
+       `0 ≤ lower ≤ predicted ≤ upper` y escala `≤ 6`), `confidence_level` (CHECK `0 < c < 1`),
+       `method_used`, `confidence_flag` (`STANDARD` · `INSUFFICIENT_HISTORY`), `is_primary`. Clave única
+       por ejecución `(calculation_run_id, model_version_id, product_id, location_id, period_start)` y
+       único parcial `(calculation_run_id, product_id, location_id, period_start) WHERE is_primary`.
+     - *Triggers* que rechazan `UPDATE` y `DELETE` en `forecasts` y en `calculation_runs`.
+  2. **Una ejecución por llamada** (C9): un único `calculation_run` persiste, por producto elegible,
+     las series de los tres baselines calculables, cada una con su `model_version_id`, y marca con
+     `is_primary` la que debe consumir U4 (la referencia o su respaldo, `DT-056`).
+  3. **Idempotencia** (C8): con el mismo `as_of_date`, la misma carga y la misma `config_sha256` (huella
+     del JSON canónico de modelos, referencia, horizonte, cuantización y política de catálogo) que una
+     ejecución `COMPLETED`, el resultado es `ALREADY_COMPUTED`: se devuelve su id y no se escribe nada.
+     Otra configuración crea otra ejecución. Las `FAILED` no bloquean.
+  4. **Ejecución:** `python -m app.runs forecast --as-of AAAA-MM-DD`, una fecha por llamada, validada
+     dentro de `[time_range.start, time_range.end)` de la carga `COMPLETED`; fuera de ese rango se
+     rechaza sin escribir. Bloqueo *advisory* propio; todo en una transacción; ante fallo, *rollback* y
+     fila `FAILED` en otra transacción. `runs` registra cada `model_versions` en su primer uso; si existe
+     con otros `hyperparameters`, es un error que obliga a subir la versión. Primera ejecución real:
+     `2025-12-31`. Sin backtesting.
+- **Contexto:** `docs/04` §9.6 proponía las columnas de trazabilidad y dejaba dos huecos: la clave única
+  conceptual de `docs/04` §3.14 no contempla ejecuciones (C8) y una ejecución con tres baselines no cabe
+  en un único `model_version_id` (C9).
+- **Alternativas:** una ejecución por baseline; persistir solo la serie primaria; rechazar la repetición
+  o duplicar las filas; mantener la clave de §3.14; marcar la referencia en `model_versions.status`.
+- **Razón:** Una ejecución es un hecho trazable y la salida es determinista, de modo que repetirla no
+  añade información. La clave por ejecución evita choques entre configuraciones que comparten una
+  versión. Persistir las tres series cumple US-050 («implementados» y disponibles) y sirve a la API
+  (`docs/07` §7). La referencia vive en la ejecución y deja libre la regla de «como máximo un
+  `PRODUCTION`» para el modelo de la Fase 5.
+- **Consecuencias:** En el modelo físico, la clave única de `docs/04` §3.14 queda sustituida por la
+  clave por ejecución. Con el dataset 0.4.0 en `2025-12-31`: 95 productos, 3 990 filas (95 × 3 × 14),
+  1 330 primarias, 5 excluidos. U4 decide la correspondencia entre las filas y el `forecast_id` de U1
+  y de `recommendations`, y qué ejecución consume. `forecasts`, `model_versions` y `calculation_runs`
+  no llevan `data_origin` (`docs/04` §5.2).
+- **Estado:** `ACEPTADA` (2026-10-02, decisión del responsable al autorizar U3). Detalle: `docs/04`
+  §9.10.
+
 ## Decisiones deliberadamente NO tomadas
 
 | ID | Tema | Se decidirá en | Por qué no ahora |
@@ -2018,9 +2205,10 @@ consecuencias, estado.
 | `DT-P14` | ✅ **CERRADA (2026-10-01).** Detalles de `V1-05`: definición, serie (consumo), ventanas móviles diarias de `H` días y todo el histórico hasta el corte (desde la documentación, 2026-09-30); estimador **poblacional**; `n = 0` → `INSUFFICIENT_HISTORY`, `n = 1` → `σ_H = 0`; evaluación exacta **B3**, con 28 cifras significativas y `ROUND_HALF_EVEN` solo para informar (decisión del responsable, 2026-10-01; `docs/06` §16.6 y §16.9) | — | Ninguna fórmula V1 cambia |
 | `DT-P15` | ✅ **CERRADA (2026-09-30).** `as_of_date` inclusivo y fecha de la decisión; horizonte `as_of_date + 1 … as_of_date + H`; tránsito efectivo con `as_of_date < expected_on ≤ as_of_date + H`; emisión sugerida = `as_of_date` (`docs/06` §16.2) | — | Resuelta con `DT-031` §`V1-02`, §`V1-03`, §`V1-09`, `docs/05` §5.3 y `DT-038` §3 |
 | `DT-P16` | Cómo se impide aplicar `V1_PROVISIONAL` a datos `REAL` sin que el motor lea `data_origin` (`BR-009` frente a `BR-007`) | Antes de la primera carga de datos reales | No hay datos reales todavía |
-| `DT-P17` | Baseline: método de su intervalo de predicción (RF-010 lo exige), `k` de la media móvil, longitud estacional y baseline de referencia | Antes de U3 | Ninguna fuente los fija |
+| `DT-P17` | ✅ **CERRADA (2026-10-02) por `DT-056`.** Intervalo por cuantiles empíricos nearest-rank 10/90 del error histórico a cada horizonte, con `confidence_level = 0.80` como nivel nominal (no calibrado); longitud estacional de 52 semanas; `k = 13`; media móvil como referencia provisional, elección operativa y reversible, no por desempeño. *Problema original:* método del intervalo del baseline (RF-010 lo exige), `k` de la media móvil, longitud estacional y baseline de referencia | — | Decisión del responsable al autorizar U3 |
 | `DT-P18` | Persistencia de las evaluaciones sin recomendación (`NO_NEED`, `NOT_CALCULABLE`) y relación entre `outcome` y el `status` humano de `Recommendation` | Antes de U4 | Afecta a `docs/04` §3.16 |
 | `DT-P19` | Indicadores de riesgo sin clasificación (cobertura en días, fecha estimada de agotamiento): definición operativa de «demanda diaria estimada» | Antes de ofrecer riesgos | `docs/06` §9 no la define; `BR-X03` sigue pendiente para los niveles |
 | `DT-P20` | ✅ **CERRADA (2026-09-30).** Rige V1 para «demanda estimada cero», «lead time cero» y «`σ = 0`», sin reglas añadidas y sujetos a revisión si el negocio cambia la política (`docs/06` §16.10) | — | Decisión del responsable al autorizar U1 |
 | `DT-P21` | Forecast semanal frente a recálculo diario de recomendaciones (`docs/05` §2) con semanas ancladas en el primer día del horizonte (`DT-046`) | Antes de U4 | Dos salidas posibles, ninguna decidida (`DT-046`, *Consecuencias*) |
 | `DT-P22` | ✅ **ACEPTADA (2026-10-01), opción (a).** `PRODUCT_OUT_OF_VALIDITY` significa que el producto no es válido durante todo el periodo requerido por la evaluación U1: cubre `as_of_date` fuera de vigencia y `valid_to` no nulo con `as_of_date ≤ valid_to < as_of_date + H`. En ambos casos `NOT_CALCULABLE`, sin razón nueva y sin recortar `H` ni el forecast (`DT-049`, `docs/06` §16.11.2). *Problema original:* contenido de `reasons` cuando el horizonte cruza `valid_to`, con una lista cerrada y sin razón aplicable | — | Decisión del responsable; detectada al registrar `DT-049` |
+| `DT-P23` | Estimación para productos sin histórico suficiente para ningún baseline (menos de 25 semanas completas, `DT-056`): RML-007 exige que todo SKU obtenga una estimación por una vía documentada; en V1 no se genera forecast, el motivo queda en la ejecución (`DT-057`) y U1 devolverá `FORECAST_MISSING` | Fase 5 (`US-056`) o antes de la primera carga de datos `REAL` | Exige una analogía por categoría o un método específico que no están definidos; en el dataset 0.4.0 no ocurre |

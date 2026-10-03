@@ -2,7 +2,7 @@
 
 > Este archivo es la **fuente de verdad operativa** para cualquier agente de IA que trabaje sobre este repositorio.
 > Debe leerse **completo** al inicio de cada sesión, antes de cualquier modificación.
-> Última actualización: 2026-10-01 · Etapa vigente: **ETAPA 2 — Sistema principal** (iniciada: arquitectura y fundación) · Etapa 1 — Datos: **completada**
+> Última actualización: 2026-10-02 · Etapa vigente: **ETAPA 2 — Sistema principal** (iniciada: arquitectura y fundación) · Etapa 1 — Datos: **completada**
 
 ---
 
@@ -336,12 +336,14 @@ validado (51/51 comprobaciones, 0 fallos) y 582 pruebas en verde.
 
 El primer bloque de la Etapa 2 es **arquitectura y fundación**: los contratos del sistema principal
 están en `docs/03` §16, `docs/04` §9, `docs/05` §19, `docs/06` §16, `docs/07` §7 y `docs/09` §14, y el
-orden de construcción en `DT-047` (`DT-043` y `DT-045` `ACEPTADA`; `DT-047` `ACEPTADA` en cuanto a U1
-y U2; `DT-044` `ACEPTADA` el 2026-10-01; `DT-046` en `PROPUESTA`). El contrato de U1 está cerrado en `docs/06` §16.11 (`DT-048` a
+orden de construcción en `DT-047` (`DT-043` y `DT-045` `ACEPTADA`; `DT-047` `ACEPTADA` en cuanto a U1,
+U2 y U3; `DT-044` `ACEPTADA` el 2026-10-01; `DT-046` `ACEPTADA` el 2026-10-02). El contrato de U1 está cerrado en `docs/06` §16.11 (`DT-048` a
 `DT-052`, `DT-P22`, `DT-053` y `DT-054`), sin decisiones pendientes. **U1 está implementada**
 (`backend/app/supply_engine`, 146 pruebas en verde). **U2 está implementada** (2026-10-01, `DT-044`,
 `DT-055`): PostgreSQL 16, migraciones SQL y la ingesta validada, atómica e idempotente del 0.4.0
-(`docs/04` §9.9). U3 a U6 requieren su propia autorización.
+(`docs/04` §9.9). **U3 está autorizada para implementación y no implementada** (2026-10-02: `DT-P17`
+cerrada por `DT-056`, `DT-046` y `DT-057` `ACEPTADA`; `docs/05` §19.8 y §19.9). U4 a U6 requieren su
+propia autorización.
 Restricciones vigentes, que se levantan solo por instrucción explícita:
 
 - **No escribir código de aplicación** hasta que el responsable autorice la primera unidad de
