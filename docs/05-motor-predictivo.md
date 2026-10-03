@@ -1,6 +1,6 @@
 # 05 — Motor predictivo (estrategia de Machine Learning)
 
-**Estado:** Versión 1.0 — Etapa 0 (estrategia, no implementada) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §19, contrato de `ForecastProvider` para la Etapa 2 (`DT-046`); §§1–18 no cambian · **Versión 1.3** (2026-10-02) — `DT-046` `ACEPTADA`; §19.8 y §19.9, decisiones y criterios de cierre de U3 (`DT-056`, `DT-057`); nota de V1 en §6
+**Estado:** Versión 1.0 — Etapa 0 (estrategia, no implementada) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §19, contrato de `ForecastProvider` para la Etapa 2 (`DT-046`); §§1–18 no cambian · **Versión 1.3** (2026-10-02) — `DT-046` `ACEPTADA`; §19.8 y §19.9, decisiones y criterios de cierre de U3 (`DT-056`, `DT-057`); nota de V1 en §6 · **Versión 1.4** (2026-10-02) — §19.10, registro de la implementación de U3; ninguna decisión cambia
 
 > **No se implementa ningún modelo en esta etapa.** Este documento fija la estrategia, las reglas de
 > evaluación y los criterios de aceptación **antes** de entrenar, para que la evaluación no se ajuste
@@ -466,7 +466,7 @@ El modelo reentrenado **no sustituye automáticamente** al vigente: pasa por la 
 
 *Añadido el 2026-09-30. Decisión: `DT-046`, **`ACEPTADA` el 2026-10-02** al autorizar U3, junto con
 `DT-056` (baselines) y `DT-057` (persistencia y ejecución); detalle en §19.8 y §19.9. **U3 está
-autorizada y no implementada**: ningún baseline está implementado todavía y no hay entrenamiento.
+implementada y validada** desde el 2026-10-02 (§19.10); no hay entrenamiento.
 (Hasta el 2026-10-02 decía «`PROPUESTA` — diseñado, no implementado».)*
 
 ### 19.1 Frontera
@@ -540,7 +540,7 @@ un baseline sin decidir antes cómo lo produce** —decidido en `DT-056`—.
 
 ### 19.8 Decisiones de U3 (`DT-056`, `DT-057`)
 
-*Aceptadas el 2026-10-02 al autorizar U3. U3 está **autorizada y no implementada**. Etiquetas:
+*Aceptadas el 2026-10-02 al autorizar U3. U3 quedó **implementada** el mismo día (§19.10). Etiquetas:
 **Aceptado** = respaldado por una decisión aceptada o cerrada antes de U3; **Derivado** = se sigue de
 reglas aceptadas; **Nueva** = decisión tomada al autorizar U3.*
 
@@ -598,3 +598,59 @@ reglas aceptadas; **Nueva** = decisión tomada al autorizar U3.*
     entre U1 y U3.
 
 No se exige ninguna métrica de calidad del forecast: pertenecen a la Fase 5.
+
+### 19.10 Implementación (U3, 2026-10-02)
+
+*Registro de hechos de implementación. No cambia ninguna decisión de §19.8.*
+
+| Pieza | Dónde |
+|---|---|
+| Contrato: `ForecastRequest` (validada al construirse), `build_request`, `ForecastResult`, `BaselineDefinition` | `backend/app/forecasting/contract.py` |
+| Aritmética exacta (`Fraction`) y cuantización entera a 6 decimales *half-even* | `backend/app/forecasting/exact.py` |
+| Semanas completas ancladas en `as_of_date` | `backend/app/forecasting/weekly.py` |
+| Los tres baselines, sus versiones y la cadena primaria | `backend/app/forecasting/baselines.py` |
+| Errores por horizonte, cuantiles nearest-rank y límites | `backend/app/forecasting/interval.py` |
+| Proveedor (`forecast`, `LocalBaselineProvider`) | `backend/app/forecasting/provider.py` |
+| Configuración, `config_sha256` y clave del bloqueo | `backend/app/runs/config.py` |
+| Ejecución y persistencia | `backend/app/runs/forecast.py` · `python -m app.runs forecast --as-of AAAA-MM-DD` |
+| Esquema | `backend/db/migrations/0002_forecast_tables.sql` (`docs/04` §9.10) |
+
+**Uso**, desde `backend/` con `DATABASE_URL` definida: `python -m app.db migrate` y
+`python -m app.runs forecast --as-of 2025-12-31`. Termina con 0 en `COMPLETED` y `ALREADY_COMPUTED`, y con 1
+en `FAILED` o si la ejecución se rechaza antes de empezar (sin carga `COMPLETED`, fecha fuera del
+`time_range` de la carga, esquema ausente o versión de baseline registrada con otra definición), caso en
+el que no se escribe nada.
+
+**Detalles técnicos concretados al implementar** (no normativos):
+
+- **Población candidata:** productos × ubicaciones. Motivos de exclusión: `INACTIVE_OR_OUT_OF_VALIDITY` e
+  `INVALID_HISTORY`, con el detalle `GAP`, `DUPLICATE_DATE`, `FUTURE_DATE` o `INCOMPLETE_HISTORY`. Sin
+  forecast: `INSUFFICIENT_HISTORY`.
+- **`summary`** (`jsonb`): `dataset_version`, `data_load_id`, `as_of_date`, `catalog_policy`, `reference`,
+  `model_versions`, `candidates`, `eligible`, `excluded` (con motivo), `excluded_count`,
+  `excluded_by_reason`, `forecasted`, `primary_by_model`, `series_by_model`, `fallback`, `fallback_count`,
+  `no_forecast`, `no_forecast_count`, `unavailable_series`, `forecast_rows` y `primary_rows`. En una
+  ejecución `FAILED`: `as_of_date` y `model_versions`; el error va en `error` (`type`, `message` y, si
+  aplica, `sqlstate`).
+- **`config_sha256`:** SHA-256 del JSON canónico (claves ordenadas, separadores compactos, UTF-8) de los
+  modelos con sus `hyperparameters`, la referencia, la cadena primaria, el horizonte, la granularidad,
+  `method_used`, `confidence_level`, la cuantización y la política de catálogo.
+- **Bloqueo *advisory*:** clave de 64 bits con signo, tomada de los 8 primeros bytes del SHA-256 de
+  `[FORECAST, as_of_date, data_load_id, config_sha256]`.
+- **Registro de `model_versions`:** en su propia transacción, antes del bloqueo. Si el registro falla, no
+  queda ninguna fila parcial.
+- **Marcas de tiempo:** `generated_at` toma por defecto `transaction_timestamp()`, el mismo instante para
+  todas las filas de una ejecución; `started_at` es el reloj de la base al empezar.
+- **Identificadores:** una ejecución revertida consume el identificador de su intento; los `id` de
+  `calculation_runs` pueden tener huecos.
+
+**Resultados** (2026-10-02):
+
+- **Ejecución real** con `as_of_date = 2025-12-31` sobre `ds-6c8ad65b4999`: `COMPLETED`, 95 productos con
+  forecast, 5 excluidos, 3 990 filas, 1 330 primarias de la media móvil, ningún respaldo.
+- **Repetición:** `ALREADY_COMPUTED`, con el mismo identificador y sin filas nuevas.
+- **Fallo controlado** con corte 2025-12-30 en la base de desarrollo: `FAILED` y ninguna fila.
+- **Mismos resultados** en el PostgreSQL 16 local y en el contenedor `postgres:16-alpine` de
+  `infra/docker-compose.yml`.
+- **Pruebas:** `tests/forecasting` (60) y `tests/runs` (7), en la suite por defecto; `tests/db/test_forecast_*`
+  (32), en la de integración. Las pruebas de U2 se ampliaron solo para contar con la migración `0002`.

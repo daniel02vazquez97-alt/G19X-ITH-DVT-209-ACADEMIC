@@ -292,6 +292,9 @@ estándar) y `backend/tests/`, con `backend/pyproject.toml` (Python ≥ 3.11, si
 obligatorias). U2 (2026-10-01) añade `backend/app/db/` (conexión y ejecutor de migraciones),
 `backend/app/ingestion/` (ingesta del dataset 0.4.0), `backend/db/migrations/` (SQL versionado),
 `backend/tests/ingestion/` y `backend/tests/db/`, y el grupo opcional `db` (`psycopg`) del `pyproject`.
+U3 (2026-10-02) añade `backend/app/forecasting/` (`ForecastProvider` y baselines V1, solo biblioteca
+estándar), `backend/app/runs/` (ejecución `forecast`), la migración `0002_forecast_tables.sql`,
+`backend/tests/forecasting/` y `backend/tests/runs/`.
 `infra/` existe desde U2 y contiene solo `docker-compose.yml` (PostgreSQL 16 local, `DT-055`).
 
 Carpetas que **aún no existen** y se crearán cuando su fase comience: `frontend/`, `ml/`,
@@ -341,8 +344,8 @@ U2 y U3; `DT-044` `ACEPTADA` el 2026-10-01; `DT-046` `ACEPTADA` el 2026-10-02). 
 `DT-052`, `DT-P22`, `DT-053` y `DT-054`), sin decisiones pendientes. **U1 está implementada**
 (`backend/app/supply_engine`, 146 pruebas en verde). **U2 está implementada** (2026-10-01, `DT-044`,
 `DT-055`): PostgreSQL 16, migraciones SQL y la ingesta validada, atómica e idempotente del 0.4.0
-(`docs/04` §9.9). **U3 está autorizada para implementación y no implementada** (2026-10-02: `DT-P17`
-cerrada por `DT-056`, `DT-046` y `DT-057` `ACEPTADA`; `docs/05` §19.8 y §19.9). U4 a U6 requieren su
+(`docs/04` §9.9). **U3 está implementada y validada** (2026-10-02: `DT-P17` cerrada por `DT-056`, `DT-046` y
+`DT-057` `ACEPTADA`; `docs/05` §19.8 a §19.10). U4 a U6 requieren su
 propia autorización.
 Restricciones vigentes, que se levantan solo por instrucción explícita:
 

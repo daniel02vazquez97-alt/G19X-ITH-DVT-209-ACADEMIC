@@ -1,6 +1,6 @@
 # 04 — Modelo de datos conceptual
 
-**Estado:** Versión 1.0 — Etapa 0 (conceptual, no implementado) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-18) — `data_origin` en las entidades maestras (`DT-026`) y vigencia de `Product` (`DT-027`) · **Versión 1.3** (2026-09-24) — `data_origin` en `Inventory`, `PurchaseOrder`, `PurchaseOrderItem` y `PurchaseOrderReceipt`; semántica diaria de `is_stockout_affected` (`DT-036`); enmienda de la restricción 3 de vigencia (`DT-027`) · **Versión 1.4** (2026-09-30) — Etapa 2: §9, del dataset 0.4.0 a PostgreSQL (modelo físico mínimo, ingesta, trazabilidad), `DT-044`. §§1–8 no cambian · **Versión 1.5** (2026-10-01) — U2: `DT-044` `ACEPTADA` e implementada; §9.9, implementación (`DT-055`). §§1–8 no cambian · **Versión 1.6** (2026-10-02) — U3 autorizada: §9.10, modelo físico de U3 (`DT-057`); nota en §3.14 y §9.6
+**Estado:** Versión 1.0 — Etapa 0 (conceptual, no implementado) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-18) — `data_origin` en las entidades maestras (`DT-026`) y vigencia de `Product` (`DT-027`) · **Versión 1.3** (2026-09-24) — `data_origin` en `Inventory`, `PurchaseOrder`, `PurchaseOrderItem` y `PurchaseOrderReceipt`; semántica diaria de `is_stockout_affected` (`DT-036`); enmienda de la restricción 3 de vigencia (`DT-027`) · **Versión 1.4** (2026-09-30) — Etapa 2: §9, del dataset 0.4.0 a PostgreSQL (modelo físico mínimo, ingesta, trazabilidad), `DT-044`. §§1–8 no cambian · **Versión 1.5** (2026-10-01) — U2: `DT-044` `ACEPTADA` e implementada; §9.9, implementación (`DT-055`). §§1–8 no cambian · **Versión 1.6** (2026-10-02) — U3 autorizada: §9.10, modelo físico de U3 (`DT-057`); nota en §3.14 y §9.6 · **Versión 1.7** (2026-10-02) — §9.10 implementado (migración `0002`)
 
 > Modelo **conceptual**. No define todavía tipos SQL definitivos, índices ni migraciones; eso
 > corresponde a la Fase 2. Los nombres de entidad se expresan en inglés (convención de código);
@@ -848,9 +848,10 @@ una base temporal propia y en copias temporales del dataset). Comandos en `backe
 *(Hasta este cierre, el entorno Docker figuraba como verificación pendiente: el contenedor de trabajo no podía
 descargar la imagen.)*
 
-### 9.10 Modelo físico de U3 (`DT-057`, autorizado, no implementado)
+### 9.10 Modelo físico de U3 (`DT-057`, implementado el 2026-10-02)
 
-*Aceptado el 2026-10-02 al autorizar U3; se implementa en la migración `0002`. Confirma y concreta las
+*Aceptado el 2026-10-02 al autorizar U3 e implementado ese mismo día en
+`backend/db/migrations/0002_forecast_tables.sql` (detalle de la implementación: `docs/05` §19.10). Confirma y concreta las
 propuestas de §9.6 para U3; las columnas de U4 se deciden con U4.*
 
 | Tabla | Columnas y restricciones |

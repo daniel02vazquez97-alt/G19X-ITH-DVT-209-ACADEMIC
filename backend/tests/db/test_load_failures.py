@@ -72,7 +72,7 @@ class FailedLoadTest(DatabaseTestCase):
         self.assertEqual(self.count("data_loads"), 0)
 
     def test_missing_schema_is_reported(self) -> None:
-        self.conn.execute("DROP TABLE data_loads")
+        self.conn.execute("DROP TABLE data_loads CASCADE")  # 0002 adds calculation_runs → data_loads
         with self.assertRaises(SchemaMissingError):
             load_dataset(self.conn, DATASET_DIR)
 
