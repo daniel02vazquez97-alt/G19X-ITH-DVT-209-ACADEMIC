@@ -1,6 +1,6 @@
 # 13 — Estrategia de testing
 
-**Estado:** Versión 1.0 — Etapa 0 (estrategia, **no implementada**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §14, capas de prueba de la Etapa 2; §§1–13 no cambian · **Versión 1.3** (2026-10-01) — §3.1: aclaración de `InvalidInputError` y excepción de `on_hand < 0` para U1 (`DT-052`) · **Versión 1.4** (2026-10-01) — §3.1: sin monotonía global del punto de reorden frente al lead time en U1 (`DT-054`) · **Versión 1.5** (2026-10-01) — §14: dónde viven las suites de U2 (`DT-055`) · **Versión 1.6** (2026-10-03) — §14: pruebas exigibles de U4 (autorizada, no implementada; `DT-058` a `DT-063`)
+**Estado:** Versión 1.0 — Etapa 0 (estrategia, **no implementada**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §14, capas de prueba de la Etapa 2; §§1–13 no cambian · **Versión 1.3** (2026-10-01) — §3.1: aclaración de `InvalidInputError` y excepción de `on_hand < 0` para U1 (`DT-052`) · **Versión 1.4** (2026-10-01) — §3.1: sin monotonía global del punto de reorden frente al lead time en U1 (`DT-054`) · **Versión 1.5** (2026-10-01) — §14: dónde viven las suites de U2 (`DT-055`) · **Versión 1.6** (2026-10-03) — §14: pruebas exigibles de U4 (autorizada, no implementada; `DT-058` a `DT-063`) · **Versión 1.7** (2026-10-03) — §14: pruebas exigibles de U5 (autorizada, no implementada; `DT-064` a `DT-067`) y rutas públicas de la capa API · **Versión 1.8** (2026-10-03) — §14: U5 implementada; registro de sus suites
 
 ---
 
@@ -243,7 +243,7 @@ puede arreglarse dentro del alcance, se reporta como bloqueo (`AGENTS.md` §6).
 | ETL / integración | Carga completa en PostgreSQL **real**; repetir la carga es un no-op; otro `dataset_version` se rechaza; reconciliación de inventario y tránsito; ninguna fila si falla | PostgreSQL local en contenedor | U2 |
 | Contrato de forecast | Forma y rango de la salida, rechazo de histórico posterior a `as_of_date`, reproducibilidad | Python | U3 |
 | Integración de ejecuciones | Base → forecast → motor → recomendaciones persistidas; cadena de trazabilidad completa hasta `dataset_version` | PostgreSQL local | U3–U4 |
-| API | Esquema OpenAPI, formato de error, paginación, **matriz rol × endpoint**, ninguna ruta sin autenticación salvo `/health` | PostgreSQL local + `TokenValidator` de desarrollo | U5 |
+| API | Esquema OpenAPI, formato de error, paginación, **matriz rol × endpoint**, ninguna ruta sin autenticación salvo `/health` y, solo en `local`, `/docs` y `/openapi.json` (`docs/07` §1, `DT-066`) | PostgreSQL local + `TokenValidator` de desarrollo | U5 |
 | IA generativa | La verificación detecta una cifra ajena al contexto | Python | U6 |
 
 **Reglas de ejecución:** `unittest`, que es la convención vigente del repositorio (instalar `pytest`
@@ -281,3 +281,35 @@ de cierre en `docs/06` §16.13.4):*
   serialización canónica y el mismo `input_sha256`); `demand` nunca se lee.
 - **Regresión:** las suites de U1, U2 y U3 siguen en verde; las pruebas de esquema y de migraciones de
   U2/U3 solo se amplían de forma aditiva.
+
+*Pruebas exigibles de U5 (2026-10-03, `DT-064` a `DT-067`; U5 implementada y validada el mismo día; criterios de
+cierre en `docs/07` §7.5). El `TestClient` usa `httpx2==2.13.1` (`DT-064`).*
+
+- **Sin base** (`backend/tests/api`, con la capa `db/read` sustituida por un doble): validador de
+  desarrollo (formatos, registro inválido al arrancar, ningún token en los logs); `APP_ENV` (`dev`,
+  `staging`, `prod`, ausente y desconocido no arrancan); matriz completa de roles de los 13 endpoints con
+  401 sin token y 403 por rol; `X-Correlation-ID` aceptado, generado y propagado; formato de error y
+  códigos 400, 401, 403, 404, 405, 422, 500 y 503; paginación y desempate; `Decimal` como texto, sin
+  `float`; avisos de `provenance`; estadísticos de la historia calculados a mano con **desviación estándar
+  poblacional** (semanas ISO, meses, periodos parciales, huecos, n = 0, n = 1 con `std_dev = 0`,
+  `mean = 0`); OpenAPI; recorrido de todas las rutas registradas (ninguna responde sin token salvo
+  `/health`, `/docs` y `/openapi.json`); imports prohibidos (`supply_engine`, `forecasting`, `runs`);
+  ausencia de cabeceras CORS.
+- **Integración** (`backend/tests/db/test_api_*`, PostgreSQL real con el dataset 0.4.0, forecast y
+  recomendaciones): los 13 endpoints; ejecución por defecto con varias ejecuciones, una `FAILED` ignorada,
+  `run_id` explícito y 404; las tres `outcome`; `provenance`; historia real; líneas abiertas iguales a las
+  del adaptador de U4; paginación y orden.
+- **Solo lectura:** tras recorrer todos los endpoints, filas por tabla y contadores
+  `n_tup_ins/upd/del` de `pg_stat_user_tables` sin cambios (con `pg_stat_force_next_flush()`), y una
+  escritura forzada a través de `db/read` rechazada con SQLSTATE 25006.
+- **Regresión:** suites de U1–U4 y del generador en verde, en local y en Docker.
+
+*Implementación (2026-10-03).* `backend/tests/api` (56 pruebas, sin `__init__.py`, fuera de la suite por defecto,
+que debe pasar sin dependencias opcionales, como ya ocurre con `backend/tests/db`; se ejecuta con
+`python -m unittest discover -s tests/api -t tests/api` y los grupos `api` y `test`). El proyecto tiene, por
+tanto, tres suites de backend: por defecto (`discover -s tests -t .`), API (`discover -s tests/api -t tests/api`)
+e integración (`discover -s tests/db -t tests/db`, que recoge también `test_api_*`). En lugar de un doble de `db/read`,
+las pruebas sin base apuntan a un PostgreSQL inalcanzable: los rechazos (401, 403, 422) no abren conexión y
+las rutas permitidas responden 503, lo que demuestra que la autorización precede a la base. `backend/tests/db/test_api_read.py`
+(21, dataset 0.4.0 con forecast y recomendaciones) y `test_api_runs.py` (8, ejecuciones construidas a mano para
+`DT-066`). Todas en verde en local y en Docker.

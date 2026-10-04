@@ -1,6 +1,6 @@
 # 11 — Diseño analítico en Power BI
 
-**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §9, fuentes de la Etapa 2; §§1–8 no cambian
+**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §9, fuentes de la Etapa 2; §§1–8 no cambian · **Versión 1.3** (2026-10-03) — §9: corrección de la fila de recomendaciones (`DT-P18` cerrada por `DT-059`)
 
 > **No se crea ningún dashboard en esta etapa.** Se define qué se va a medir y con qué estructura,
 > para que el modelo de datos de la Fase 2 ya contemple lo que la analítica necesitará.
@@ -225,7 +225,7 @@ calcula el motor (§1).*
 | Nivel de servicio alcanzado (satisfecha ÷ total) | `consumption` ÷ `demand` | Producto × periodo | **Solo con datos sintéticos**: con datos reales no existe la demanda total |
 | Valor de inventario, capital inmovilizado | `inventory` × costo | — | **Pendiente**: falta la regla de valoración (qué costo si hay varios proveedores) y, para el capital, el umbral de exceso (`BR-X03`) |
 | Productos críticos, sobreinventario | Motor | — | **Bloqueado** por `BR-X03` |
-| Recomendaciones abiertas, conversión, descarte | `recommendations` | — | Tras U4 y el flujo de resolución (`DT-P18`) |
+| Recomendaciones abiertas, conversión, descarte | `recommendations` | — | Tras U4 (implementada) y un flujo de resolución humana que no existe en V1: `DT-059` (cerró `DT-P18`) no crea `status` ni `resolved_*` |
 | Error de pronóstico, sesgo, cobertura del intervalo, uso de baseline | `forecasts` frente a `consumption` | Producto × semana | Tras U3 (baseline) y Fase 5 |
 
 Quién consume cada informe sigue pendiente del negocio (§8.2). Ningún KPI de esta tabla se presenta

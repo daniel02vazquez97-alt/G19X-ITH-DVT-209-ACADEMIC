@@ -1,6 +1,6 @@
 # 07 — Diseño inicial de la API
 
-**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §7, contrato inicial de solo lectura de la Etapa 2; §§1–6 siguen siendo el catálogo completo previsto · **Versión 1.3** (2026-10-03) — §7.2 y §7.3: `DT-P18` cerrada por `DT-059`; las tres `outcome` se persisten y la resolución humana queda fuera de V1
+**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §7, contrato inicial de solo lectura de la Etapa 2; §§1–6 siguen siendo el catálogo completo previsto · **Versión 1.3** (2026-10-03) — §7.2 y §7.3: `DT-P18` cerrada por `DT-059`; las tres `outcome` se persisten y la resolución humana queda fuera de V1 · **Versión 1.4** (2026-10-03) — U5 autorizada, no implementada: §7.4 (concreción, `DT-064` a `DT-067`) y §7.5 (criterios de cierre); notas en §7.2 · **Versión 1.5** (2026-10-03) — U5 implementada y validada: estado en §7.4 y §7.5
 
 > Ningún endpoint está implementado. Este documento define el contrato previsto para que el frontend,
 > Power BI y el asistente de IA se diseñen contra una interfaz estable.
@@ -296,7 +296,7 @@ Los recálculos y las cargas de datos son procesos largos. Patrón uniforme:
 
 ## 7. Contrato inicial V1 (Etapa 2)
 
-*Añadido el 2026-09-30. **Diseñado, no implementado** (unidad U5 de `DT-047`). Es un subconjunto de
+*Añadido el 2026-09-30. **Implementado por U5** (unidad U5 de `DT-047`; autorizada, implementada y validada el 2026-10-03, concreción en §7.4; hasta entonces decía «diseñado, no implementado»). Es un subconjunto de
 §2: no se construyen todos los endpoints. Todo lo no listado aquí queda como catálogo previsto.*
 
 ### 7.1 Principios de esta primera versión
@@ -323,12 +323,12 @@ Los recálculos y las cargas de datos son procesos largos. Patrón uniforme:
 | `GET /api/v1/me` | — | `{subject_id, roles[]}` | 401 | Cualquiera autenticado | Token |
 | `GET /api/v1/products` | `search`, `category_id`, `is_active`, `page`, `page_size`, `sort` | Página de `{id, sku, name, category, unit_of_measure, is_active, valid_from, valid_to, data_origin}` | 400, 401, 403, 422 | VIEWER, ANALYST, PLANNER, ADMIN | `products`, `categories` |
 | `GET /api/v1/products/{id}` | — | Producto + inventario al corte + relaciones con proveedor (`moq`, `order_multiple`, `unit_cost`, `agreed_lead_time_days`, `is_preferred`, `is_active`) | 401, 403, 404 | Los cuatro | `products`, `inventory`, `product_suppliers`, `suppliers` |
-| `GET /api/v1/products/{id}/history` | `date_from`, `date_to`, `granularity` (`daily`/`weekly`/`monthly`) | Serie de **consumo** con días afectados por desabasto por periodo + media, desviación, CV y periodos en cero (RF-009) | 400, 401, 403, 404, 422 | ANALYST, PLANNER, ADMIN | `consumption` |
+| `GET /api/v1/products/{id}/history` | `date_from`, `date_to`, `granularity` (`daily`/`weekly`/`monthly`) | Serie de **consumo** con días afectados por desabasto por periodo + media, desviación estándar **poblacional**, CV y periodos en cero (RF-009; `DT-067`, §7.4) | 400, 401, 403, 404, 422 | ANALYST, PLANNER, ADMIN | `consumption` |
 | `GET /api/v1/inventory` | `product_id`, `category_id`, `page`, `page_size`, `sort` | Página de `{product_id, sku, on_hand, reserved, available, in_transit_total, inventory_position_accounting, last_movement_at, data_origin}` | 400, 401, 403, 422 | Los cuatro | `inventory` |
 | `GET /api/v1/inventory/{product_id}` | — | Lo anterior + líneas abiertas `{order_number, supplier, status, expected_on, quantity_pending}` | 401, 403, 404 | Los cuatro | `inventory`, órdenes |
-| `GET /api/v1/forecasts` | `product_id`, `category_id`, `run_id` (por defecto, la última ejecución `FORECAST` completada), paginación | Periodos `{period_start, period_end, predicted_quantity, lower_bound, upper_bound, confidence_level, method_used, confidence_flag}` + `provenance` | 400, 401, 403, 404, 422 | Los cuatro | `forecasts`, `model_versions`, `calculation_runs`, `data_loads` |
+| `GET /api/v1/forecasts` | `product_id`, `category_id`, `run_id` (por defecto, la última ejecución `FORECAST` completada: regla exacta en §7.4, `DT-066`), paginación | Periodos `{period_start, period_end, predicted_quantity, lower_bound, upper_bound, confidence_level, method_used, confidence_flag}` + `provenance` | 400, 401, 403, 404, 422 | Los cuatro | `forecasts`, `model_versions`, `calculation_runs`, `data_loads` |
 | `GET /api/v1/products/{id}/forecast` | `run_id` opcional | Serie del producto + `provenance` | 401, 403, 404 | Los cuatro | Ídem |
-| `GET /api/v1/recommendations` | `outcome` (por defecto `RECOMMEND`), `product_id`, `category_id`, `supplier_id`, `run_id`, paginación, `sort` (`sku`, `recommended_quantity`, `suggested_order_date`) | Página de `{id, product, supplier, recommended_quantity, raw_quantity, suggested_order_date, outcome, flags}` + `provenance` | 400, 401, 403, 422 | Los cuatro | `recommendations`, `calculation_runs`, `data_loads` |
+| `GET /api/v1/recommendations` | `outcome` (por defecto `RECOMMEND`), `product_id`, `category_id`, `supplier_id`, `run_id`, paginación, `sort` (`sku`, `recommended_quantity`, `suggested_order_date`) | Página de `{id, product, supplier, recommended_quantity, raw_quantity, suggested_order_date, outcome, flags}` + `provenance` | 400, 401, 403, 404 (sin ejecución, `DT-066`), 422 | Los cuatro | `recommendations`, `calculation_runs`, `data_loads` |
 | `GET /api/v1/recommendations/{id}` | — | **Desglose completo** de `docs/06` §13 y §16.5, `policy_snapshot`, `reasons`, `flags` + `provenance` | 401, 403, 404 | Los cuatro | Ídem |
 | `GET /api/v1/products/{id}/recommendation` | `run_id` opcional | La evaluación del producto en la ejecución, **también** si fue `NO_NEED` (con `raw_quantity = 0`) o `NOT_CALCULABLE` (con sus `reasons`): las tres `outcome` se persisten (`DT-059`, cierra `DT-P18`). 404 solo si no existe la ejecución o el producto | 401, 403, 404 | Los cuatro | Ídem |
 | `GET /api/v1/runs/{run_id}` | — | `{run_type, status, as_of_date, data_load, versions, counts, started_at, finished_at, error}` | 401, 403, 404 | PLANNER, ADMIN | `calculation_runs`, `data_loads` |
@@ -344,3 +344,90 @@ Paginación, ordenación, formato de error y `correlation_id`: los de §1, sin c
 | Orden por `urgency`, `/risks/*`, `/dashboard/summary` | Aplazados | Dependen de la clasificación de riesgo, pendiente de `BR-X03` |
 | Escrituras (maestros, movimientos, consumo, órdenes, recepciones, resolución de recomendaciones), `recalculate`, `data-loads`, `policies`, `models` | Aplazadas | V1 es de solo lectura. La resolución humana de recomendaciones queda fuera de V1: `DT-059` (cierra `DT-P18`) no crea `status` ni `resolved_*`, y se modelará como flujo separado cuando exista quien la escriba; las escrituras de órdenes, a `DT-P13` |
 | `/assistant/*` | Aplazado | Llega con U6 (explicación por plantilla, `docs/09` §14) |
+
+### 7.4 Concreción de U5 (`DT-064` a `DT-067`)
+
+*Añadido el 2026-10-03 al autorizar U5. **U5 está implementada y validada (2026-10-03)**; hasta entonces
+este párrafo decía «autorizada para implementación y no implementada».*
+
+*Concreta §1, §7.1 y §7.2; no añade ni quita endpoints: son los trece de §7.2, `/health` y
+doce rutas bajo `/api/v1`.*
+
+**Autenticación y roles** (`DT-065`, `docs/10` §15): `Authorization: Bearer <token>` con tokens de
+desarrollo opacos `dev-…`; solo arranca con `APP_ENV=local`. Roles exactamente los de §7.2, sin jerarquía.
+
+**Ejecución por defecto** (`DT-066`): carga `COMPLETED` → mayor `as_of_date` → mayor `id` entre las
+ejecuciones `COMPLETED` del tipo correspondiente; sin ninguna, o con un `run_id` que no existe, no es del
+tipo o no está `COMPLETED`: 404 `RUN_NOT_FOUND`. Vale para `/forecasts`, `/products/{id}/forecast`,
+`/recommendations` (que añade el 404 a sus errores de §7.2) y `/products/{id}/recommendation`.
+
+| Endpoint | Concreción |
+|---|---|
+| `GET /health` | `{status: "ok", version}`; `version` = versión de la aplicación; no toca PostgreSQL |
+| `GET /api/v1/products` | `search`: subcadena sin distinguir mayúsculas en `sku` y `name`, 1–100 caracteres, comodines escapados; `sort` ∈ {`sku`, `name`, `id`}, por defecto `sku`; `category` = `{id, code, name}` |
+| `GET /api/v1/products/{id}` | `inventory {on_hand, reserved, in_transit_total, last_movement_at}`; `suppliers[]` con `supplier {id, code, name}` y los campos de la relación |
+| `GET /api/v1/products/{id}/history` | `DT-067`: periodos `{period_start, period_end, days, days_observed, quantity, stockout_days, complete}` y estadísticos `{periods_used, mean, std_dev, cv, zero_periods}` sobre periodos completos; **`std_dev` es la desviación estándar poblacional** (÷ n, sin corrección de Bessel); 6 decimales `ROUND_HALF_EVEN` |
+| `GET /api/v1/inventory` | `sort` ∈ {`sku`, `on_hand`, `available`}, por defecto `sku`; `available = on_hand − reserved`; `inventory_position_accounting = on_hand + in_transit_total − reserved` (`DT-012`, `docs/06` §4.1) |
+| `GET /api/v1/inventory/{product_id}` | Líneas abiertas con la misma regla que `docs/06` §16.13.2: cabecera `ISSUED`/`PARTIALLY_RECEIVED`, pendiente `> 0`, `expected_on` = fecha UTC de la línea o, si falta, de la cabecera |
+| `GET /api/v1/forecasts` | Solo la serie primaria; paginación **por serie**: `items[{product {id, sku}, model_version {name, version}, periods[...]}]` |
+| `GET /api/v1/products/{id}/forecast` | Serie primaria del producto; 404 `FORECAST_NOT_FOUND` si no tiene en esa ejecución |
+| `GET /api/v1/recommendations` | `outcome` ∈ {`RECOMMEND`, `NO_NEED`, `NOT_CALCULABLE`}, por defecto `RECOMMEND`; `sort` por defecto `sku`, nulos al final; `product {id, sku, name}`, `supplier {id, code, name}` o `null` |
+| `GET /api/v1/recommendations/{id}` | Columnas + `calculation_inputs` tal como se guardó (`DT-059`: exacto, decimal o `"p/q"`, `approximate_terms`, bloque `forecast`, `input_sha256`) + `policy_snapshot`, `reasons`, `missing_policy_parameters`, `flags` |
+| `GET /api/v1/products/{id}/recommendation` | El mismo cuerpo que el detalle, para cualquiera de las tres `outcome` |
+| `GET /api/v1/runs/{run_id}` | `data_load {id, dataset_version, generator_version, data_origin}`; `versions {engine_version, forecast_run_id, reference_model_version {name, version}, config_sha256}`; `counts` desde `summary`; `error` guardado, solo en `FAILED` |
+
+**`provenance`** (`DT-066`): `data_origin`, `dataset_version`, `generator_version`, `data_load_id`,
+`as_of_date`, `run_id`; `model_version` en forecasts; `engine_version`, `policy_set` y `forecast_run_id`
+en recomendaciones; `notices`: `SYNTHETIC_DATA` si y solo si la carga es `SYNTHETIC`,
+`V1_PROVISIONAL_POLICY` si y solo si `policy_set = 'V1_PROVISIONAL'` (solo recomendaciones). Productos,
+inventario e historia no llevan `provenance`; productos e inventario llevan `data_origin` por fila.
+
+**Errores** (`DT-066`): siempre `{"error": {code, message, details, correlation_id}}`.
+
+| HTTP | Código |
+|---|---|
+| 400 | `INVALID_PARAMETER`, `INVALID_DATE_RANGE`, `INVALID_SORT` |
+| 401 | `AUTHENTICATION_REQUIRED`, `INVALID_TOKEN` (con `WWW-Authenticate: Bearer`) |
+| 403 | `FORBIDDEN` |
+| 404 | `PRODUCT_NOT_FOUND`, `RECOMMENDATION_NOT_FOUND`, `FORECAST_NOT_FOUND`, `RUN_NOT_FOUND`, `NOT_FOUND` |
+| 405 | `METHOD_NOT_ALLOWED` (toda escritura) |
+| 422 | `VALIDATION_ERROR`, `details = [{field, issue}]` sin el valor recibido |
+| 500 | `INTERNAL_ERROR`, mensaje genérico |
+| 503 | `SERVICE_UNAVAILABLE` (PostgreSQL no responde) |
+
+**`X-Correlation-ID`**: aceptado si cumple `^[A-Za-z0-9._-]{8,64}$`, si no generado (UUID4); en la cabecera
+de toda respuesta y en el cuerpo de todo error. **Paginación:** la de §1, desempate por `id`, página fuera
+de rango → 200 vacío. **Números:** `Decimal` como texto JSON. **Solo lectura:** `docs/03` §16.2 y §16.4.
+**OpenAPI:** `/docs` y `/openapi.json` públicos en `local`, sin `/redoc`, seguridad `HTTPBearer`.
+**CORS y límite de tasa:** fuera de U5.
+
+### 7.5 Criterios de cierre de U5
+
+1. Dependencias de `DT-064` instaladas exactamente (incluido `httpx2==2.13.1`) y el `TestClient`
+   funcionando con ellas.
+2. `python -m app.api` arranca con `APP_ENV=local` y se niega con `dev`, `staging`, `prod`, sin la variable
+   o con otro valor.
+3. `TokenValidator` de desarrollo y su registro validados; 401 y 403 correctos; ningún token en los logs.
+4. Matriz rol × endpoint completa: 13 endpoints × 4 roles, más la petición sin token.
+5. Los 13 endpoints conformes a §7.2 y §7.4 con el dataset 0.4.0.
+6. Ejecución por defecto y `run_id` explícito conformes a `DT-066`.
+7. Las tres `outcome` se pueden consultar; `NO_NEED` y `NOT_CALCULABLE` nunca son 404.
+8. `provenance` y avisos conformes a `DT-066`.
+9. Historia conforme a `DT-067`, con desviación estándar poblacional, comprobada con casos calculados a
+   mano (semanas ISO, meses, periodos parciales, huecos, n = 0, n = 1, `mean = 0`).
+10. Paginación, orden y formato de error uniformes; 405 en escrituras.
+11. `X-Correlation-ID` en toda respuesta y en todo error.
+12. `/health` público y sin PostgreSQL; `/docs` y `/openapi.json` públicos en `local`; ninguna otra ruta
+    responde sin token.
+13. OpenAPI con seguridad Bearer y modelos de respuesta y de error.
+14. Sin CORS ni límite de tasa.
+15. Ninguna escritura: contadores de filas y de `pg_stat_user_tables` sin cambios tras recorrer los
+    endpoints, y una escritura forzada rechazada con SQLSTATE 25006.
+16. `api` no importa `supply_engine`, `forecasting` ni `runs`.
+17. Integración con PostgreSQL en local y en Docker.
+18. Regresión: suites de U1–U4 y del generador en verde.
+19. `.env.example` con valores ficticios evidentes; ningún secreto.
+20. Documentación actualizada con el estado de U5.
+
+*Estado (2026-10-03): los veinte criterios se cumplen. Evidencia: `backend/tests/api` (56 pruebas),
+`backend/tests/db/test_api_read.py` y `test_api_runs.py` (29), regresión completa y Docker (`project/status.md`).*

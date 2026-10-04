@@ -1,6 +1,6 @@
 # 12 — Estrategia DevOps
 
-**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1
+**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-10-03) — §5: correspondencia entre los entornos y `APP_ENV` para la API de U5 (`DT-065`)
 
 > No se crean workflows, imágenes ni recursos en esta etapa.
 
@@ -136,6 +136,11 @@ Entra ID, con ámbito restringido al repositorio, la rama o el entorno concretos
 
 Configuración por entorno mediante variables y secretos separados; **nunca** se comparten credenciales
 entre entornos.
+
+*Nota del 2026-10-03 (`DT-065`, U5 implementada y validada el mismo día):* la variable `APP_ENV` toma los valores
+`local`, `dev`, `staging` y `prod`, uno por entorno de esta tabla. Hasta que exista el validador de Entra ID
+(Fase 8), la API de U5 solo arranca con `APP_ENV=local`, que incluye las pruebas, y se niega a arrancar en
+`dev`, `staging` y `prod`.
 
 **Destino de ejecución en Azure: pendiente** (ASSUMPTION-014). App Service, Container Apps u otro se
 decidirá en la Fase 12–13 con requisitos reales de carga y presupuesto. Decidirlo ahora sería

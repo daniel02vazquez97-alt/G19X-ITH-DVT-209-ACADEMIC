@@ -1,6 +1,6 @@
 # Roadmap del proyecto
 
-**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — cierre de la Etapa 1, inicio de la Etapa 2 y orden de implementación propuesto (`DT-047`) · **Versión 1.3** (2026-10-01) — contrato de U1 cerrado (`DT-048` a `DT-052`) y pendiente `DT-P22` · **Versión 1.4** (2026-10-01) — `DT-P22` cerrada; contrato de U1 sin pendientes · **Versión 1.5** (2026-10-01) — U1 implementada · **Versión 1.6** (2026-10-02) — U2 implementada (2026-10-01) y U3 autorizada para implementación (`DT-056`, `DT-057`) · **Versión 1.7** (2026-10-02) — U3 implementada y validada · **Versión 1.8** (2026-10-03) — U4 autorizada para implementación, no implementada (`DT-058` a `DT-063`) · **Versión 1.9** (2026-10-03) — U4 implementada y validada
+**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — cierre de la Etapa 1, inicio de la Etapa 2 y orden de implementación propuesto (`DT-047`) · **Versión 1.3** (2026-10-01) — contrato de U1 cerrado (`DT-048` a `DT-052`) y pendiente `DT-P22` · **Versión 1.4** (2026-10-01) — `DT-P22` cerrada; contrato de U1 sin pendientes · **Versión 1.5** (2026-10-01) — U1 implementada · **Versión 1.6** (2026-10-02) — U2 implementada (2026-10-01) y U3 autorizada para implementación (`DT-056`, `DT-057`) · **Versión 1.7** (2026-10-02) — U3 implementada y validada · **Versión 1.8** (2026-10-03) — U4 autorizada para implementación, no implementada (`DT-058` a `DT-063`) · **Versión 1.9** (2026-10-03) — U4 implementada y validada · **Versión 1.10** (2026-10-03) — U5 autorizada para implementación, no implementada (`DT-064` a `DT-067`) · **Versión 1.11** (2026-10-03) — U5 implementada y validada
 
 ## Principios de secuenciación
 
@@ -30,7 +30,7 @@ origen» (`US-011`) se diseña en la Etapa 2 (`docs/04` §9, `DT-044`) y se impl
 Los umbrales de aceptación del modelo (`DT-P04`) siguen pendientes y se fijan en la Fase 5, con el
 dataset 0.4.0. El resto de criterios de la Fase 1 se cumplió con el generador.
 
-### Orden de implementación de la Etapa 2 (`DT-047`: `ACEPTADA` en cuanto a U1, U2, U3 y U4, `PROPUESTA` para U5–U6)
+### Orden de implementación de la Etapa 2 (`DT-047`: `ACEPTADA` en cuanto a U1, U2, U3, U4 y U5, `PROPUESTA` para U6)
 
 Las fases siguen siendo el mapa; las **unidades** son el orden en que se construye. Cada unidad
 requiere su propia autorización.
@@ -41,7 +41,7 @@ requiere su propia autorización.
 | **U2** | PostgreSQL + migraciones + ingesta validada del 0.4.0 (`docs/04` §9) | 2 | US-011, US-020, US-021 | Controlador de PostgreSQL y PostgreSQL local en contenedor, autorizados el 2026-10-01 (`DT-055`); `DT-044` `ACEPTADA`. ✅ **Implementada** (2026-10-01): `backend/app/db`, `backend/app/ingestion`, `backend/db/migrations/0001_dataset_tables.sql`, `infra/docker-compose.yml`; dataset `ds-6c8ad65b4999` cargado e idempotente; 35 pruebas sin base + 43 de integración (`docs/04` §9.9) |
 | **U3** | `ForecastProvider` + baselines + forecasts persistidos (`docs/05` §19) | 4 (baseline) | US-050, US-057 (parcial) | `DT-P17` cerrada por `DT-056`; `DT-046` `ACEPTADA`; `DT-057` (persistencia y ejecución). ✅ **Implementada y validada (2026-10-02)**: `backend/app/forecasting`, `backend/app/runs`, migración `0002`; ejecución real 2025-12-31 con 3 990 forecasts (1 330 primarios, sin respaldos); criterios de `docs/05` §19.9 cumplidos |
 | **U4** | Ejecución de recomendaciones: base → forecast → motor → persistencia con trazabilidad (`docs/04` §9.11, `docs/06` §16.13) | 4 | US-045, US-046 | `DT-P18` cerrada por `DT-059` y `DT-P21` por `DT-058` (2026-10-03); `DT-058` a `DT-063` `ACEPTADA`. **Ninguna dependencia nueva**. ✅ **Implementada y validada (2026-10-03)**: `runs/recommendation*.py`, migración `0003` y `python -m app.runs recommend --as-of`; ejecución real 2025-12-31 con 100 evaluaciones (50 `RECOMMEND`, 40 `NO_NEED`, 10 `NOT_CALCULABLE`); criterios de `docs/06` §16.13.4 cumplidos, en local y en Docker |
-| U5 | API de solo lectura con autenticación local y roles (`docs/07` §7) | 3 | US-030, US-033 (US-031 queda para después: V1 no expone proveedores ni órdenes) | FastAPI y Pydantic (stack) |
+| **U5** | API de solo lectura con autenticación local y roles (`docs/07` §7) | 3 | US-030, US-033 (US-031 queda para después: V1 no expone proveedores ni órdenes) | `DT-064` (FastAPI 0.141.1, Starlette 1.3.1, Pydantic 2.13.5, uvicorn 0.52.4; pruebas con `httpx2` 2.13.1), `DT-065`, `DT-066` y `DT-067` `ACEPTADA` (2026-10-03). ✅ **Implementada y validada (2026-10-03)**: `backend/app/api`, `backend/app/db/read`, `.env.example`; 13 endpoints de solo lectura, `python -m app.api` solo con `APP_ENV=local`; criterios de `docs/07` §7.5 cumplidos, en local y en Docker |
 | U6 | Explicación por plantilla + verificación de cifras (`docs/09` §14) | 4 | US-048 | — |
 | Después | Interfaz (7) · ML (5) · Power BI (11) · Entra ID (8) · AI Search y OpenAI (9–10) · Docker y CI/CD (12–13) · QA (14) · Entrega (15) | — | — | Sus bloqueos de la tabla final |
 

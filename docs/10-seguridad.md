@@ -1,6 +1,6 @@
 # 10 — Seguridad
 
-**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §15, seguridad local de la Etapa 2; §§1–14 no cambian
+**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §15, seguridad local de la Etapa 2; §§1–14 no cambian · **Versión 1.3** (2026-10-03) — U5 autorizada: `APP_ENV` con `local` y `DEV_AUTH_IDENTITIES` en §6; concreción del validador de desarrollo en §15 (`DT-065`)
 
 > No se crean credenciales, aplicaciones de Entra ID ni recursos de Azure en esta etapa.
 > Antes de implementar, verificar la documentación oficial vigente de Microsoft Entra ID.
@@ -147,7 +147,8 @@ AZURE_OPENAI_DEPLOYMENT
 AZURE_SEARCH_ENDPOINT
 AZURE_SEARCH_INDEX
 AZURE_ML_ENDPOINT
-APP_ENV                      # dev | staging | prod
+APP_ENV                      # local | dev | staging | prod (obligatoria; `local` solo en desarrollo y pruebas, DT-065)
+DEV_AUTH_IDENTITIES          # solo con APP_ENV=local: identidades ficticias de desarrollo (DT-065)
 LOG_LEVEL
 CORS_ALLOWED_ORIGINS
 ```
@@ -271,9 +272,20 @@ aplicación de Entra ID, ningún recurso de Azure.*
 | Validación del token | `TokenValidator` de desarrollo: identidades ficticias (p. ej. un sujeto con rol `PLANNER`) definidas en las pruebas o en un `.env` local ignorado por Git. Solo se activa de forma explícita en local y en pruebas, y **se niega a arrancar en cualquier entorno desplegado** (`dev`, `staging` o `prod`, `docs/12` §5) | `TokenValidator` de Entra ID: firma, `iss`, `aud`, `exp`, `nbf` y roles (§2.3), implementado tras verificar Microsoft Learn |
 | Autorización | Dependencia de FastAPI por endpoint con los roles explícitos de `docs/07` §7.2; sin rol ⇒ 403 | La misma dependencia: solo cambia de dónde vienen los roles |
 | Rutas públicas | `/health` y, fuera de producción, la documentación interactiva (`docs/07` §1). Una prueba recorre **todas** las rutas registradas y falla si alguna otra responde sin token | Igual |
-| Configuración | Variables de entorno; `.env.example` con valores ficticios evidentes, creado con la primera unidad que lea configuración (U2) | Almacén gestionado (`DT-022`) tras `SecretProvider` |
+| Configuración | Variables de entorno; `.env.example` con valores ficticios evidentes, creado con la primera unidad que lea configuración (previsto en U2, que no lo creó; lo crea U5, `DT-065`) | Almacén gestionado (`DT-022`) tras `SecretProvider` |
 | PostgreSQL local | Contenedor de desarrollo; su contraseña llega por variable de entorno, nunca en un archivo versionado | Credenciales separadas de aplicación, migración y lectura analítica (§7) |
 | Datos | Solo `SYNTHETIC` (RS-012) | — |
 
 El rol del frontend (`RoleGate`) sigue siendo comodidad visual: las pruebas de autorización se hacen
 contra la API, no contra la interfaz (RS-003).
+
+**Concreción de U5 (2026-10-03, `DT-065`; implementada y validada el mismo día).** Puerto
+`TokenValidator.validate(token) → Identity{subject_id, roles}`. El validador de desarrollo acepta tokens
+**opacos** `^dev-[A-Za-z0-9_-]{16,64}$` —sin JWT, sin firma y sin expiración— registrados en las pruebas o
+en `DEV_AUTH_IDENTITIES` (JSON token → `{subject_id, roles}`), con `subject_id` `^[a-z0-9-]{1,64}$` y roles
+no vacíos dentro de `VIEWER`, `ANALYST`, `PLANNER` y `ADMIN`; un registro inválido impide arrancar. La
+comparación es en tiempo constante y los tokens nunca se registran. `APP_ENV` es obligatoria: solo
+`local` arranca la API; `dev`, `staging`, `prod`, la variable ausente o cualquier otro valor la hacen
+negarse a arrancar hasta que exista el validador de Entra ID (Fase 8). Sin cabecera: 401
+`AUTHENTICATION_REQUIRED`; token mal formado, de otro esquema o desconocido: 401 `INVALID_TOKEN`; rol no
+permitido: 403 `FORBIDDEN`.

@@ -10,11 +10,20 @@
 # (`DT-055`), para que `app.supply_engine` siga sin dependencias. Instalación:
 #     pip install -e ".[db]"
 #
+# U5 — `app.api` (API V1 de solo lectura): grupos OPCIONALES `api` (FastAPI, Starlette, Pydantic y
+# uvicorn) y `test` (`httpx2`, cliente del `TestClient` de Starlette 1.3.1), versiones fijadas por
+# `DT-064`. Instalación de U5:
+#     pip install -e ".[db,api,test]"
+# Ejecución local (solo `APP_ENV=local`, `DT-065`): `python -m app.api` en 127.0.0.1:8000.
+#
 # Pruebas (unittest, `docs/13` §14), desde este directorio:
 #     python3 -m unittest discover -s tests -t .
 # Integración contra PostgreSQL real (U2), suite aparte; exige U2_TEST_ADMIN_DSN:
 #     U2_TEST_ADMIN_DSN=postgresql://postgres@127.0.0.1:5432/postgres \
 #         python3 -m unittest discover -s tests/db -t tests/db
+# (incluye las pruebas de integración de la API, `tests/db/test_api_*`, que exigen además `api` y `test`).
+# API sin base (U5), suite aparte porque exige los grupos `api` y `test`:
+#     python3 -m unittest discover -s tests/api -t tests/api
 
 [project]
 name = "inventory-supply-backend"
@@ -25,3 +34,10 @@ dependencies = []
 
 [project.optional-dependencies]
 db = ["psycopg[binary]==3.3.6"]
+api = [
+    "fastapi==0.141.1",
+    "starlette==1.3.1",
+    "pydantic==2.13.5",
+    "uvicorn==0.52.4",
+]
+test = ["httpx2==2.13.1"]

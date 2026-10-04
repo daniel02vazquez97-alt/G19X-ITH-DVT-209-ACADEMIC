@@ -1,6 +1,6 @@
 # 03 — Arquitectura
 
-**Estado:** Versión 1.0 — Etapa 0 (diseño, no implementado) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §16, arquitectura de implementación de la Etapa 2 (`DT-043`, `DT-047`); §§1–15 no cambian · **Versión 1.3** (2026-10-01) — §16.6: migraciones en `backend/db/migrations/` (`DT-055`) · **Versión 1.4** (2026-10-02) — notas en §4 y §5.1: frontera de `forecasting` y `runs` (`DT-046` `ACEPTADA`); estado de §16 · **Versión 1.5** (2026-10-03) — U4 autorizada, no implementada: §16.7, subcomando `recommend` explícito (`DT-058`); estado de §16
+**Estado:** Versión 1.0 — Etapa 0 (diseño, no implementado) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §16, arquitectura de implementación de la Etapa 2 (`DT-043`, `DT-047`); §§1–15 no cambian · **Versión 1.3** (2026-10-01) — §16.6: migraciones en `backend/db/migrations/` (`DT-055`) · **Versión 1.4** (2026-10-02) — notas en §4 y §5.1: frontera de `forecasting` y `runs` (`DT-046` `ACEPTADA`); estado de §16 · **Versión 1.5** (2026-10-03) — U4 autorizada, no implementada: §16.7, subcomando `recommend` explícito (`DT-058`); estado de §16 · **Versión 1.6** (2026-10-03) — U5 autorizada, no implementada: `app/db/read/` en §16.2 y §16.6, `python -m app.api` en §16.7; estado de §16
 
 > Este documento describe la arquitectura **objetivo**. Nada de lo aquí descrito está implementado
 > todavía. Las decisiones que lo sustentan están en `docs/15-decisiones-tecnicas.md`.
@@ -376,7 +376,9 @@ Lo descrito aquí está **diseñado**; nada está implementado (actualización d
 —`app/db`, `app/ingestion`— está implementada, y U3 —`forecasting` y la ejecución de forecast en `runs`— está
 autorizada y no implementada, `DT-046`, `DT-056`, `DT-057`; actualización del 2026-10-03: U3 está implementada y
 validada desde el 2026-10-02, y U4 —ejecución de recomendaciones en `runs`— está autorizada y **no implementada**,
-`DT-058` a `DT-063`; `DT-047` `ACEPTADA` en cuanto a U1–U4, `PROPUESTA` para U5–U6).*
+`DT-058` a `DT-063`; `DT-047` `ACEPTADA` en cuanto a U1–U4, `PROPUESTA` para U5–U6; actualización del 2026-10-03: U4
+está implementada y validada, y U5 —`api` y `db/read`— está autorizada, `DT-064` a `DT-067` (implementada y validada el mismo día);
+`DT-047` `ACEPTADA` en cuanto a U1–U5, `PROPUESTA` para U6).*
 
 ### 16.1 Estado real del que se parte
 
@@ -406,7 +408,8 @@ manifiesto), nunca su código.
 
 Los «servicios de aplicación» y los «repositorios» de §3 **no** se convierten en carpetas genéricas:
 el único caso de uso con orquestación real —las ejecuciones batch— vive en `runs/`, y las consultas
-viven en `db/` agrupadas por entidad. Las lecturas de la API llaman a esas consultas directamente.
+viven en `db/` agrupadas por entidad. Las lecturas de la API llaman a esas consultas directamente
+(U5: `app/db/read/`, SQL escrito a mano y conexión de solo lectura, `DT-066`).
 Cuando aparezca un segundo caso de uso que lo justifique, se revisa.
 
 ### 16.3 Flujo de la Etapa 2
@@ -460,7 +463,7 @@ sin red y sin credenciales (`DT-003`, RNF-006).
 │   ├── app/
 │   │   ├── supply_engine/    U1
 │   │   ├── ingestion/        U2
-│   │   ├── db/               U2 — conexión y ejecutor de migraciones
+│   │   ├── db/               U2 — conexión y ejecutor de migraciones; `db/read/` (U5): consultas de solo lectura
 │   │   ├── forecasting/      U3
 │   │   ├── runs/             U3–U4
 │   │   ├── api/              U5
@@ -485,8 +488,8 @@ Cada puerto vive en el paquete que lo usa. Cada carpeta se crea con la unidad qu
 | Qué | Cómo | Por qué |
 |---|---|---|
 | Carga del dataset | Comando de línea (`python -m app.ingestion …`) | Acción de administración; no requiere API |
-| Forecast y recomendaciones | Comandos batch con `as_of_date` explícito: `python -m app.runs forecast --as-of AAAA-MM-DD` (U3) y `python -m app.runs recommend --as-of AAAA-MM-DD` (U4, autorizada y no implementada). `recommend` es un subcomando explícito que **no** ejecuta el forecast implícitamente: consume la ejecución de forecast con el mismo corte (`DT-058`, `DT-061`) | RNF-005: independiente de la API. Sin colas ni orquestadores (`DT-005`) |
-| Consulta | API de solo lectura | La lectura nunca recalcula (§5.2) |
+| Forecast y recomendaciones | Comandos batch con `as_of_date` explícito: `python -m app.runs forecast --as-of AAAA-MM-DD` (U3) y `python -m app.runs recommend --as-of AAAA-MM-DD` (U4, implementada). `recommend` es un subcomando explícito que **no** ejecuta el forecast implícitamente: consume la ejecución de forecast con el mismo corte (`DT-058`, `DT-061`) | RNF-005: independiente de la API. Sin colas ni orquestadores (`DT-005`) |
+| Consulta | API de solo lectura: `python -m app.api` (U5, implementada; uvicorn en `127.0.0.1`, solo con `APP_ENV=local` hasta la Fase 8, `DT-065`) | La lectura nunca recalcula (§5.2) |
 
 ### 16.8 Qué se ejecuta y se prueba en local
 

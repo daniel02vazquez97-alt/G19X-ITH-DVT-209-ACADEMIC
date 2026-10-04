@@ -1,6 +1,6 @@
 # 15 — Decisiones técnicas (ADR)
 
-**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-18) — `DT-024` a `DT-030`, preparación del Componente 2 · **Versión 1.3** (2026-09-19) — `DT-031`, reglas mínimas de V1 · **Versión 1.4** (2026-09-21) — cierre de las reglas V1: `DT-031` pasa a `ACEPTADA` con trece reglas · **Versión 1.5** (2026-09-21) — `DT-032` y `DT-033`, decisiones que el Componente 2 tenía que tomar al implementarse · **Versión 1.6** (2026-09-21) — tabla canónica de identificadores de componente en `DT-030` · **Versión 1.7** (2026-09-23) — `DT-034` y `DT-035`, demanda latente persistente y sus políticas de generación · **Versión 1.8** (2026-09-24) — `DT-036` y `DT-037`, políticas sintéticas de inventario y comportamiento de proveedores; **enmienda de `DT-027`** (restricción 3) y cierre del pendiente de `data_origin` de `DT-026` · **Versión 1.9** (2026-09-24) — `DT-038` y `DT-039`, contratos de salida de los Componentes 4 y 5, tras la auditoría pre-implementación; cierre de los pendientes de `DT-034` (recorte de la demanda y contrato de `consumption.csv`) y correcciones a `DT-036` y `DT-037` · **Versión 1.10** (2026-09-26) — cierre de D-01: `DT-040` (publicación atómica del dataset, W1), regla general de incremento de `generator_version` en `DT-033`, y actualizaciones de `DT-036`, `DT-038` y `DT-039` (A2, B2, `expected_at`, autoría de los identificadores) · **Versión 1.11** (2026-09-26) — implementación del Componente 4: enmienda de `DT-037` §3 (D-C4-1, reparto de la entrega partida) y actualización de `DT-038` (D-C4-2 precondiciones, D-C4-3 lead time y disparo diario, flujos pseudoaleatorios, `metrics` pendiente) · **Versión 1.12** (2026-09-27) — cierre de D-01, opción A: elegibilidad de las órdenes `CANCELLED` sintéticas respecto de `valid_to` (`DT-039` §5.2) · **Versión 1.13** (2026-09-28) — implementación del Componente 5 (`DT-039` §13), sin cambios en ninguna regla · **Versión 1.14** (2026-09-28) — implementación del Componente 6 (`DT-037` §6, decisiones A1 y A2) y corrección de texto en `DT-040` §3 · **Versión 1.15** (2026-09-29) — implementación de W1 (`DT-040` §9, detalles pendientes resueltos) y `generator_version` 0.3.0 · **Versión 1.16** (2026-09-29) — `DT-041`, contrato e implementación del Componente 7 (sin integrar en W1); notas de redacción en `DT-030` y `DT-031` (`V1-07`, `V1-08`) · **Versión 1.17** (2026-09-29) — `DT-042`, validador del dataset e informe de calidad; integración de C7 y C8 en W1 (`DT-040`); `generator_version` 0.4.0 (`DT-033`); formas de `scenario_assignment` y `quality_report` (`DT-025`); `metrics` de `DT-038` §12 cerrado · **Versión 1.18** (2026-09-30) — Etapa 2, arquitectura y fundación: `DT-043` a `DT-047` (todas `PROPUESTA`) y pendientes `DT-P13` a `DT-P21` · **Versión 1.19** (2026-09-30) — autorización de U1: `DT-043` y `DT-045` `ACEPTADA`, `DT-047` `ACEPTADA` en cuanto a U1; `DT-P15` y `DT-P20` cerradas; `DT-P14` abierta en parte y **bloquea U1** · **Versión 1.20** (2026-10-01) — `DT-P14` **cerrada** con el estimador poblacional, `INSUFFICIENT_HISTORY` para `n = 0` y la evaluación exacta B3 (`docs/06` §16.6); ninguna fórmula V1 cambia · **Versión 1.21** (2026-10-01) — cierre del contrato de U1: `DT-048` a `DT-052` `ACEPTADA` (aclaraciones A-1 en `DT-050` y A-2 en `DT-051`), y pendiente `DT-P22`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.22** (2026-10-01) — `DT-P22` `ACEPTADA` (opción (a)): `PRODUCT_OUT_OF_VALIDITY` cubre también la vigencia que termina dentro del horizonte; cierre de `DT-049`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.23** (2026-10-01) — `DT-053` (frontera de la salida parcial) y `DT-054` (sin monotonía global de `S` frente a `L` en V1), tras el audit de pre-codificación de U1; ninguna fórmula cambia · **Versión 1.24** (2026-10-01) — `DT-044` `ACEPTADA` (cantidades en `numeric`; `quantity_on_hand ≥ 0` compatible con `BR-X09`/`V1-13`); `DT-047` aceptada para U2; `DT-055` (entorno técnico de U2) · **Versión 1.25** (2026-10-02) — U3 autorizada para implementación: `DT-P17` cerrada por `DT-056` (baselines V1); `DT-046` `ACEPTADA`; `DT-057` (persistencia y ejecución del forecast); `DT-047` aceptada para U3; pendiente nueva `DT-P23` · **Versión 1.26** (2026-10-03) — cierre documental de U4 y autorización para implementación (no implementada): `DT-058` a `DT-063` `ACEPTADA`; `DT-P18` cerrada por `DT-059` y `DT-P21` por `DT-058`; `DT-047` aceptada para U4; nota en `DT-P16`, que sigue abierta · **Versión 1.27** (2026-10-03) — U4 implementada y validada: registro de la implementación en `DT-047` y en `DT-058` a `DT-063`; ninguna decisión cambia
+**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-18) — `DT-024` a `DT-030`, preparación del Componente 2 · **Versión 1.3** (2026-09-19) — `DT-031`, reglas mínimas de V1 · **Versión 1.4** (2026-09-21) — cierre de las reglas V1: `DT-031` pasa a `ACEPTADA` con trece reglas · **Versión 1.5** (2026-09-21) — `DT-032` y `DT-033`, decisiones que el Componente 2 tenía que tomar al implementarse · **Versión 1.6** (2026-09-21) — tabla canónica de identificadores de componente en `DT-030` · **Versión 1.7** (2026-09-23) — `DT-034` y `DT-035`, demanda latente persistente y sus políticas de generación · **Versión 1.8** (2026-09-24) — `DT-036` y `DT-037`, políticas sintéticas de inventario y comportamiento de proveedores; **enmienda de `DT-027`** (restricción 3) y cierre del pendiente de `data_origin` de `DT-026` · **Versión 1.9** (2026-09-24) — `DT-038` y `DT-039`, contratos de salida de los Componentes 4 y 5, tras la auditoría pre-implementación; cierre de los pendientes de `DT-034` (recorte de la demanda y contrato de `consumption.csv`) y correcciones a `DT-036` y `DT-037` · **Versión 1.10** (2026-09-26) — cierre de D-01: `DT-040` (publicación atómica del dataset, W1), regla general de incremento de `generator_version` en `DT-033`, y actualizaciones de `DT-036`, `DT-038` y `DT-039` (A2, B2, `expected_at`, autoría de los identificadores) · **Versión 1.11** (2026-09-26) — implementación del Componente 4: enmienda de `DT-037` §3 (D-C4-1, reparto de la entrega partida) y actualización de `DT-038` (D-C4-2 precondiciones, D-C4-3 lead time y disparo diario, flujos pseudoaleatorios, `metrics` pendiente) · **Versión 1.12** (2026-09-27) — cierre de D-01, opción A: elegibilidad de las órdenes `CANCELLED` sintéticas respecto de `valid_to` (`DT-039` §5.2) · **Versión 1.13** (2026-09-28) — implementación del Componente 5 (`DT-039` §13), sin cambios en ninguna regla · **Versión 1.14** (2026-09-28) — implementación del Componente 6 (`DT-037` §6, decisiones A1 y A2) y corrección de texto en `DT-040` §3 · **Versión 1.15** (2026-09-29) — implementación de W1 (`DT-040` §9, detalles pendientes resueltos) y `generator_version` 0.3.0 · **Versión 1.16** (2026-09-29) — `DT-041`, contrato e implementación del Componente 7 (sin integrar en W1); notas de redacción en `DT-030` y `DT-031` (`V1-07`, `V1-08`) · **Versión 1.17** (2026-09-29) — `DT-042`, validador del dataset e informe de calidad; integración de C7 y C8 en W1 (`DT-040`); `generator_version` 0.4.0 (`DT-033`); formas de `scenario_assignment` y `quality_report` (`DT-025`); `metrics` de `DT-038` §12 cerrado · **Versión 1.18** (2026-09-30) — Etapa 2, arquitectura y fundación: `DT-043` a `DT-047` (todas `PROPUESTA`) y pendientes `DT-P13` a `DT-P21` · **Versión 1.19** (2026-09-30) — autorización de U1: `DT-043` y `DT-045` `ACEPTADA`, `DT-047` `ACEPTADA` en cuanto a U1; `DT-P15` y `DT-P20` cerradas; `DT-P14` abierta en parte y **bloquea U1** · **Versión 1.20** (2026-10-01) — `DT-P14` **cerrada** con el estimador poblacional, `INSUFFICIENT_HISTORY` para `n = 0` y la evaluación exacta B3 (`docs/06` §16.6); ninguna fórmula V1 cambia · **Versión 1.21** (2026-10-01) — cierre del contrato de U1: `DT-048` a `DT-052` `ACEPTADA` (aclaraciones A-1 en `DT-050` y A-2 en `DT-051`), y pendiente `DT-P22`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.22** (2026-10-01) — `DT-P22` `ACEPTADA` (opción (a)): `PRODUCT_OUT_OF_VALIDITY` cubre también la vigencia que termina dentro del horizonte; cierre de `DT-049`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.23** (2026-10-01) — `DT-053` (frontera de la salida parcial) y `DT-054` (sin monotonía global de `S` frente a `L` en V1), tras el audit de pre-codificación de U1; ninguna fórmula cambia · **Versión 1.24** (2026-10-01) — `DT-044` `ACEPTADA` (cantidades en `numeric`; `quantity_on_hand ≥ 0` compatible con `BR-X09`/`V1-13`); `DT-047` aceptada para U2; `DT-055` (entorno técnico de U2) · **Versión 1.25** (2026-10-02) — U3 autorizada para implementación: `DT-P17` cerrada por `DT-056` (baselines V1); `DT-046` `ACEPTADA`; `DT-057` (persistencia y ejecución del forecast); `DT-047` aceptada para U3; pendiente nueva `DT-P23` · **Versión 1.26** (2026-10-03) — cierre documental de U4 y autorización para implementación (no implementada): `DT-058` a `DT-063` `ACEPTADA`; `DT-P18` cerrada por `DT-059` y `DT-P21` por `DT-058`; `DT-047` aceptada para U4; nota en `DT-P16`, que sigue abierta · **Versión 1.27** (2026-10-03) — U4 implementada y validada: registro de la implementación en `DT-047` y en `DT-058` a `DT-063`; ninguna decisión cambia · **Versión 1.28** (2026-10-03) — U5 autorizada para implementación (no implementada): `DT-064` (dependencias), `DT-065` (autenticación local), `DT-066` (contrato de lectura) y `DT-067` (historia, desviación poblacional) `ACEPTADA`; `DT-047` aceptada para U5 · **Versión 1.29** (2026-10-03) — U5 implementada y validada: registro de la implementación en `DT-047` y en `DT-064` a `DT-067`; ninguna decisión cambia
 
 Registro de decisiones arquitectónicas. Formato: ID, decisión, contexto, alternativas, razón,
 consecuencias, estado.
@@ -1612,6 +1612,7 @@ consecuencias, estado.
   unidad: U1 ninguna; U2 un controlador de PostgreSQL y un PostgreSQL local en contenedor, y
   migraciones como **SQL versionado con un ejecutor mínimo propio**, sin ORM ni herramienta de
   migraciones; U5 FastAPI y Pydantic, ya en el stack. **Cada dependencia se autoriza al abrir su unidad.**
+  *(U5, 2026-10-03: versiones exactas, servidor y cliente de pruebas en `DT-064`.)*
 - **Contexto:** El repositorio no tiene código de aplicación. La Etapa 2 exige una estructura pequeña
   que no dé carpetas vacías ni capas sin consumidor (`CLAUDE.md` §6.2).
 - **Alternativas:** (a) La estructura sugerida `backend/app/{api,domain,db,services,config}`.
@@ -1784,7 +1785,19 @@ consecuencias, estado.
   repetición `ALREADY_COMPUTED`; *rollback* verificado. 295 pruebas por defecto y 113 de integración en
   verde, en local y en Docker. Los diez criterios de `docs/06` §16.13.4 se cumplen. Detalle: `docs/06`
   §16.13.5.
-- **Estado:** `ACEPTADA` en cuanto a U1 (autorizada el 2026-09-30), a U2 (autorizada el 2026-10-01), a U3 (autorizada el 2026-10-02; implementada y validada el mismo día) y a U4 (autorizada el 2026-10-03; implementada y validada el mismo día). El orden de U5 y U6 sigue `PROPUESTA`.
+- **Autorización de U5 (2026-10-03).** U5 = `backend/app/api/` (aplicación, `TokenValidator`, roles,
+  errores, `correlation_id`, paginación, `provenance`, esquemas y routers de los trece endpoints de
+  `docs/07` §7.2) + `backend/app/db/read/` (consultas de solo lectura, ampliación aditiva de `app/db`) +
+  `.env.example` + grupos opcionales `api` y `test` de `backend/pyproject.toml`, según `DT-064` a
+  `DT-067` y `docs/07` §7.4. U1 a U4 no cambian. No queda ninguna decisión abierta necesaria para
+  implementar U5; `DT-P16`, `DT-P11`, `DT-P13`, `DT-P23` y `BR-X03` siguen abiertas y no la bloquean.
+  **Autorizar U5 significa que su implementación puede comenzar; U5 no está implementada.** Criterios de
+  cierre: `docs/07` §7.5.
+- **Implementación de U5 (2026-10-03).** Implementada y validada el mismo día, sin cambiar ninguna
+  decisión: `backend/app/api/`, `backend/app/db/read/`, `.env.example` y los grupos `api` y `test`. U1 a U4
+  no cambian. 295 pruebas por defecto, 56 de la API, 142 de integración y 582 del generador en verde, en
+  local y en Docker. Los veinte criterios de `docs/07` §7.5 se cumplen.
+- **Estado:** `ACEPTADA` en cuanto a U1 (autorizada el 2026-09-30), a U2 (autorizada el 2026-10-01), a U3 (autorizada el 2026-10-02; implementada y validada el mismo día), a U4 (autorizada el 2026-10-03; implementada y validada el mismo día) y a U5 (autorizada el 2026-10-03; implementada y validada el mismo día). El orden de U6 sigue `PROPUESTA`.
 
 ## DT-048 — Cobertura del forecast y significado de `FORECAST_TOO_SHORT`
 
@@ -2357,6 +2370,142 @@ D-01 a D-22 y criterios de cierre: `docs/05` §19.8 y §19.9.*
   se ve afectado. Cuando se decida `DT-P16`, `DT-063` se revisa o se sustituye. **`DT-P16` sigue
   abierta.**
 - **Estado:** `ACEPTADA` (2026-10-03, decisión del responsable al autorizar U4); implementada y validada el mismo día (`docs/06` §16.13.5).
+
+## DT-064 — Dependencias de U5: API y pruebas
+
+- **Decisión:** dos grupos opcionales nuevos en `backend/pyproject.toml`; `dependencies = []` y
+  `db = ["psycopg[binary]==3.3.6"]` no cambian:
+  - `api = ["fastapi==0.141.1", "starlette==1.3.1", "pydantic==2.13.5", "uvicorn==0.52.4"]`
+    (`uvicorn` sin extras);
+  - `test = ["httpx2==2.13.1"]`, cliente del `TestClient` de Starlette.
+
+  Instalación de U5: `pip install -e ".[db,api,test]"`. Ninguna otra dependencia: ni SQLAlchemy, ni
+  `psycopg_pool`, ni `pydantic-settings`, ni `python-dotenv`, ni bibliotecas JWT, ni ORM, ni
+  observabilidad, ni límite de tasa.
+- **Contexto:** `DT-043` autoriza las dependencias al abrir cada unidad y nombra FastAPI y Pydantic para
+  U5 (`CLAUDE.md` §5). Ejecutar la API exige un servidor ASGI y probarla, el cliente del `TestClient`;
+  ninguno estaba nombrado. FastAPI no fija límite superior para Starlette.
+- **Alternativas:** FastAPI 0.142.x; `fastapi[standard]`; sin servidor; `httpx==0.28.1` para las
+  pruebas.
+- **Razón:** FastAPI 0.142.x añade `opentelemetry-api` como dependencia obligatoria y era de la semana de
+  la consulta; `[standard]` arrastra CLI, plantillas y *multipart* sin consumidor; sin servidor la API no
+  se ejecuta. Starlette se fija en 1.3.1, la versión vigente al publicarse FastAPI 0.141.1, porque la
+  línea 1.x cambia deprisa. El `TestClient` de Starlette 1.3.1 importa `httpx2` y solo recurre a `httpx`
+  como alternativa obsoleta, con `StarletteDeprecationWarning`; por eso las pruebas usan
+  `httpx2==2.13.1` y no `httpx`.
+- **Verificación (2026-10-03, PyPI; datos externos, no decisiones del proyecto):** FastAPI 0.141.1
+  (`starlette>=0.46.0`, `pydantic>=2.9.0`, Python ≥ 3.10); Starlette 1.3.1 (`anyio>=3.6.2,<5`; extra
+  `full` con `httpx2>=2.0.0`); Pydantic 2.13.5 (`pydantic-core==2.46.5`); uvicorn 0.52.4; `httpx2`
+  2.13.1 (Python ≥ 3.10, publicado el 2026-09-23, no retirado). La resolución sin instalar
+  (`uv pip compile`, Python 3.11) de las cinco versiones junto con `psycopg[binary]==3.3.6` da 18
+  paquetes sin conflicto (transitivos: `annotated-doc`, `annotated-types`, `anyio`, `click`, `h11`,
+  `httpcore2`, `idna`, `pydantic-core`, `truststore`, `typing-extensions`, `typing-inspection`,
+  `psycopg-binary`). Inspección estática de las ruedas: todos los nombres que usa
+  `starlette/testclient.py` 1.3.1 (`Client`, `BaseTransport`, `ByteStream`, `Request`, `Response`,
+  `USE_CLIENT_DEFAULT`, `_client.UseClientDefault` y los alias de `_types`) existen en `httpx2` 2.13.1.
+  La prueba en ejecución llega con la implementación (criterio 1 de `docs/07` §7.5).
+- **Consecuencias:** `supply_engine` sigue sin dependencias; cambiar cualquiera de estas versiones exige
+  una decisión nueva.
+- **Estado:** `ACEPTADA` (2026-10-03, decisión del responsable al autorizar U5); implementada y validada el mismo día (`docs/07` §7.5).
+
+## DT-065 — Autenticación local de U5: `TokenValidator` de desarrollo, `APP_ENV` y roles
+
+- **Decisión:**
+  1. Puerto `TokenValidator` en `app/api`: `validate(token) → Identity{subject_id, roles}`; un token no
+     válido lanza un error que la API traduce a 401. La Fase 8 sustituye la implementación (Entra ID),
+     no el puerto.
+  2. `DevTokenValidator`: tokens **opacos** `^dev-[A-Za-z0-9_-]{16,64}$`, sin JWT, sin firma y sin
+     expiración (`exp`/`nbf` son de Entra ID, `docs/10` §2.3). Registro token → `{subject_id, roles}`:
+     en las pruebas, construido en el código; en local, la variable `DEV_AUTH_IDENTITIES` (JSON) de un
+     `.env` ignorado por Git, cargado por el shell o por `env_file` de Docker (la aplicación solo lee
+     `os.environ`). `subject_id` con `^[a-z0-9-]{1,64}$`; `roles` no vacío y dentro de `VIEWER`,
+     `ANALYST`, `PLANNER`, `ADMIN`. Un registro inválido o vacío impide arrancar. Comparación en tiempo
+     constante; los tokens nunca se registran (`docs/10` §4).
+  3. `APP_ENV` obligatorio, sin valor por defecto, con vocabulario `local | dev | staging | prod`.
+     Solo `local` (que incluye las pruebas) arranca la API con el validador de desarrollo; `dev`,
+     `staging`, `prod`, la variable ausente o cualquier otro valor la hacen negarse a arrancar: no hay
+     validador de Entra ID hasta la Fase 8.
+  4. Autorización: una dependencia por endpoint exige que los roles de la identidad intersequen los
+     permitidos por `docs/07` §7.2, sin jerarquía implícita (§7.1). Sin cabecera: 401
+     `AUTHENTICATION_REQUIRED`; esquema distinto de `Bearer`, token mal formado o desconocido: 401
+     `INVALID_TOKEN`; ambos con `WWW-Authenticate: Bearer`. Rol no permitido: 403 `FORBIDDEN`.
+- **Contexto:** `docs/10` §15 pide identidades ficticias que solo se activen en local y en pruebas y que
+  se nieguen a arrancar en `dev`, `staging` y `prod`; el vocabulario de `APP_ENV` de `docs/10` §6 no
+  tenía `local`, aunque `docs/12` §5 define el entorno Local.
+- **Alternativas:** JWT local firmado; tokens que declaran sus propios roles; activación implícita sin
+  `APP_ENV`.
+- **Razón:** lo mínimo que satisface `docs/10` §15 sin inventar criptografía y sin poder activarse por
+  accidente en un entorno desplegado.
+- **Estado:** `ACEPTADA` (2026-10-03, decisión del responsable al autorizar U5); implementada y validada el mismo día (`docs/07` §7.5).
+
+## DT-066 — Contrato de lectura de la API V1: ejecución por defecto, `provenance` y convenciones
+
+- **Decisión:**
+  1. **Ejecución por defecto** de `/forecasts`, `/products/{id}/forecast`, `/recommendations` y
+     `/products/{id}/recommendation`: la carga actual (la única `data_loads` `COMPLETED`, `DT-044`) →
+     entre sus ejecuciones del tipo correspondiente con `status = 'COMPLETED'`, el mayor `as_of_date` →
+     a igualdad, el mayor `id`. Nunca por `generated_at` ni `finished_at`; nunca `FAILED`. Sin
+     ejecución: 404 `RUN_NOT_FOUND`. Un `run_id` explícito debe existir, ser del tipo esperado y estar
+     `COMPLETED`; si no, 404 `RUN_NOT_FOUND`. `provenance.run_id` dice siempre cuál se usó.
+  2. **Forecasts:** solo la serie primaria (`is_primary`, la que consume U4, `DT-060`), paginada por
+     serie, con el modelo `{name, version}` de cada serie; las series no primarias no se exponen en V1.
+  3. **Recomendaciones:** las tres `outcome` se consultan; `NO_NEED` y `NOT_CALCULABLE` nunca son 404 ni
+     error técnico (`DT-059`). El detalle devuelve el desglose tal como se guardó.
+  4. **`provenance`** en toda respuesta con forecast o recomendación: `data_origin`, `dataset_version`,
+     `generator_version`, `data_load_id`, `as_of_date`, `run_id`; `model_version` en forecasts;
+     `engine_version`, `policy_set` y `forecast_run_id` en recomendaciones; `notices`.
+     `SYNTHETIC_DATA` si y solo si `data_loads.data_origin = 'SYNTHETIC'`; `V1_PROVISIONAL_POLICY` si y
+     solo si `policy_set = 'V1_PROVISIONAL'` (solo en recomendaciones); en ese orden; ningún otro código.
+  5. **Errores** con el formato de `docs/07` §1 y los códigos de §7.4, incluido 405 para escrituras;
+     sin trazas, SQL, hosts ni valores recibidos.
+  6. **`X-Correlation-ID`**: se acepta el del cliente si cumple `^[A-Za-z0-9._-]{8,64}$`; si no, el
+     servidor genera un UUID4. Va en la cabecera de toda respuesta, en el cuerpo de todo error y en el
+     log JSON de cada petición.
+  7. **Paginación** de §1 (`page ≥ 1`, `page_size` 1–200, por defecto 50) con desempate por `id`; página
+     fuera de rango → 200 con `items` vacío.
+  8. **Números:** `Decimal` como texto JSON; ningún `float`.
+  9. **Solo lectura:** consultas de SQL escrito a mano en `app/db/read/` (`docs/03` §16.2), conexión por
+     petición con `read_only = True` (una escritura falla con SQLSTATE 25006); `api` no importa
+     `supply_engine`, `forecasting` ni `runs`; ningún `GET` recalcula.
+  10. **`/health`**: `{status, version}`, público y sin tocar PostgreSQL. `/docs` y `/openapi.json`
+      públicos en `local`; `/redoc` desactivado; esquema de seguridad `HTTPBearer`.
+  11. **CORS y límite de tasa:** aplazados (Fase 7 y Fases 12–14), sin configuración ni dependencia.
+- **Contexto:** `docs/07` §7.2 fijaba «la última ejecución `FORECAST` completada» sin desempate y no
+  daba regla ni 404 para las recomendaciones; §1 y §7.1 dejaban por concretar `correlation_id`,
+  `provenance` y la representación numérica.
+- **Alternativas:** última por `finished_at`/`generated_at`; `run_id` obligatorio; reproducir la
+  configuración vigente de U4 (exigiría `api → runs`, prohibido por `docs/03` §16.4).
+- **Razón:** la regla depende solo del estado de la base, ignora `FAILED` y otras cargas y es la misma
+  para forecasts y recomendaciones.
+- **Estado:** `ACEPTADA` (2026-10-03, decisión del responsable al autorizar U5); implementada y validada el mismo día (`docs/07` §7.5).
+
+## DT-067 — Historia de consumo de `/products/{id}/history` (US-033, RF-009)
+
+- **Decisión:**
+  1. Fuente: solo `consumption` (demanda satisfecha), nunca `demand`; `occurred_on` sin conversión de
+     zona; sin corrección por desabasto (`DT-011` sigue abierta); `stockout_days` por periodo cuenta
+     los días con `is_stockout_affected`.
+  2. Rango `date_from`–`date_to` inclusivo y opcional (por defecto, la primera y la última fecha con
+     consumo del producto); `date_from > date_to` → 400 `INVALID_DATE_RANGE`.
+  3. `granularity` `daily | weekly | monthly`, por defecto `weekly`; semanas ISO de calendario (lunes a
+     domingo) y meses de calendario; `period_end` exclusivo.
+  4. Cada periodo: `period_start`, `period_end`, `days`, `days_observed`, `quantity` (Σ consumo),
+     `stockout_days`, `complete`. Un día sin fila es «no observado» y no cuenta como cero; un periodo es
+     completo si cae entero dentro del rango y todos sus días están observados.
+  5. Estadísticos solo sobre los n periodos completos: `periods_used = n`; `mean = Σqᵢ/n`;
+     **`std_dev` = desviación estándar poblacional** `√(Σ(qᵢ − mean)²/n)`, sin corrección de Bessel ni
+     desviación muestral; `cv = std_dev/mean` (nulo si `mean = 0`); `zero_periods` = periodos completos
+     con `quantity = 0`. Con n = 1, `std_dev = 0`; con n = 0, todos nulos.
+  6. Cálculo exacto (`Fraction`); la raíz en `Decimal` con 28 cifras; se informa con 6 decimales
+     `ROUND_HALF_EVEN`.
+- **Contexto:** RF-009, US-033 y `docs/07` piden media, desviación, coeficiente de variación y periodos en
+  cero sin fijar estimador, periodos ni tratamiento de huecos.
+- **Alternativas:** desviación muestral (n − 1); semanas ancladas en el corte (como el proveedor de U3,
+  `docs/05` §19); rellenar huecos con cero.
+- **Razón:** la desviación poblacional describe el conjunto observado que se usa, es la misma que usa U1
+  (`DT-P14`, `σ_H` poblacional) y queda definida con n = 1. Las semanas ISO son estables aunque cambie el
+  rango; rellenar huecos inventaría datos.
+- **Estado:** `ACEPTADA` (2026-10-03, decisión del responsable al autorizar U5); implementada y validada el mismo día (`docs/07` §7.5).
 
 ## Decisiones deliberadamente NO tomadas
 
