@@ -9,6 +9,8 @@ from app.ingestion import contract
 EXPECTED_TABLES = {contract.table_name(n) for n in contract.FILES} | {"data_loads", "schema_migrations"}
 #: Added by migration 0002 (U3, `DT-057`).
 U3_TABLES = {"model_versions", "calculation_runs", "forecasts"}
+#: Added by migration 0003 (U4, `DT-059`).
+U4_TABLES = {"recommendations"}
 
 #: (table, column) → referenced table, exactly the documented foreign keys.
 EXPECTED_FKS = {
@@ -66,9 +68,8 @@ class SchemaTest(DatabaseTestCase):
                 "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
             )
         }
-        self.assertEqual(tables, EXPECTED_TABLES | U3_TABLES)
-        for deferred in ("recommendations",
-                         "inventory_policies", "risk_assessments", "supplier_performance", "audit_log",
+        self.assertEqual(tables, EXPECTED_TABLES | U3_TABLES | U4_TABLES)
+        for deferred in ("inventory_policies", "risk_assessments", "supplier_performance", "audit_log",
                          "app_users"):
             self.assertNotIn(deferred, tables)
 
@@ -107,7 +108,7 @@ class SchemaTest(DatabaseTestCase):
             WHERE c.contype = 'f'
             """
         ).fetchall()
-        rows = [row for row in rows if row[0] not in U3_TABLES]  # U3 foreign keys: test_forecast_run
+        rows = [row for row in rows if row[0] not in U3_TABLES | U4_TABLES]  # U3/U4 FKs: their own tests
         self.assertEqual({(t, c): r for t, c, r in rows}, EXPECTED_FKS)
         # Polymorphic reference and parent_id have no FK (docs/04 §9.1, §9.3).
         self.assertNotIn(("inventory_movements", "reference_id"), {(t, c) for t, c, _ in rows})

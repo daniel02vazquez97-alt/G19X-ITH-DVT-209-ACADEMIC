@@ -25,7 +25,9 @@ class ForecastMigrationTest(DatabaseTestCase):
         }
 
     def test_from_scratch_both_migrations_apply_in_order_and_once(self) -> None:
-        self.assertEqual(apply_migrations(self.conn), ["0001_dataset_tables", "0002_forecast_tables"])
+        applied = apply_migrations(self.conn)
+        self.assertEqual(applied[:2], ["0001_dataset_tables", "0002_forecast_tables"])  # U4 adds 0003 after them
+        self.assertEqual(applied, [m.version for m in discover()])
         self.assertEqual(apply_migrations(self.conn), [])
         self.assertTrue(U3_TABLES <= self.tables())
         stored = dict(self.conn.execute("SELECT version, sha256 FROM schema_migrations").fetchall())
@@ -38,7 +40,7 @@ class ForecastMigrationTest(DatabaseTestCase):
         shutil.copy(MIGRATIONS_DIR / "0001_dataset_tables.sql", only_0001)
         self.assertEqual(apply_migrations(self.conn, only_0001), ["0001_dataset_tables"])
         self.assertFalse(U3_TABLES & self.tables())
-        self.assertEqual(apply_migrations(self.conn), ["0002_forecast_tables"])
+        self.assertEqual(apply_migrations(self.conn)[0], "0002_forecast_tables")
         self.assertTrue(U3_TABLES <= self.tables())
 
     def test_foreign_keys_of_the_u3_tables(self) -> None:
@@ -49,6 +51,7 @@ class ForecastMigrationTest(DatabaseTestCase):
             FROM pg_constraint c
             JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = ANY (c.conkey)
             WHERE c.contype = 'f' AND c.conrelid::regclass::text = ANY (%s)
+              AND a.attname <> 'forecast_run_id'  -- added by U4 (0003): test_recommendation_migration
             """,
             (sorted(U3_TABLES),),
         ).fetchall()
@@ -79,4 +82,4 @@ class ForecastMigrationTest(DatabaseTestCase):
                 "SELECT tgname FROM pg_trigger WHERE NOT tgisinternal"
             )
         }
-        self.assertEqual(triggers, {"calculation_runs_immutable", "forecasts_immutable"})
+        self.assertLessEqual({"calculation_runs_immutable", "forecasts_immutable"}, triggers)  # U4 adds its own
