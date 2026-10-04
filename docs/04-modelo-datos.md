@@ -1,6 +1,6 @@
 # 04 — Modelo de datos conceptual
 
-**Estado:** Versión 1.0 — Etapa 0 (conceptual, no implementado) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-18) — `data_origin` en las entidades maestras (`DT-026`) y vigencia de `Product` (`DT-027`) · **Versión 1.3** (2026-09-24) — `data_origin` en `Inventory`, `PurchaseOrder`, `PurchaseOrderItem` y `PurchaseOrderReceipt`; semántica diaria de `is_stockout_affected` (`DT-036`); enmienda de la restricción 3 de vigencia (`DT-027`) · **Versión 1.4** (2026-09-30) — Etapa 2: §9, del dataset 0.4.0 a PostgreSQL (modelo físico mínimo, ingesta, trazabilidad), `DT-044`. §§1–8 no cambian · **Versión 1.5** (2026-10-01) — U2: `DT-044` `ACEPTADA` e implementada; §9.9, implementación (`DT-055`). §§1–8 no cambian · **Versión 1.6** (2026-10-02) — U3 autorizada: §9.10, modelo físico de U3 (`DT-057`); nota en §3.14 y §9.6 · **Versión 1.7** (2026-10-02) — §9.10 implementado (migración `0002`)
+**Estado:** Versión 1.0 — Etapa 0 (conceptual, no implementado) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-18) — `data_origin` en las entidades maestras (`DT-026`) y vigencia de `Product` (`DT-027`) · **Versión 1.3** (2026-09-24) — `data_origin` en `Inventory`, `PurchaseOrder`, `PurchaseOrderItem` y `PurchaseOrderReceipt`; semántica diaria de `is_stockout_affected` (`DT-036`); enmienda de la restricción 3 de vigencia (`DT-027`) · **Versión 1.4** (2026-09-30) — Etapa 2: §9, del dataset 0.4.0 a PostgreSQL (modelo físico mínimo, ingesta, trazabilidad), `DT-044`. §§1–8 no cambian · **Versión 1.5** (2026-10-01) — U2: `DT-044` `ACEPTADA` e implementada; §9.9, implementación (`DT-055`). §§1–8 no cambian · **Versión 1.6** (2026-10-02) — U3 autorizada: §9.10, modelo físico de U3 (`DT-057`); nota en §3.14 y §9.6 · **Versión 1.7** (2026-10-02) — §9.10 implementado (migración `0002`) · **Versión 1.8** (2026-10-03) — U4 autorizada (no implementada): §9.11, modelo físico de U4 (`DT-059` a `DT-063`); notas en §3.16, §9.6 y §9.8 · **Versión 1.9** (2026-10-03) — §9.11 implementado (migración `0003`); ninguna decisión cambia
 
 > Modelo **conceptual**. No define todavía tipos SQL definitivos, índices ni migraciones; eso
 > corresponde a la Fase 2. Los nombres de entidad se expresan en inglés (convención de código);
@@ -449,6 +449,12 @@ campos que almacena, **sin depender del estado actual del sistema** (RF-024). Po
 El seguimiento de `status` y `resolution_note` es además el insumo que permitirá medir la utilidad
 real del sistema: qué proporción de recomendaciones acepta el planificador y por qué descarta el resto.
 
+*Nota del 2026-10-03 (`DT-059`, `DT-060`): en el modelo físico de V1 (§9.11), `status`, `resolved_by`,
+`resolved_at`, `resolution_note` y `urgency` siguen siendo **conceptuales** y no se crean: el `outcome`
+es un resultado técnico inmutable y la decisión humana será un flujo separado cuando exista quien la
+escriba. `forecast_id` es el `id` de la fila h=1 de la serie primaria, que ancla la serie lógica de 14
+semanas; no significa que se use una sola semana.*
+
 ### 3.17 `SupplierPerformance`
 
 | Atributo | Descripción |
@@ -754,6 +760,9 @@ de `calculation_runs`; en las ejecuciones de forecast, `model_version_id` se sus
 `reference_model_version_id`, porque una ejecución produce varias series y cada fila de `forecasts` lleva
 su propia versión. Detalle en §9.10. Las columnas de U4 siguen siendo propuestas.*
 
+*Actualización del 2026-10-03 (`DT-059` a `DT-062`): se confirman para U4 `recommendations.calculation_run_id`,
+`outcome` y `policy_set`, y en `calculation_runs` las columnas `forecast_run_id` y `engine_version`. Detalle en §9.11.*
+
 ### 9.7 Lo que el dataset 0.4.0 **no** contiene, y no se inventa
 
 | Ausente | Consecuencia |
@@ -768,8 +777,8 @@ su propia versión. Detalle en §9.10. Las columnas de U4 siguen siendo propuest
 
 ### 9.8 Pendiente
 
-`DT-P13` (mutabilidad de las órdenes: `RNF-013` frente a `DT-006` y §1) y `DT-P18` (persistencia de
-las evaluaciones sin recomendación). *Las autorizaciones que requería U2 —el controlador de PostgreSQL
+`DT-P13` (mutabilidad de las órdenes: `RNF-013` frente a `DT-006` y §1). *`DT-P18` (persistencia de
+las evaluaciones sin recomendación) quedó cerrada el 2026-10-03 por `DT-059` (§9.11).* *Las autorizaciones que requería U2 —el controlador de PostgreSQL
 y el entorno local de base de datos (`DT-043`)— se concedieron el 2026-10-01: `DT-055`.*
 
 ### 9.9 Implementación (U2, 2026-10-01)
@@ -863,3 +872,66 @@ propuestas de §9.6 para U3; las columnas de U4 se deciden con U4.*
 `forecasts` y `calculation_runs` son inmutables: un *trigger* rechaza `UPDATE` y `DELETE`. Ninguna de las
 tres tablas lleva `data_origin` (§5.2): llegan al origen a través de `calculation_runs.data_load_id`.
 Repetir una ejecución con la misma configuración da `ALREADY_COMPUTED` sin escribir (`DT-057`).
+
+### 9.11 Modelo físico de U4 (`DT-059` a `DT-063`, implementado el 2026-10-03)
+
+*Aceptado el 2026-10-03 al autorizar U4 e implementado ese mismo día en
+`backend/db/migrations/0003_recommendation_tables.sql` (detalle de la implementación: `docs/06` §16.13.5).
+Confirma y concreta las propuestas de §9.6 para U4. Reglas de lectura y representación: `docs/06` §16.13.
+(Hasta la implementación esta nota decía «U4 no está implementada».)*
+
+| Tabla | Columnas y restricciones |
+|---|---|
+| `calculation_runs` (columnas añadidas por `0003`) | `forecast_run_id` (`bigint`, FK → `calculation_runs`), obligatoria si y solo si `run_type = 'RECOMMENDATION'`: la ejecución `FORECAST` `COMPLETED` con el mismo `as_of_date`, el mismo `data_load_id` y el `config_sha256` de U3 vigente (`DT-061`; coherencia verificada en código y en pruebas). `engine_version` (`text`, `MAJOR.MINOR.PATCH`), obligatoria si y solo si `RECOMMENDATION`: la constante `ENGINE_VERSION` de U1 (`DT-062`). En `RECOMMENDATION`, `reference_model_version_id` es nulo. Añadir columnas nulables no reescribe filas ni dispara el *trigger* de inmutabilidad |
+| `recommendations` | `id`, `calculation_run_id` (FK), `product_id`, `location_id` (FK; único `(calculation_run_id, product_id, location_id)`), `as_of_date`, `outcome` (`RECOMMEND` · `NO_NEED` · `NOT_CALCULABLE`), `reasons`, `flags`, `missing_policy_parameters` (`text[]` en el orden canónico de U1), `forecast_id` (FK → `forecasts`; nulo si y solo si `FORECAST_MISSING ∈ reasons`), `suggested_supplier_id` (FK → `suppliers`), `suggested_order_date` (`= as_of_date` si y solo si `RECOMMEND`), `recommended_quantity` (`q_final`; no nulo y `> 0` si y solo si `RECOMMEND`), `raw_quantity` (`raw_need`: `> 0` en `RECOMMEND`, `= 0` en `NO_NEED`, nulo en `NOT_CALCULABLE`), `reorder_point` (`S`), `safety_stock`, `lead_time_used_days`, `demand_during_lead_time`, `inventory_position_at_calc` (`IP_decisión`), `policy_set` (`CHECK (policy_set = 'V1_PROVISIONAL')`), `policy_snapshot`, `calculation_inputs` (`jsonb`), `engine_version`, `generated_at` (`transaction_timestamp()`) |
+
+**Una fila por evaluación** (`DT-059`): los tres `outcome` se persisten. `NO_NEED` es una fila con
+`raw_quantity = 0`, no la ausencia de fila; `NOT_CALCULABLE` es una evaluación válida con `reasons` y
+`NULL` en lo que U1 no calculó (`DT-053`). Un fallo de la ejecución es `calculation_runs.status =
+'FAILED'` y no deja recomendaciones: `NOT_CALCULABLE ≠ FAILED`. Otras restricciones: `outcome =
+'NOT_CALCULABLE'` si y solo si `reasons` no está vacío; `missing_policy_parameters` no vacío si y solo
+si contiene `MISSING_POLICY_PARAMETER`; `MOQ_APPLIED` y `ORDER_MULTIPLE_ROUNDING` solo con
+`RECOMMEND`; vocabularios cerrados de U1; *trigger* que rechaza `UPDATE` y `DELETE`.
+
+**No se crean** `status`, `resolved_by`, `resolved_at`, `resolution_note`, `urgency` ni `data_origin`
+(§3.16, §5.2, `DT-045`).
+
+**`forecast_id`** (`DT-060`): el `id` de la fila h=1 (`period_start = as_of_date + 1`) de la serie
+primaria `(forecast_run_id, product_id, location_id)`, que ancla la serie lógica de 14 semanas. Es el
+mismo valor que recibe U1 en `Forecast.forecast_id`.
+
+**`policy_set` y `policy_snapshot`** (`DT-062`): único valor `V1_PROVISIONAL`, tomado de
+`V1_PROVISIONAL_PARAMETERS` de U1; `policy_snapshot` =
+`{"policy_set":"V1_PROVISIONAL","R":7,"z":"1.65","N":12,"N_MIN":3,"LT_MAX":90}`. Sin `policy_version`.
+
+**`calculation_inputs`** (`DT-059`): desglose completo de U1 con sus nombres; bloque `forecast`
+(`forecast_run_id`, `forecast_id`, modelo `{name, version}`, `method_used`, `confidence_flag`,
+`start_date` y las 14 cantidades copiadas); e `input_sha256`.
+
+**`input_sha256`** es el SHA-256 de la representación JSON canónica y normalizada de `EvaluationInput`
+utilizada para persistencia. Las identidades técnicas autogeneradas de U3 (`forecast_id`,
+`model_version_id`) se representan por la identidad semántica del modelo (`name`, `version`), de modo
+que la huella verifica las entradas semánticas utilizadas y no depende de IDs técnicos generados por la
+base. La huella **verifica** que las entradas releídas son las mismas; la **reconstrucción** del
+contexto se hace desde la carga inmutable, las reglas de lectura versionadas (`input_rules_version`) y
+`calculation_inputs`, no desde la huella por sí sola.
+
+**Trazabilidad** (§9.6): `recommendations.calculation_run_id` → `calculation_runs` (`RECOMMENDATION`:
+`config_sha256`, `engine_version`, `summary`) → `forecast_run_id` → `calculation_runs` (`FORECAST`) →
+`data_load_id` + `as_of_date` → `data_loads` (`dataset_version`, `generator_version`, `data_origin`,
+`manifest`); `recommendations.forecast_id` → fila h=1 → `model_version_id`; y en la propia fila,
+`engine_version`, `policy_set`, `policy_snapshot`, `calculation_inputs` e `input_sha256`. Las tablas
+derivadas son inmutables y la carga tiene un solo linaje por base (`DT-044`).
+
+**Implementación (2026-10-03).** La migración `0003` añade a `calculation_runs` las dos columnas
+nulables y cuatro `CHECK` (`forecast_run_id` y `engine_version` obligatorias si y solo si
+`RECOMMENDATION`, formato `MAJOR.MINOR.PATCH` y `reference_model_version_id` nulo en `RECOMMENDATION`); las
+filas `FORECAST` existentes siguen siendo válidas sin reescribirse. Crea `recommendations` con la clave
+única `(calculation_run_id, product_id, location_id)`, los vocabularios cerrados de U1 sobre `reasons`,
+`flags` y `missing_policy_parameters`, los invariantes por `outcome` descritos arriba y el *trigger*
+`recommendations_immutable`, que reutiliza `reject_immutable_change()` de `0002`. Se aplica sobre `0001` +
+`0002` con datos ya cargados y un forecast persistido, y repetirla no hace nada (sha guardado en
+`schema_migrations`). Validada en un PostgreSQL 16 local y en el contenedor `postgres:16-alpine` de
+`infra/docker-compose.yml`: con `ds-6c8ad65b4999` y corte `2025-12-31`, la ejecución `RECOMMENDATION` 2
+consume la ejecución `FORECAST` 1 y persiste 100 filas (50 `RECOMMEND`, 40 `NO_NEED`, 10 `NOT_CALCULABLE`;
+95 con `forecast_id`).

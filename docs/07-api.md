@@ -1,6 +1,6 @@
 # 07 — Diseño inicial de la API
 
-**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §7, contrato inicial de solo lectura de la Etapa 2; §§1–6 siguen siendo el catálogo completo previsto
+**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §7, contrato inicial de solo lectura de la Etapa 2; §§1–6 siguen siendo el catálogo completo previsto · **Versión 1.3** (2026-10-03) — §7.2 y §7.3: `DT-P18` cerrada por `DT-059`; las tres `outcome` se persisten y la resolución humana queda fuera de V1
 
 > Ningún endpoint está implementado. Este documento define el contrato previsto para que el frontend,
 > Power BI y el asistente de IA se diseñen contra una interfaz estable.
@@ -330,7 +330,7 @@ Los recálculos y las cargas de datos son procesos largos. Patrón uniforme:
 | `GET /api/v1/products/{id}/forecast` | `run_id` opcional | Serie del producto + `provenance` | 401, 403, 404 | Los cuatro | Ídem |
 | `GET /api/v1/recommendations` | `outcome` (por defecto `RECOMMEND`), `product_id`, `category_id`, `supplier_id`, `run_id`, paginación, `sort` (`sku`, `recommended_quantity`, `suggested_order_date`) | Página de `{id, product, supplier, recommended_quantity, raw_quantity, suggested_order_date, outcome, flags}` + `provenance` | 400, 401, 403, 422 | Los cuatro | `recommendations`, `calculation_runs`, `data_loads` |
 | `GET /api/v1/recommendations/{id}` | — | **Desglose completo** de `docs/06` §13 y §16.5, `policy_snapshot`, `reasons`, `flags` + `provenance` | 401, 403, 404 | Los cuatro | Ídem |
-| `GET /api/v1/products/{id}/recommendation` | `run_id` opcional | La evaluación del producto en la ejecución. Si fue `NO_NEED` o `NOT_CALCULABLE`, su resultado y razones **solo si `DT-P18` decide persistirlas**; si no, 404 con el motivo | 401, 403, 404 | Los cuatro | Ídem |
+| `GET /api/v1/products/{id}/recommendation` | `run_id` opcional | La evaluación del producto en la ejecución, **también** si fue `NO_NEED` (con `raw_quantity = 0`) o `NOT_CALCULABLE` (con sus `reasons`): las tres `outcome` se persisten (`DT-059`, cierra `DT-P18`). 404 solo si no existe la ejecución o el producto | 401, 403, 404 | Los cuatro | Ídem |
 | `GET /api/v1/runs/{run_id}` | — | `{run_type, status, as_of_date, data_load, versions, counts, started_at, finished_at, error}` | 401, 403, 404 | PLANNER, ADMIN | `calculation_runs`, `data_loads` |
 
 Paginación, ordenación, formato de error y `correlation_id`: los de §1, sin cambios.
@@ -342,5 +342,5 @@ Paginación, ordenación, formato de error y `correlation_id`: los de §1, sin c
 | `in_transit_effective`, `inventory_position_decision`, `coverage_days` y el filtro `below_reorder_point` en `/inventory` | Fuera del inventario | El tránsito efectivo es relativo a una decisión, no un estado (`DT-012`). Esos valores están en el desglose de cada recomendación |
 | Filtros `abc_class` y `rotation_class` | Fuera | Siempre nulos en el dataset (`DT-029`) y fuera del cálculo (`V1-11`) |
 | Orden por `urgency`, `/risks/*`, `/dashboard/summary` | Aplazados | Dependen de la clasificación de riesgo, pendiente de `BR-X03` |
-| Escrituras (maestros, movimientos, consumo, órdenes, recepciones, resolución de recomendaciones), `recalculate`, `data-loads`, `policies`, `models` | Aplazadas | V1 es de solo lectura. La resolución humana de recomendaciones espera a `DT-P18`; las escrituras de órdenes, a `DT-P13` |
+| Escrituras (maestros, movimientos, consumo, órdenes, recepciones, resolución de recomendaciones), `recalculate`, `data-loads`, `policies`, `models` | Aplazadas | V1 es de solo lectura. La resolución humana de recomendaciones queda fuera de V1: `DT-059` (cierra `DT-P18`) no crea `status` ni `resolved_*`, y se modelará como flujo separado cuando exista quien la escriba; las escrituras de órdenes, a `DT-P13` |
 | `/assistant/*` | Aplazado | Llega con U6 (explicación por plantilla, `docs/09` §14) |

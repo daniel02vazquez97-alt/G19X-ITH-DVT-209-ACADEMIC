@@ -1,6 +1,6 @@
 # 05 — Motor predictivo (estrategia de Machine Learning)
 
-**Estado:** Versión 1.0 — Etapa 0 (estrategia, no implementada) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §19, contrato de `ForecastProvider` para la Etapa 2 (`DT-046`); §§1–18 no cambian · **Versión 1.3** (2026-10-02) — `DT-046` `ACEPTADA`; §19.8 y §19.9, decisiones y criterios de cierre de U3 (`DT-056`, `DT-057`); nota de V1 en §6 · **Versión 1.4** (2026-10-02) — §19.10, registro de la implementación de U3; ninguna decisión cambia
+**Estado:** Versión 1.0 — Etapa 0 (estrategia, no implementada) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §19, contrato de `ForecastProvider` para la Etapa 2 (`DT-046`); §§1–18 no cambian · **Versión 1.3** (2026-10-02) — `DT-046` `ACEPTADA`; §19.8 y §19.9, decisiones y criterios de cierre de U3 (`DT-056`, `DT-057`); nota de V1 en §6 · **Versión 1.4** (2026-10-02) — §19.10, registro de la implementación de U3; ninguna decisión cambia · **Versión 1.5** (2026-10-03) — `DT-P21` cerrada por `DT-058`: frecuencia de §2 leída como una ejecución de forecast por corte de recomendación; §19.7
 
 > **No se implementa ningún modelo en esta etapa.** Este documento fija la estrategia, las reglas de
 > evaluación y los criterios de aceptación **antes** de entrenar, para que la evaluación no se ajuste
@@ -24,7 +24,7 @@ arquitectónico (RML-012, RNF-001), no una preferencia de diseño.
 | **Identificador de serie** | `(product_id, location_id)`. Con ubicación única (ASSUMPTION-006) equivale a `product_id` |
 | **Unidad temporal** | Diaria como granularidad de almacenamiento; **semanal** como granularidad de modelado por defecto (ver §3) |
 | **Horizonte** | Debe cubrir al menos *lead time + periodo de revisión*. **PENDIENTE DE VALIDACIÓN**: su valor depende de los lead times reales y de la política de revisión (`BR-X02`), ninguno definido. Valor de trabajo provisional: 8–12 semanas (ASSUMPTION-002) |
-| **Frecuencia de generación** | Semanal para todo el catálogo; bajo demanda para un producto concreto. El **recálculo de recomendaciones es diario** y consume el forecast vigente (`docs/06`) |
+| **Frecuencia de generación** | Semanal para todo el catálogo; bajo demanda para un producto concreto. El **recálculo de recomendaciones es diario** y consume el forecast vigente (`docs/06`). *Desde el 2026-10-03 (`DT-058`, cierra `DT-P21`):* el forecast sigue siendo **semanal** como granularidad, con semanas ancladas en `as_of_date + 1`; lo que se hace por corte es la **ejecución**: cada recomendación con corte `t` consume el forecast con `as_of_date = t` (`forecast --as-of t` y después `recommend --as-of t`). U4 no lanza forecasts implícitamente, no desplaza ni reancla semanas y no convierte granularidades. En V1 solo existe el corte del dataset (`2025-12-31`), por lo que no se generan forecasts diarios |
 | **Tipo de problema** | Pronóstico de series temporales, multiserie, con incertidumbre |
 | **Salida** | Estimación puntual + intervalo de predicción + método usado + versión de modelo + `as_of_date` |
 
@@ -532,8 +532,9 @@ cualquier recomendación se llega a la versión de modelo y al dataset (`docs/04
 
 ### 19.7 Pendiente
 
-`DT-P17` quedó **cerrada** el 2026-10-02 por `DT-056` (§19.8). Siguen abiertos: `DT-P21` (cómo se concilia el forecast semanal de §2 con el recálculo diario
-de recomendaciones cuando las semanas se anclan en el primer día del horizonte) antes de U4; `DT-021` (métrica primaria) y `DT-P04` (umbrales de aceptación) siguen
+`DT-P17` quedó **cerrada** el 2026-10-02 por `DT-056` (§19.8). `DT-P21` (cómo se concilia el forecast semanal de §2 con el recálculo diario de recomendaciones cuando
+las semanas se anclan en el primer día del horizonte) quedó **cerrada** el 2026-10-03 por `DT-058`: un
+forecast por corte de recomendación, sin forecast implícito desde U4 (§2). Siguen abiertos: `DT-021` (métrica primaria) y `DT-P04` (umbrales de aceptación) siguen
 abiertos y se cierran en la Fase 5 con el dataset 0.4.0; `DT-011` (tratamiento del desabasto) y `DT-P23`
 (productos sin histórico suficiente) también siguen abiertos. RF-010 exige intervalo: **no se implementa
 un baseline sin decidir antes cómo lo produce** —decidido en `DT-056`—.

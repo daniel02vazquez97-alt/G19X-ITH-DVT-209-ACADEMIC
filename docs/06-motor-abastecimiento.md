@@ -1,6 +1,6 @@
 # 06 — Motor de abastecimiento (reglas de negocio)
 
-**Estado:** Versión 1.0 — Etapa 0 (lógica conceptual, no implementada) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §16, contrato de implementación del motor V1 para la Etapa 2 (`DT-045`); §§1–15 no cambian · **Versión 1.3** (2026-10-01) — cierre de `DT-P14`: estimador de `σ_H`, histórico insuficiente y evaluación exacta B3 (§16.3, §16.5, §16.6, §16.9, §16.10); ninguna fórmula V1 cambia · **Versión 1.4** (2026-10-01) — cierre del contrato de U1: `DT-048` a `DT-052` (§16.3, §16.4, §16.5, §16.6 punto 7, §16.8 y §16.11, nueva); ninguna fórmula V1 cambia · **Versión 1.5** (2026-10-01) — cierre de `DT-P22`: `PRODUCT_OUT_OF_VALIDITY` cubre también la vigencia que termina dentro del horizonte (§16.5, §16.11, §16.11.2, §16.11.4); ninguna fórmula V1 cambia · **Versión 1.6** (2026-10-01) — `DT-053` (frontera de la salida parcial, §16.11.6) y `DT-054` (sin monotonía global de `S` frente a `L` en V1, §16.11.7; §16.8); decisiones de alcance e interpretación, ninguna fórmula cambia · **Versión 1.7** (2026-10-01) — §16.12, implementación de U1
+**Estado:** Versión 1.0 — Etapa 0 (lógica conceptual, no implementada) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §16, contrato de implementación del motor V1 para la Etapa 2 (`DT-045`); §§1–15 no cambian · **Versión 1.3** (2026-10-01) — cierre de `DT-P14`: estimador de `σ_H`, histórico insuficiente y evaluación exacta B3 (§16.3, §16.5, §16.6, §16.9, §16.10); ninguna fórmula V1 cambia · **Versión 1.4** (2026-10-01) — cierre del contrato de U1: `DT-048` a `DT-052` (§16.3, §16.4, §16.5, §16.6 punto 7, §16.8 y §16.11, nueva); ninguna fórmula V1 cambia · **Versión 1.5** (2026-10-01) — cierre de `DT-P22`: `PRODUCT_OUT_OF_VALIDITY` cubre también la vigencia que termina dentro del horizonte (§16.5, §16.11, §16.11.2, §16.11.4); ninguna fórmula V1 cambia · **Versión 1.6** (2026-10-01) — `DT-053` (frontera de la salida parcial, §16.11.6) y `DT-054` (sin monotonía global de `S` frente a `L` en V1, §16.11.7; §16.8); decisiones de alcance e interpretación, ninguna fórmula cambia · **Versión 1.7** (2026-10-01) — §16.12, implementación de U1 · **Versión 1.8** (2026-10-03) — §16.13, ejecución de recomendaciones de U4 (autorizada, no implementada; `DT-058` a `DT-063`); nota en §16.3; ninguna regla V1 cambia · **Versión 1.9** (2026-10-03) — §16.13.5, implementación de U4; ninguna regla V1 ni decisión cambia
 
 > Este documento define **reglas determinísticas**, no un modelo. Todo lo aquí descrito debe poder
 > calcularse a mano, verificarse con casos exactos y explicarse a un comprador.
@@ -546,6 +546,10 @@ para las entradas inválidas; no hay un código de error nuevo. Ese error es `In
 `engine_version`; cambiarlos exige un ADR nuevo (`DT-031`). No se almacenan en `InventoryPolicy`
 (`docs/04` §9.2). Cada resultado los copia en `policy_snapshot` con `policy_set = V1_PROVISIONAL`.
 
+*Nota del 2026-10-03 (`DT-058`):* en V1, la ejecución de recomendaciones (U4) solo usa el corte del
+dataset, donde el inventario es la fila de `inventory`; la reconstrucción retrospectiva desde
+`inventory_movements` queda para la Fase 5. Reglas de lectura de U4: §16.13.2.
+
 ### 16.4 Una función por regla
 
 | Función (conceptual) | Regla | Qué devuelve |
@@ -1069,3 +1073,126 @@ constituyen una decisión técnica nueva.
 *`NO_NEED` no es una interpretación:* `raw_need = 0` está fijado en §16.6 punto 6 y la ausencia de
 `Q_moq`, `Q_final`, `MOQ_APPLIED` y `ORDER_MULTIPLE_ROUNDING` se sigue de `V1-06` («no hay
 recomendación»).
+
+### 16.13 Ejecución de recomendaciones (U4): adaptador, representación y criterios de cierre
+
+*Añadido el 2026-10-03 al autorizar U4 (`DT-058` a `DT-063`) e **implementado y validado** el mismo día
+(§16.13.5). No cambia ninguna regla V1 ni el contrato de U1: U4 lee PostgreSQL, construye
+`EvaluationInput`, llama a `evaluate` y persiste el resultado (`docs/04` §9.11). (Hasta la implementación
+esta nota decía «U4 está autorizada para implementación y no está implementada».)*
+
+#### 16.13.1 Ejecución
+
+- **Comando:** `python -m app.runs recommend --as-of AAAA-MM-DD`, explícito; no lanza el forecast
+  (`DT-058`). Secuencia: `forecast --as-of t` y después `recommend --as-of t`.
+- **Corte:** en V1, `as_of_date = upper(time_range) − 1` de la carga `COMPLETED` (`2025-12-31` para
+  `ds-6c8ad65b4999`); otro corte se rechaza sin escribir (`DT-058`).
+- **Origen:** solo cargas con `data_loads.data_origin = 'SYNTHETIC'`; cualquier otro valor, incluido
+  `NULL`, se rechaza sin escribir (`DT-063`). El motor sigue sin leer `data_origin`. `DT-P16` sigue
+  abierta.
+- **Forecast:** la ejecución `FORECAST` `COMPLETED` con el mismo `as_of_date`, el mismo
+  `data_load_id` y el `config_sha256` de U3 vigente; si no existe, rechazo sin escribir (`DT-061`).
+  Serie primaria de 14 filas desde `as_of_date + 1`; `forecast_id` = fila h=1, ancla de la serie
+  lógica (`DT-060`). Sin serie primaria: `forecast = None` → `FORECAST_MISSING`.
+- **Población:** `products × locations`, sin filtrado previo: U1 decide sobre inactivos y fuera de
+  vigencia (US-046).
+- **Política:** `V1_PROVISIONAL_PARAMETERS` de U1, consumida sin redefinirla; `policy_set =
+  "V1_PROVISIONAL"` (`DT-062`).
+- **Idempotencia, concurrencia y atomicidad:** `config_sha256` de `DT-062`, bloqueo *advisory*, una
+  transacción; ante cualquier fallo, incluido `InvalidInputError`, *rollback* y fila `FAILED`
+  (`NOT_CALCULABLE ≠ FAILED`).
+
+#### 16.13.2 Reglas de lectura U2/U3 → U1 (`input_rules_version = "1.0.0"`)
+
+| Bloque U1 | Fuente | Transformación U4 | Regla |
+|---|---|---|---|
+| `as_of_date` | `data_loads.time_range` | `upper − 1` | `DT-058` |
+| `product` | `products` + `location_id` del cruce | `is_active`, `valid_from`, `valid_to` tal cual; nunca `abc_class` | `V1-11` |
+| `supplier_relations` | `product_suppliers` del producto, **todas** | `moq` y `order_multiple` como `Decimal`; orden por `supplier_id` | `V1-10` (elige U1) |
+| `inventory` | `inventory` del par | `quantity_on_hand`, `quantity_reserved`, `quantity_in_transit`; sin fila → `FAILED`, nunca ceros | `V1-02`; U1 valida `DT-052` (d) |
+| `open_lines` | `purchase_orders` + `purchase_order_items` | Cabecera `ISSUED` o `PARTIALLY_RECEIVED`; `location_id` de la cabecera; pendiente `ordered − received > 0`; `expected_on` = fecha UTC de `coalesce(item.expected_at, po.expected_at)`; `supplier_id` de la cabecera; orden `(purchase_order_id, item_id)` | `DT-012`, `DT-P11` sigue abierto |
+| `lead_time_observations` | Órdenes, líneas y recepciones | Línea con `quantity_received = quantity_ordered` y al menos una recepción, sin mirar la cabecera; `issued_on` = fecha UTC de `issued_at`; `completed_on` = fecha UTC de `max(received_at)`; solo proveedores relacionados con el producto; sin filtro por fecha (lo aplica U1) | `V1-09` |
+| `consumption` | `consumption` con `occurred_on ≤ as_of_date` | `start_date` = primera fila; cantidades como `Decimal`; un hueco → `FAILED`, nunca se rellena; nunca `demand` | `V1-05`, `DT-052` (f) |
+| `forecast` | `forecasts` de la ejecución elegida, `is_primary` | §16.13.1 | `DT-060`, `DT-061` |
+| `policy` | Constante de U1 | `V1_PROVISIONAL_PARAMETERS` | `DT-031`, `DT-062` |
+
+Las fechas de `timestamptz` se convierten a fecha en UTC dentro de la consulta (`docs/04` §9.7). Con
+el corte del dataset, el estado actual de las órdenes es el estado al corte; la reconstrucción
+retrospectiva queda para la Fase 5.
+
+#### 16.13.3 Representación, precisión e `input_sha256`
+
+Desarrolla la última frase de §16.11.4 («la serialización byte a byte corresponde a quien persiste»)
+sin cambiar ninguna regla de §16.6 (`DT-059`):
+
+- **JSON:** `int` como decimal; `Fraction` con desarrollo decimal finito como decimal exacto (`33/20`
+  → `"1.65"`); `Fraction` periódica como `"p/q"` (`"270/7"`); `Decimal` aproximado de U1 (28 cifras
+  significativas, §16.6 punto 7) tal cual, con su nombre en `approximate_terms` y los componentes B3
+  (`n`, `S1`, `S2`, `A`, `B`, `D`, `P`) que permiten reconstruirlo.
+- **`numeric`:** exacto cuando es posible; un racional periódico, con 28 cifras significativas
+  `ROUND_HALF_EVEN` calculadas desde su valor exacto, nunca desde otro valor redondeado.
+  `recommended_quantity` (`k · M`) es siempre exacta. Nunca `float`.
+- **`input_sha256`** es el SHA-256 de la representación JSON canónica y normalizada de
+  `EvaluationInput` utilizada para persistencia. Las identidades técnicas autogeneradas de U3
+  (`forecast_id`, `model_version_id`) se representan por la identidad semántica del modelo (`name`,
+  `version`), de modo que la huella verifica las entradas semánticas utilizadas y no depende de IDs
+  técnicos generados por la base. Colecciones en el orden canónico de §16.13.2; los identificadores
+  conservados del dataset sí entran; no entran `generated_at` ni ids de ejecución.
+- **Verificación frente a reconstrucción:** la huella sirve para **verificar** que las entradas
+  releídas son las mismas. La **reconstrucción** del contexto se hace desde la carga inmutable, las
+  reglas de lectura versionadas (`input_rules_version`) y `calculation_inputs`; la huella por sí sola
+  no reconstruye las entradas.
+
+#### 16.13.4 Criterios de cierre de U4
+
+1. Migración `0003` aplicada (`recommendations` y columnas de U4 de `calculation_runs`).
+2. 100 evaluaciones sobre `ds-6c8ad65b4999` con corte `2025-12-31`, una por producto–ubicación.
+3. 10 `NOT_CALCULABLE` esperadas por construcción: los 5 productos inactivos con
+   `[PRODUCT_INACTIVE, PRODUCT_OUT_OF_VALIDITY, FORECAST_MISSING]` y los 5 sin proveedor preferente
+   activo con `[NO_ACTIVE_PREFERRED_SUPPLIER]`. El reparto de las otras 90 entre `RECOMMEND` y
+   `NO_NEED` no se estima de antemano.
+4. Trazabilidad completa hasta `dataset_version` (`docs/04` §9.11).
+5. Idempotencia: repetir da `ALREADY_COMPUTED`.
+6. *Rollback*: un fallo deja `FAILED` y cero recomendaciones.
+7. Reconstrucción y verificación byte a byte: volver a evaluar desde la base produce la misma
+   serialización canónica (sin `id` ni `generated_at`) y el mismo `input_sha256`.
+8. U1, U2 y U3 sin regresión.
+9. Validación local.
+10. Validación en Docker.
+
+Los diez criterios se cumplieron el 2026-10-03 (§16.13.5).
+
+#### 16.13.5 Implementación (U4, 2026-10-03)
+
+*Describe dónde vive el contrato de §16.13 y qué se verificó; no cambia ninguna regla ni ninguna
+decisión.*
+
+| Módulo | Contenido |
+|---|---|
+| `backend/app/runs/recommendation_inputs.py` | Adaptador puro de §16.13.2, sin SQL ni `psycopg`: una función por bloque de U1 (`map_product`, `map_supplier_relations`, `map_inventory`, `map_open_lines`, `map_lead_time_observations`, `map_consumption`, `map_forecast`) y `build_evaluation_input`, que usa `V1_PROVISIONAL_PARAMETERS` de U1. `AdapterError` (`MISSING_INVENTORY`, `CONSUMPTION_GAP`, `CONSUMPTION_DUPLICATE`, `INVALID_FORECAST_SERIES`) cuando una fila no puede mapearse sin inventar datos |
+| `backend/app/runs/recommendation_config.py` | Representación de §16.13.3 (`exact_text`, `numeric_value`), `policy_snapshot`, `breakdown_document`, `input_document` / `input_sha256`, `run_configuration` / `config_sha256`, `lock_key`, `INPUT_RULES_VERSION = "1.0.0"`. No redefine la política ni fija `engine_version`: los toma de U1 |
+| `backend/app/runs/recommendation.py` | `run_recommendations`: precondiciones sin escritura (`RecommendationRunError`), lectura en una consulta por tabla (fechas convertidas con `AT TIME ZONE 'UTC'`), evaluación de los `products × locations`, inserción de la ejecución y de sus filas, comprobación posterior y `FAILED` en otra transacción, con `product_id`, `location_id`, `field`, `code` y `sqlstate` cuando se conocen |
+| `backend/db/migrations/0003_recommendation_tables.sql` | `docs/04` §9.11 |
+| `backend/app/runs/__main__.py` | Subcomando `python -m app.runs recommend --as-of AAAA-MM-DD`; salida 0 con `COMPLETED` o `ALREADY_COMPUTED`, 1 con `FAILED` o rechazo, 2 con error de uso |
+
+U1 no se modificó. U2 y U3 solo recibieron ampliaciones aditivas: `runs/__main__.py`, `runs/__init__.py`
+y tres pruebas de esquema y migraciones que daban por hecho que solo existían `0001` y `0002`.
+
+**Ejecución real** (`ds-6c8ad65b4999`, carga 1, `as_of_date = 2025-12-31`, forecast 1, en local y en Docker):
+`COMPLETED`, ejecución 2, 100 candidatos y 100 evaluaciones —50 `RECOMMEND`, 40 `NO_NEED` y 10
+`NOT_CALCULABLE`—. Los diez `NOT_CALCULABLE` son exactamente los esperados por construcción: 21, 26, 37, 56 y
+61 con `[PRODUCT_INACTIVE, PRODUCT_OUT_OF_VALIDITY, FORECAST_MISSING]` y `forecast_id` nulo; 3, 20, 57, 71 y 74
+con `[NO_ACTIVE_PREFERRED_SUPPLIER]` y su `forecast_id`. Marcas: `ORDER_MULTIPLE_ROUNDING` 46, `MOQ_APPLIED` 8,
+`UNCOUNTED_TRANSIT` 8, `OVERDUE_ORDERS_EXCLUDED` 6; ninguna `LEAD_TIME_CAPPED` ni
+`LEAD_TIME_AGREED_FALLBACK`. La repetición da `ALREADY_COMPUTED` con el mismo id; otro corte se rechaza sin
+escribir; un `InvalidInputError` provocado sobre una copia temporal de la base da `FAILED` y 0
+recomendaciones, y el reintento completa. El `input_sha256` de cada fila coincide entre la base local y la
+de Docker.
+
+**Pruebas:** 47 en la suite por defecto, sin PostgreSQL (adaptador, representación, política, `input_sha256`
+y `config_sha256`), y 38 de integración en `backend/tests/db` (`test_recommendation_run`,
+`test_recommendation_refusals`, `test_recommendation_failures`, `test_recommendation_migration`): ejecución
+real con un espía alrededor de `evaluate`, `DT-P18`, `DT-P21`, `DT-063`, trazabilidad hasta
+`dataset_version`, reconstrucción byte a byte, idempotencia y concurrencia, *rollback*, inmutabilidad,
+`demand` nunca leída y restricciones de `0003`. En total, 295 pruebas por defecto y 113 de integración en
+verde, en local y en Docker; generador 582.

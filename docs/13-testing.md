@@ -1,6 +1,6 @@
 # 13 — Estrategia de testing
 
-**Estado:** Versión 1.0 — Etapa 0 (estrategia, **no implementada**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §14, capas de prueba de la Etapa 2; §§1–13 no cambian · **Versión 1.3** (2026-10-01) — §3.1: aclaración de `InvalidInputError` y excepción de `on_hand < 0` para U1 (`DT-052`) · **Versión 1.4** (2026-10-01) — §3.1: sin monotonía global del punto de reorden frente al lead time en U1 (`DT-054`) · **Versión 1.5** (2026-10-01) — §14: dónde viven las suites de U2 (`DT-055`)
+**Estado:** Versión 1.0 — Etapa 0 (estrategia, **no implementada**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §14, capas de prueba de la Etapa 2; §§1–13 no cambian · **Versión 1.3** (2026-10-01) — §3.1: aclaración de `InvalidInputError` y excepción de `on_hand < 0` para U1 (`DT-052`) · **Versión 1.4** (2026-10-01) — §3.1: sin monotonía global del punto de reorden frente al lead time en U1 (`DT-054`) · **Versión 1.5** (2026-10-01) — §14: dónde viven las suites de U2 (`DT-055`) · **Versión 1.6** (2026-10-03) — §14: pruebas exigibles de U4 (autorizada, no implementada; `DT-058` a `DT-063`)
 
 ---
 
@@ -257,3 +257,27 @@ el dataset 0.4.0 no está publicado) y la capa «ETL / integración», en `backe
 `__init__.py`, fuera de la suite por defecto): `U2_TEST_ADMIN_DSN=… python3 -m unittest discover -s
 tests/db -t tests/db`, desde `backend/`. Cada prueba crea su propia base temporal y altera solo copias
 temporales del dataset.
+
+*Pruebas exigibles de U4 (2026-10-03, `DT-058` a `DT-063`; U4 autorizada, **no implementada**; criterios
+de cierre en `docs/06` §16.13.4):*
+
+- **Adaptador, suite por defecto sin base** (`backend/tests/runs`): reglas de lectura de `docs/06`
+  §16.13.2 (fechas UTC, `expected_on` de la cabecera, pendiente `> 0`, observación solo con la línea
+  completa, consumo denso y hueco → error, orden canónico); serie primaria de 14 filas → `Forecast` con
+  `forecast_id` = fila h=1, y error con menos filas, filas no contiguas o versiones mezcladas;
+  representación (decimal finito, `"p/q"`, `Decimal` aproximado, 28 cifras `ROUND_HALF_EVEN` calculadas
+  a mano); `config_sha256` determinista y sensible a `engine_version`, a la política
+  (`policy_set = "V1_PROVISIONAL"`), a la configuración de U3 y a `input_rules_version`; `input_sha256`
+  sobre la representación JSON canónica y normalizada (independiente del orden de entrada y de
+  `forecast_id` y `model_version_id`, sustituidos por `{name, version}` del modelo).
+- **Integración, PostgreSQL** (`backend/tests/db`): migración `0003` (columnas, `CHECK`, inmutabilidad);
+  ejecución completa con una fila por candidato e invariantes por `outcome`; las 10 `NOT_CALCULABLE`
+  esperadas con el dataset 0.4.0; **trazabilidad** hasta `dataset_version`; **idempotencia**
+  (`ALREADY_COMPUTED`; otra `engine_version` → otra ejecución); selección del forecast (se ignoran
+  `FAILED`, otras configuraciones y series no primarias; sin ejecución válida → rechazo sin escribir);
+  **rollback** (un `InvalidInputError` inyectado o un error de base → `FAILED` y cero recomendaciones);
+  rechazo de un corte distinto del último día y de una carga no `SYNTHETIC` (`DT-063`);
+  **reconstrucción y verificación de entradas** (volver a evaluar desde la base da la misma
+  serialización canónica y el mismo `input_sha256`); `demand` nunca se lee.
+- **Regresión:** las suites de U1, U2 y U3 siguen en verde; las pruebas de esquema y de migraciones de
+  U2/U3 solo se amplían de forma aditiva.
