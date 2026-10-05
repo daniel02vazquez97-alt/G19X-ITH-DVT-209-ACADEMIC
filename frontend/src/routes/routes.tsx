@@ -6,6 +6,9 @@ import { HomePage } from '../pages/HomePage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 import { UnderConstructionPage } from '../pages/UnderConstructionPage';
 import { RoleGate } from '../roles/RoleGate';
+import { RecommendationDetailPage } from '../views/recommendations/RecommendationDetailPage';
+import { RecommendationsPage } from '../views/recommendations/RecommendationsPage';
+import { RunDetailPage } from '../views/runs/RunDetailPage';
 import { InventoryItemPage } from '../views/inventory/InventoryItemPage';
 import { InventoryPage } from '../views/inventory/InventoryPage';
 import { ProductDetailPage } from '../views/products/ProductDetailPage';
@@ -42,11 +45,11 @@ export const routes: RouteObject[] = [
       },
       {
         path: relative(PATHS.recommendations),
-        element: <UnderConstructionPage title="Recomendaciones" unit="F7c" />,
+        element: <RecommendationsPage />,
       },
       {
         path: relative(PATHS.recommendation),
-        element: <UnderConstructionPage title="Detalle de recomendación" unit="F7c" />,
+        element: <RecommendationDetailPage />,
       },
       {
         path: relative(PATHS.forecasts),
@@ -56,7 +59,7 @@ export const routes: RouteObject[] = [
         path: relative(PATHS.run),
         element: (
           <RoleGate resource="runs" fallback={<ForbiddenState />}>
-            <UnderConstructionPage title="Detalle de ejecución" unit="F7c" />
+            <RunDetailPage />
           </RoleGate>
         ),
       },
