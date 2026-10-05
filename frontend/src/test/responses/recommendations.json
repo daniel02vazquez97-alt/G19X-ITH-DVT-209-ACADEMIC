@@ -1,0 +1,39 @@
+{
+  "items": [
+    {
+      "id": 4,
+      "product": { "id": 4, "sku": "SKU-00004", "name": "Product SKU-00004" },
+      "supplier": { "id": 10, "code": "SUP-010", "name": "Supplier SUP-010" },
+      "recommended_quantity": "2700",
+      "raw_quantity": "2623.500600092591729239380374",
+      "suggested_order_date": "2025-12-31",
+      "outcome": "RECOMMEND",
+      "flags": ["ORDER_MULTIPLE_ROUNDING"]
+    },
+    {
+      "id": 7,
+      "product": { "id": 7, "sku": "SKU-00007", "name": "Product SKU-00007" },
+      "supplier": { "id": 4, "code": "SUP-004", "name": "Supplier SUP-004" },
+      "recommended_quantity": "105",
+      "raw_quantity": "102.9603264753158417140938034",
+      "suggested_order_date": "2025-12-31",
+      "outcome": "RECOMMEND",
+      "flags": ["ORDER_MULTIPLE_ROUNDING"]
+    }
+  ],
+  "total": 50,
+  "page": 1,
+  "page_size": 2,
+  "provenance": {
+    "data_origin": "SYNTHETIC",
+    "dataset_version": "ds-6c8ad65b4999",
+    "generator_version": "0.4.0",
+    "data_load_id": 1,
+    "as_of_date": "2025-12-31",
+    "run_id": 2,
+    "notices": ["SYNTHETIC_DATA", "V1_PROVISIONAL_POLICY"],
+    "engine_version": "0.1.0",
+    "policy_set": "V1_PROVISIONAL",
+    "forecast_run_id": 1
+  }
+}

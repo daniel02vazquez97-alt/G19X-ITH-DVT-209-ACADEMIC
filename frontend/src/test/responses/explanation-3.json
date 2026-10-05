@@ -1,0 +1,33 @@
+{
+  "recommendation_id": 3,
+  "run_id": 2,
+  "outcome": "NOT_CALCULABLE",
+  "explanation": {
+    "generator": "template/1.0.0",
+    "status": "NOT_APPLICABLE",
+    "narrative": null,
+    "warning": null
+  },
+  "facts": [],
+  "flags": [],
+  "reasons": ["NO_ACTIVE_PREFERRED_SUPPLIER"],
+  "reason_details": [
+    {
+      "code": "NO_ACTIVE_PREFERRED_SUPPLIER",
+      "text": "El producto no tiene un proveedor preferente activo."
+    }
+  ],
+  "missing_policy_parameters": [],
+  "provenance": {
+    "data_origin": "SYNTHETIC",
+    "dataset_version": "ds-6c8ad65b4999",
+    "generator_version": "0.4.0",
+    "data_load_id": 1,
+    "as_of_date": "2025-12-31",
+    "run_id": 2,
+    "notices": ["SYNTHETIC_DATA", "V1_PROVISIONAL_POLICY"],
+    "engine_version": "0.1.0",
+    "policy_set": "V1_PROVISIONAL",
+    "forecast_run_id": 1
+  }
+}
