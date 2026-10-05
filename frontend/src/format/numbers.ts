@@ -65,13 +65,14 @@ function scaleDecimal(value: string): bigint | null {
 }
 
 /**
- * `display` rule of DT-069 for a value that the API sends without its own `display`: integers as
- * they are; decimals and `"p/q"` with 6 decimals `ROUND_HALF_EVEN` and no trailing zeros. Text that
+ * `display` rule of DT-069 for a value that the API sends without its own `display`: integers
+ * normalized (`-0` → `0`); decimals and `"p/q"` with 6 decimals `ROUND_HALF_EVEN` and no trailing zeros. Text that
  * is not a number is returned unchanged.
  */
 export function formatDisplay(value: string): string {
   if (INTEGER.test(value)) {
-    return value;
+    // Like the backend: `-0` is `0` and leading zeros go away.
+    return BigInt(value).toString();
   }
   const rational = RATIONAL.exec(value);
   if (rational) {
