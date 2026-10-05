@@ -1,7 +1,7 @@
 interface UnderConstructionPageProps {
   title: string;
   /** Unit of Fase 7 that delivers the view (DT-070 point 24). */
-  unit: 'F7b' | 'F7c' | 'F7d';
+  unit: 'F7c' | 'F7d';
 }
 
 export function UnderConstructionPage({ title, unit }: UnderConstructionPageProps) {
