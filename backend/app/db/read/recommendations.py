@@ -71,3 +71,18 @@ def product_recommendation(conn: psycopg.Connection, run_id: int, product_id: in
         _DETAIL + " WHERE r.calculation_run_id = %s AND r.product_id = %s ORDER BY r.location_id LIMIT 1",
         (run_id, product_id),
     ).fetchone()
+
+
+def explanation_source(conn: psycopg.Connection, recommendation_id: int) -> dict[str, Any] | None:
+    """What the explanation of U6 reads (`DT-068`): the persisted evaluation and the product's
+    ``unit_of_measure`` as metadata. Never ``demand``, never a recalculation."""
+    return conn.execute(
+        """
+        SELECT r.id, r.calculation_run_id, r.outcome, r.reasons, r.flags, r.missing_policy_parameters,
+               r.calculation_inputs, p.unit_of_measure
+        FROM recommendations r
+        JOIN products p ON p.id = r.product_id
+        WHERE r.id = %s
+        """,
+        (recommendation_id,),
+    ).fetchone()

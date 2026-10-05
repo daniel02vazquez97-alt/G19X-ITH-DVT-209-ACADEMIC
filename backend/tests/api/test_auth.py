@@ -81,7 +81,7 @@ class AuthenticationTest(unittest.TestCase):
 
 
 class RoleMatrixTest(unittest.TestCase):
-    """13 endpoints × 4 roles + no token. Allowed requests pass authentication and reach the (closed)
+    """14 endpoints × 4 roles + no token. Allowed requests pass authentication and reach the (closed)
     database, so they answer 503; denied ones answer 403 before any query; without a token, 401."""
 
     def test_matrix(self) -> None:

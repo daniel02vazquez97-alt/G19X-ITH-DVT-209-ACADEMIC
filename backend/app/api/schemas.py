@@ -314,3 +314,38 @@ class RunDetail(Schema):
     started_at: _dt.datetime
     finished_at: _dt.datetime
     error: dict[str, Any] | None
+
+
+# --- explanation (U6, `DT-068`, `DT-069`) ------------------------------------------------------
+
+
+class ExplanationFact(Schema):
+    key: str
+    value: str
+    display: str
+    unit: Literal["QUANTITY", "DAYS", "FACTOR"]
+
+
+class ReasonDetail(Schema):
+    code: str
+    text: str
+
+
+class ExplanationBody(Schema):
+    generator: str
+    status: Literal["VERIFIED", "DEGRADED", "NOT_APPLICABLE"]
+    narrative: str | None
+    warning: Literal["NARRATIVE_UNVERIFIED"] | None
+
+
+class RecommendationExplanation(Schema):
+    recommendation_id: int
+    run_id: int
+    outcome: Outcome
+    explanation: ExplanationBody
+    facts: list[ExplanationFact]
+    flags: list[str]
+    reasons: list[str]
+    reason_details: list[ReasonDetail]
+    missing_policy_parameters: list[str]
+    provenance: RecommendationProvenance

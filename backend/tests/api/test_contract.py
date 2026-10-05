@@ -136,14 +136,15 @@ class OpenApiTest(unittest.TestCase):
         self.assertEqual(self.client.get("/redoc").status_code, 404)
         self.assertEqual(self.client.get("/docs/oauth2-redirect").status_code, 404)
 
-    def test_exactly_the_thirteen_endpoints_all_get(self) -> None:
+    def test_exactly_the_fourteen_endpoints_all_get(self) -> None:
+        # U5 = 13 endpoints; U6 adds the 14th, the explanation (`DT-068`).
         self.assertEqual(
             set(self.schema["paths"]),
             {"/health", "/api/v1/me", "/api/v1/products", "/api/v1/products/{product_id}",
              "/api/v1/products/{product_id}/history", "/api/v1/inventory", "/api/v1/inventory/{product_id}",
              "/api/v1/forecasts", "/api/v1/products/{product_id}/forecast", "/api/v1/recommendations",
              "/api/v1/recommendations/{recommendation_id}", "/api/v1/products/{product_id}/recommendation",
-             "/api/v1/runs/{run_id}"},
+             "/api/v1/runs/{run_id}", "/api/v1/recommendations/{recommendation_id}/explanation"},
         )
         for path, operations in self.schema["paths"].items():
             self.assertEqual(set(operations), {"get"}, path)

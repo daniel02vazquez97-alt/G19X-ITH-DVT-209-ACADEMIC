@@ -1,6 +1,6 @@
 # 07 — Diseño inicial de la API
 
-**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §7, contrato inicial de solo lectura de la Etapa 2; §§1–6 siguen siendo el catálogo completo previsto · **Versión 1.3** (2026-10-03) — §7.2 y §7.3: `DT-P18` cerrada por `DT-059`; las tres `outcome` se persisten y la resolución humana queda fuera de V1 · **Versión 1.4** (2026-10-03) — U5 autorizada, no implementada: §7.4 (concreción, `DT-064` a `DT-067`) y §7.5 (criterios de cierre); notas en §7.2 · **Versión 1.5** (2026-10-03) — U5 implementada y validada: estado en §7.4 y §7.5
+**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §7, contrato inicial de solo lectura de la Etapa 2; §§1–6 siguen siendo el catálogo completo previsto · **Versión 1.3** (2026-10-03) — §7.2 y §7.3: `DT-P18` cerrada por `DT-059`; las tres `outcome` se persisten y la resolución humana queda fuera de V1 · **Versión 1.4** (2026-10-03) — U5 autorizada, no implementada: §7.4 (concreción, `DT-064` a `DT-067`) y §7.5 (criterios de cierre); notas en §7.2 · **Versión 1.5** (2026-10-03) — U5 implementada y validada: estado en §7.4 y §7.5 · **Versión 1.6** (2026-10-04) — U6 autorizada, no implementada: endpoint 14 `GET /api/v1/recommendations/{recommendation_id}/explanation` en §7.2 (`DT-068`); notas en §2.12, §7.3, §7.4 y §7.5 · **Versión 1.7** (2026-10-04) — U6 implementada: endpoint 14 en servicio
 
 > Ningún endpoint está implementado. Este documento define el contrato previsto para que el frontend,
 > Power BI y el asistente de IA se diseñen contra una interfaz estable.
@@ -228,6 +228,7 @@ convierte recomendaciones en órdenes automáticamente (RF-015).
 - **Propósito:** explicación en lenguaje natural de una recomendación **ya calculada**.
 - **Respuesta 200:** `{explanation, recommendation_snapshot, sources}`.
 - **Restricción:** el LLM recibe las cifras; no las genera ni las modifica. · **Rol:** `VIEWER`.
+- *Nota del 2026-10-04: U6 no usa esta ruta. La explicación por plantilla es `GET /api/v1/recommendations/{recommendation_id}/explanation` (§7.2, `DT-068`); `POST /assistant/*` queda reservado al asistente con LLM de la Fase 10.*
 
 ### 2.13 Ingesta de datos
 
@@ -331,9 +332,13 @@ Los recálculos y las cargas de datos son procesos largos. Patrón uniforme:
 | `GET /api/v1/recommendations` | `outcome` (por defecto `RECOMMEND`), `product_id`, `category_id`, `supplier_id`, `run_id`, paginación, `sort` (`sku`, `recommended_quantity`, `suggested_order_date`) | Página de `{id, product, supplier, recommended_quantity, raw_quantity, suggested_order_date, outcome, flags}` + `provenance` | 400, 401, 403, 404 (sin ejecución, `DT-066`), 422 | Los cuatro | `recommendations`, `calculation_runs`, `data_loads` |
 | `GET /api/v1/recommendations/{id}` | — | **Desglose completo** de `docs/06` §13 y §16.5, `policy_snapshot`, `reasons`, `flags` + `provenance` | 401, 403, 404 | Los cuatro | Ídem |
 | `GET /api/v1/products/{id}/recommendation` | `run_id` opcional | La evaluación del producto en la ejecución, **también** si fue `NO_NEED` (con `raw_quantity = 0`) o `NOT_CALCULABLE` (con sus `reasons`): las tres `outcome` se persisten (`DT-059`, cierra `DT-P18`). 404 solo si no existe la ejecución o el producto | 401, 403, 404 | Los cuatro | Ídem |
+| `GET /api/v1/recommendations/{recommendation_id}/explanation` *(U6, `DT-068`; implementada el 2026-10-04)* | — | `{recommendation_id, run_id, outcome, explanation {generator, status, narrative, warning}, facts[], flags[], reasons[], reason_details[], missing_policy_parameters[], provenance}`: explicación por plantilla de la evaluación persistida, sin recalcular; `status` `VERIFIED`, `DEGRADED` (200, `narrative = null`, `warning = NARRATIVE_UNVERIFIED`) o `NOT_APPLICABLE` (`NOT_CALCULABLE`) (`docs/09` §14.5, `DT-069`) | 401, 403, 404, 422 | Los cuatro (los del detalle) | `recommendations`, `products`, `calculation_runs`, `data_loads` |
 | `GET /api/v1/runs/{run_id}` | — | `{run_type, status, as_of_date, data_load, versions, counts, started_at, finished_at, error}` | 401, 403, 404 | PLANNER, ADMIN | `calculation_runs`, `data_loads` |
 
 Paginación, ordenación, formato de error y `correlation_id`: los de §1, sin cambios.
+
+*Superficie (2026-10-04, `DT-068`): U5 implementó **13** endpoints; U6 añade el **endpoint 14**, la explicación,
+que es una ampliación aceptada e implementada el 2026-10-04. Ninguna respuesta de los otros trece cambia.*
 
 ### 7.3 Diferencias con §2, y por qué
 
@@ -343,7 +348,7 @@ Paginación, ordenación, formato de error y `correlation_id`: los de §1, sin c
 | Filtros `abc_class` y `rotation_class` | Fuera | Siempre nulos en el dataset (`DT-029`) y fuera del cálculo (`V1-11`) |
 | Orden por `urgency`, `/risks/*`, `/dashboard/summary` | Aplazados | Dependen de la clasificación de riesgo, pendiente de `BR-X03` |
 | Escrituras (maestros, movimientos, consumo, órdenes, recepciones, resolución de recomendaciones), `recalculate`, `data-loads`, `policies`, `models` | Aplazadas | V1 es de solo lectura. La resolución humana de recomendaciones queda fuera de V1: `DT-059` (cierra `DT-P18`) no crea `status` ni `resolved_*`, y se modelará como flujo separado cuando exista quien la escriba; las escrituras de órdenes, a `DT-P13` |
-| `/assistant/*` | Aplazado | Llega con U6 (explicación por plantilla, `docs/09` §14) |
+| `/assistant/*` | Aplazado | Llega con el asistente con LLM (Fase 10). La explicación por plantilla de U6 **no** usa `/assistant/*`: es `GET /api/v1/recommendations/{recommendation_id}/explanation` (`DT-068`, 2026-10-04); hasta entonces esta fila decía «Llega con U6» |
 
 ### 7.4 Concreción de U5 (`DT-064` a `DT-067`)
 
@@ -351,7 +356,7 @@ Paginación, ordenación, formato de error y `correlation_id`: los de §1, sin c
 este párrafo decía «autorizada para implementación y no implementada».*
 
 *Concreta §1, §7.1 y §7.2; no añade ni quita endpoints: son los trece de §7.2, `/health` y
-doce rutas bajo `/api/v1`.*
+doce rutas bajo `/api/v1`.* *(Nota del 2026-10-04: U6 añade el endpoint 14, `DT-068`; esta sección describe los trece de U5.)*
 
 **Autenticación y roles** (`DT-065`, `docs/10` §15): `Authorization: Bearer <token>` con tokens de
 desarrollo opacos `dev-…`; solo arranca con `APP_ENV=local`. Roles exactamente los de §7.2, sin jerarquía.
@@ -428,6 +433,9 @@ de rango → 200 vacío. **Números:** `Decimal` como texto JSON. **Solo lectura
 18. Regresión: suites de U1–U4 y del generador en verde.
 19. `.env.example` con valores ficticios evidentes; ningún secreto.
 20. Documentación actualizada con el estado de U5.
+
+*U6 (2026-10-04, `DT-068`): al implementarse, los criterios 4, 5 y 12 se extienden al endpoint 14 (14 endpoints
+× 4 roles); sus criterios propios están en `docs/09` §14.6.* *(Cumplido el 2026-10-04: OpenAPI con 14 rutas `GET`, matriz de 14 endpoints × 4 roles + sin token.)*
 
 *Estado (2026-10-03): los veinte criterios se cumplen. Evidencia: `backend/tests/api` (56 pruebas),
 `backend/tests/db/test_api_read.py` y `test_api_runs.py` (29), regresión completa y Docker (`project/status.md`).*

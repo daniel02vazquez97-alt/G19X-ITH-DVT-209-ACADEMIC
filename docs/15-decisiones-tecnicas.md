@@ -1,6 +1,6 @@
 # 15 — Decisiones técnicas (ADR)
 
-**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-18) — `DT-024` a `DT-030`, preparación del Componente 2 · **Versión 1.3** (2026-09-19) — `DT-031`, reglas mínimas de V1 · **Versión 1.4** (2026-09-21) — cierre de las reglas V1: `DT-031` pasa a `ACEPTADA` con trece reglas · **Versión 1.5** (2026-09-21) — `DT-032` y `DT-033`, decisiones que el Componente 2 tenía que tomar al implementarse · **Versión 1.6** (2026-09-21) — tabla canónica de identificadores de componente en `DT-030` · **Versión 1.7** (2026-09-23) — `DT-034` y `DT-035`, demanda latente persistente y sus políticas de generación · **Versión 1.8** (2026-09-24) — `DT-036` y `DT-037`, políticas sintéticas de inventario y comportamiento de proveedores; **enmienda de `DT-027`** (restricción 3) y cierre del pendiente de `data_origin` de `DT-026` · **Versión 1.9** (2026-09-24) — `DT-038` y `DT-039`, contratos de salida de los Componentes 4 y 5, tras la auditoría pre-implementación; cierre de los pendientes de `DT-034` (recorte de la demanda y contrato de `consumption.csv`) y correcciones a `DT-036` y `DT-037` · **Versión 1.10** (2026-09-26) — cierre de D-01: `DT-040` (publicación atómica del dataset, W1), regla general de incremento de `generator_version` en `DT-033`, y actualizaciones de `DT-036`, `DT-038` y `DT-039` (A2, B2, `expected_at`, autoría de los identificadores) · **Versión 1.11** (2026-09-26) — implementación del Componente 4: enmienda de `DT-037` §3 (D-C4-1, reparto de la entrega partida) y actualización de `DT-038` (D-C4-2 precondiciones, D-C4-3 lead time y disparo diario, flujos pseudoaleatorios, `metrics` pendiente) · **Versión 1.12** (2026-09-27) — cierre de D-01, opción A: elegibilidad de las órdenes `CANCELLED` sintéticas respecto de `valid_to` (`DT-039` §5.2) · **Versión 1.13** (2026-09-28) — implementación del Componente 5 (`DT-039` §13), sin cambios en ninguna regla · **Versión 1.14** (2026-09-28) — implementación del Componente 6 (`DT-037` §6, decisiones A1 y A2) y corrección de texto en `DT-040` §3 · **Versión 1.15** (2026-09-29) — implementación de W1 (`DT-040` §9, detalles pendientes resueltos) y `generator_version` 0.3.0 · **Versión 1.16** (2026-09-29) — `DT-041`, contrato e implementación del Componente 7 (sin integrar en W1); notas de redacción en `DT-030` y `DT-031` (`V1-07`, `V1-08`) · **Versión 1.17** (2026-09-29) — `DT-042`, validador del dataset e informe de calidad; integración de C7 y C8 en W1 (`DT-040`); `generator_version` 0.4.0 (`DT-033`); formas de `scenario_assignment` y `quality_report` (`DT-025`); `metrics` de `DT-038` §12 cerrado · **Versión 1.18** (2026-09-30) — Etapa 2, arquitectura y fundación: `DT-043` a `DT-047` (todas `PROPUESTA`) y pendientes `DT-P13` a `DT-P21` · **Versión 1.19** (2026-09-30) — autorización de U1: `DT-043` y `DT-045` `ACEPTADA`, `DT-047` `ACEPTADA` en cuanto a U1; `DT-P15` y `DT-P20` cerradas; `DT-P14` abierta en parte y **bloquea U1** · **Versión 1.20** (2026-10-01) — `DT-P14` **cerrada** con el estimador poblacional, `INSUFFICIENT_HISTORY` para `n = 0` y la evaluación exacta B3 (`docs/06` §16.6); ninguna fórmula V1 cambia · **Versión 1.21** (2026-10-01) — cierre del contrato de U1: `DT-048` a `DT-052` `ACEPTADA` (aclaraciones A-1 en `DT-050` y A-2 en `DT-051`), y pendiente `DT-P22`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.22** (2026-10-01) — `DT-P22` `ACEPTADA` (opción (a)): `PRODUCT_OUT_OF_VALIDITY` cubre también la vigencia que termina dentro del horizonte; cierre de `DT-049`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.23** (2026-10-01) — `DT-053` (frontera de la salida parcial) y `DT-054` (sin monotonía global de `S` frente a `L` en V1), tras el audit de pre-codificación de U1; ninguna fórmula cambia · **Versión 1.24** (2026-10-01) — `DT-044` `ACEPTADA` (cantidades en `numeric`; `quantity_on_hand ≥ 0` compatible con `BR-X09`/`V1-13`); `DT-047` aceptada para U2; `DT-055` (entorno técnico de U2) · **Versión 1.25** (2026-10-02) — U3 autorizada para implementación: `DT-P17` cerrada por `DT-056` (baselines V1); `DT-046` `ACEPTADA`; `DT-057` (persistencia y ejecución del forecast); `DT-047` aceptada para U3; pendiente nueva `DT-P23` · **Versión 1.26** (2026-10-03) — cierre documental de U4 y autorización para implementación (no implementada): `DT-058` a `DT-063` `ACEPTADA`; `DT-P18` cerrada por `DT-059` y `DT-P21` por `DT-058`; `DT-047` aceptada para U4; nota en `DT-P16`, que sigue abierta · **Versión 1.27** (2026-10-03) — U4 implementada y validada: registro de la implementación en `DT-047` y en `DT-058` a `DT-063`; ninguna decisión cambia · **Versión 1.28** (2026-10-03) — U5 autorizada para implementación (no implementada): `DT-064` (dependencias), `DT-065` (autenticación local), `DT-066` (contrato de lectura) y `DT-067` (historia, desviación poblacional) `ACEPTADA`; `DT-047` aceptada para U5 · **Versión 1.29** (2026-10-03) — U5 implementada y validada: registro de la implementación en `DT-047` y en `DT-064` a `DT-067`; ninguna decisión cambia
+**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-18) — `DT-024` a `DT-030`, preparación del Componente 2 · **Versión 1.3** (2026-09-19) — `DT-031`, reglas mínimas de V1 · **Versión 1.4** (2026-09-21) — cierre de las reglas V1: `DT-031` pasa a `ACEPTADA` con trece reglas · **Versión 1.5** (2026-09-21) — `DT-032` y `DT-033`, decisiones que el Componente 2 tenía que tomar al implementarse · **Versión 1.6** (2026-09-21) — tabla canónica de identificadores de componente en `DT-030` · **Versión 1.7** (2026-09-23) — `DT-034` y `DT-035`, demanda latente persistente y sus políticas de generación · **Versión 1.8** (2026-09-24) — `DT-036` y `DT-037`, políticas sintéticas de inventario y comportamiento de proveedores; **enmienda de `DT-027`** (restricción 3) y cierre del pendiente de `data_origin` de `DT-026` · **Versión 1.9** (2026-09-24) — `DT-038` y `DT-039`, contratos de salida de los Componentes 4 y 5, tras la auditoría pre-implementación; cierre de los pendientes de `DT-034` (recorte de la demanda y contrato de `consumption.csv`) y correcciones a `DT-036` y `DT-037` · **Versión 1.10** (2026-09-26) — cierre de D-01: `DT-040` (publicación atómica del dataset, W1), regla general de incremento de `generator_version` en `DT-033`, y actualizaciones de `DT-036`, `DT-038` y `DT-039` (A2, B2, `expected_at`, autoría de los identificadores) · **Versión 1.11** (2026-09-26) — implementación del Componente 4: enmienda de `DT-037` §3 (D-C4-1, reparto de la entrega partida) y actualización de `DT-038` (D-C4-2 precondiciones, D-C4-3 lead time y disparo diario, flujos pseudoaleatorios, `metrics` pendiente) · **Versión 1.12** (2026-09-27) — cierre de D-01, opción A: elegibilidad de las órdenes `CANCELLED` sintéticas respecto de `valid_to` (`DT-039` §5.2) · **Versión 1.13** (2026-09-28) — implementación del Componente 5 (`DT-039` §13), sin cambios en ninguna regla · **Versión 1.14** (2026-09-28) — implementación del Componente 6 (`DT-037` §6, decisiones A1 y A2) y corrección de texto en `DT-040` §3 · **Versión 1.15** (2026-09-29) — implementación de W1 (`DT-040` §9, detalles pendientes resueltos) y `generator_version` 0.3.0 · **Versión 1.16** (2026-09-29) — `DT-041`, contrato e implementación del Componente 7 (sin integrar en W1); notas de redacción en `DT-030` y `DT-031` (`V1-07`, `V1-08`) · **Versión 1.17** (2026-09-29) — `DT-042`, validador del dataset e informe de calidad; integración de C7 y C8 en W1 (`DT-040`); `generator_version` 0.4.0 (`DT-033`); formas de `scenario_assignment` y `quality_report` (`DT-025`); `metrics` de `DT-038` §12 cerrado · **Versión 1.18** (2026-09-30) — Etapa 2, arquitectura y fundación: `DT-043` a `DT-047` (todas `PROPUESTA`) y pendientes `DT-P13` a `DT-P21` · **Versión 1.19** (2026-09-30) — autorización de U1: `DT-043` y `DT-045` `ACEPTADA`, `DT-047` `ACEPTADA` en cuanto a U1; `DT-P15` y `DT-P20` cerradas; `DT-P14` abierta en parte y **bloquea U1** · **Versión 1.20** (2026-10-01) — `DT-P14` **cerrada** con el estimador poblacional, `INSUFFICIENT_HISTORY` para `n = 0` y la evaluación exacta B3 (`docs/06` §16.6); ninguna fórmula V1 cambia · **Versión 1.21** (2026-10-01) — cierre del contrato de U1: `DT-048` a `DT-052` `ACEPTADA` (aclaraciones A-1 en `DT-050` y A-2 en `DT-051`), y pendiente `DT-P22`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.22** (2026-10-01) — `DT-P22` `ACEPTADA` (opción (a)): `PRODUCT_OUT_OF_VALIDITY` cubre también la vigencia que termina dentro del horizonte; cierre de `DT-049`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.23** (2026-10-01) — `DT-053` (frontera de la salida parcial) y `DT-054` (sin monotonía global de `S` frente a `L` en V1), tras el audit de pre-codificación de U1; ninguna fórmula cambia · **Versión 1.24** (2026-10-01) — `DT-044` `ACEPTADA` (cantidades en `numeric`; `quantity_on_hand ≥ 0` compatible con `BR-X09`/`V1-13`); `DT-047` aceptada para U2; `DT-055` (entorno técnico de U2) · **Versión 1.25** (2026-10-02) — U3 autorizada para implementación: `DT-P17` cerrada por `DT-056` (baselines V1); `DT-046` `ACEPTADA`; `DT-057` (persistencia y ejecución del forecast); `DT-047` aceptada para U3; pendiente nueva `DT-P23` · **Versión 1.26** (2026-10-03) — cierre documental de U4 y autorización para implementación (no implementada): `DT-058` a `DT-063` `ACEPTADA`; `DT-P18` cerrada por `DT-059` y `DT-P21` por `DT-058`; `DT-047` aceptada para U4; nota en `DT-P16`, que sigue abierta · **Versión 1.27** (2026-10-03) — U4 implementada y validada: registro de la implementación en `DT-047` y en `DT-058` a `DT-063`; ninguna decisión cambia · **Versión 1.28** (2026-10-03) — U5 autorizada para implementación (no implementada): `DT-064` (dependencias), `DT-065` (autenticación local), `DT-066` (contrato de lectura) y `DT-067` (historia, desviación poblacional) `ACEPTADA`; `DT-047` aceptada para U5 · **Versión 1.29** (2026-10-03) — U5 implementada y validada: registro de la implementación en `DT-047` y en `DT-064` a `DT-067`; ninguna decisión cambia · **Versión 1.30** (2026-10-04) — U6 autorizada para implementación (no implementada): `DT-068` (entrega y contrato de la explicación) y `DT-069` (presentación, verificación y degradación de cifras) `ACEPTADA`; `DT-047` aceptada para U6 · **Versión 1.31** (2026-10-04) — U6 implementada y validada: registro de la implementación en `DT-047`, `DT-068` y `DT-069`; ninguna decisión cambia
 
 Registro de decisiones arquitectónicas. Formato: ID, decisión, contexto, alternativas, razón,
 consecuencias, estado.
@@ -1797,7 +1797,21 @@ consecuencias, estado.
   decisión: `backend/app/api/`, `backend/app/db/read/`, `.env.example` y los grupos `api` y `test`. U1 a U4
   no cambian. 295 pruebas por defecto, 56 de la API, 142 de integración y 582 del generador en verde, en
   local y en Docker. Los veinte criterios de `docs/07` §7.5 se cumplen.
-- **Estado:** `ACEPTADA` en cuanto a U1 (autorizada el 2026-09-30), a U2 (autorizada el 2026-10-01), a U3 (autorizada el 2026-10-02; implementada y validada el mismo día), a U4 (autorizada el 2026-10-03; implementada y validada el mismo día) y a U5 (autorizada el 2026-10-03; implementada y validada el mismo día). El orden de U6 sigue `PROPUESTA`.
+- **Autorización de U6 (2026-10-04).** U6 = `backend/app/genai/` (`ExplanationContext`, `Fact`, `TextGenerator`
+  con la plantilla determinista `template/1.0.0`, presentación de cifras, verificación y degradación
+  RS-010), solo con la biblioteca estándar, + el endpoint 14
+  `GET /api/v1/recommendations/{recommendation_id}/explanation` en `backend/app/api/` + una lectura aditiva
+  de `unit_of_measure` en `backend/app/db/read/`, según `DT-068` y `DT-069` (`ACEPTADA`) y `docs/09` §14.5.
+  U1 a U4 no cambian; de U5 solo se amplían, de forma aditiva, la superficie de `api` y sus pruebas
+  (13 → 14 endpoints); ninguna respuesta existente cambia. Sin dependencias nuevas. Siguen abiertas, sin
+  bloquear U6: `DT-P16`, `DT-P11`, `DT-P13`, `DT-P23` y `BR-X03`. **Autorizar U6 significa que su
+  implementación puede comenzar; U6 no está implementada.** Criterios de cierre: `docs/09` §14.6.
+- **Implementación de U6 (2026-10-04).** Implementada y validada el mismo día, sin cambiar ninguna decisión:
+  `backend/app/genai/`, el endpoint 14 y la lectura aditiva de `unit_of_measure`. U1 a U4 no cambian; de U5
+  solo se ampliaron `app.py`, `db/read/recommendations.py`, `schemas.py` y, en sus pruebas, la lista de
+  endpoints y el test de OpenAPI (13 → 14). Las 100 evaluaciones reales se explican sin ninguna `DEGRADED`.
+  353 pruebas en la suite por defecto (295 + 58 de `tests/genai`), 56 de la API sin base, 151 de integración (142 + 9 de `test_api_explanation.py`), 146 de U1 y 582 del generador en verde, en local y en Docker. Los doce criterios de `docs/09` §14.6 se cumplen.
+- **Estado:** `ACEPTADA` en cuanto a U1 (autorizada el 2026-09-30), a U2 (autorizada el 2026-10-01), a U3 (autorizada el 2026-10-02; implementada y validada el mismo día), a U4 (autorizada el 2026-10-03; implementada y validada el mismo día) y a U5 (autorizada el 2026-10-03; implementada y validada el mismo día) y a U6 (autorizada el 2026-10-04; implementada y validada el mismo día).
 
 ## DT-048 — Cobertura del forecast y significado de `FORECAST_TOO_SHORT`
 
@@ -2506,6 +2520,136 @@ D-01 a D-22 y criterios de cierre: `docs/05` §19.8 y §19.9.*
   (`DT-P14`, `σ_H` poblacional) y queda definida con n = 1. Las semanas ISO son estables aunque cambie el
   rango; rellenar huecos inventaría datos.
 - **Estado:** `ACEPTADA` (2026-10-03, decisión del responsable al autorizar U5); implementada y validada el mismo día (`docs/07` §7.5).
+
+## DT-068 — Entrega y contrato de la explicación por plantilla (U6)
+
+- **Decisión:**
+  1. **Entrega.** `GET /api/v1/recommendations/{recommendation_id}/explanation`: un recurso hijo de la
+     recomendación, de solo lectura, determinista e idempotente. No se usa
+     `POST /api/v1/assistant/explain/{recommendation_id}` (`docs/07` §2.12): `/assistant/*` queda reservado
+     al asistente con LLM de la Fase 10. Es una **ampliación** de la superficie aceptada: U5 = 13 endpoints
+     (`DT-066`, `docs/07` §7.4), U6 añade el **endpoint 14**. Ninguna respuesta de U5 cambia.
+  2. **Autenticación y roles.** `Authorization: Bearer` con el `TokenValidator` de U5 (`DT-065`); los
+     cuatro roles `VIEWER`, `ANALYST`, `PLANNER` y `ADMIN`, sin jerarquía, los mismos del detalle
+     `GET /api/v1/recommendations/{id}` (`docs/07` §3: «Asistente de IA — Explicaciones» para los cuatro).
+     401 y 403 exactamente como en U5; 404 `RECOMMENDATION_NOT_FOUND`; 422 con un `recommendation_id` no
+     válido. Formato de error, `X-Correlation-ID` y conexión de solo lectura: los de `DT-066`. Sin 503:
+     la plantilla no depende de ningún servicio externo.
+  3. **Respuesta 200**: `{recommendation_id, run_id, outcome, explanation {generator, status, narrative,
+     warning}, facts[], flags[], reasons[], reason_details[], missing_policy_parameters[], provenance}`.
+     `facts[]` = `{key, value, display, unit}`; `reason_details[]` = `{code, text}`; `provenance` es el
+     bloque de recomendaciones de `DT-066` (con `notices`). `status`: `VERIFIED` (narrativa generada y
+     verificada), `DEGRADED` (narrativa descartada, `DT-069`) o `NOT_APPLICABLE` (`NOT_CALCULABLE`).
+  4. **`ExplanationContext`** inmutable con `kind = RECOMMENDATION_EXPLANATION`, `recommendation_id`,
+     `run_id`, `outcome`, `facts`, `flags`, `reasons`, `missing_policy_parameters`, `lead_time_source`,
+     `unit_of_measure` y `provenance`. No es una copia del `RecommendationDetail`. Se construye **solo**
+     con valores persistidos: la fila de `recommendations` (`calculation_inputs.breakdown`, columnas
+     `flags`, `reasons`, `missing_policy_parameters`), el contexto de la ejecución (`DT-066`) y
+     `products.unit_of_measure`. U6 **lee → transforma → explica**; nunca recalcula ni llama a U1.
+  5. **`facts[]`**: vocabulario cerrado, en este orden: `q_final`, `raw_need`, `safety_stock`,
+     `target_level`, `lead_time_days`, `uncapped_lead_time_days`, `review_period_days`,
+     `coverage_horizon_days`, `demand_over_horizon`, `inventory_position_decision`,
+     `inventory_position_accounting`, `total_in_transit`, `effective_in_transit`, `moq`,
+     `order_multiple`, `q_moq`, `on_hand`, `reserved` (claves de `calculation_inputs.breakdown`). Contiene
+     **exactamente** las cifras que la plantilla del `outcome` puede usar (`docs/09` §14.5): sin la frase
+     condicionada, sin su cifra. `unit` ∈ `QUANTITY` · `DAYS` · `FACTOR` (`FACTOR` existe en el
+     vocabulario y ningún hecho de V1 lo usa). Fuera de `facts[]`: `a`, `b`, `d`, `p`, `s1`, `s2`,
+     `sigma_window_count`, `lead_time_observation_count`, `z`, `sigma_h`, `demand_over_lead_time`,
+     `forecast_id` y demás ids, `effective_lines`, `weekly_quantities`, `as_of_date`, `horizon_start` y
+     `engine_version`.
+  6. **Unidad de medida.** `api` lee `products.unit_of_measure` del producto de la recomendación con
+     `db/read` y la entrega como metadato `unit_of_measure` del contexto; no es una cifra ni entra en
+     `facts[]`. La narrativa escribe las cantidades seguidas del código tal como está en `products`
+     (`EACH`, `BOX`, `KG`), nunca el genérico «unidades». U4 no cambia.
+  7. **Plantillas** en `backend/app/genai/templates.py`, con `string.Template` de la biblioteca estándar:
+     una por `RECOMMEND` y otra por `NO_NEED`, frases fijas por marca, por razón y de provisionalidad.
+     Texto normativo en `docs/09` §14.5. Sin motores de plantillas, archivos, base de datos ni servicios.
+  8. **`NOT_CALCULABLE`**: `narrative = null`, `facts = []`, `status = NOT_APPLICABLE`; se conservan
+     `reasons`, `reason_details` (frase fija sin cifras por razón, en el orden canónico de `docs/06`
+     §16.11.4), `missing_policy_parameters` y `provenance`.
+  9. **US-048** («cada recomendación tiene una explicación») se interpreta así: `RECOMMEND` y `NO_NEED` →
+     explicación narrativa; `NOT_CALCULABLE` → explicación estructurada, `narrative = null`.
+  10. **Versionado:** `explanation.generator = "template/1.0.0"` (SemVer, mismo criterio que
+      `engine_version`, `DT-051`); todo cambio de texto que altere la narrativa sube la versión. Sin
+      `template_id` ni `explanation_version`: el `outcome` elige la plantilla y la explicación no se persiste.
+  11. **Inmutabilidad:** `@dataclass(frozen=True, slots=True)`, colecciones `tuple`, valores `str` o
+      enumeraciones de texto; ningún `dict` ni `list` dentro del contexto; el contexto copia sus entradas.
+      La serialización HTTP es de `api`.
+  12. **Arquitectura:** `api → genai`; `genai` no importa `api`, `db`, `psycopg`, `supply_engine`,
+      `forecasting` ni `runs`, no recibe conexiones ni funciones de cálculo y solo usa la biblioteca
+      estándar. Sin dependencias nuevas.
+  13. **Fuera de U6:** LLM, RAG, Azure OpenAI, embeddings, AI Search, `DocumentRetriever`, prompts, chat,
+      generación libre, explicaciones personalizadas, persistencia de explicaciones y CU-2 a CU-5; también
+      **prioridad, riesgo, urgencia y «qué ocurre si no se actúa»** de CU-1 (`docs/09` §4), que dependen
+      de `BR-X03`, abierta.
+- **Contexto:** `docs/09` §14 fijaba el flujo, la frontera y la verificación, pero no la vía de entrega
+  (`docs/07` §2.12 frente a §7.3 y §7.4), el conjunto exacto de cifras (§14.2 frente a `docs/06` §13), la
+  unidad de medida ni el caso `NOT_CALCULABLE`. Dossier de U6 (2026-10-04), alternativas A1, A2, B y C.
+- **Alternativas:** A1 `POST /assistant/explain` (contradice la V1 de solo lectura); B, un campo en el
+  detalle (cambia dos respuestas de U5 y acopla a ellas un generador futuro con costo y fallos, contra
+  RNF-010); C, solo el módulo (US-048 sin consumidor; contradice `docs/07` §7.3).
+- **Razón:** la explicación por plantilla es una representación derivada de una recomendación
+  persistida: un `GET` sobre ella es la forma de solo lectura, idempotente y de menor exposición, y no
+  toca ninguna respuesta existente.
+- **Consecuencias:** `docs/07` §7.2 pasa a 14 rutas (13 implementadas por U5; la 14 llega con U6);
+  `tests/api` (`ENDPOINTS`, OpenAPI con 14 rutas) y la matriz de roles se amplían en la implementación;
+  `db/read` recibe una lectura aditiva para `unit_of_measure`.
+- **Estado:** `ACEPTADA` (2026-10-04, decisión del responsable al autorizar U6); implementada y validada el mismo día (`docs/09` §14.6).
+
+## DT-069 — Presentación, verificación y degradación de cifras (U6, RS-010)
+
+- **Decisión:**
+  1. **`Fact`** = `{key, value, display, unit}`. `value` es la cadena persistida en
+     `calculation_inputs.breakdown`, sin tocar. `display` es la **única** representación que puede
+     aparecer en la narrativa; se calcula **una sola vez**, al construir el contexto.
+  2. **`display`**, desde `value`, sin `float`:
+     - entero (`"242"`): tal cual;
+     - racional `"p/q"` o decimal exacto: `Fraction` exacto → 6 decimales `ROUND_HALF_EVEN`;
+     - término aproximado (`approximate_terms`, `Decimal` de 28 cifras, `docs/06` §16.13.3): ese `Decimal`
+       → 6 decimales `ROUND_HALF_EVEN`;
+     - después se eliminan los ceros finales y el punto si queda solo (`1.650000` → `1.65`, `2.500000` →
+       `2.5`, `3.000000` → `3`); el cero es `0`, sin signo;
+     - separador decimal `.`, sin separador de miles. Es la misma precisión de `DT-067` y de los forecasts
+       de U3; no se crea ninguna nueva.
+  3. **Regla crítica:** el renderizador y el verificador usan exactamente la misma cadena `display`. No
+     existe una segunda operación de redondeo ni una comparación numérica.
+  4. **Cifra narrativa:** toda coincidencia maximal de `-?\d+(?:\.\d+)?` en el texto final. Es válida si y
+     solo si es **igual, como cadena**, al `display` de algún `Fact` del contexto. Sin tolerancia y sin
+     volver a convertir a número.
+  5. **Plantillas:** ningún dígito ni `%` literal; ni fechas, ni SKU, ni versiones, ni identificadores,
+     ni números escritos con letras. Las únicas cifras de la narrativa salen de placeholders de
+     `facts[]`. Los placeholders de texto (`unit_of_measure`, procedencia del plazo) no contienen dígitos.
+     A la izquierda de un placeholder numérico no hay dígito, `.` ni `-`; a la derecha no hay dígito, y
+     un `.` solo puede ir seguido de espacio o del fin del texto. Las restas se escriben con palabras.
+  6. **Degradación (RS-010, RNF-010):** si alguna cifra no es válida, el verificador lanza la excepción
+     interna `UnverifiedFigureError`; el servicio responde **HTTP 200** con `status = DEGRADED`,
+     `narrative = null` y `warning = NARRATIVE_UNVERIFIED`, y conserva `facts`, `flags`, `reasons`,
+     `reason_details`, `missing_policy_parameters` y `provenance`. No devuelve el texto rechazado, ni una
+     traza, ni un error HTTP. Registra el evento con su `correlation_id`. El aviso no se añade a
+     `provenance.notices` ni la modifica.
+     *(Aclaración de la implementación, 2026-10-04: la degradación cubre **solo** cifras ajenas en el texto
+     generado. Una violación interna del contrato —un hecho que la plantilla necesita y falta, la unidad o la
+     procedencia del plazo ausentes o desconocidas, un `outcome` desconocido— no es RS-010: lanza
+     `ExplanationError` y la API responde el 500 `INTERNAL_ERROR` uniforme de `DT-066`. Con los datos que
+     garantizan las restricciones de U4 no ocurre.)*
+  7. **Prueba RS-010:** un `TextGenerator` de prueba que introduce una cifra ajena (por ejemplo `999`, una
+     fecha, un SKU y un `-5` sin hecho) produce `DEGRADED` con los datos conservados.
+  8. **Provisionalidad:** los avisos son exactamente los de `DT-066` (`SYNTHETIC_DATA`,
+     `V1_PROVISIONAL_POLICY`) en `provenance.notices`. Con narrativa, una frase fija al final dice que las
+     cifras son provisionales y que no constituyen una recomendación de negocio definitiva (`docs/09`
+     §14.5). Con `NOT_CALCULABLE` o `DEGRADED` no hay narrativa y la provisionalidad queda solo en
+     `notices`. Ningún aviso nuevo.
+- **Contexto:** U4 persiste enteros, decimales exactos, racionales `"p/q"` y `Decimal` de 28 cifras
+  (`docs/06` §16.13.3); copiarlos al texto lo haría ilegible, y `docs/09` §8 y §14.3 exigían verificar sin
+  definir qué es una cifra ni cómo se degrada.
+- **Alternativas:** cifras literales; 2 decimales (precisión nueva); comparación numérica con tolerancia;
+  error HTTP al degradar.
+- **Razón:** una sola cadena para mostrar y verificar elimina los falsos positivos por redondeo; la
+  igualdad exacta de cadenas no admite ambigüedad; responder 200 con los datos cumple RNF-010.
+- **Consecuencias:** las comparaciones entre cifras mostradas pueden diferir en la sexta cifra decimal
+  de las exactas; por eso las plantillas no hacen aritmética en el texto. Una futura LLM (Fase 10) que
+  escriba números con letras no la detectaría este verificador: se revisará entonces.
+- **Estado:** `ACEPTADA` (2026-10-04, decisión del responsable al autorizar U6); implementada y validada el mismo día (`docs/09` §14.6).
 
 ## Decisiones deliberadamente NO tomadas
 

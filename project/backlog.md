@@ -1,6 +1,6 @@
 # Backlog inicial (Scrum)
 
-**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — correspondencia con las unidades de la Etapa 2
+**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — correspondencia con las unidades de la Etapa 2 · **Versión 1.3** (2026-10-04) — US-048: interpretación de U6 (`DT-068`)
 
 Backlog organizado en **Épicas → Historias de usuario → Tareas**.
 
@@ -234,6 +234,9 @@ función**) · `T-040.4` punto de reorden · `T-040.5` pruebas exhaustivas
 - **Criterios de aceptación:** cada recomendación tiene una explicación en lenguaje natural generada
   por plantilla, **sin LLM**; todas sus cifras proceden del desglose almacenado.
 - **Dependencias:** US-045 · **Relacionado:** `DT-018`
+- *Interpretación (2026-10-04, `DT-068`, U6): `RECOMMEND` y `NO_NEED` → explicación narrativa; `NOT_CALCULABLE` →
+  explicación estructurada (`reasons`, `reason_details`, `missing_policy_parameters`), con `narrative = null`.
+  Contrato en `docs/09` §14.5.*
 
 ---
 

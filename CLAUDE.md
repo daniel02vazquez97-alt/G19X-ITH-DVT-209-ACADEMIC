@@ -340,7 +340,7 @@ validado (51/51 comprobaciones, 0 fallos) y 582 pruebas en verde.
 El primer bloque de la Etapa 2 es **arquitectura y fundación**: los contratos del sistema principal
 están en `docs/03` §16, `docs/04` §9, `docs/05` §19, `docs/06` §16, `docs/07` §7 y `docs/09` §14, y el
 orden de construcción en `DT-047` (`DT-043` y `DT-045` `ACEPTADA`; `DT-047` `ACEPTADA` en cuanto a U1,
-U2, U3, U4 y U5; `DT-044` `ACEPTADA` el 2026-10-01; `DT-046` `ACEPTADA` el 2026-10-02). El contrato de U1 está cerrado en `docs/06` §16.11 (`DT-048` a
+U2, U3, U4, U5 y U6; `DT-044` `ACEPTADA` el 2026-10-01; `DT-046` `ACEPTADA` el 2026-10-02). El contrato de U1 está cerrado en `docs/06` §16.11 (`DT-048` a
 `DT-052`, `DT-P22`, `DT-053` y `DT-054`), sin decisiones pendientes. **U1 está implementada**
 (`backend/app/supply_engine`, 146 pruebas en verde). **U2 está implementada** (2026-10-01, `DT-044`,
 `DT-055`): PostgreSQL 16, migraciones SQL y la ingesta validada, atómica e idempotente del 0.4.0
@@ -350,7 +350,10 @@ U2, U3, U4 y U5; `DT-044` `ACEPTADA` el 2026-10-01; `DT-046` `ACEPTADA` el 2026-
 `0003`, `python -m app.runs recommend --as-of`; `docs/04` §9.11 y `docs/06` §16.13). **U5 está implementada y validada** (2026-10-03: `DT-064`
 a `DT-067` `ACEPTADA`; `backend/app/api/`, `backend/app/db/read/`, `.env.example`; `python -m app.api` solo con
 `APP_ENV=local`; `docs/07` §7.4 y §7.5). Sus pruebas sin base van en `backend/tests/api` (sin `__init__.py`:
-`python -m unittest discover -s tests/api -t tests/api`, con los grupos `api` y `test` instalados). U6 requiere su propia autorización.
+`python -m unittest discover -s tests/api -t tests/api`, con los grupos `api` y `test` instalados). **U6 está implementada y validada**
+(2026-10-04: `DT-068` y `DT-069` `ACEPTADA`; `backend/app/genai/`, solo biblioteca estándar, y el endpoint 14
+`GET /api/v1/recommendations/{recommendation_id}/explanation`; `docs/09` §14.5 y §14.6). Con U6 termina el orden de `DT-047`;
+lo siguiente requiere su propia autorización.
 Restricciones vigentes, que se levantan solo por instrucción explícita:
 
 - **No escribir código de aplicación** hasta que el responsable autorice la primera unidad de

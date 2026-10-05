@@ -1,6 +1,6 @@
 # 13 — Estrategia de testing
 
-**Estado:** Versión 1.0 — Etapa 0 (estrategia, **no implementada**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §14, capas de prueba de la Etapa 2; §§1–13 no cambian · **Versión 1.3** (2026-10-01) — §3.1: aclaración de `InvalidInputError` y excepción de `on_hand < 0` para U1 (`DT-052`) · **Versión 1.4** (2026-10-01) — §3.1: sin monotonía global del punto de reorden frente al lead time en U1 (`DT-054`) · **Versión 1.5** (2026-10-01) — §14: dónde viven las suites de U2 (`DT-055`) · **Versión 1.6** (2026-10-03) — §14: pruebas exigibles de U4 (autorizada, no implementada; `DT-058` a `DT-063`) · **Versión 1.7** (2026-10-03) — §14: pruebas exigibles de U5 (autorizada, no implementada; `DT-064` a `DT-067`) y rutas públicas de la capa API · **Versión 1.8** (2026-10-03) — §14: U5 implementada; registro de sus suites
+**Estado:** Versión 1.0 — Etapa 0 (estrategia, **no implementada**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §14, capas de prueba de la Etapa 2; §§1–13 no cambian · **Versión 1.3** (2026-10-01) — §3.1: aclaración de `InvalidInputError` y excepción de `on_hand < 0` para U1 (`DT-052`) · **Versión 1.4** (2026-10-01) — §3.1: sin monotonía global del punto de reorden frente al lead time en U1 (`DT-054`) · **Versión 1.5** (2026-10-01) — §14: dónde viven las suites de U2 (`DT-055`) · **Versión 1.6** (2026-10-03) — §14: pruebas exigibles de U4 (autorizada, no implementada; `DT-058` a `DT-063`) · **Versión 1.7** (2026-10-03) — §14: pruebas exigibles de U5 (autorizada, no implementada; `DT-064` a `DT-067`) y rutas públicas de la capa API · **Versión 1.8** (2026-10-03) — §14: U5 implementada; registro de sus suites · **Versión 1.9** (2026-10-04) — §14: pruebas exigibles de U6 (autorizada, no implementada; `DT-068` y `DT-069`) · **Versión 1.10** (2026-10-04) — §14: U6 implementada; registro de sus suites
 
 ---
 
@@ -244,7 +244,7 @@ puede arreglarse dentro del alcance, se reporta como bloqueo (`AGENTS.md` §6).
 | Contrato de forecast | Forma y rango de la salida, rechazo de histórico posterior a `as_of_date`, reproducibilidad | Python | U3 |
 | Integración de ejecuciones | Base → forecast → motor → recomendaciones persistidas; cadena de trazabilidad completa hasta `dataset_version` | PostgreSQL local | U3–U4 |
 | API | Esquema OpenAPI, formato de error, paginación, **matriz rol × endpoint**, ninguna ruta sin autenticación salvo `/health` y, solo en `local`, `/docs` y `/openapi.json` (`docs/07` §1, `DT-066`) | PostgreSQL local + `TokenValidator` de desarrollo | U5 |
-| IA generativa | La verificación detecta una cifra ajena al contexto | Python | U6 |
+| IA generativa | La verificación detecta una cifra ajena al contexto (RS-010) y degrada; plantillas, `display`, `facts[]`, inmutabilidad, determinismo y ausencia de IA, base y recálculo (detalle al final de esta sección, `DT-068`, `DT-069`) | Python; endpoint con PostgreSQL local | U6 |
 
 **Reglas de ejecución:** `unittest`, que es la convención vigente del repositorio (instalar `pytest`
 no está autorizado). Las pruebas que necesitan PostgreSQL forman una **suite separada** que se ejecuta
@@ -313,3 +313,43 @@ las pruebas sin base apuntan a un PostgreSQL inalcanzable: los rechazos (401, 40
 las rutas permitidas responden 503, lo que demuestra que la autorización precede a la base. `backend/tests/db/test_api_read.py`
 (21, dataset 0.4.0 con forecast y recomendaciones) y `test_api_runs.py` (8, ejecuciones construidas a mano para
 `DT-066`). Todas en verde en local y en Docker.
+
+
+*Pruebas exigibles de U6 (2026-10-04, `DT-068` y `DT-069`; U6 implementada y validada el 2026-10-04; criterios de cierre en
+`docs/09` §14.6). Solo `unittest`; `genai` se prueba sin base y sin red.*
+
+- **Sin base** (`backend/tests/genai`, en la suite por defecto: `genai` solo usa la biblioteca estándar):
+  - `RECOMMEND`: texto exacto de `docs/09` §14.5 para casos fijos (con y sin cada marca); `facts[]` exactamente
+    los de la tabla por `outcome`, en orden; toda cifra verificada; frases de marca en orden canónico;
+    `provenance` y `notices` intactos.
+  - `NO_NEED`: plantilla propia, sin `q_final`, `moq`, `order_multiple` ni `q_moq`; verificación; frase de
+    provisionalidad.
+  - `NOT_CALCULABLE`: `narrative = null`, `facts = []`, `status = NOT_APPLICABLE`, `reason_details` en orden
+    canónico y sin cifras, `missing_policy_parameters`.
+  - **`display` y redondeo:** entero, decimal exacto, racional `p/q` y `Decimal` aproximado de 28 cifras →
+    cadena calculada a mano (6 decimales `ROUND_HALF_EVEN`, sin ceros finales, `0` sin signo); sin `float`; la
+    misma cadena se renderiza y se verifica.
+  - **Regex y literales:** ninguna plantilla ni frase contiene dígitos ni `%`; la cifra narrativa es la
+    coincidencia maximal de `-?\d+(?:\.\d+)?` y se compara como cadena.
+  - **RS-010 / `DEGRADED`:** un `TextGenerator` de prueba que introduce `999`, una fecha, un SKU y `-5` →
+    `UnverifiedFigureError` → `DEGRADED`, `narrative = null`, `warning = NARRATIVE_UNVERIFIED`, datos
+    conservados, sin texto rechazado y con un registro que lleva el `correlation_id`.
+  - **Provisionalidad:** frase final según `notices` (las cuatro combinaciones); `notices` sin cambios; sin
+    frase en `NOT_CALCULABLE` ni en `DEGRADED`.
+  - **Inmutabilidad:** mutar el contexto o un `Fact` lanza `FrozenInstanceError`; mutar los datos de origen
+    después de construir el contexto no lo altera.
+  - **Determinismo:** misma fila → mismo contexto → misma narrativa.
+  - **Sin IA, sin base y sin recálculo** (AST): `genai` no importa `api`, `db`, `psycopg`, `supply_engine`,
+    `forecasting`, `runs` ni bibliotecas de red o de IA; `pyproject.toml` sin dependencias nuevas.
+- **API sin base** (`backend/tests/api`): el endpoint 14 en OpenAPI (14 rutas `GET`), con seguridad Bearer;
+  matriz de roles de 14 endpoints × 4 roles + sin token; 401, 403 y 422 como en U5.
+- **Integración** (`backend/tests/db/test_api_*`, dataset 0.4.0): las 100 evaluaciones dan `VERIFIED` o
+  `NOT_APPLICABLE`, ninguna `DEGRADED`; 404 `RECOMMENDATION_NOT_FOUND`; `unit_of_measure` del producto en la
+  narrativa; `facts[].value` igual a `calculation_inputs.breakdown`; solo lectura (filas y
+  `pg_stat_user_tables` sin cambios) y aislamiento de `demand`.
+- **Regresión:** suites de U1–U5 y del generador en verde, en local y en Docker.
+
+*Implementación (2026-10-04).* `backend/tests/genai` (58 pruebas, en la suite por defecto: 295 → 353, sin dependencias
+opcionales); `backend/tests/api` sigue en 56 (la matriz y el test de OpenAPI pasan a 14 endpoints, `DT-068`);
+`backend/tests/db/test_api_explanation.py` (9: los tres `outcome`, las 100 evaluaciones reales, RS-010 por el
+endpoint, roles y errores, solo lectura y `demand`); integración 142 → 151. Todas en verde en local y en Docker.

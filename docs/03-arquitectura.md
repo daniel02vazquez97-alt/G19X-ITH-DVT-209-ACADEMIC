@@ -1,6 +1,6 @@
 # 03 — Arquitectura
 
-**Estado:** Versión 1.0 — Etapa 0 (diseño, no implementado) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §16, arquitectura de implementación de la Etapa 2 (`DT-043`, `DT-047`); §§1–15 no cambian · **Versión 1.3** (2026-10-01) — §16.6: migraciones en `backend/db/migrations/` (`DT-055`) · **Versión 1.4** (2026-10-02) — notas en §4 y §5.1: frontera de `forecasting` y `runs` (`DT-046` `ACEPTADA`); estado de §16 · **Versión 1.5** (2026-10-03) — U4 autorizada, no implementada: §16.7, subcomando `recommend` explícito (`DT-058`); estado de §16 · **Versión 1.6** (2026-10-03) — U5 autorizada, no implementada: `app/db/read/` en §16.2 y §16.6, `python -m app.api` en §16.7; estado de §16
+**Estado:** Versión 1.0 — Etapa 0 (diseño, no implementado) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §16, arquitectura de implementación de la Etapa 2 (`DT-043`, `DT-047`); §§1–15 no cambian · **Versión 1.3** (2026-10-01) — §16.6: migraciones en `backend/db/migrations/` (`DT-055`) · **Versión 1.4** (2026-10-02) — notas en §4 y §5.1: frontera de `forecasting` y `runs` (`DT-046` `ACEPTADA`); estado de §16 · **Versión 1.5** (2026-10-03) — U4 autorizada, no implementada: §16.7, subcomando `recommend` explícito (`DT-058`); estado de §16 · **Versión 1.6** (2026-10-03) — U5 autorizada, no implementada: `app/db/read/` en §16.2 y §16.6, `python -m app.api` en §16.7; estado de §16 · **Versión 1.7** (2026-10-04) — U6 autorizada, no implementada: `genai` (`DT-068`, `DT-069`) en §16.2, §16.4, §16.5 y §16.7; `DocumentRetriever` fuera de U6 · **Versión 1.8** (2026-10-04) — U6 implementada: estado en §16 y §16.7
 
 > Este documento describe la arquitectura **objetivo**. Nada de lo aquí descrito está implementado
 > todavía. Las decisiones que lo sustentan están en `docs/15-decisiones-tecnicas.md`.
@@ -378,7 +378,9 @@ autorizada y no implementada, `DT-046`, `DT-056`, `DT-057`; actualización del 2
 validada desde el 2026-10-02, y U4 —ejecución de recomendaciones en `runs`— está autorizada y **no implementada**,
 `DT-058` a `DT-063`; `DT-047` `ACEPTADA` en cuanto a U1–U4, `PROPUESTA` para U5–U6; actualización del 2026-10-03: U4
 está implementada y validada, y U5 —`api` y `db/read`— está autorizada, `DT-064` a `DT-067` (implementada y validada el mismo día);
-`DT-047` `ACEPTADA` en cuanto a U1–U5, `PROPUESTA` para U6).*
+`DT-047` `ACEPTADA` en cuanto a U1–U5, `PROPUESTA` para U6; actualización del 2026-10-04: U6 —`genai` y el endpoint
+de explicación— está autorizada y **no implementada**, `DT-068` y `DT-069`; `DT-047` `ACEPTADA` en cuanto a U1–U6;
+actualización del 2026-10-04: U6 está implementada y validada).*
 
 ### 16.1 Estado real del que se parte
 
@@ -402,7 +404,7 @@ manifiesto), nunca su código.
 | `forecast_service` | `backend/app/forecasting/` | `ForecastProvider` y baselines (`docs/05` §19) | Biblioteca estándar | U3 |
 | Servicios de aplicación (batch) | `backend/app/runs/` | Ejecuciones de forecast y de recomendaciones: leer, llamar, persistir con trazabilidad | `db`, `forecasting`, `supply_engine` | U3–U4 |
 | Routers + Auth | `backend/app/api/` | Contrato HTTP de solo lectura en V1 (`docs/07` §7), autenticación y roles | `db` | U5 |
-| `genai_service` | `backend/app/genai/` | Contexto de explicación, `TextGenerator` (plantilla primero), verificación de cifras (`docs/09` §14) | Nada con escritura en la base | U6 |
+| `genai_service` | `backend/app/genai/` | Contexto de explicación, `TextGenerator` (plantilla primero), verificación de cifras (`docs/09` §14 y §14.5). U6: `ExplanationContext`, `Fact`, plantilla `template/1.0.0`, verificador y degradación (`DT-068`, `DT-069`) | **Solo la biblioteca estándar**: no importa `api`, `db`, `psycopg`, `supply_engine`, `forecasting` ni `runs`; no recibe conexiones. `api` → `genai` | U6 |
 | Interfaz | `frontend/` | Vistas de `docs/08` §11 | API | Fase 7 |
 | Entrenamiento y evaluación | `ml/` | Backtesting, Nivel 1 y Nivel 2 | `app.forecasting`, `app.supply_engine` | Fase 5 |
 
@@ -438,6 +440,9 @@ invoca el cálculo) y `demand → forecasting/supply_engine` (la demanda latente
 3. `api` no importa `supply_engine` ni `forecasting`: en V1 lee resultados persistidos; recalcular
    es una ejecución batch explícita (§5.2).
 4. `genai` no recibe una conexión con permisos de escritura ni ninguna función de cálculo.
+   *(Concreción de U6, 2026-10-04, `DT-068`: `genai` no recibe **ninguna** conexión —la regla más estricta de
+   `docs/09` §14.2— y solo importa la biblioteca estándar; los datos los prepara `api` con `db/read` y se
+   entregan a un `ExplanationContext` inmutable.)*
 5. Nada importa `api`.
 
 ### 16.5 Puertos y dobles locales
@@ -449,7 +454,7 @@ sin red y sin credenciales (`DT-003`, RNF-006).
 |---|---|---|---|
 | `ForecastProvider` | `forecasting` | Baselines en proceso | Endpoint de Azure ML (6) |
 | `TextGenerator` | `genai` | Plantilla determinista (`DT-018`) | Azure OpenAI (10) |
-| `DocumentRetriever` | `genai` | Índice en memoria para pruebas | Azure AI Search (9), **si existe corpus** |
+| `DocumentRetriever` | `genai` | Índice en memoria para pruebas; **no forma parte de U6** (`DT-068`): llega con la Fase 9 | Azure AI Search (9), **si existe corpus** |
 | `TokenValidator` *(nuevo, `DT-043`)* | `api` | Validador de desarrollo con identidades de prueba; solo en local y en pruebas, **se niega a arrancar en cualquier entorno desplegado** | Microsoft Entra ID (8) |
 | `SecretProvider` | configuración | Variables de entorno | Almacén gestionado (`DT-022`) |
 | `DataSource` | `ingestion` | Directorio de un dataset publicado | Archivos reales / ERP (futuro) |
@@ -489,7 +494,7 @@ Cada puerto vive en el paquete que lo usa. Cada carpeta se crea con la unidad qu
 |---|---|---|
 | Carga del dataset | Comando de línea (`python -m app.ingestion …`) | Acción de administración; no requiere API |
 | Forecast y recomendaciones | Comandos batch con `as_of_date` explícito: `python -m app.runs forecast --as-of AAAA-MM-DD` (U3) y `python -m app.runs recommend --as-of AAAA-MM-DD` (U4, implementada). `recommend` es un subcomando explícito que **no** ejecuta el forecast implícitamente: consume la ejecución de forecast con el mismo corte (`DT-058`, `DT-061`) | RNF-005: independiente de la API. Sin colas ni orquestadores (`DT-005`) |
-| Consulta | API de solo lectura: `python -m app.api` (U5, implementada; uvicorn en `127.0.0.1`, solo con `APP_ENV=local` hasta la Fase 8, `DT-065`) | La lectura nunca recalcula (§5.2) |
+| Consulta | API de solo lectura: `python -m app.api` (U5, implementada; uvicorn en `127.0.0.1`, solo con `APP_ENV=local` hasta la Fase 8, `DT-065`). La explicación por plantilla es una lectura más: `GET /api/v1/recommendations/{recommendation_id}/explanation` (U6, implementada el 2026-10-04; `DT-068`) | La lectura nunca recalcula (§5.2) |
 
 ### 16.8 Qué se ejecuta y se prueba en local
 

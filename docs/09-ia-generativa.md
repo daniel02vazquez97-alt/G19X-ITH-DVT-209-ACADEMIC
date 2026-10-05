@@ -1,6 +1,6 @@
 # 09 — IA generativa (Azure OpenAI + Azure AI Search)
 
-**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §14, punto de integración de la Etapa 2; §§1–13 no cambian
+**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §14, punto de integración de la Etapa 2; §§1–13 no cambian · **Versión 1.3** (2026-10-04) — U6 autorizada, no implementada: §14.5 (concreción, `DT-068` y `DT-069`) y §14.6 (criterios de cierre); notas en §14 y §14.2 · **Versión 1.4** (2026-10-04) — U6 implementada y validada: estado en §14, §14.5 y §14.6; la frase de `ZERO_FORECAST_DEMAND` de §14.5 se corrigió antes de implementar («es cero» incumplía la regla de `DT-069` contra los números escritos con letras)
 
 > No se configura ningún recurso de Azure en esta etapa. Antes de implementar, verificar la
 > documentación oficial vigente: la superficie de Azure OpenAI ha cambiado (hoy se expone como
@@ -246,7 +246,10 @@ plantilla, es que faltan datos en la recomendación, no elocuencia en el modelo.
 ## 14. Punto de integración (Etapa 2)
 
 *Añadido el 2026-09-30. **Diseñado, no implementado** (unidad U6 de `DT-047`). Se diseña el punto de
-integración, no el asistente: sin LLM, sin RAG y sin ningún recurso de Azure.*
+integración, no el asistente: sin LLM, sin RAG y sin ningún recurso de Azure. *(Actualización del
+2026-10-04: U6 está **autorizada para implementación y no implementada**, `DT-068` y `DT-069`; la
+concreción está en §14.5 y los criterios de cierre en §14.6. Actualización del 2026-10-04: U6 está **implementada y
+validada**.)*
 
 ### 14.1 Flujo
 
@@ -267,7 +270,7 @@ DocumentRetriever (Fase 9, solo si existe corpus — ASSUMPTION-008): fragmentos
 |---|---|
 | `kind` | `RECOMMENDATION_EXPLANATION` (CU-1). Los demás casos de uso añadirán su propio tipo |
 | `recommendation_id` | La recomendación explicada |
-| `facts[]` | Pares `{clave, valor, unidad}` con **todas** las cifras que el texto puede mencionar, copiadas del desglose (`docs/06` §16.5): cantidad, necesidad bruta, `SS`, `S`, `L` y su procedencia, `R`, `H`, demanda sobre el horizonte, posición de decisión y contable, tránsito total y efectivo, `MOQ`, múltiplo, `Q_moq` |
+| `facts[]` | Pares `{clave, valor, unidad}` con **todas** las cifras que el texto puede mencionar, copiadas del desglose (`docs/06` §16.5): cantidad, necesidad bruta, `SS`, `S`, `L` y su procedencia, `R`, `H`, demanda sobre el horizonte, posición de decisión y contable, tránsito total y efectivo, `MOQ`, múltiplo, `Q_moq`. *Lista concretada en §14.5 (`DT-068`): se añaden `on_hand` y `reserved`, y cada `outcome` usa solo las cifras de su plantilla* |
 | `flags`, `reasons` | Tal como los devolvió el motor |
 | `provenance`, `notices` | Los de `docs/07` §7.1; con `SYNTHETIC_DATA` y `V1_PROVISIONAL_POLICY` el texto **debe** decir que la cifra es provisional y no es una recomendación de negocio |
 
@@ -288,3 +291,151 @@ conexión con la base ni recibe ninguna función del motor.
 
 Asistente conversacional (`RF-021`, clase D), consultas predefinidas (CU-3), RAG (CU-4, bloqueado por
 ASSUMPTION-008), elección de modelo y región (`DT-P08`) y cualquier costo de Azure.
+
+### 14.5 Concreción de U6 (`DT-068`, `DT-069`)
+
+*Añadido el 2026-10-04 al autorizar U6. **U6 está implementada y validada (2026-10-04)**; hasta la
+implementación este párrafo decía «autorizada para implementación y no implementada».*
+
+*Concreta §14.1 a §14.4 sin cambiar el flujo ni la frontera: sin LLM, sin RAG, sin Azure,
+sin recalcular y sin escribir.*
+
+**Entrega.** `GET /api/v1/recommendations/{recommendation_id}/explanation`, el endpoint 14 de la API V1
+(`docs/07` §7.2), con autenticación Bearer y los cuatro roles del detalle de recomendación. No es
+`POST /assistant/explain` (§2.12 de `docs/07`), reservado al asistente de la Fase 10.
+
+**Respuesta 200.** `{recommendation_id, run_id, outcome, explanation {generator, status, narrative,
+warning}, facts[], flags[], reasons[], reason_details[], missing_policy_parameters[], provenance}`.
+
+| `status` | Cuándo | `narrative` | `warning` | `facts` |
+|---|---|---|---|---|
+| `VERIFIED` | `RECOMMEND` o `NO_NEED`, toda cifra verificada | Texto | `null` | Los del `outcome` |
+| `DEGRADED` | Alguna cifra no verificada (`UnverifiedFigureError`) | `null` | `NARRATIVE_UNVERIFIED` | Se conservan |
+| `NOT_APPLICABLE` | `NOT_CALCULABLE` | `null` | `null` | `[]` |
+
+`generator` = `"template/1.0.0"`. `reason_details` = `[{code, text}]`, solo con `NOT_CALCULABLE`.
+`provenance` es el bloque de recomendaciones de `DT-066`, con sus `notices`.
+
+**`ExplanationContext`** (inmutable, `@dataclass(frozen=True, slots=True)` y `tuple`): `kind =
+RECOMMENDATION_EXPLANATION`, `recommendation_id`, `run_id`, `outcome`, `facts`, `flags`, `reasons`,
+`missing_policy_parameters`, `lead_time_source`, `unit_of_measure` y `provenance`. Lo construye `api` con
+valores persistidos (`calculation_inputs.breakdown`, columnas de la fila, contexto de la ejecución y
+`products.unit_of_measure`); `genai` solo usa la biblioteca estándar y no recibe conexiones ni funciones
+de cálculo. Esto concreta §14.2: el contexto se construye con los datos que la capa `api` ya lee, no con
+una llamada HTTP.
+
+**`facts[]` por `outcome`** (`DT-068` punto 5; cifras con `display` según `DT-069`; orden del
+vocabulario: `q_final`, `raw_need`, `safety_stock`, `target_level`, `lead_time_days`,
+`uncapped_lead_time_days`, `review_period_days`, `coverage_horizon_days`, `demand_over_horizon`,
+`inventory_position_decision`, `inventory_position_accounting`, `total_in_transit`,
+`effective_in_transit`, `moq`, `order_multiple`, `q_moq`, `on_hand`, `reserved`). Esto sustituye la lista
+de §14.2, que omitía `on_hand` y `reserved`, necesarios para la composición de la posición (`docs/06` §13).
+
+| Hecho | `unit` | `RECOMMEND` | `NO_NEED` |
+|---|---|---|---|
+| `q_final`, `raw_need` | `QUANTITY` | Siempre | — |
+| `safety_stock`, `target_level`, `demand_over_horizon`, `inventory_position_decision`, `effective_in_transit`, `on_hand`, `reserved` | `QUANTITY` | Siempre | Siempre |
+| `lead_time_days`, `review_period_days`, `coverage_horizon_days` | `DAYS` | Siempre | Siempre |
+| `uncapped_lead_time_days` | `DAYS` | Con `LEAD_TIME_CAPPED` | Con `LEAD_TIME_CAPPED` |
+| `total_in_transit`, `inventory_position_accounting` | `QUANTITY` | Con `UNCOUNTED_TRANSIT` | Con `UNCOUNTED_TRANSIT` |
+| `moq` | `QUANTITY` | Con `MOQ_APPLIED` | — |
+| `order_multiple`, `q_moq` | `QUANTITY` | Con `ORDER_MULTIPLE_ROUNDING` | — |
+
+Un hecho cuyo valor persistido sea nulo no se incluye. `NOT_CALCULABLE`: `facts = []`.
+
+**Plantillas** (`backend/app/genai/templates.py`, `string.Template`; texto normativo de
+`template/1.0.0`). `$u` es `unit_of_measure`; `$fuente` es la procedencia del plazo: `OBSERVED` →
+«observado en las recepciones del proveedor», `AGREED_FALLBACK` → «acordado con el proveedor». La
+narrativa es: frase principal, frases de marca en el orden canónico de `docs/06` §16.11.4
+(`LEAD_TIME_AGREED_FALLBACK`, `LEAD_TIME_CAPPED`, `MOQ_APPLIED`, `ORDER_MULTIPLE_ROUNDING`,
+`UNCOUNTED_TRANSIT`, `OVERDUE_ORDERS_EXCLUDED`, `ZERO_FORECAST_DEMAND`) y, al final, la frase de
+provisionalidad; separadas por un espacio.
+
+- `RECOMMEND` (orden: cantidad, posición y composición, nivel objetivo, horizonte, necesidad bruta):
+  «Se sugiere pedir $q_final $u. La posición de inventario para la decisión es de
+  $inventory_position_decision $u: $on_hand en existencia, más $effective_in_transit en tránsito que
+  llega dentro del horizonte, menos $reserved reservados. El nivel objetivo es de $target_level $u: la
+  demanda prevista para los próximos $coverage_horizon_days días, de $demand_over_horizon $u, más un stock
+  de seguridad de $safety_stock $u. Ese horizonte suma el plazo de entrega, de $lead_time_days días
+  ($fuente), y el periodo de revisión, de $review_period_days días. La necesidad bruta es de $raw_need $u.»
+- `NO_NEED` (plantilla propia): «No se sugiere pedido: la posición de inventario para la decisión, de
+  $inventory_position_decision $u ($on_hand en existencia, más $effective_in_transit en tránsito que llega
+  dentro del horizonte, menos $reserved reservados), cubre el nivel objetivo de $target_level $u. Ese nivel
+  es la demanda prevista para los próximos $coverage_horizon_days días, de $demand_over_horizon $u, más un
+  stock de seguridad de $safety_stock $u. El horizonte suma el plazo de entrega, de $lead_time_days días
+  ($fuente), y el periodo de revisión, de $review_period_days días.»
+
+| Marca | Frase |
+|---|---|
+| `LEAD_TIME_AGREED_FALLBACK` | «No hay observaciones suficientes del plazo de entrega y se usa el acordado con el proveedor.» |
+| `LEAD_TIME_CAPPED` | «El plazo observado, de $uncapped_lead_time_days días, supera el máximo de la política y se limita a $lead_time_days días.» |
+| `MOQ_APPLIED` | «La necesidad es menor que el pedido mínimo del proveedor, de $moq $u, y se aplica ese mínimo.» |
+| `ORDER_MULTIPLE_ROUNDING` | «La cantidad se redondea hacia arriba al múltiplo de compra de $order_multiple $u, desde $q_moq $u.» |
+| `UNCOUNTED_TRANSIT` | «En total hay $total_in_transit $u en tránsito (posición contable de $inventory_position_accounting $u), pero solo $effective_in_transit $u llegan dentro del horizonte y cuentan para la decisión.» |
+| `OVERDUE_ORDERS_EXCLUDED` | «Hay pedidos abiertos con la fecha prevista ya vencida: no se cuentan como tránsito para la decisión.» |
+| `ZERO_FORECAST_DEMAND` | «No se prevé demanda en el horizonte: puede tratarse de un producto sin rotación.» |
+
+**Provisionalidad** (solo con narrativa; si no, queda en `provenance.notices`):
+
+| `notices` | Frase final |
+|---|---|
+| `SYNTHETIC_DATA` y `V1_PROVISIONAL_POLICY` | «Aviso: las cifras son provisionales, calculadas con datos sintéticos y con la política provisional de la primera versión; no constituyen una recomendación de negocio definitiva.» |
+| Solo `SYNTHETIC_DATA` | «Aviso: las cifras son provisionales, calculadas con datos sintéticos; no constituyen una recomendación de negocio definitiva.» |
+| Solo `V1_PROVISIONAL_POLICY` | «Aviso: las cifras son provisionales, calculadas con la política provisional de la primera versión; no constituyen una recomendación de negocio definitiva.» |
+| Ninguno | Sin frase |
+
+**`NOT_CALCULABLE`** — `reason_details`, en el orden canónico de `docs/06` §16.11.4:
+
+| Razón | `text` |
+|---|---|
+| `PRODUCT_INACTIVE` | «El producto está inactivo.» |
+| `PRODUCT_OUT_OF_VALIDITY` | «El producto no es válido durante todo el periodo requerido, desde la fecha de corte hasta el final del horizonte.» |
+| `NO_ACTIVE_PREFERRED_SUPPLIER` | «El producto no tiene un proveedor preferente activo.» |
+| `NEGATIVE_ON_HAND` | «La existencia registrada es negativa: es un incidente de datos.» |
+| `FORECAST_MISSING` | «No hay pronóstico del producto en la ejecución de forecast utilizada.» |
+| `FORECAST_TOO_SHORT` | «El pronóstico no cubre todo el horizonte requerido.» |
+| `INSUFFICIENT_HISTORY` | «No hay historial de consumo suficiente para estimar la variabilidad de la demanda.» |
+| `MISSING_POLICY_PARAMETER` | «Faltan parámetros de la política de inventario: se enumeran en `missing_policy_parameters`.» |
+
+**Verificación (`DT-069`).** Cifra narrativa = coincidencia maximal de `-?\d+(?:\.\d+)?`; es válida si y
+solo si es igual, como cadena, a algún `Fact.display`. Si no, `UnverifiedFigureError` → `DEGRADED` (tabla
+de arriba), registrado con el `correlation_id`. `display`: entero tal cual; el resto, 6 decimales
+`ROUND_HALF_EVEN` desde el valor exacto (o desde el `Decimal` persistido si es aproximado), sin ceros
+finales, separador `.`, sin `float`; la misma cadena se renderiza y se verifica. Una violación interna del
+contrato (hecho requerido, unidad o procedencia del plazo ausentes) no es RS-010: `ExplanationError` → 500
+`INTERNAL_ERROR` (`DT-066`), nunca `DEGRADED`.
+
+**US-048.** `RECOMMEND` y `NO_NEED` → explicación narrativa; `NOT_CALCULABLE` → explicación estructurada
+con `narrative = null`.
+
+**Fuera de U6.** Lo de §14.4, `DocumentRetriever` (Fase 9), la persistencia de explicaciones y, de CU-1
+(§4), **prioridad, riesgo, urgencia y «qué ocurre si no se actúa»**, que dependen de `BR-X03`, abierta.
+`docs/06` §13 incluye «Urgencia» en el desglose: en V1 es nula y la plantilla no la menciona.
+
+### 14.6 Criterios de cierre de U6
+
+1. `genai` con `ExplanationContext`, `Fact`, `TextGenerator` de plantilla, presentación y verificador,
+   solo con la biblioteca estándar; sin dependencias nuevas.
+2. Endpoint 14 conforme a §14.5 y a `docs/07` §7.2; 401, 403, 404 y 422 como en U5; matriz de roles
+   ampliada (14 endpoints × 4 roles + sin token); OpenAPI con 14 rutas.
+3. `RECOMMEND` y `NO_NEED` con el texto exacto de §14.5 para casos fijos; `NOT_CALCULABLE` con
+   `narrative = null`, `facts = []` y `reason_details` en orden canónico.
+4. `facts[]` exactamente los de la tabla por `outcome`, en orden; `display` de enteros, decimales exactos,
+   racionales `p/q` y `Decimal` aproximados calculado a mano.
+5. Ningún literal de plantilla con dígitos ni `%`; verificación por igualdad de cadena.
+6. Degradación RS-010 con un generador de prueba: `DEGRADED`, datos conservados, aviso y log; ningún
+   error HTTP.
+7. Provisionalidad: frase final según `notices`; `notices` sin cambios.
+8. Inmutabilidad y determinismo (misma fila → mismo contexto → misma narrativa).
+9. `genai` no importa `api`, `db`, `psycopg`, `supply_engine`, `forecasting` ni `runs`, ni bibliotecas de
+   red o de IA.
+10. Integración: las 100 evaluaciones del dataset 0.4.0 dan `VERIFIED` o `NOT_APPLICABLE`, ninguna
+    `DEGRADED`; solo lectura y aislamiento de `demand` intactos.
+11. Regresión de U1–U5 y del generador en verde, en local y en Docker.
+12. Documentación actualizada con el estado de U6.
+
+*Estado (2026-10-04): los doce criterios se cumplen. `backend/app/genai/` (`types`, `errors`, `facts`, `context`,
+`templates`, `verification`, `explanation`), el endpoint 14 en `backend/app/api/routers/explanations.py` y la
+lectura `explanation_source` en `backend/app/db/read/recommendations.py`. Las 100 evaluaciones reales dan 50
+`RECOMMEND` y 40 `NO_NEED` `VERIFIED` y 10 `NOT_CALCULABLE` `NOT_APPLICABLE`, ninguna `DEGRADED`, en local y en
+Docker. Pruebas: 353 pruebas en la suite por defecto (295 + 58 de `tests/genai`), 56 de la API sin base, 151 de integración (142 + 9 de `test_api_explanation.py`), 146 de U1 y 582 del generador en verde.*

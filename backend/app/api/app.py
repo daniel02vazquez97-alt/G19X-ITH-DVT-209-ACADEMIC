@@ -1,12 +1,14 @@
-"""FastAPI application of the API V1 (`docs/07` §7, `DT-064` to `DT-067`)."""
+"""FastAPI application of the API V1 (`docs/07` §7, `DT-064` to `DT-068`)."""
 
 from __future__ import annotations
 
 from fastapi import FastAPI
 
+from app.genai import TemplateGenerator
+
 from . import __version__, correlation, errors
 from .auth import DevTokenValidator, TokenValidator
-from .routers import forecasts, health, inventory, me, products, recommendations, runs
+from .routers import explanations, forecasts, health, inventory, me, products, recommendations, runs
 from .settings import Settings, load_settings
 
 TITLE = "Motor Predictivo de Abastecimiento — API V1 (solo lectura)"
@@ -26,8 +28,9 @@ def create_app(settings: Settings | None = None, validator: TokenValidator | Non
     )
     app.state.settings = settings
     app.state.token_validator = validator if validator is not None else DevTokenValidator(settings.identities)
+    app.state.text_generator = TemplateGenerator()  # U6: deterministic template (`DT-068`)
     errors.install(app)
     correlation.install(app)
-    for module in (health, me, products, inventory, forecasts, recommendations, runs):
+    for module in (health, me, products, inventory, forecasts, recommendations, explanations, runs):
         app.include_router(module.router)
     return app
