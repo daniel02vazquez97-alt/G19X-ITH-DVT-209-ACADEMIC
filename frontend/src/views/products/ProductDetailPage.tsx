@@ -8,6 +8,9 @@ import { formatDisplay, formatQuantity } from '../../format/numbers';
 import { PATHS, toInventoryItem } from '../../routes/paths';
 import { activeLabel, validityLabel, yesNo } from '../labels';
 import { ProductEvaluationSection } from '../recommendations/ProductEvaluationSection';
+import { ProductForecastSection } from '../forecasts/ProductForecastSection';
+import { ProductHistorySection } from '../forecasts/ProductHistorySection';
+import { RoleGate } from '../../roles/RoleGate';
 
 export function ProductDetailPage() {
   const { productId = '' } = useParams();
@@ -131,6 +134,18 @@ export function ProductDetailPage() {
               productId={product.id}
               unitOfMeasure={product.unit_of_measure}
             />
+
+            <ProductForecastSection
+              productId={product.id}
+              unitOfMeasure={product.unit_of_measure}
+            />
+
+            <RoleGate resource="history">
+              <ProductHistorySection
+                productId={product.id}
+                unitOfMeasure={product.unit_of_measure}
+              />
+            </RoleGate>
           </>
         )}
       </QueryView>
