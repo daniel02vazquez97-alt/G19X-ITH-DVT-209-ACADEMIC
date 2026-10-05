@@ -1,6 +1,6 @@
 # 05 — Motor predictivo (estrategia de Machine Learning)
 
-**Estado:** Versión 1.0 — Etapa 0 (estrategia, no implementada) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §19, contrato de `ForecastProvider` para la Etapa 2 (`DT-046`); §§1–18 no cambian · **Versión 1.3** (2026-10-02) — `DT-046` `ACEPTADA`; §19.8 y §19.9, decisiones y criterios de cierre de U3 (`DT-056`, `DT-057`); nota de V1 en §6 · **Versión 1.4** (2026-10-02) — §19.10, registro de la implementación de U3; ninguna decisión cambia · **Versión 1.5** (2026-10-03) — `DT-P21` cerrada por `DT-058`: frecuencia de §2 leída como una ejecución de forecast por corte de recomendación; §19.7
+**Estado:** Versión 1.0 — Etapa 0 (estrategia, no implementada) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §19, contrato de `ForecastProvider` para la Etapa 2 (`DT-046`); §§1–18 no cambian · **Versión 1.3** (2026-10-02) — `DT-046` `ACEPTADA`; §19.8 y §19.9, decisiones y criterios de cierre de U3 (`DT-056`, `DT-057`); nota de V1 en §6 · **Versión 1.4** (2026-10-02) — §19.10, registro de la implementación de U3; ninguna decisión cambia · **Versión 1.5** (2026-10-03) — `DT-P21` cerrada por `DT-058`: frecuencia de §2 leída como una ejecución de forecast por corte de recomendación; §19.7 · **Versión 1.6** (2026-10-05) — §20: protocolo y decisiones de la Fase 5 (`DT-071` a `DT-085`); notas en §2, §6, §8, §9.1, §10, §11 y §19.8. Fase 5 **no autorizada** (condiciones en §20.4)
 
 > **No se implementa ningún modelo en esta etapa.** Este documento fija la estrategia, las reglas de
 > evaluación y los criterios de aceptación **antes** de entrenar, para que la evaluación no se ajuste
@@ -37,7 +37,7 @@ donde ya falló.
 
 Tratamiento: los periodos marcados con `is_stockout_affected` se consideran **censurados**. Opciones
 a evaluar en la Fase 5 (decisión pendiente, `DT-011`): excluirlos de la métrica, imputarlos, o tratar
-la observación como cota inferior. Sea cual sea la elegida, debe documentarse y ser explícita.
+la observación como cota inferior. Sea cual sea la elegida, debe documentarse y ser explícita. *(2026-10-05: la Fase 5 compara (a) consumo tal cual, (b) exclusión e (c) imputación con el mismo protocolo, `DT-081`; la observación censurada no se evalúa en esta fase.)*
 
 ## 3. Granularidad
 
@@ -185,6 +185,8 @@ en `ModelVersion` con `is_baseline = true`.
 > desempeño. La selección definitiva por desempeño corresponde a la Fase 5, con la regla de este
 > apartado. En V1 las tres versiones de baseline llevan `is_baseline = true` y la condición de
 > referencia queda en cada ejecución (`calculation_runs.reference_model_version_id`, `DT-057`).
+>
+> **Fase 5 (2026-10-05):** el baseline oficial se elige en la puerta G1, con la métrica primaria y antes de evaluar candidatos (`DT-071`, `DT-076`).
 
 ## 7. Modelos candidatos
 
@@ -223,7 +225,8 @@ Reglas:
 
 1. Mínimo 3–5 cortes; el número final se fija con la longitud real del histórico.
 2. Entre entrenamiento y evaluación se respeta un **gap** igual al horizonte, para simular la
-   disponibilidad real de la información.
+   disponibilidad real de la información. *(Aclaración 2026-10-05, `DT-075`: no es una zona muerta; no se
+   eliminan semanas entre entrenamiento y evaluación y cada horizonte `h` se evalúa contra su semana real.)*
 3. La métrica reportada es la agregación sobre todos los cortes, **con su dispersión**. Un promedio
    sin dispersión oculta modelos inestables.
 4. El último tramo del histórico se reserva como **holdout final**, usado una sola vez, al cerrar la
@@ -260,7 +263,8 @@ criterio de aceptación sin la información que lo justifica. `DT-021` define lo
 deberá cumplir y las candidatas que los satisfacen (MASE, RMSSE, WAPE agregada).
 
 Hasta esa decisión, el informe de evaluación reporta **el conjunto completo** y ninguna métrica se
-presenta como criterio único.
+presenta como criterio único. *(2026-10-05: la métrica primaria se fija en la puerta G1 de la Fase 5, antes de
+evaluar candidatos y del *holdout*, con el procedimiento de `DT-078`; `DT-021` sigue abierta.)*
 
 ### 9.2 Reporte obligatorio de Nivel 1
 
@@ -357,7 +361,8 @@ Un modelo pasa a producción **solo si cumple todo lo siguiente**:
 
 Los **umbrales numéricos concretos** (p. ej. "MASE < X") **no se fijan aquí**, ni en Nivel 1 ni en
 Nivel 2: fijarlos sin datos sería inventar un requisito. Se establecerán al cerrar la Fase 1 con el
-dataset disponible y se registrarán como decisión (`PENDIENTE`, ver `DT-P04` y `DT-021`).
+dataset disponible y se registrarán como decisión (`PENDIENTE`, ver `DT-P04` y `DT-021`). *(Nota 2026-10-05: no se fijaron al cerrar la Fase 1. Se fijan en la puerta G1 de la
+Fase 5 (`DT-078`, `DT-079`); los valores propuestos, incluido el 5 %, siguen `OPEN`.)*
 
 El criterio 9 no exige alcanzar un valor absoluto, sino **superar o igualar al baseline** en las
 mismas condiciones. Es una comparación relativa, que sí puede evaluarse sin objetivos del negocio.
@@ -371,7 +376,8 @@ mismas condiciones. Es una comparación relativa, que sí puede evaluarse sin ob
 - **Seguimiento:** experimentos y métricas registrados con MLflow. **No es una tecnología añadida al
   stack:** es el mecanismo de seguimiento nativo de Azure Machine Learning, que sí figura en el stack
   obligatorio, y por eso no requiere ADR propio. El seguimiento es el mecanismo de seguimiento
-  soportado nativamente por Azure Machine Learning.
+  soportado nativamente por Azure Machine Learning. *(2026-10-05, `DT-073`: sin MLflow en la Fase 5; versionado
+  manual con `model_versions` e informes en `docs/reports/`, como prevé `docs/03` §16. MLflow llega con la Fase 6.)*
 - **Datos:** solo información anterior al corte de entrenamiento. Prohibido reentrenar sobre el holdout.
 - **Frecuencia inicial propuesta:** mensual, o por disparo ante deriva (§15).
 
@@ -570,6 +576,9 @@ reglas aceptadas; **Nueva** = decisión tomada al autorizar U3.*
 | D-21 | `confidence_flag` | `STANDARD` · `INSUFFICIENT_HISTORY` | `docs/04` §3.14 | Nueva |
 | D-22 | Cierre de U3 | Criterios de §19.9 | `DT-047` | Nueva |
 
+*Nota (2026-10-05): D-12 tiene una **enmienda acotada** por `DT-074`: `float` solo dentro de `ml/` y de un
+proveedor de modelo, con frontera determinista a `Decimal`. Los baselines de U3 y el contrato siguen exactos.*
+
 ### 19.9 Criterios de cierre de U3
 
 1. **Contrato:** 14 semanas ancladas en `A + 1`, rechazo de fechas `> A`, salida `Decimal`, sin `float`
@@ -655,3 +664,70 @@ el que no se escribe nada.
   `infra/docker-compose.yml`.
 - **Pruebas:** `tests/forecasting` (60) y `tests/runs` (7), en la suite por defecto; `tests/db/test_forecast_*`
   (32), en la de integración. Las pruebas de U2 se ampliaron solo para contar con la migración `0002`.
+
+## 20. Fase 5 — protocolo de evaluación y decisiones (`DT-071` a `DT-085`)
+
+*Añadido el 2026-10-05 en el cierre documental de la Fase 5. **La Fase 5 no está autorizada para
+implementación, salvo F5a** (`DT-086`): el resto depende de las decisiones que se enumeran en §20.4. Toda evidencia de la fase
+es `SYNTHETIC` y debe revalidarse con datos REAL.*
+
+### 20.1 Unidades y puertas
+
+| Unidad | Contenido | Necesita |
+|---|---|---|
+| F5a | Backtesting, Nivel 1, segmentación, suavizado exponencial simple y comparación de baselines (sin candidatos). **Autorizada** (`DT-086`) | — |
+| F5b | Simulador de Nivel 2 aplicado a los baselines | F5a; OD-S1 a OD-S4 confirmadas |
+| F5c | Modelos de niveles 1–2, estudio de `DT-011` e intervalos | F5a, F5b y G1 |
+| F5d | Estudio de `DT-010` y, si procede, promoción e integración | F5c, G2 y G3 |
+
+Las puertas G1 (antes de evaluar candidatos), G2 (*holdout* de uso único) y G3 (aprobación humana) están
+definidas en `DT-071`.
+
+### 20.2 Respuestas del contrato
+
+| # | Pregunta | Respuesta |
+|---|---|---|
+| 1 | Qué se implementa en F5a–F5d | §20.1 y `DT-071` |
+| 2 | De qué depende cada unidad | §20.1 |
+| 3 | Dependencias de Python permitidas | Solo la biblioteca estándar en F5a–F5c; el nivel 3 exige una decisión nueva (`DT-073`) |
+| 4 | Dónde se permite `float` | Solo en `ml/` y en un proveedor de modelo (`DT-074`) |
+| 5 | Cómo se convierte `float` al contrato | `Decimal(x)` exacto, cuantizado a 6 decimales `ROUND_HALF_EVEN`, sin corregir valores inválidos (`DT-074`) |
+| 6 | Cómo se hacen los 17 backtests | Semanas 64 a 128, cada 4 semanas, 14 semanas de horizonte y ventana expansiva (`DT-075`) |
+| 7 | Qué pasa con el *holdout* | Corte 2025-09-24, uso único en G2, nunca para elegir nada (`DT-075`) |
+| 8 | Qué métrica y cuándo se fija | Una de MASE, RMSSE o WAPE, fijada en G1 antes de evaluar candidatos; `DT-021` sigue `OPEN` (`DT-078`) |
+| 9 | Cómo se acepta o rechaza un modelo | Nivel 1 mejora y Nivel 2 no se degrada; valores numéricos `OPEN` hasta G1 (`DT-079`) |
+| 10 | Cómo funciona el simulador de Nivel 2 | `DT-080`; OD-S1 a OD-S4 como `PROPUESTA` del responsable: bucle cerrado, órdenes con lead time realizado, desabasto diario con unidades faltantes e inventario medio relativo al baseline |
+| 11 | Cómo se trata el desabasto en la simulación | Ventas perdidas = demanda latente − consumo simulado; sin pedidos pendientes; inventario nunca negativo (`DT-080`) |
+| 12 | Cómo se estudia `DT-011` | Estrategias (a), (b) y (c) con el mismo protocolo; la latente solo como verdad (`DT-081`) |
+| 13 | Cómo se estudia `DT-010` | Alternativas (a)–(e) en simulación, sin tocar U1 (`DT-083`) |
+| 14 | Cómo se calibran los intervalos | Nivel 0,80; variante por horizonte ajustada con cortes anteriores (`DT-082`) |
+| 15 | Cómo se promueve un modelo | G2 más aprobación humana (G3); proveedor tras `ForecastProvider` (`DT-084`) |
+| 16 | Cómo se versiona | `model_versions` con los estados existentes, sin migración `0004`, más informes en `docs/reports/` (`DT-073`, `DT-084`) |
+| 17 | Qué pasa si ningún modelo gana | No se promueve nada; el baseline oficial sigue y se documenta el hallazgo (`DT-084`) |
+| 18 | Cómo se mantiene el respaldo | Baseline con `method_used = BASELINE` por serie y siempre disponible (`DT-084`, `RNF-010`) |
+| 19 | Qué evidencia es solo `SYNTHETIC` | Toda la de la Fase 5, en especial la que usa la demanda latente y los recortes de `DT-P23` |
+| 20 | Qué decisiones quedan fuera de la Fase 5 | Niveles 3 y 4; cambios de U1 (nueva `engine_version`); `DT-P02` y Azure ML (Fase 6); costes (`BR-X04`); objetivos de servicio (`BR-X01`) |
+
+### 20.3 Aclaraciones a secciones anteriores
+
+- **§8, regla 2 («gap»):** no hay zona muerta; cada horizonte se evalúa contra su semana real (`DT-075`).
+- **§9.1 y §10:** `DT-021` y `DT-P04` debían fijarse al cerrar la Fase 1 y no se fijaron. Se fijan en G1 con
+  `DT-078` y `DT-079`.
+- **§11:** sin MLflow en la Fase 5; el versionado es manual (`DT-073`).
+- **§19.8, D-12:** enmienda acotada por `DT-074`; los baselines siguen exactos.
+- **Nivel 1 con días imputados o excluidos:** la verdad nunca es un valor imputado; el consumo observado es censurado y se informa también sin las semanas con desabasto; la demanda latente, solo con datos `SYNTHETIC` (`DT-076` punto 2, `DT-081`).
+- **§2 y `DT-011`:** la Fase 5 compara (a), (b) y (c); la alternativa (d) no se evalúa (`DT-081`).
+- **`DT-P23`:** el dataset 0.4.0 no tiene series cortas. Si hay que probar el comportamiento, se recortan series
+  artificialmente, solo para validar el algoritmo y nunca como evidencia de comportamiento real.
+
+### 20.4 Condiciones abiertas para autorizar la Fase 5
+
+| Decisión | Contenido | Cuándo |
+|---|---|---|
+| OD-S1 a OD-S4 (`DT-080`) | `PROPUESTA` del responsable, pendiente de su confirmación: bucle cerrado; órdenes en `suggested_order_date` con lead time realizado, sin cancelaciones ni parciales; desabasto por día más unidades faltantes; inventario medio relativo al baseline | Antes de F5b |
+| `DT-077` | Umbrales de segmentación y criterio de estacionalidad | G1 |
+| `DT-079` / `DT-P04` | 2/3 de los cortes, **5 %**, banda de sesgo, tolerancia de cobertura y tolerancia de «igual» en el Nivel 2 | G1 |
+| `DT-078` / `DT-021` | Elección de la métrica primaria con el procedimiento aceptado | G1 |
+| `DT-081` | Estimador de imputación y agregación de los días excluidos | G1 |
+| `DT-076`, punto 7 | Detalle del suavizado exponencial simple | Revisión de F5a |
+| `DT-083` | Vía para comparar las alternativas (c) y (d) de `DT-010`: U1 no las expone (bloqueo) | Antes del estudio de `DT-010` (F5d) |

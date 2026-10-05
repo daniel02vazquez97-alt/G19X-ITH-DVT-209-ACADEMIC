@@ -1,6 +1,6 @@
 # Roadmap del proyecto
 
-**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — cierre de la Etapa 1, inicio de la Etapa 2 y orden de implementación propuesto (`DT-047`) · **Versión 1.3** (2026-10-01) — contrato de U1 cerrado (`DT-048` a `DT-052`) y pendiente `DT-P22` · **Versión 1.4** (2026-10-01) — `DT-P22` cerrada; contrato de U1 sin pendientes · **Versión 1.5** (2026-10-01) — U1 implementada · **Versión 1.6** (2026-10-02) — U2 implementada (2026-10-01) y U3 autorizada para implementación (`DT-056`, `DT-057`) · **Versión 1.7** (2026-10-02) — U3 implementada y validada · **Versión 1.8** (2026-10-03) — U4 autorizada para implementación, no implementada (`DT-058` a `DT-063`) · **Versión 1.9** (2026-10-03) — U4 implementada y validada · **Versión 1.10** (2026-10-03) — U5 autorizada para implementación, no implementada (`DT-064` a `DT-067`) · **Versión 1.11** (2026-10-03) — U5 implementada y validada · **Versión 1.12** (2026-10-04) — U6 autorizada para implementación, no implementada (`DT-068`, `DT-069`) · **Versión 1.13** (2026-10-04) — U6 implementada y validada; termina el orden de `DT-047` · **Versión 1.14** (2026-10-05) — Fase 7 autorizada para implementación, no implementada (`DT-070`) · **Versión 1.15** (2026-10-05) — F7a implementada y validada · **Versión 1.16** (2026-10-05) — Fase 7 completada
+**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — cierre de la Etapa 1, inicio de la Etapa 2 y orden de implementación propuesto (`DT-047`) · **Versión 1.3** (2026-10-01) — contrato de U1 cerrado (`DT-048` a `DT-052`) y pendiente `DT-P22` · **Versión 1.4** (2026-10-01) — `DT-P22` cerrada; contrato de U1 sin pendientes · **Versión 1.5** (2026-10-01) — U1 implementada · **Versión 1.6** (2026-10-02) — U2 implementada (2026-10-01) y U3 autorizada para implementación (`DT-056`, `DT-057`) · **Versión 1.7** (2026-10-02) — U3 implementada y validada · **Versión 1.8** (2026-10-03) — U4 autorizada para implementación, no implementada (`DT-058` a `DT-063`) · **Versión 1.9** (2026-10-03) — U4 implementada y validada · **Versión 1.10** (2026-10-03) — U5 autorizada para implementación, no implementada (`DT-064` a `DT-067`) · **Versión 1.11** (2026-10-03) — U5 implementada y validada · **Versión 1.12** (2026-10-04) — U6 autorizada para implementación, no implementada (`DT-068`, `DT-069`) · **Versión 1.13** (2026-10-04) — U6 implementada y validada; termina el orden de `DT-047` · **Versión 1.14** (2026-10-05) — Fase 7 autorizada para implementación, no implementada (`DT-070`) · **Versión 1.15** (2026-10-05) — F7a implementada y validada · **Versión 1.16** (2026-10-05) — Fase 7 completada · **Versión 1.17** (2026-10-05) — Fase 5: decisiones documentadas; F5a autorizada (`DT-086`)
 
 ## Principios de secuenciación
 
@@ -158,6 +158,11 @@ sus endpoints, que van después— y no requiere dependencias nuevas. Sus **regl
   reproducibilidad pasan; el sistema degrada correctamente al baseline si el modelo no está.
   Si la mejora de Nivel 1 **no** se traduce en mejora de Nivel 2, ese hallazgo se documenta y el modelo
   **no se promueve**.
+- **Estado (2026-10-05):** 🟡 **Decisiones documentadas; solo F5a autorizada** (`DT-086`) — cierre documental con
+  `DT-071` a `DT-086` (`docs/05` §20): unidades F5a–F5d con puertas G1–G3, solo biblioteca estándar, `float` solo en `ml/` y
+  en el proveedor de modelo, 17 cortes y *holdout* de uso único, simulador de Nivel 2 sin cambios en U1. Antes de
+  autorizar el resto: confirmar OD-S1 a OD-S4 del simulador (`PROPUESTA` del responsable), umbrales de segmentación, `DT-P04` (incluido el 5 %) y el estimador de
+  imputación; `DT-021` se fija en G1 con el procedimiento de `DT-078`. Toda evidencia es `SYNTHETIC`.
 
 ## FASE 6 — Azure Machine Learning
 
