@@ -39,6 +39,23 @@ export function withFilter(
   return next;
 }
 
+/** Sets or removes several filters at once; any change goes back to page 1. */
+export function withFilters(
+  search: URLSearchParams,
+  values: Readonly<Record<string, string | null>>,
+): URLSearchParams {
+  const next = new URLSearchParams(search);
+  for (const [key, value] of Object.entries(values)) {
+    if (value === null || value === '') {
+      next.delete(key);
+    } else {
+      next.set(key, value);
+    }
+  }
+  next.delete(PAGE);
+  return next;
+}
+
 /** Moves to a page; page 1 is the default and is not written in the URL. */
 export function withPage(search: URLSearchParams, page: number): URLSearchParams {
   const next = new URLSearchParams(search);
@@ -58,9 +75,14 @@ export function useListParams(filterKeys: readonly string[]) {
     (key: string, value: string | null) => setSearch((current) => withFilter(current, key, value)),
     [setSearch],
   );
+  const setFilters = useCallback(
+    (values: Readonly<Record<string, string | null>>) =>
+      setSearch((current) => withFilters(current, values)),
+    [setSearch],
+  );
   const setPage = useCallback(
     (page: number) => setSearch((current) => withPage(current, page)),
     [setSearch],
   );
-  return { query, setFilter, setPage };
+  return { search, query, setFilter, setFilters, setPage };
 }

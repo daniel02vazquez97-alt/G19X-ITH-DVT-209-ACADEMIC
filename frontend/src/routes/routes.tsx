@@ -6,6 +6,10 @@ import { HomePage } from '../pages/HomePage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 import { UnderConstructionPage } from '../pages/UnderConstructionPage';
 import { RoleGate } from '../roles/RoleGate';
+import { InventoryItemPage } from '../views/inventory/InventoryItemPage';
+import { InventoryPage } from '../views/inventory/InventoryPage';
+import { ProductDetailPage } from '../views/products/ProductDetailPage';
+import { ProductsPage } from '../views/products/ProductsPage';
 import { PATHS } from './paths';
 
 const relative = (path: string) => path.slice(1);
@@ -22,19 +26,19 @@ export const routes: RouteObject[] = [
       { index: true, element: <HomePage /> },
       {
         path: relative(PATHS.products),
-        element: <UnderConstructionPage title="Productos" unit="F7b" />,
+        element: <ProductsPage />,
       },
       {
         path: relative(PATHS.product),
-        element: <UnderConstructionPage title="Detalle de producto" unit="F7b" />,
+        element: <ProductDetailPage />,
       },
       {
         path: relative(PATHS.inventory),
-        element: <UnderConstructionPage title="Inventario" unit="F7b" />,
+        element: <InventoryPage />,
       },
       {
         path: relative(PATHS.inventoryItem),
-        element: <UnderConstructionPage title="Inventario del producto" unit="F7b" />,
+        element: <InventoryItemPage />,
       },
       {
         path: relative(PATHS.recommendations),

@@ -309,10 +309,120 @@ a {
   }
 }
 
+/* Lists, tables and detail blocks (F7b) */
+.breadcrumb {
+  margin: 0 0 var(--space-2);
+  font-size: var(--font-size-sm);
+}
+
+.muted {
+  color: var(--color-text-muted);
+}
+
+.section {
+  margin-top: var(--space-6);
+}
+
+.section__title {
+  font-size: var(--font-size-lg);
+  margin: 0 0 var(--space-3);
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-1) var(--space-4);
+  margin: 0 0 var(--space-3);
+}
+
+.facts dt {
+  font-weight: 600;
+}
+
+.facts dd {
+  margin: 0;
+}
+
+.filters {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  margin-bottom: var(--space-3);
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.filters__actions {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-end;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.data-table th,
+.data-table td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: var(--border-width) solid var(--color-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.data-table th {
+  background: var(--color-bg);
+  font-weight: 600;
+}
+
+.data-table .numeric {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-3);
+}
+
+.pagination__status {
+  margin: 0;
+}
+
+.pagination__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.pagination__select {
+  width: auto;
+}
+
 /* Tablet */
 @media (min-width: 48rem) {
   .shell__main {
     padding: var(--space-6);
+  }
+
+  .filters {
+    grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
   }
 }
 

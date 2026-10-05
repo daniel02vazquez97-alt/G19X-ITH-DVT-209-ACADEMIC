@@ -22,6 +22,8 @@ describe('formatDisplay (DT-069 rule)', () => {
     // Values of the real run (backend/tests/genai/_genai_fixtures.py) and their hand-computed displays.
     ['2700', '2700'],
     ['-8', '-8'],
+    ['-0', '0'],
+    ['007', '7'],
     ['265346154/109375', '2426.021979'],
     ['439.4786206640203006679518026', '439.478621'],
     ['2623.500600092591729239380374', '2623.5006'],
