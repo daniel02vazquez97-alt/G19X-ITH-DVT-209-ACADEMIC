@@ -11,6 +11,7 @@ import datetime as dt
 import re
 import time
 import unittest
+from unittest import mock
 
 from _db_support import DATASET_DIR, TemporaryDatabase
 from starlette.testclient import TestClient
@@ -19,6 +20,7 @@ from app.api.app import create_app
 from app.api.auth import ADMIN, ANALYST, PLANNER, VIEWER, Identity
 from app.api.settings import Settings
 from app.db.migrations import apply_migrations
+from app.db.read import recommendations as recommendations_read
 from app.genai import GENERATOR, TemplateGenerator
 from app.genai.verification import figures
 from app.ingestion.loader import load_dataset
@@ -187,6 +189,55 @@ class ContractTest(ExplanationTestCase):
                              .json()["error"]["code"], "VALIDATION_ERROR")
         self.assertEqual(self.client.post(f"/api/v1/recommendations/{rid}/explanation",
                                           headers={"Authorization": f"Bearer {TOKENS[ADMIN]}"}).status_code, 405)
+
+
+class ContractViolationTest(ExplanationTestCase):
+    """A violated internal contract is NOT RS-010 (`DT-069` point 6, implementation note): ``ExplanationError``
+    → the uniform 500 ``INTERNAL_ERROR`` of `DT-066`, never ``DEGRADED`` / ``NARRATIVE_UNVERIFIED``."""
+
+    def violated(self, change):
+        original = recommendations_read.explanation_source
+
+        def source(conn, recommendation_id):
+            row = dict(original(conn, recommendation_id))
+            change(row)
+            return row
+
+        return mock.patch.object(recommendations_read, "explanation_source", source)
+
+    def test_contract_violation_is_internal_error_not_degradation(self) -> None:
+        def no_unit(row):
+            row["unit_of_measure"] = None
+
+        def missing_fact(row):
+            breakdown = dict(row["calculation_inputs"]["breakdown"], inventory_position_decision=None)
+            row["calculation_inputs"] = dict(row["calculation_inputs"], breakdown=breakdown)
+
+        client = TestClient(self.app, raise_server_exceptions=False)
+        rid = self.first("RECOMMEND")
+        for name, change in (("missing unit_of_measure", no_unit), ("missing fact", missing_fact)):
+            with self.subTest(name), self.violated(change), self.assertLogs("app.api", "ERROR") as logs:
+                with self.assertNoLogs("app.genai", "WARNING"):  # no RS-010 degradation was logged
+                    response = client.get(f"/api/v1/recommendations/{rid}/explanation",
+                                          headers={"Authorization": f"Bearer {TOKENS[ADMIN]}",
+                                                   "X-Correlation-ID": "contract-check-01"})
+                self.assertEqual(response.status_code, 500)
+                body = response.json()
+                self.assertEqual(set(body), {"error"})
+                self.assertEqual(body["error"]["code"], "INTERNAL_ERROR")
+                self.assertEqual(body["error"]["correlation_id"], "contract-check-01")
+                self.assertEqual(response.headers["X-Correlation-ID"], "contract-check-01")
+                self.assertNotIn("DEGRADED", response.text)
+                self.assertNotIn("NARRATIVE_UNVERIFIED", response.text)
+                self.assertNotIn("ExplanationError", response.text)  # no internals in the response
+                self.assertTrue(any("ExplanationError" in line for line in logs.output))
+        # the same recommendation without the violation is still VERIFIED, and RS-010 still degrades
+        self.assertEqual(self.get(f"/api/v1/recommendations/{rid}/explanation").json()["explanation"]["status"],
+                         "VERIFIED")
+        self.app.state.text_generator = _Injecting()
+        with self.assertLogs("app.genai", "WARNING"):
+            degraded = self.get(f"/api/v1/recommendations/{rid}/explanation").json()["explanation"]
+        self.assertEqual((degraded["status"], degraded["warning"]), ("DEGRADED", "NARRATIVE_UNVERIFIED"))
 
 
 class ReadOnlyTest(ExplanationTestCase):
