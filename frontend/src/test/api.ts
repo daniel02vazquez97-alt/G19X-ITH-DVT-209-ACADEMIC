@@ -57,3 +57,18 @@ export function installFetch(handler: Handler) {
   vi.stubGlobal('fetch', mock);
   return mock;
 }
+
+/** Routes `GET /api/...` by pathname (after `/me`); unknown paths answer 404. */
+export function routeApi(routes: Record<string, (url: URL) => Response>): Handler {
+  return withMe((url) => {
+    const route = routes[url.pathname];
+    return route ? route(url) : errorResponse(404, 'NOT_FOUND');
+  });
+}
+
+/** Paths and query strings the app requested, without `/api/v1/me`. */
+export function requestedUrls(mock: { mock: { calls: unknown[][] } }): string[] {
+  return mock.mock.calls
+    .map(([input]) => String(input))
+    .filter((url) => !url.startsWith('/api/v1/me'));
+}

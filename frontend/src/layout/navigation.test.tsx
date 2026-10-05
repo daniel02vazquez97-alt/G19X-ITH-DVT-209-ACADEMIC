@@ -29,9 +29,6 @@ describe('navigation by role', () => {
   });
 
   it.each([
-    ['/productos', 'Productos', 'F7b'],
-    ['/productos/12', 'Detalle de producto', 'F7b'],
-    ['/inventario', 'Inventario', 'F7b'],
     ['/recomendaciones/4', 'Detalle de recomendación', 'F7c'],
     ['/predicciones', 'Predicciones', 'F7d'],
   ])('%s is a stable route under construction', async (path, title, unit) => {
