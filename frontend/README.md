@@ -4,9 +4,14 @@ Interfaz de **solo lectura** del Motor Predictivo de Abastecimiento: Fase 7, dec
 (`docs/15-decisiones-tecnicas.md`) y diferencias de la V1 en `docs/08-frontend.md` §12. Consume la API V1
 (`docs/07` §7) y **no recalcula nada**: muestra lo que la API entrega.
 
-Estado: **F7a** — base, navegación por rol, autenticación local y cliente de API (US-070). Las vistas de
-productos e inventario (F7b), recomendaciones y explicación (F7c) y predicciones e historial (F7d) son, por
-ahora, páginas «En construcción» con su URL definitiva.
+Estado: **F7a–F7d implementadas** (Fase 7 completa, pendiente de revisión):
+
+- **F7a** — base, navegación por rol, autenticación local y cliente de API (US-070).
+- **F7b** — productos (lista y detalle) e inventario (lista y `/inventario/:id` con líneas abiertas) (US-072).
+- **F7c** — recomendaciones sin acciones, detalle con explicación de U6 y `CalculationBreakdown`, y detalle
+  de ejecución para PLANNER y ADMIN (US-073, US-074, US-048).
+- **F7d** — predicciones con banda nominal y, en el detalle de producto, gráfico, tabla e historial de
+  consumo para ANALYST, PLANNER y ADMIN (US-075 parcial, RF-009).
 
 ## Requisitos
 
@@ -69,7 +74,9 @@ src/
 ├── roles/         copia de la matriz de roles de docs/07 §7.2 y RoleGate
 ├── routes/        rutas estables y parámetros de lista en la URL
 ├── layout/        AppShell y navegación
-├── pages/         inicio, «En construcción» y «no encontrada»
+├── pages/         inicio y «no encontrada»
+├── views/         productos, inventario, recomendaciones, ejecuciones y predicciones
+├── charts/        gráfico de la predicción con banda (Recharts) y su conversión a coordenadas
 ├── components/    ErrorState, EmptyState, LoadingSkeleton, NoticeBanner y tabla de errores
 ├── format/        presentación de cifras (DT-069) y fechas (es-MX, America/Mexico_City)
 ├── config/        locale y zona horaria
@@ -81,7 +88,9 @@ src/
 ## Reglas
 
 - **Cero lógica de negocio** en el cliente: nada de cobertura, urgencia, riesgo ni punto de reorden, y
-  ninguna conversión de cifras a `float` (`Number()`, `parseFloat`). Una prueba lo comprueba.
+  ninguna conversión de cifras a `float` (`Number()`, `parseFloat`). Una prueba lo comprueba. Única
+  excepción: `src/charts/chartValues.ts` convierte cifras a número solo para dibujar el gráfico; toda cifra
+  mostrada como texto (tablas, ayudas emergentes) es el texto exacto de la API.
 - Las cantidades llegan como texto y se muestran con la regla de `DT-069` (6 decimales
   `ROUND_HALF_EVEN`, sin ceros finales y **sin separador de miles**) o en su representación exacta.
 - Fechas de calendario sin conversión de zona; marcas de tiempo de UTC a `America/Mexico_City`.
