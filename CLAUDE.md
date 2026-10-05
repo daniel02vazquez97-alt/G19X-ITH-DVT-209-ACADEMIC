@@ -358,8 +358,9 @@ a `DT-067` `ACEPTADA`; `backend/app/api/`, `backend/app/db/read/`, `.env.example
 lo siguiente requiere su propia autorización. **La Fase 7 (interfaz React) está implementada e integrada en
 `main`** (2026-10-05, PR #2 a #5: `DT-070`, separada de `DT-047`; `docs/08` §12): `frontend/` con versiones fijadas, autenticación
 simulada, proxy de `/api`, sin reglas de negocio en el cliente; unidades F7a–F7d, cada una con su rama `feature/frontend-<unidad>`
-desde `main` tras integrar U1–U6 por PR con merge commit (en la práctica, ramas encadenadas por decisión del responsable, integradas en orden con merge commit). **La Fase 5 (ML) tiene sus decisiones documentadas y no está autorizada**
-(2026-10-05: `DT-071` a `DT-085`, `docs/05` §20): `ml/` con solo la biblioteca estándar, `float` solo en `ml/` y en un proveedor
+desde `main` tras integrar U1–U6 por PR con merge commit (en la práctica, ramas encadenadas por decisión del responsable, integradas en orden con merge commit). **La Fase 5 (ML) tiene sus decisiones documentadas y no está autorizada, salvo F5a**
+(2026-10-05: `DT-071` a `DT-086`, `docs/05` §20; F5a por `DT-086`: baselines, Nivel 1 y segmentación provisional, sin elegir
+baseline oficial ni métrica): `ml/` con solo la biblioteca estándar, `float` solo en `ml/` y en un proveedor
 de modelo (`DT-074`), U1 sin cambios; antes de implementar hay que decidir las condiciones de `docs/05` §20.4.
 Restricciones vigentes, que se levantan solo por instrucción explícita:
 
