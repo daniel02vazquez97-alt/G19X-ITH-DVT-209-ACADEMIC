@@ -1,0 +1,68 @@
+{
+  "recommendation_id": 4,
+  "run_id": 2,
+  "outcome": "RECOMMEND",
+  "explanation": {
+    "generator": "template/1.0.0",
+    "status": "VERIFIED",
+    "narrative": "Se sugiere pedir 2700 BOX. La posición de inventario para la decisión es de 242 BOX: 242 en existencia, más 0 en tránsito que llega dentro del horizonte, menos 0 reservados. El nivel objetivo es de 2865.5006 BOX: la demanda prevista para los próximos 32 días, de 2426.021979 BOX, más un stock de seguridad de 439.478621 BOX. Ese horizonte suma el plazo de entrega, de 25 días (observado en las recepciones del proveedor), y el periodo de revisión, de 7 días. La necesidad bruta es de 2623.5006 BOX. La cantidad se redondea hacia arriba al múltiplo de compra de 100 BOX, desde 2623.5006 BOX. Aviso: las cifras son provisionales, calculadas con datos sintéticos y con la política provisional de la primera versión; no constituyen una recomendación de negocio definitiva.",
+    "warning": null
+  },
+  "facts": [
+    { "key": "q_final", "value": "2700", "display": "2700", "unit": "QUANTITY" },
+    {
+      "key": "raw_need",
+      "value": "2623.500600092591729239380374",
+      "display": "2623.5006",
+      "unit": "QUANTITY"
+    },
+    {
+      "key": "safety_stock",
+      "value": "439.4786206640203006679518026",
+      "display": "439.478621",
+      "unit": "QUANTITY"
+    },
+    {
+      "key": "target_level",
+      "value": "2865.500600092591729239380374",
+      "display": "2865.5006",
+      "unit": "QUANTITY"
+    },
+    { "key": "lead_time_days", "value": "25", "display": "25", "unit": "DAYS" },
+    { "key": "review_period_days", "value": "7", "display": "7", "unit": "DAYS" },
+    { "key": "coverage_horizon_days", "value": "32", "display": "32", "unit": "DAYS" },
+    {
+      "key": "demand_over_horizon",
+      "value": "265346154/109375",
+      "display": "2426.021979",
+      "unit": "QUANTITY"
+    },
+    { "key": "inventory_position_decision", "value": "242", "display": "242", "unit": "QUANTITY" },
+    { "key": "effective_in_transit", "value": "0", "display": "0", "unit": "QUANTITY" },
+    { "key": "order_multiple", "value": "100", "display": "100", "unit": "QUANTITY" },
+    {
+      "key": "q_moq",
+      "value": "2623.500600092591729239380374",
+      "display": "2623.5006",
+      "unit": "QUANTITY"
+    },
+    { "key": "on_hand", "value": "242", "display": "242", "unit": "QUANTITY" },
+    { "key": "reserved", "value": "0", "display": "0", "unit": "QUANTITY" }
+  ],
+  "flags": ["ORDER_MULTIPLE_ROUNDING"],
+  "reasons": [],
+  "reason_details": [],
+  "missing_policy_parameters": [],
+  "provenance": {
+    "data_origin": "SYNTHETIC",
+    "dataset_version": "ds-6c8ad65b4999",
+    "generator_version": "0.4.0",
+    "data_load_id": 1,
+    "as_of_date": "2025-12-31",
+    "run_id": 2,
+    "notices": ["SYNTHETIC_DATA", "V1_PROVISIONAL_POLICY"],
+    "engine_version": "0.1.0",
+    "policy_set": "V1_PROVISIONAL",
+    "forecast_run_id": 1
+  }
+}

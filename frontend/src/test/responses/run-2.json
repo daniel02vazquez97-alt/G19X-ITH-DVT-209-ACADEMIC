@@ -1,0 +1,39 @@
+{
+  "id": 2,
+  "run_type": "RECOMMENDATION",
+  "status": "COMPLETED",
+  "as_of_date": "2025-12-31",
+  "data_load": {
+    "id": 1,
+    "dataset_version": "ds-6c8ad65b4999",
+    "generator_version": "0.4.0",
+    "data_origin": "SYNTHETIC"
+  },
+  "versions": {
+    "engine_version": "0.1.0",
+    "forecast_run_id": 1,
+    "reference_model_version": null,
+    "config_sha256": "4367223cda08e8ca258ed1119355db3f74fe41d7eea263363399247abb95da36"
+  },
+  "counts": {
+    "candidates": 100,
+    "evaluated": 100,
+    "by_outcome": { "NO_NEED": 40, "RECOMMEND": 50, "NOT_CALCULABLE": 10 },
+    "by_reason": {
+      "FORECAST_MISSING": 5,
+      "PRODUCT_INACTIVE": 5,
+      "PRODUCT_OUT_OF_VALIDITY": 5,
+      "NO_ACTIVE_PREFERRED_SUPPLIER": 5
+    },
+    "by_flag": {
+      "MOQ_APPLIED": 8,
+      "UNCOUNTED_TRANSIT": 8,
+      "ORDER_MULTIPLE_ROUNDING": 46,
+      "OVERDUE_ORDERS_EXCLUDED": 6
+    },
+    "rows": 100
+  },
+  "started_at": "2026-10-03T17:36:38.916155Z",
+  "finished_at": "2026-10-03T17:36:40.138246Z",
+  "error": null
+}

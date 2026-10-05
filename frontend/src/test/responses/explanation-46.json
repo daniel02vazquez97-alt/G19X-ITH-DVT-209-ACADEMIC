@@ -1,0 +1,56 @@
+{
+  "recommendation_id": 46,
+  "run_id": 2,
+  "outcome": "NO_NEED",
+  "explanation": {
+    "generator": "template/1.0.0",
+    "status": "VERIFIED",
+    "narrative": "No se sugiere pedido: la posición de inventario para la decisión, de 84 KG (39 en existencia, más 45 en tránsito que llega dentro del horizonte, menos 0 reservados), cubre el nivel objetivo de 78.021916 KG. Ese nivel es la demanda prevista para los próximos 38 días, de 76 KG, más un stock de seguridad de 2.021916 KG. El horizonte suma el plazo de entrega, de 31 días (observado en las recepciones del proveedor), y el periodo de revisión, de 7 días. En total hay 90 KG en tránsito (posición contable de 129 KG), pero solo 45 KG llegan dentro del horizonte y cuentan para la decisión. Aviso: las cifras son provisionales, calculadas con datos sintéticos y con la política provisional de la primera versión; no constituyen una recomendación de negocio definitiva.",
+    "warning": null
+  },
+  "facts": [
+    {
+      "key": "safety_stock",
+      "value": "2.021916209454386402240552468",
+      "display": "2.021916",
+      "unit": "QUANTITY"
+    },
+    {
+      "key": "target_level",
+      "value": "78.02191620945438640224055247",
+      "display": "78.021916",
+      "unit": "QUANTITY"
+    },
+    { "key": "lead_time_days", "value": "31", "display": "31", "unit": "DAYS" },
+    { "key": "review_period_days", "value": "7", "display": "7", "unit": "DAYS" },
+    { "key": "coverage_horizon_days", "value": "38", "display": "38", "unit": "DAYS" },
+    { "key": "demand_over_horizon", "value": "76", "display": "76", "unit": "QUANTITY" },
+    { "key": "inventory_position_decision", "value": "84", "display": "84", "unit": "QUANTITY" },
+    {
+      "key": "inventory_position_accounting",
+      "value": "129",
+      "display": "129",
+      "unit": "QUANTITY"
+    },
+    { "key": "total_in_transit", "value": "90", "display": "90", "unit": "QUANTITY" },
+    { "key": "effective_in_transit", "value": "45", "display": "45", "unit": "QUANTITY" },
+    { "key": "on_hand", "value": "39", "display": "39", "unit": "QUANTITY" },
+    { "key": "reserved", "value": "0", "display": "0", "unit": "QUANTITY" }
+  ],
+  "flags": ["UNCOUNTED_TRANSIT"],
+  "reasons": [],
+  "reason_details": [],
+  "missing_policy_parameters": [],
+  "provenance": {
+    "data_origin": "SYNTHETIC",
+    "dataset_version": "ds-6c8ad65b4999",
+    "generator_version": "0.4.0",
+    "data_load_id": 1,
+    "as_of_date": "2025-12-31",
+    "run_id": 2,
+    "notices": ["SYNTHETIC_DATA", "V1_PROVISIONAL_POLICY"],
+    "engine_version": "0.1.0",
+    "policy_set": "V1_PROVISIONAL",
+    "forecast_run_id": 1
+  }
+}

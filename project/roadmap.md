@@ -185,8 +185,7 @@ sus endpoints, que van después— y no requiere dependencias nuevas. Sus **regl
   (`US-075` necesita el intervalo de `US-055`).
 - **Criterio de finalización:** todas las vistas navegables con datos reales de la API; el desglose
   del cálculo es visible en el detalle de producto; sin lógica de negocio duplicada en el cliente.
-- **Estado (2026-10-05):** 🟡 **En implementación** — F7a (base, navegación, autenticación local y cliente de API) y F7b (productos e inventario) implementadas en `frontend/` (ramas encadenadas `feature/frontend-shell` → `feature/frontend-products`); F7c–F7d pendientes (`DT-070`; `docs/08` §12).
-  *(Hasta el 2026-10-05 decía «Autorizada para implementación — no implementada».)* Alcance V1:
+- **Estado (2026-10-05):** 🟡 **En implementación** — F7a, F7b y F7c (recomendaciones, desglose y explicación) implementadas en `frontend/` (ramas encadenadas `feature/frontend-shell` → `feature/frontend-products` → `feature/frontend-recommendations`); F7d pendiente (`DT-070`; `docs/08` §12).
   US-070, US-072 (sin «bajo el punto de reorden»), US-073 (sin acciones), US-074, US-048, historial y US-075 con
   banda nominal; US-071 y US-076 fuera por `BR-X03`. Autenticación simulada (la real es la Fase 8). Unidades:
   F7a base, navegación, autenticación y cliente de API → F7b productos e inventario → F7c recomendaciones, desglose

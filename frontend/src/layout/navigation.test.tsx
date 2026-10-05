@@ -1,7 +1,8 @@
 import { screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { ROLES } from '../roles/access';
-import { installFetch, withMe } from '../test/api';
+import { installFetch, jsonResponse, routeApi, withMe } from '../test/api';
+import RUN_2 from '../test/responses/run-2.json';
 import { loginAs, renderApp } from '../test/renderApp';
 
 const MENU = ['Inicio', 'Productos', 'Inventario', 'Recomendaciones', 'Predicciones'];
@@ -28,16 +29,16 @@ describe('navigation by role', () => {
     expect(screen.getAllByText(/no están disponibles en V1/)).toHaveLength(1);
   });
 
-  it.each([
-    ['/recomendaciones/4', 'Detalle de recomendación', 'F7c'],
-    ['/predicciones', 'Predicciones', 'F7d'],
-  ])('%s is a stable route under construction', async (path, title, unit) => {
-    installFetch(withMe());
-    const { user } = renderApp(path);
-    await loginAs(user, 'VIEWER');
-    expect(screen.getByRole('heading', { level: 1, name: title })).toBeInTheDocument();
-    expect(screen.getByText(new RegExp(`unidad ${unit}`))).toBeInTheDocument();
-  });
+  it.each([['/predicciones', 'Predicciones', 'F7d']])(
+    '%s is a stable route under construction',
+    async (path, title, unit) => {
+      installFetch(withMe());
+      const { user } = renderApp(path);
+      await loginAs(user, 'VIEWER');
+      expect(screen.getByRole('heading', { level: 1, name: title })).toBeInTheDocument();
+      expect(screen.getByText(new RegExp(`unidad ${unit}`))).toBeInTheDocument();
+    },
+  );
 
   it.each([
     ['VIEWER', false],
@@ -45,11 +46,13 @@ describe('navigation by role', () => {
     ['PLANNER', true],
     ['ADMIN', true],
   ] as const)('run detail for %s: visible = %s', async (role, visible) => {
-    installFetch(withMe());
+    installFetch(routeApi({ '/api/v1/runs/2': () => jsonResponse(200, RUN_2) }));
     const { user } = renderApp('/ejecuciones/2');
     await loginAs(user, role);
     if (visible) {
-      expect(screen.getByRole('heading', { name: 'Detalle de ejecución' })).toBeInTheDocument();
+      expect(
+        await screen.findByRole('heading', { name: 'Detalle de ejecución #2' }),
+      ).toBeInTheDocument();
     } else {
       expect(screen.getByRole('alert')).toHaveTextContent('Sin permiso para ver esto');
     }

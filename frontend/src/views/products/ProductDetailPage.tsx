@@ -7,6 +7,7 @@ import { formatTimestamp } from '../../format/dates';
 import { formatDisplay, formatQuantity } from '../../format/numbers';
 import { PATHS, toInventoryItem } from '../../routes/paths';
 import { activeLabel, validityLabel, yesNo } from '../labels';
+import { ProductEvaluationSection } from '../recommendations/ProductEvaluationSection';
 
 export function ProductDetailPage() {
   const { productId = '' } = useParams();
@@ -125,6 +126,11 @@ export function ProductDetailPage() {
                 </div>
               )}
             </section>
+
+            <ProductEvaluationSection
+              productId={product.id}
+              unitOfMeasure={product.unit_of_measure}
+            />
           </>
         )}
       </QueryView>
