@@ -1,6 +1,6 @@
 # 08 — Diseño del frontend
 
-**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-03 · **Versión 1.1** (2026-09-30) — §11, vistas frente a los contratos de la Etapa 2; §§1–10 no cambian · **Versión 1.2** (2026-10-05) — Fase 7 autorizada, no implementada: §12, concreción y diferencias con §1–§10 (`DT-070`); ruta de la explicación corregida en §11; notas en §4.1 y §8
+**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-03 · **Versión 1.1** (2026-09-30) — §11, vistas frente a los contratos de la Etapa 2; §§1–10 no cambian · **Versión 1.2** (2026-10-05) — Fase 7 autorizada, no implementada: §12, concreción y diferencias con §1–§10 (`DT-070`); ruta de la explicación corregida en §11; notas en §4.1 y §8 · **Versión 1.3** (2026-10-05) — Fase 7 implementada: §12.1, implementación y notas
 
 > No se escribe código React en esta etapa. Este documento define vistas, componentes y flujos.
 
@@ -257,7 +257,7 @@ API admite y lo dice.
 
 ## 12. Fase 7 — concreción y diferencias con §1–§10 (`DT-070`)
 
-*Añadido el 2026-10-05 al autorizar la Fase 7. **Fase 7 autorizada para implementación; no implementada.**
+*Añadido el 2026-10-05 al autorizar la Fase 7. **Fase 7 implementada e integrada en `main` el 2026-10-05 (PR #2 a #5); detalle en §12.1.**
 Las decisiones completas están en `DT-070` (`docs/15`). Esta sección dice qué cambia, para la V1, respecto
 de §1–§10, que siguen describiendo el sistema completo.*
 
@@ -281,3 +281,13 @@ de §1–§10, que siguen describiendo el sistema completo.*
 **Vistas de la Fase 7:** Productos, Inventario, Detalle de producto (con historial para ANALYST, PLANNER y
 ADMIN), Recomendaciones (lista y detalle con `CalculationBreakdown` y explicación) y Predicciones. Partición
 en unidades F7a–F7d (`DT-070` punto 24).
+
+### 12.1 Implementación (2026-10-05)
+
+`frontend/` (F7a–F7d, `DT-070`), integrado en `main` con los PR #2 a #5. Rutas: `/` (inicio), `/productos` y `/productos/:id`, `/inventario` y `/inventario/:id`, `/recomendaciones` y `/recomendaciones/:id`, `/predicciones` y `/ejecuciones/:id` (PLANNER y ADMIN). Filtros, orden y paginación en la URL.
+
+- «Cifras sin `float`» (puntos 8 y 22): única excepción `frontend/src/charts/chartValues.ts`, que convierte a número solo para la geometría del gráfico de Recharts (punto 20); tablas, ayudas emergentes y textos muestran el texto exacto de la API, y una prueba limita `Number()` a ese módulo.
+- Decisiones del responsable dentro de la Fase 7: detalle de producto por secciones (maestro, inventario y proveedores; evaluación del motor; predicción; historial para ANALYST, PLANNER y ADMIN) y `/inventario/:id` como vista propia con las líneas abiertas.
+- `/inventory` y `/recommendations` no devuelven la unidad de medida: las listas lo dicen y los detalles la toman de `/products/{id}`.
+- Los enteros del contrato (identificadores, `page`, `total`, días) se tipan como `number`; solo las cantidades `Decimal` son texto. La regla `display` del cliente normaliza los enteros igual que `app.genai` (`-0` → `0`).
+- Validación en Node 24.21.0 y npm 11.19.0 sobre `main`: lint, `tsc`, Prettier, 148 pruebas (Vitest + Testing Library) y build; el paquete pesa 774 kB por Recharts (carga diferida pendiente).

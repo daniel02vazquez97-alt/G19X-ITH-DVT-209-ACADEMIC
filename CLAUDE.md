@@ -297,8 +297,10 @@ estándar), `backend/app/runs/` (ejecución `forecast`), la migración `0002_for
 `backend/tests/forecasting/` y `backend/tests/runs/`.
 `infra/` existe desde U2 y contiene solo `docker-compose.yml` (PostgreSQL 16 local, `DT-055`).
 
-Carpetas que **aún no existen** y se crearán cuando su fase comience: `frontend/`, `ml/`,
-`.github/workflows/`.
+`frontend/` existe desde la Fase 7 (2026-10-05, `DT-070`): interfaz React V1 de solo lectura (Vite, React,
+TypeScript), con su `README.md`; se trabaja con Node 24 LTS y npm 11.19.0.
+
+Carpetas que **aún no existen** y se crearán cuando su fase comience: `ml/` y `.github/workflows/`.
 
 ## 15. Flujo de trabajo esperado del agente
 
@@ -353,10 +355,10 @@ a `DT-067` `ACEPTADA`; `backend/app/api/`, `backend/app/db/read/`, `.env.example
 `python -m unittest discover -s tests/api -t tests/api`, con los grupos `api` y `test` instalados). **U6 está implementada y validada**
 (2026-10-04: `DT-068` y `DT-069` `ACEPTADA`; `backend/app/genai/`, solo biblioteca estándar, y el endpoint 14
 `GET /api/v1/recommendations/{recommendation_id}/explanation`; `docs/09` §14.5 y §14.6; commits `55e0c39` y `5861fda`). Con U6 termina el orden de `DT-047`;
-lo siguiente requiere su propia autorización. **La Fase 7 (interfaz React) está autorizada para implementación y no
-está implementada** (2026-10-05: `DT-070`, separada de `DT-047`; `docs/08` §12): `frontend/` con versiones fijadas, autenticación
+lo siguiente requiere su propia autorización. **La Fase 7 (interfaz React) está implementada e integrada en
+`main`** (2026-10-05, PR #2 a #5: `DT-070`, separada de `DT-047`; `docs/08` §12): `frontend/` con versiones fijadas, autenticación
 simulada, proxy de `/api`, sin reglas de negocio en el cliente; unidades F7a–F7d, cada una con su rama `feature/frontend-<unidad>`
-desde `main` tras integrar U1–U6 por PR con merge commit.
+desde `main` tras integrar U1–U6 por PR con merge commit (en la práctica, ramas encadenadas por decisión del responsable, integradas en orden con merge commit).
 Restricciones vigentes, que se levantan solo por instrucción explícita:
 
 - **No escribir código de aplicación** hasta que el responsable autorice la primera unidad de

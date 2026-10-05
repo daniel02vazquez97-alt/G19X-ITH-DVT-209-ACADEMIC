@@ -1,6 +1,6 @@
 # Roadmap del proyecto
 
-**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — cierre de la Etapa 1, inicio de la Etapa 2 y orden de implementación propuesto (`DT-047`) · **Versión 1.3** (2026-10-01) — contrato de U1 cerrado (`DT-048` a `DT-052`) y pendiente `DT-P22` · **Versión 1.4** (2026-10-01) — `DT-P22` cerrada; contrato de U1 sin pendientes · **Versión 1.5** (2026-10-01) — U1 implementada · **Versión 1.6** (2026-10-02) — U2 implementada (2026-10-01) y U3 autorizada para implementación (`DT-056`, `DT-057`) · **Versión 1.7** (2026-10-02) — U3 implementada y validada · **Versión 1.8** (2026-10-03) — U4 autorizada para implementación, no implementada (`DT-058` a `DT-063`) · **Versión 1.9** (2026-10-03) — U4 implementada y validada · **Versión 1.10** (2026-10-03) — U5 autorizada para implementación, no implementada (`DT-064` a `DT-067`) · **Versión 1.11** (2026-10-03) — U5 implementada y validada · **Versión 1.12** (2026-10-04) — U6 autorizada para implementación, no implementada (`DT-068`, `DT-069`) · **Versión 1.13** (2026-10-04) — U6 implementada y validada; termina el orden de `DT-047` · **Versión 1.14** (2026-10-05) — Fase 7 autorizada para implementación, no implementada (`DT-070`) · **Versión 1.15** (2026-10-05) — F7a implementada y validada
+**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — cierre de la Etapa 1, inicio de la Etapa 2 y orden de implementación propuesto (`DT-047`) · **Versión 1.3** (2026-10-01) — contrato de U1 cerrado (`DT-048` a `DT-052`) y pendiente `DT-P22` · **Versión 1.4** (2026-10-01) — `DT-P22` cerrada; contrato de U1 sin pendientes · **Versión 1.5** (2026-10-01) — U1 implementada · **Versión 1.6** (2026-10-02) — U2 implementada (2026-10-01) y U3 autorizada para implementación (`DT-056`, `DT-057`) · **Versión 1.7** (2026-10-02) — U3 implementada y validada · **Versión 1.8** (2026-10-03) — U4 autorizada para implementación, no implementada (`DT-058` a `DT-063`) · **Versión 1.9** (2026-10-03) — U4 implementada y validada · **Versión 1.10** (2026-10-03) — U5 autorizada para implementación, no implementada (`DT-064` a `DT-067`) · **Versión 1.11** (2026-10-03) — U5 implementada y validada · **Versión 1.12** (2026-10-04) — U6 autorizada para implementación, no implementada (`DT-068`, `DT-069`) · **Versión 1.13** (2026-10-04) — U6 implementada y validada; termina el orden de `DT-047` · **Versión 1.14** (2026-10-05) — Fase 7 autorizada para implementación, no implementada (`DT-070`) · **Versión 1.15** (2026-10-05) — F7a implementada y validada · **Versión 1.16** (2026-10-05) — Fase 7 completada
 
 ## Principios de secuenciación
 
@@ -172,7 +172,7 @@ sus endpoints, que van después— y no requiere dependencias nuevas. Sus **regl
 - **Criterio de finalización:** el entrenamiento se ejecuta en Azure ML; los modelos quedan
   registrados y versionados; el monitoreo emite señales; el sistema sigue funcionando si Azure ML no está.
 
-## FASE 7 — React
+## FASE 7 — React ✅ (completada el 2026-10-05)
 
 - **Objetivo:** interfaz web operativa.
 - **Entradas:** `docs/08-frontend.md`, API de las Fases 3–4.
@@ -185,7 +185,10 @@ sus endpoints, que van después— y no requiere dependencias nuevas. Sus **regl
   (`US-075` necesita el intervalo de `US-055`).
 - **Criterio de finalización:** todas las vistas navegables con datos reales de la API; el desglose
   del cálculo es visible en el detalle de producto; sin lógica de negocio duplicada en el cliente.
-- **Estado (2026-10-05):** 🟡 **En implementación** — F7a a F7d implementadas en `frontend/` (ramas encadenadas `feature/frontend-shell` → `feature/frontend-products` → `feature/frontend-recommendations` → `feature/frontend-forecasts`), pendientes de revisión, validación en Node 24 y un PR por unidad (`DT-070`; `docs/08` §12).
+- **Estado (2026-10-05):** ✅ **Completada** — F7a a F7d integradas en `main` (PR #2 a #5, `22f1805`) y
+  validadas en Node 24.21.0 / npm 11.19.0 (148 pruebas). *(Antes: «Autorizada para implementación — no implementada»
+  y, durante la implementación, «En implementación».)* Alcance V1:
+  US-070, US-072 (sin «bajo el punto de reorden»), US-073 (sin acciones), US-074, US-048, historial y US-075 con
   banda nominal; US-071 y US-076 fuera por `BR-X03`. Autenticación simulada (la real es la Fase 8). Unidades:
   F7a base, navegación, autenticación y cliente de API → F7b productos e inventario → F7c recomendaciones, desglose
   y explicación → F7d predicciones e historial. U1–U6 integradas en `main` con merge commit (`9012a8c`).
