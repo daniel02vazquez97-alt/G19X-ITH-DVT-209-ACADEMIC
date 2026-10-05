@@ -1,6 +1,6 @@
 # 15 — Decisiones técnicas (ADR)
 
-**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-18) — `DT-024` a `DT-030`, preparación del Componente 2 · **Versión 1.3** (2026-09-19) — `DT-031`, reglas mínimas de V1 · **Versión 1.4** (2026-09-21) — cierre de las reglas V1: `DT-031` pasa a `ACEPTADA` con trece reglas · **Versión 1.5** (2026-09-21) — `DT-032` y `DT-033`, decisiones que el Componente 2 tenía que tomar al implementarse · **Versión 1.6** (2026-09-21) — tabla canónica de identificadores de componente en `DT-030` · **Versión 1.7** (2026-09-23) — `DT-034` y `DT-035`, demanda latente persistente y sus políticas de generación · **Versión 1.8** (2026-09-24) — `DT-036` y `DT-037`, políticas sintéticas de inventario y comportamiento de proveedores; **enmienda de `DT-027`** (restricción 3) y cierre del pendiente de `data_origin` de `DT-026` · **Versión 1.9** (2026-09-24) — `DT-038` y `DT-039`, contratos de salida de los Componentes 4 y 5, tras la auditoría pre-implementación; cierre de los pendientes de `DT-034` (recorte de la demanda y contrato de `consumption.csv`) y correcciones a `DT-036` y `DT-037` · **Versión 1.10** (2026-09-26) — cierre de D-01: `DT-040` (publicación atómica del dataset, W1), regla general de incremento de `generator_version` en `DT-033`, y actualizaciones de `DT-036`, `DT-038` y `DT-039` (A2, B2, `expected_at`, autoría de los identificadores) · **Versión 1.11** (2026-09-26) — implementación del Componente 4: enmienda de `DT-037` §3 (D-C4-1, reparto de la entrega partida) y actualización de `DT-038` (D-C4-2 precondiciones, D-C4-3 lead time y disparo diario, flujos pseudoaleatorios, `metrics` pendiente) · **Versión 1.12** (2026-09-27) — cierre de D-01, opción A: elegibilidad de las órdenes `CANCELLED` sintéticas respecto de `valid_to` (`DT-039` §5.2) · **Versión 1.13** (2026-09-28) — implementación del Componente 5 (`DT-039` §13), sin cambios en ninguna regla · **Versión 1.14** (2026-09-28) — implementación del Componente 6 (`DT-037` §6, decisiones A1 y A2) y corrección de texto en `DT-040` §3 · **Versión 1.15** (2026-09-29) — implementación de W1 (`DT-040` §9, detalles pendientes resueltos) y `generator_version` 0.3.0 · **Versión 1.16** (2026-09-29) — `DT-041`, contrato e implementación del Componente 7 (sin integrar en W1); notas de redacción en `DT-030` y `DT-031` (`V1-07`, `V1-08`) · **Versión 1.17** (2026-09-29) — `DT-042`, validador del dataset e informe de calidad; integración de C7 y C8 en W1 (`DT-040`); `generator_version` 0.4.0 (`DT-033`); formas de `scenario_assignment` y `quality_report` (`DT-025`); `metrics` de `DT-038` §12 cerrado · **Versión 1.18** (2026-09-30) — Etapa 2, arquitectura y fundación: `DT-043` a `DT-047` (todas `PROPUESTA`) y pendientes `DT-P13` a `DT-P21` · **Versión 1.19** (2026-09-30) — autorización de U1: `DT-043` y `DT-045` `ACEPTADA`, `DT-047` `ACEPTADA` en cuanto a U1; `DT-P15` y `DT-P20` cerradas; `DT-P14` abierta en parte y **bloquea U1** · **Versión 1.20** (2026-10-01) — `DT-P14` **cerrada** con el estimador poblacional, `INSUFFICIENT_HISTORY` para `n = 0` y la evaluación exacta B3 (`docs/06` §16.6); ninguna fórmula V1 cambia · **Versión 1.21** (2026-10-01) — cierre del contrato de U1: `DT-048` a `DT-052` `ACEPTADA` (aclaraciones A-1 en `DT-050` y A-2 en `DT-051`), y pendiente `DT-P22`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.22** (2026-10-01) — `DT-P22` `ACEPTADA` (opción (a)): `PRODUCT_OUT_OF_VALIDITY` cubre también la vigencia que termina dentro del horizonte; cierre de `DT-049`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.23** (2026-10-01) — `DT-053` (frontera de la salida parcial) y `DT-054` (sin monotonía global de `S` frente a `L` en V1), tras el audit de pre-codificación de U1; ninguna fórmula cambia · **Versión 1.24** (2026-10-01) — `DT-044` `ACEPTADA` (cantidades en `numeric`; `quantity_on_hand ≥ 0` compatible con `BR-X09`/`V1-13`); `DT-047` aceptada para U2; `DT-055` (entorno técnico de U2) · **Versión 1.25** (2026-10-02) — U3 autorizada para implementación: `DT-P17` cerrada por `DT-056` (baselines V1); `DT-046` `ACEPTADA`; `DT-057` (persistencia y ejecución del forecast); `DT-047` aceptada para U3; pendiente nueva `DT-P23` · **Versión 1.26** (2026-10-03) — cierre documental de U4 y autorización para implementación (no implementada): `DT-058` a `DT-063` `ACEPTADA`; `DT-P18` cerrada por `DT-059` y `DT-P21` por `DT-058`; `DT-047` aceptada para U4; nota en `DT-P16`, que sigue abierta · **Versión 1.27** (2026-10-03) — U4 implementada y validada: registro de la implementación en `DT-047` y en `DT-058` a `DT-063`; ninguna decisión cambia · **Versión 1.28** (2026-10-03) — U5 autorizada para implementación (no implementada): `DT-064` (dependencias), `DT-065` (autenticación local), `DT-066` (contrato de lectura) y `DT-067` (historia, desviación poblacional) `ACEPTADA`; `DT-047` aceptada para U5 · **Versión 1.29** (2026-10-03) — U5 implementada y validada: registro de la implementación en `DT-047` y en `DT-064` a `DT-067`; ninguna decisión cambia · **Versión 1.30** (2026-10-04) — U6 autorizada para implementación (no implementada): `DT-068` (entrega y contrato de la explicación) y `DT-069` (presentación, verificación y degradación de cifras) `ACEPTADA`; `DT-047` aceptada para U6 · **Versión 1.31** (2026-10-04) — U6 implementada y validada: registro de la implementación en `DT-047`, `DT-068` y `DT-069`; ninguna decisión cambia
+**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-18) — `DT-024` a `DT-030`, preparación del Componente 2 · **Versión 1.3** (2026-09-19) — `DT-031`, reglas mínimas de V1 · **Versión 1.4** (2026-09-21) — cierre de las reglas V1: `DT-031` pasa a `ACEPTADA` con trece reglas · **Versión 1.5** (2026-09-21) — `DT-032` y `DT-033`, decisiones que el Componente 2 tenía que tomar al implementarse · **Versión 1.6** (2026-09-21) — tabla canónica de identificadores de componente en `DT-030` · **Versión 1.7** (2026-09-23) — `DT-034` y `DT-035`, demanda latente persistente y sus políticas de generación · **Versión 1.8** (2026-09-24) — `DT-036` y `DT-037`, políticas sintéticas de inventario y comportamiento de proveedores; **enmienda de `DT-027`** (restricción 3) y cierre del pendiente de `data_origin` de `DT-026` · **Versión 1.9** (2026-09-24) — `DT-038` y `DT-039`, contratos de salida de los Componentes 4 y 5, tras la auditoría pre-implementación; cierre de los pendientes de `DT-034` (recorte de la demanda y contrato de `consumption.csv`) y correcciones a `DT-036` y `DT-037` · **Versión 1.10** (2026-09-26) — cierre de D-01: `DT-040` (publicación atómica del dataset, W1), regla general de incremento de `generator_version` en `DT-033`, y actualizaciones de `DT-036`, `DT-038` y `DT-039` (A2, B2, `expected_at`, autoría de los identificadores) · **Versión 1.11** (2026-09-26) — implementación del Componente 4: enmienda de `DT-037` §3 (D-C4-1, reparto de la entrega partida) y actualización de `DT-038` (D-C4-2 precondiciones, D-C4-3 lead time y disparo diario, flujos pseudoaleatorios, `metrics` pendiente) · **Versión 1.12** (2026-09-27) — cierre de D-01, opción A: elegibilidad de las órdenes `CANCELLED` sintéticas respecto de `valid_to` (`DT-039` §5.2) · **Versión 1.13** (2026-09-28) — implementación del Componente 5 (`DT-039` §13), sin cambios en ninguna regla · **Versión 1.14** (2026-09-28) — implementación del Componente 6 (`DT-037` §6, decisiones A1 y A2) y corrección de texto en `DT-040` §3 · **Versión 1.15** (2026-09-29) — implementación de W1 (`DT-040` §9, detalles pendientes resueltos) y `generator_version` 0.3.0 · **Versión 1.16** (2026-09-29) — `DT-041`, contrato e implementación del Componente 7 (sin integrar en W1); notas de redacción en `DT-030` y `DT-031` (`V1-07`, `V1-08`) · **Versión 1.17** (2026-09-29) — `DT-042`, validador del dataset e informe de calidad; integración de C7 y C8 en W1 (`DT-040`); `generator_version` 0.4.0 (`DT-033`); formas de `scenario_assignment` y `quality_report` (`DT-025`); `metrics` de `DT-038` §12 cerrado · **Versión 1.18** (2026-09-30) — Etapa 2, arquitectura y fundación: `DT-043` a `DT-047` (todas `PROPUESTA`) y pendientes `DT-P13` a `DT-P21` · **Versión 1.19** (2026-09-30) — autorización de U1: `DT-043` y `DT-045` `ACEPTADA`, `DT-047` `ACEPTADA` en cuanto a U1; `DT-P15` y `DT-P20` cerradas; `DT-P14` abierta en parte y **bloquea U1** · **Versión 1.20** (2026-10-01) — `DT-P14` **cerrada** con el estimador poblacional, `INSUFFICIENT_HISTORY` para `n = 0` y la evaluación exacta B3 (`docs/06` §16.6); ninguna fórmula V1 cambia · **Versión 1.21** (2026-10-01) — cierre del contrato de U1: `DT-048` a `DT-052` `ACEPTADA` (aclaraciones A-1 en `DT-050` y A-2 en `DT-051`), y pendiente `DT-P22`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.22** (2026-10-01) — `DT-P22` `ACEPTADA` (opción (a)): `PRODUCT_OUT_OF_VALIDITY` cubre también la vigencia que termina dentro del horizonte; cierre de `DT-049`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.23** (2026-10-01) — `DT-053` (frontera de la salida parcial) y `DT-054` (sin monotonía global de `S` frente a `L` en V1), tras el audit de pre-codificación de U1; ninguna fórmula cambia · **Versión 1.24** (2026-10-01) — `DT-044` `ACEPTADA` (cantidades en `numeric`; `quantity_on_hand ≥ 0` compatible con `BR-X09`/`V1-13`); `DT-047` aceptada para U2; `DT-055` (entorno técnico de U2) · **Versión 1.25** (2026-10-02) — U3 autorizada para implementación: `DT-P17` cerrada por `DT-056` (baselines V1); `DT-046` `ACEPTADA`; `DT-057` (persistencia y ejecución del forecast); `DT-047` aceptada para U3; pendiente nueva `DT-P23` · **Versión 1.26** (2026-10-03) — cierre documental de U4 y autorización para implementación (no implementada): `DT-058` a `DT-063` `ACEPTADA`; `DT-P18` cerrada por `DT-059` y `DT-P21` por `DT-058`; `DT-047` aceptada para U4; nota en `DT-P16`, que sigue abierta · **Versión 1.27** (2026-10-03) — U4 implementada y validada: registro de la implementación en `DT-047` y en `DT-058` a `DT-063`; ninguna decisión cambia · **Versión 1.28** (2026-10-03) — U5 autorizada para implementación (no implementada): `DT-064` (dependencias), `DT-065` (autenticación local), `DT-066` (contrato de lectura) y `DT-067` (historia, desviación poblacional) `ACEPTADA`; `DT-047` aceptada para U5 · **Versión 1.29** (2026-10-03) — U5 implementada y validada: registro de la implementación en `DT-047` y en `DT-064` a `DT-067`; ninguna decisión cambia · **Versión 1.30** (2026-10-04) — U6 autorizada para implementación (no implementada): `DT-068` (entrega y contrato de la explicación) y `DT-069` (presentación, verificación y degradación de cifras) `ACEPTADA`; `DT-047` aceptada para U6 · **Versión 1.31** (2026-10-04) — U6 implementada y validada: registro de la implementación en `DT-047`, `DT-068` y `DT-069`; ninguna decisión cambia · **Versión 1.32** (2026-10-05) — Fase 7 autorizada para implementación (no implementada): `DT-070` (alcance, stack y versiones, autenticación local, contrato con la API, formato regional, proxy, partición F7a–F7d e integración con `main`) `ACEPTADA`; separada de `DT-047`
 
 Registro de decisiones arquitectónicas. Formato: ID, decisión, contexto, alternativas, razón,
 consecuencias, estado.
@@ -2650,6 +2650,154 @@ D-01 a D-22 y criterios de cierre: `docs/05` §19.8 y §19.9.*
   de las exactas; por eso las plantillas no hacen aritmética en el texto. Una futura LLM (Fase 10) que
   escriba números con letras no la detectaría este verificador: se revisará entonces.
 - **Estado:** `ACEPTADA` (2026-10-04, decisión del responsable al autorizar U6); implementada y validada el mismo día (`docs/09` §14.6).
+
+## DT-070 — Fase 7: interfaz React V1 (alcance, stack, autenticación local y contrato con la API)
+
+- **Decisión** (Fase 7 = `frontend/`, consumidor de la API V1 de solo lectura; no cambia U1–U6):
+  1. **Alcance (F7-01).** Sí: US-070 (estructura y navegación), US-072 sin el filtro «por debajo del punto
+     de reorden» (`docs/07` §7.3), US-073 **sin acciones** (lista y detalle), US-074 (detalle con
+     `CalculationBreakdown`), US-048 (explicación de U6) e historial de consumo (RF-009). US-075 **parcial**:
+     forecast, banda nominal, `confidence_flag`, método y modelo, con historia y forecast separados y sin
+     afirmar que la incertidumbre está validada; su cierre depende de US-055 (Fase 5). No: US-071 (dashboard
+     priorizado) y US-076 (riesgos y proveedores), acciones sobre recomendaciones, administración,
+     asistente y exportación. Nada que dependa de `BR-X03` (riesgo, prioridad, urgencia, cobertura, «qué
+     ocurre si no se actúa»). `GET /runs/{run_id}` solo como enlace desde `provenance.run_id` para PLANNER y
+     ADMIN.
+  2. **Routing (F7-02).** URLs estables por vista; filtros, paginación y selección en la URL, nunca solo en
+     memoria de React.
+  3. **Autenticación (F7-03).** La de U5 (`DT-065`): el usuario pega un token `dev-…`, se valida con
+     `GET /api/v1/me` y se guarda **solo en memoria**; al recargar se vuelve a autenticar; logout descarta el
+     token; cada petición lleva `Authorization: Bearer`; 401 → login; 403 → se conserva la sesión. Sin
+     `sessionStorage`, `localStorage`, MSAL, Entra ID, OAuth ni OIDC (Fase 8). Ningún token en el código, en
+     variables de build ni en el repositorio. Un `AuthProvider` aísla el mecanismo para sustituirlo en la
+     Fase 8 sin tocar las vistas.
+  4. **Roles (F7-04).** Copia explícita de la matriz de `docs/07` §7.2 (los cuatro roles en todo salvo
+     `/history`: ANALYST, PLANNER, ADMIN; `/runs`: PLANNER, ADMIN), sin jerarquía, con los `roles` de `/me`.
+     La navegación oculta lo no autorizado; un 403 del backend muestra «Sin permiso para ver esto» sin
+     cerrar sesión. La seguridad sigue en el backend (`docs/10` §2, RS-003).
+  5. **Layout (F7-05).** `AppShell` con navegación, contenido y estados globales de carga y error. La
+     navegación muestra solo lo disponible: Productos, Inventario, Recomendaciones, Predicciones (y el
+     historial dentro del detalle de producto). Dashboard priorizado, Riesgos, Proveedores, Administración y
+     Asistente no aparecen como funcionalidad activa.
+  6. **Diseño visual (F7-06).** Neutro y sobrio, sin identidad corporativa definitiva, con tokens de diseño
+     centralizados; interfaz en español; estado nunca solo por color; esqueletos durante la carga; unidades
+     siempre visibles.
+  7. **Estado (F7-07).** Estado del servidor con la librería de *data fetching*; sesión en un contexto de
+     React; filtros, paginación y selección en la URL; el resto, local al componente. Sin Redux ni Zustand.
+  8. **Cliente de API (F7-08).** Fino, sin recalcular nada, con base **relativa `/api`**. Tipos **generados
+     desde el OpenAPI** de la API (`openapi-typescript`, a partir de `GET /openapi.json` de la API local);
+     el archivo generado se versiona y se regenera con un script de npm cuando cambie el contrato; no se
+     duplica el contrato a mano.
+  9. **Errores (F7-09).** Un `ErrorState` común: 401 → login; 403 → «Sin permiso para ver esto»; 404 → «no
+     encontrado» o estado vacío según el endpoint (p. ej. producto sin forecast o sin evaluación en la
+     ejecución); 400/422 → filtro o entrada inválida, sin mostrar el valor; 500 → mensaje genérico; 503 →
+     servicio no disponible. Siempre el `correlation_id` cuando exista; nunca trazas ni detalles técnicos.
+  10. **Paginación (F7-10).** `page ≥ 1`, `page_size` 1–200 (50 por defecto); la UI usa `items`, `total`,
+      `page`, `page_size` del backend y nunca recalcula `total`; al cambiar un filtro, `page = 1`.
+  11. **Filtros (F7-11).** Solo los que la API admite: productos (`search`, `is_active`, `sort`,
+      `category_id` como identificador explícito), inventario (`product_id`, `category_id`, `sort`),
+      recomendaciones (`outcome`, `product_id`, `category_id`, `supplier_id`, `run_id`, `sort`), forecasts
+      (`product_id`, `category_id`, `run_id`). **No** se construyen selectores completos de categorías ni de
+      proveedores ni se fabrica un catálogo en el frontend: la API no tiene `/categories` ni `/suppliers` y
+      la Fase 7 no los crea. Una experiencia que necesite un catálogo completo queda pendiente de una fase o
+      decisión futura.
+  12. **Forecast (F7-12).** Los 14 periodos con `predicted_quantity`, `lower_bound`, `upper_bound`,
+      `confidence_level`, `method_used`, `confidence_flag` y `model_version`. Banda rotulada «nominal 0.80»
+      (el valor de `confidence_level`); aviso explícito con `INSUFFICIENT_HISTORY`. Historia y forecast
+      visualmente separados (semanas ISO frente a semanas ancladas en el corte, `DT-067`, `DT-056`), sin
+      continuidad aparente. El componente depende solo de esos campos, no de la media móvil ni de otro
+      algoritmo.
+  13. **Recomendaciones (F7-13).** Las tres `outcome` con `reasons`, `reason_details`, `flags`,
+      `missing_policy_parameters`, `provenance`, `policy_snapshot` y desglose. Orden por los campos que la API
+      admite, y la vista lo dice. Sin urgencia, prioridad, riesgo ni acciones.
+  14. **Explicación (F7-14).** Solo `GET /api/v1/recommendations/{id}/explanation` (`DT-068`), nunca
+      `POST /assistant/*`. `VERIFIED`: narrativa, `facts`, `generator` y `notices`. `DEGRADED`: «Explicación no
+      disponible», conservando `facts`, desglose, `warning` y `provenance`. `NOT_APPLICABLE`:
+      `reason_details` sin narrativa. No es un chat ni un asistente.
+  15. **Desglose (F7-15).** Dos niveles. Principal: `facts[].display` del servidor (`DT-069`) con sus
+      unidades. «Detalles técnicos del cálculo», desplegable: los demás términos de
+      `calculation_inputs.breakdown` cuando existan, en su **representación exacta** del backend (`value`,
+      racional `p/q` o `Decimal` textual), sin `float`, sin recalcular y sin reinterpretar fórmulas; un
+      término nulo se muestra como «no calculado». Así el `CalculationBreakdown` es completo (US-074).
+  16. **Provenance (F7-16).** `SYNTHETIC_DATA` y `V1_PROVISIONAL_POLICY` visibles de forma permanente en
+      forecast, recomendaciones y explicación cuando vienen en `notices`; ningún aviso nuevo. Productos e
+      inventario muestran su `data_origin` por fila.
+  17. **Responsive (F7-17).** Escritorio como escenario principal, tableta soportada, móvil para consulta
+      (`docs/08` §9, ASSUMPTION-018); los puntos de corte se fijan en la implementación dentro de esa regla.
+  18. **Accesibilidad (F7-18).** HTML semántico, teclado, foco visible, etiquetas, ARIA cuando haga falta,
+      contraste suficiente, estado no solo por color y alternativa textual de los gráficos. Sin afirmar
+      ninguna certificación (WCAG).
+  19. **Pruebas (F7-19).** Vitest + Testing Library (con jsdom). Cubren componentes, carga, vacío, errores,
+      autenticación, roles, filtros, paginación, recomendaciones, explicación, forecast, provenance y la
+      ausencia de fórmulas de negocio en el cliente. E2E aplazada (`DT-P07`).
+  20. **Stack y versiones (F7-20)**, fijadas a versión exacta (RS-013) en `package.json`, con
+      `package-lock.json` versionado; verificadas en el registro de npm y en nodejs.org el 2026-10-05, sin
+      instalar:
+
+      | Paquete | Versión | Nota de compatibilidad |
+      |---|---|---|
+      | Node.js | 24 LTS «Krypton», **≥ 24.15.0** (referencia 24.21.0) | Activa hasta el 2026-10-20; mantenimiento hasta el 2028-04-30. Mínimo por `jsdom` (`^24.15.0`) y `react-router` (`>=22.22.0`) |
+      | npm | **11.19.0** (la incluida en Node 24.21.0) | `packageManager` en `package.json` |
+      | `react`, `react-dom` | 19.3.0 | |
+      | `typescript` | **5.9.3** | No 6.x/7.x: `typescript-eslint` 8.71.0 exige `<6.1.0` y `openapi-typescript` 7.13.0 exige `^5.x` |
+      | `vite` | 8.3.2 | Node `^20.19.0 \|\| >=22.12.0` |
+      | `@vitejs/plugin-react` | 6.1.1 | `vite ^8` |
+      | `react-router` | 8.4.0 | `react >=19.2.7` |
+      | `@tanstack/react-query` | 5.104.1 | `react ^18 \|\| ^19` |
+      | `recharts` (+ `react-is` 19.3.0) | 3.10.1 | Gráfico con banda (área de rango); `react ^19` |
+      | `vitest` | 5.0.3 | `vite ^8`; Node `^22.12 \|\| ^24 \|\| >=26` |
+      | `jsdom` | 30.1.2 | Entorno de pruebas |
+      | `@testing-library/react` | 16.3.3 | con `@testing-library/dom` 10.4.2 |
+      | `@testing-library/jest-dom` | 7.0.1 | `vitest >=0.32` |
+      | `@testing-library/user-event` | 14.6.7 | |
+      | `@types/react`, `@types/react-dom` | 19.3.0 | |
+      | `eslint` | 10.12.0 | con `@eslint/js` 10.0.1 |
+      | `typescript-eslint` | 8.71.0 | `eslint ^10`, `typescript <6.1.0` |
+      | `eslint-plugin-react-hooks` | 7.1.1 | `eslint ^10` |
+      | `prettier` | 3.9.9 | |
+      | `openapi-typescript` | 7.13.0 | Generación de tipos (punto 8) |
+
+      Cualquier otra dependencia, o cualquier cambio de versión, exige una decisión nueva.
+  21. **Integración con `main` (F7-21).** Antes de la primera rama de la Fase 7: PR obligatorio
+      `feat/u1-supply-engine` → `main`, revisado, integrado con un **merge commit normal** que conserva los
+      commits de U1–U6 y sus hashes, citados en `project/status.md`. Sin *rebase*, sin *squash* y sin
+      `force push`: excepción puntual a la preferencia de `docs/12` §2.2 por el historial lineal, salvo que el
+      responsable decida formalmente actualizar las referencias y cambiar la política. Después, cada unidad
+      de la Fase 7 en su propia rama `feature/frontend-<unidad>` desde `main` actualizado.
+  22. **Formato regional (F7-22).** Locale **`es-MX`**; zona horaria de negocio **`America/Mexico_City`**
+      (decisión del responsable, 2026-10-05). La API sigue en UTC; la conversión solo se hace al presentar.
+      Las fechas sin hora (`as_of_date`, `period_start`…) se muestran sin conversión de zona; las marcas de
+      tiempo (`generated_at`, `last_movement_at`, `started_at`…) se convierten de UTC a `America/Mexico_City`.
+      Cifras sin `float`: se muestran el `display` del servidor o el texto exacto, **sin separador de miles**,
+      para que coincidan carácter a carácter con la narrativa verificada de U6 (`DT-069`); el separador
+      decimal de `es-MX` (`.`) coincide con el de la API. Una cifra que la API entrega sin `display`
+      (p. ej. `raw_quantity` en la lista) se presenta con la misma regla de `DT-069` (6 decimales
+      `ROUND_HALF_EVEN` sobre el texto, sin ceros finales), solo como presentación y nunca para decidir.
+  23. **CORS (F7-23).** Proxy del servidor de desarrollo de Vite: el frontend llama a `/api` y el proxy lo
+      reenvía a `127.0.0.1:8000`. FastAPI no cambia ni activa CORS en esta fase (cierra el aplazamiento de
+      `DT-066` punto 11 para el desarrollo local). En el futuro (Fase 12): frontend estático + proxy inverso
+      en el mismo origen `/api` (`docs/12` §3).
+  24. **Partición (F7-24).** F7a — base, navegación, autenticación local y cliente de API (US-070) · F7b —
+      productos e inventario (US-072) · F7c — recomendaciones, desglose y explicación (US-073, US-074,
+      US-048) · F7d — predicciones e historial (US-075, RF-009). Cada unidad con su rama, su PR y su
+      trazabilidad; ninguna mezcla trabajo de las Fases 5, 8, 10, 11, 12 o 13.
+- **Contexto:** dossier de la Fase 7 (2026-10-05), veredicto «READY WITH CONDITIONS». `docs/08` §1–§10 se
+  escribió para el sistema completo con Entra ID; `docs/08` §11 fijó las vistas V1 pero citaba una ruta de
+  explicación ya obsoleta; `DT-066` aplazó CORS a la Fase 7; ningún documento fijaba el stack del frontend,
+  la autenticación local de la interfaz ni el formato regional.
+- **Alternativas:** token en `sessionStorage` o selector de identidades; CORS en FastAPI (cambia U5);
+  servir la interfaz desde FastAPI; formatear el desglose en el cliente; TypeScript 6/7 (incompatible con
+  el linter y el generador); *squash* o *rebase* para la integración (rompe los hashes citados).
+- **Razón:** la interfaz V1 es un consumidor fiel de un contrato de solo lectura ya validado: no añade
+  reglas, no toca el backend y deja cada pieza externa (Entra ID, CORS de producción, ML) detrás de una
+  frontera que sus fases sustituyen.
+- **Consecuencias:** U1–U6 no cambian. `docs/08` §12 registra las diferencias con §1–§10. Las Fases 8
+  (`AuthProvider`), 12 (build estático, `/api` relativa) y 13 (lint, tipos y pruebas sin interacción)
+  heredan estas decisiones.
+- **Estado:** `ACEPTADA` (2026-10-05, decisión del responsable al autorizar la Fase 7). **Fase 7
+  autorizada para implementación; no implementada.** Separada de `DT-047`, que cubre U1–U6. Siguen
+  abiertas, sin bloquear la Fase 7: `DT-P16`, `DT-P11`, `DT-P13`, `DT-P23`, `BR-X03`, `DT-P08`, `DT-P07`,
+  `DT-010`, `DT-011`, `DT-021`, `DT-P03` y `DT-P04`.
 
 ## Decisiones deliberadamente NO tomadas
 

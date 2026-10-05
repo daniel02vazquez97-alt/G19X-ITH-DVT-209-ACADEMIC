@@ -1,6 +1,6 @@
 # 03 — Arquitectura
 
-**Estado:** Versión 1.0 — Etapa 0 (diseño, no implementado) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §16, arquitectura de implementación de la Etapa 2 (`DT-043`, `DT-047`); §§1–15 no cambian · **Versión 1.3** (2026-10-01) — §16.6: migraciones en `backend/db/migrations/` (`DT-055`) · **Versión 1.4** (2026-10-02) — notas en §4 y §5.1: frontera de `forecasting` y `runs` (`DT-046` `ACEPTADA`); estado de §16 · **Versión 1.5** (2026-10-03) — U4 autorizada, no implementada: §16.7, subcomando `recommend` explícito (`DT-058`); estado de §16 · **Versión 1.6** (2026-10-03) — U5 autorizada, no implementada: `app/db/read/` en §16.2 y §16.6, `python -m app.api` en §16.7; estado de §16 · **Versión 1.7** (2026-10-04) — U6 autorizada, no implementada: `genai` (`DT-068`, `DT-069`) en §16.2, §16.4, §16.5 y §16.7; `DocumentRetriever` fuera de U6 · **Versión 1.8** (2026-10-04) — U6 implementada: estado en §16 y §16.7
+**Estado:** Versión 1.0 — Etapa 0 (diseño, no implementado) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §16, arquitectura de implementación de la Etapa 2 (`DT-043`, `DT-047`); §§1–15 no cambian · **Versión 1.3** (2026-10-01) — §16.6: migraciones en `backend/db/migrations/` (`DT-055`) · **Versión 1.4** (2026-10-02) — notas en §4 y §5.1: frontera de `forecasting` y `runs` (`DT-046` `ACEPTADA`); estado de §16 · **Versión 1.5** (2026-10-03) — U4 autorizada, no implementada: §16.7, subcomando `recommend` explícito (`DT-058`); estado de §16 · **Versión 1.6** (2026-10-03) — U5 autorizada, no implementada: `app/db/read/` en §16.2 y §16.6, `python -m app.api` en §16.7; estado de §16 · **Versión 1.7** (2026-10-04) — U6 autorizada, no implementada: `genai` (`DT-068`, `DT-069`) en §16.2, §16.4, §16.5 y §16.7; `DocumentRetriever` fuera de U6 · **Versión 1.8** (2026-10-04) — U6 implementada: estado en §16 y §16.7 · **Versión 1.9** (2026-10-05) — Fase 7 autorizada, no implementada: interfaz en §16.2 y CORS/proxy en la tabla de integraciones (`DT-070`)
 
 > Este documento describe la arquitectura **objetivo**. Nada de lo aquí descrito está implementado
 > todavía. Las decisiones que lo sustentan están en `docs/15-decisiones-tecnicas.md`.
@@ -237,7 +237,7 @@ asistente de IA opera bajo la identidad del usuario y hereda sus restricciones (
 
 | Origen → Destino | Protocolo | Notas |
 |---|---|---|
-| React → FastAPI | HTTPS / REST JSON | Contrato OpenAPI generado; CORS restringido a orígenes conocidos |
+| React → FastAPI | HTTPS / REST JSON | Contrato OpenAPI generado; CORS restringido a orígenes conocidos. *(Fase 7, `DT-070` punto 23, 2026-10-05: sin CORS; la interfaz llama a `/api` en el mismo origen, mediante el proxy del servidor de desarrollo y, en la Fase 12, un proxy inverso)* |
 | FastAPI → PostgreSQL | TCP/TLS, pool de conexiones | Migraciones versionadas con credencial separada |
 | FastAPI → Azure ML | HTTPS al endpoint del modelo | Con reintentos acotados y *timeout*; ante fallo, baseline local |
 | FastAPI → Azure AI Search | HTTPS, SDK oficial | Autenticación por Entra ID preferida sobre clave |
@@ -405,7 +405,7 @@ manifiesto), nunca su código.
 | Servicios de aplicación (batch) | `backend/app/runs/` | Ejecuciones de forecast y de recomendaciones: leer, llamar, persistir con trazabilidad | `db`, `forecasting`, `supply_engine` | U3–U4 |
 | Routers + Auth | `backend/app/api/` | Contrato HTTP de solo lectura en V1 (`docs/07` §7), autenticación y roles | `db` | U5 |
 | `genai_service` | `backend/app/genai/` | Contexto de explicación, `TextGenerator` (plantilla primero), verificación de cifras (`docs/09` §14 y §14.5). U6: `ExplanationContext`, `Fact`, plantilla `template/1.0.0`, verificador y degradación (`DT-068`, `DT-069`) | **Solo la biblioteca estándar**: no importa `api`, `db`, `psycopg`, `supply_engine`, `forecasting` ni `runs`; no recibe conexiones. `api` → `genai` | U6 |
-| Interfaz | `frontend/` | Vistas de `docs/08` §11 | API | Fase 7 |
+| Interfaz | `frontend/` | Vistas de `docs/08` §11 y §12 (`DT-070`): React + TypeScript + Vite, cliente fino con tipos generados del OpenAPI, sin reglas de negocio | API (`/api`), nunca la base | Fase 7 (autorizada, no implementada) |
 | Entrenamiento y evaluación | `ml/` | Backtesting, Nivel 1 y Nivel 2 | `app.forecasting`, `app.supply_engine` | Fase 5 |
 
 Los «servicios de aplicación» y los «repositorios» de §3 **no** se convierten en carpetas genéricas:

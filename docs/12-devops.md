@@ -1,6 +1,6 @@
 # 12 — Estrategia DevOps
 
-**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-10-03) — §5: correspondencia entre los entornos y `APP_ENV` para la API de U5 (`DT-065`)
+**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-10-03) — §5: correspondencia entre los entornos y `APP_ENV` para la API de U5 (`DT-065`) · **Versión 1.3** (2026-10-05) — §2.2: excepción de merge commit para la integración inicial de U1–U6; §3.1: imagen `frontend` en el mismo origen que `/api` (`DT-070`)
 
 > No se crean workflows, imágenes ni recursos en esta etapa.
 
@@ -39,6 +39,9 @@ Ramas cortas: de horas a pocos días. Una rama de dos semanas genera conflictos 
 - Todos los *checks* del pipeline en verde.
 - Rama actualizada respecto a `main` antes del merge.
 - Historial lineal (*squash merge* preferido).
+- *Excepción puntual (2026-10-05, `DT-070` punto 21):* la integración inicial de `feat/u1-supply-engine` (U1–U6) en
+  `main` se hace por PR con **merge commit** normal, sin *rebase*, *squash* ni `force push`, para conservar los
+  commits y los hashes citados en `project/status.md`. Las ramas posteriores siguen la regla general.
 - Sin `force push`.
 
 ### 2.3 Convenciones
@@ -56,7 +59,7 @@ Ramas cortas: de horas a pocos días. Una rama de dos semanas genera conflictos 
 | Imagen | Contenido |
 |---|---|
 | `backend` | API FastAPI + motores de abastecimiento y predicción |
-| `frontend` | Build de React servido por un servidor estático ligero |
+| `frontend` | Build de React servido por un servidor estático ligero, detrás de un proxy inverso en el mismo origen que `/api` (`DT-070` punto 23); Node 24 LTS en la etapa de construcción |
 | `db` | PostgreSQL oficial (solo en desarrollo; en la nube, servicio gestionado) |
 | `jobs` | Procesos por lotes (ingesta, forecast, recomendaciones). Puede compartir base con `backend` |
 

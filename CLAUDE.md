@@ -352,8 +352,11 @@ a `DT-067` `ACEPTADA`; `backend/app/api/`, `backend/app/db/read/`, `.env.example
 `APP_ENV=local`; `docs/07` §7.4 y §7.5). Sus pruebas sin base van en `backend/tests/api` (sin `__init__.py`:
 `python -m unittest discover -s tests/api -t tests/api`, con los grupos `api` y `test` instalados). **U6 está implementada y validada**
 (2026-10-04: `DT-068` y `DT-069` `ACEPTADA`; `backend/app/genai/`, solo biblioteca estándar, y el endpoint 14
-`GET /api/v1/recommendations/{recommendation_id}/explanation`; `docs/09` §14.5 y §14.6). Con U6 termina el orden de `DT-047`;
-lo siguiente requiere su propia autorización.
+`GET /api/v1/recommendations/{recommendation_id}/explanation`; `docs/09` §14.5 y §14.6; commits `55e0c39` y `5861fda`). Con U6 termina el orden de `DT-047`;
+lo siguiente requiere su propia autorización. **La Fase 7 (interfaz React) está autorizada para implementación y no
+está implementada** (2026-10-05: `DT-070`, separada de `DT-047`; `docs/08` §12): `frontend/` con versiones fijadas, autenticación
+simulada, proxy de `/api`, sin reglas de negocio en el cliente; unidades F7a–F7d, cada una con su rama `feature/frontend-<unidad>`
+desde `main` tras integrar U1–U6 por PR con merge commit.
 Restricciones vigentes, que se levantan solo por instrucción explícita:
 
 - **No escribir código de aplicación** hasta que el responsable autorice la primera unidad de

@@ -1,6 +1,6 @@
 # 08 — Diseño del frontend
 
-**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-03 · **Versión 1.1** (2026-09-30) — §11, vistas frente a los contratos de la Etapa 2; §§1–10 no cambian
+**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-03 · **Versión 1.1** (2026-09-30) — §11, vistas frente a los contratos de la Etapa 2; §§1–10 no cambian · **Versión 1.2** (2026-10-05) — Fase 7 autorizada, no implementada: §12, concreción y diferencias con §1–§10 (`DT-070`); ruta de la explicación corregida en §11; notas en §4.1 y §8
 
 > No se escribe código React en esta etapa. Este documento define vistas, componentes y flujos.
 
@@ -52,6 +52,7 @@ flowchart TD
 ## 4. Vistas
 
 ### 4.1 Login
+*(Fase 7, `DT-070`: autenticación simulada con token `dev-…` validado con `/me`; Entra ID llega con la Fase 8. Ver §12.)*
 - Autenticación con Microsoft Entra ID; no hay formulario de contraseña propio.
 - Redirección al proveedor de identidad y retorno con token; sesión renovada de forma silenciosa.
 - Estados: no autenticado · autenticando · error de autenticación · sin permisos asignados.
@@ -202,6 +203,8 @@ Disparar recálculo → confirmación con alcance → seguimiento asíncrono →
 
 ## 8. Autenticación en el cliente
 
+*(Fase 8. En la Fase 7 la autenticación es simulada, `DT-070` y §12.)*
+
 - MSAL para React con **flujo de código de autorización con PKCE**, que es el recomendado para SPA.
 - Tokens en memoria; renovación silenciosa; sin almacenar credenciales.
 - El token se adjunta a cada llamada a la API.
@@ -241,7 +244,7 @@ implementados y estables (Fase 7). Esta tabla fija qué consume cada vista y de 
 | Inventario | Existencia, tránsito total, posición contable, líneas abiertas | `/inventory`, `/inventory/{product_id}` | Hechos | Los cuatro | Sí, sin filtro «bajo el punto de reorden» (`docs/07` §7.3) |
 | Predicciones | Serie con banda de incertidumbre, método, versión | `/forecasts`, `/products/{id}/forecast` | ML / baseline | Los cuatro | Tras U3 |
 | Recomendaciones | Lista y detalle con `CalculationBreakdown` | `/recommendations`, `/recommendations/{id}` | Motor | Los cuatro | Tras U4; **sin** urgencia ni acciones |
-| Explicación | Texto verificado | `/assistant/explain/{id}` (U6) | IA explica cifras del motor | Los cuatro | Tras U6 |
+| Explicación | Texto verificado | `GET /api/v1/recommendations/{id}/explanation` (U6, `DT-068`; hasta el 2026-10-05 esta fila decía `/assistant/explain/{id}`) | Plantilla determinista que explica cifras del motor | Los cuatro | Tras U6 |
 | Dashboard, Riesgos | Críticos, sobreinventario | — | Motor | — | **Aplazadas**: dependen de `BR-X03` |
 | Proveedores, Administración | — | — | — | — | **Aplazadas** con sus endpoints |
 
@@ -251,3 +254,30 @@ visible: la cantidad es provisional y no es una recomendación de negocio (`DT-0
 entrada que pedía RNF-012 («ordenada por urgencia») no puede construirse hasta que exista una escala
 de urgencia (`BR-X03`); mientras tanto, la lista de recomendaciones se ordena por los campos que la
 API admite y lo dice.
+
+## 12. Fase 7 — concreción y diferencias con §1–§10 (`DT-070`)
+
+*Añadido el 2026-10-05 al autorizar la Fase 7. **Fase 7 autorizada para implementación; no implementada.**
+Las decisiones completas están en `DT-070` (`docs/15`). Esta sección dice qué cambia, para la V1, respecto
+de §1–§10, que siguen describiendo el sistema completo.*
+
+| § | Dice | En la Fase 7 (V1) |
+|---|---|---|
+| §3, §4.1, §8 | Login con Entra ID, MSAL y PKCE | **Autenticación simulada** (RF-017): token `dev-…` validado con `GET /api/v1/me`, solo en memoria; al recargar se vuelve a entrar; 401 → login; 403 → «Sin permiso para ver esto». MSAL y Entra ID llegan con la Fase 8 tras el mismo `AuthProvider` |
+| `docs/03` (React → FastAPI) | CORS restringido a orígenes conocidos | Sin CORS: el servidor de desarrollo hace de **proxy** de `/api` hacia `127.0.0.1:8000`; en producción, mismo origen detrás de un proxy inverso (Fase 12) |
+| §4.2, US-071, RNF-012 | Dashboard priorizado por urgencia | **Fuera de la Fase 7** (`BR-X03`); no aparece como funcionalidad activa |
+| §4.7, US-073 | Atender, descartar o convertir; urgencia y estado | Lista y detalle **sin acciones** (V1 de solo lectura, `DT-059`) y sin urgencia; orden por `sku`, `recommended_quantity` o `suggested_order_date`, y la vista lo dice |
+| §4.4, US-072 | Filtro «por debajo del punto de reorden», cobertura en días | Fuera (`docs/07` §7.3, `DT-P19`, `BR-X03`) |
+| §4.6, US-075 | Banda de incertidumbre; filtro por horizonte | Banda **nominal** (`confidence_level`, hoy 0.80) de los baselines de U3, sin afirmar cobertura validada (US-055, Fase 5); aviso con `INSUFFICIENT_HISTORY`; historia y forecast separados; sin filtro de horizonte (la API no lo tiene) |
+| §4.3 | Columnas existencia, cobertura, riesgo, recomendación abierta; filtros ABC y rotación | Columnas del maestro que entrega `/products`; sin ABC ni rotación (`DT-029`), sin cobertura ni riesgo |
+| §4.3, §4.6, §4.7 | Filtros por categoría y proveedor | Solo por identificador explícito: la API no tiene `/categories` ni `/suppliers` y la interfaz **no fabrica catálogos** |
+| §4.8.5, §4.9, US-076 | Riesgos | Fuera (`BR-X03`) |
+| §4.8.6, §4.5 | Proveedores con desempeño | Solo las condiciones de `/products/{id}`; vista de proveedores fuera |
+| §4.8.7, §4.10 | Explicación del asistente con fuentes citadas | Explicación determinista de U6 (`GET /recommendations/{id}/explanation`), sin fuentes ni chat; el asistente es de la Fase 10 |
+| §4.11 | Administración | Fuera (escrituras); solo el detalle de una ejecución (`/runs/{id}`) como enlace para PLANNER y ADMIN |
+| §9 Formatos | Formato local del negocio | `es-MX` y zona `America/Mexico_City`; cifras sin `float` y sin separador de miles (coinciden con la narrativa de U6) |
+| §10 | Identidad visual pendiente | Estilo neutro con tokens de diseño; la identidad corporativa sigue pendiente |
+
+**Vistas de la Fase 7:** Productos, Inventario, Detalle de producto (con historial para ANALYST, PLANNER y
+ADMIN), Recomendaciones (lista y detalle con `CalculationBreakdown` y explicación) y Predicciones. Partición
+en unidades F7a–F7d (`DT-070` punto 24).
