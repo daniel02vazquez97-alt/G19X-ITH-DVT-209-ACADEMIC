@@ -1,8 +1,9 @@
 # Motor Predictivo de Abastecimiento de Inventarios
 
-> **Estado actual: ETAPA 0 — Preparación, análisis y documentación base.**
-> El sistema todavía **no está implementado**. Este repositorio contiene, por ahora, únicamente la
-> documentación que fundamenta y planifica su construcción.
+> **Estado actual (2026-09-30): ETAPA 2 — Sistema principal, iniciada** (arquitectura y fundación).
+> La Etapa 1 — Datos está completada: generador de datos sintéticos 0.4.0 y dataset
+> `ds-6c8ad65b4999` validado. El sistema principal todavía **no está implementado**: sus contratos y su
+> orden de construcción están documentados. Estado detallado en [`project/status.md`](project/status.md).
 
 ---
 
@@ -112,6 +113,10 @@ Las carpetas `backend/`, `frontend/`, `ml/`, `data/`, `infra/` y `.github/workfl
 existen**: se crearán cuando comience la fase correspondiente.
 
 ## Estado actual
+
+**Etapa 2 iniciada (2026-09-30)** · Etapa 1 completada (2026-09-29). El resumen de esta sección
+describe el cierre de la Etapa 0 y se conserva como historial; el estado vigente está en
+[`project/status.md`](project/status.md).
 
 **ETAPA 0.1 — AUDITORÍA COMPLETADA.** Documentación base creada, auditada y corregida.
 Resultado: **APROBADA CON OBSERVACIONES**; pendiente de aprobación del responsable.

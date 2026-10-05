@@ -1,6 +1,6 @@
 # Roadmap del proyecto
 
-**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1
+**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — cierre de la Etapa 1, inicio de la Etapa 2 y orden de implementación propuesto (`DT-047`) · **Versión 1.3** (2026-10-01) — contrato de U1 cerrado (`DT-048` a `DT-052`) y pendiente `DT-P22` · **Versión 1.4** (2026-10-01) — `DT-P22` cerrada; contrato de U1 sin pendientes · **Versión 1.5** (2026-10-01) — U1 implementada · **Versión 1.6** (2026-10-02) — U2 implementada (2026-10-01) y U3 autorizada para implementación (`DT-056`, `DT-057`) · **Versión 1.7** (2026-10-02) — U3 implementada y validada · **Versión 1.8** (2026-10-03) — U4 autorizada para implementación, no implementada (`DT-058` a `DT-063`) · **Versión 1.9** (2026-10-03) — U4 implementada y validada · **Versión 1.10** (2026-10-03) — U5 autorizada para implementación, no implementada (`DT-064` a `DT-067`) · **Versión 1.11** (2026-10-03) — U5 implementada y validada · **Versión 1.12** (2026-10-04) — U6 autorizada para implementación, no implementada (`DT-068`, `DT-069`) · **Versión 1.13** (2026-10-04) — U6 implementada y validada; termina el orden de `DT-047` · **Versión 1.14** (2026-10-05) — Fase 7 autorizada para implementación, no implementada (`DT-070`)
 
 ## Principios de secuenciación
 
@@ -17,9 +17,44 @@
 > recomendaciones útiles y auditables desde temprano, y cuando llegue el modelo solo mejora una
 > entrada de un motor ya probado. Invertir el orden retrasaría todo el valor hasta que el ML funcione.
 
+## Etapas
+
+| Etapa | Fases | Estado |
+|---|---|---|
+| **Etapa 0 — Preparación** | Fase 0 | ✅ Superada (2026-09-04, aprobada con observaciones) |
+| **Etapa 1 — Datos** | Fase 1 | ✅ **COMPLETADA** (2026-09-29). Generador terminado: `generator_version` **0.4.0**, dataset **`ds-6c8ad65b4999`** publicado y validado (**51/51** comprobaciones del Componente 8, 0 fallos), **582 pruebas** en verde. Cierre autorizado por el responsable el 2026-09-30 |
+| **Etapa 2 — Sistema principal** | Fases 2 a 15 | 🟡 **INICIADA** (2026-09-30). Primer bloque: arquitectura y fundación — contratos y orden de construcción. U1 (motor V1) y U2 (PostgreSQL + ingesta) implementadas el 2026-10-01 |
+
+**Lo que la Fase 1 listaba y pasa a la Etapa 2.** El «proceso de ingesta y validación con marca de
+origen» (`US-011`) se diseña en la Etapa 2 (`docs/04` §9, `DT-044`) y se implementa en su unidad U2.
+Los umbrales de aceptación del modelo (`DT-P04`) siguen pendientes y se fijan en la Fase 5, con el
+dataset 0.4.0. El resto de criterios de la Fase 1 se cumplió con el generador.
+
+### Orden de implementación de la Etapa 2 (`DT-047`: `ACEPTADA` en cuanto a U1, U2, U3, U4, U5 y U6)
+
+Las fases siguen siendo el mapa; las **unidades** son el orden en que se construye. Cada unidad
+requiere su propia autorización.
+
+| Unidad | Contenido | Fase | Historias | Necesita antes |
+|---|---|---|---|---|
+| **U1** | `supply_engine` V1: biblioteca pura + pruebas calculadas a mano (`docs/06` §16) | 4 (parte pura) | US-040 (parcial: V1 no usa `σ_L`, `BR-P02`), US-041, US-042, US-045 (cálculo) | `DT-P14`, `DT-P15` y `DT-P20` cerradas (2026-09-30 y 2026-10-01); contrato cerrado con `DT-048` a `DT-052` (2026-10-01, `docs/06` §16.11). `DT-P22`, `DT-053` y `DT-054` cerradas (2026-10-01). **Ninguna dependencia nueva**. ✅ **Implementada** (2026-10-01): `backend/app/supply_engine`, 146 pruebas |
+| **U2** | PostgreSQL + migraciones + ingesta validada del 0.4.0 (`docs/04` §9) | 2 | US-011, US-020, US-021 | Controlador de PostgreSQL y PostgreSQL local en contenedor, autorizados el 2026-10-01 (`DT-055`); `DT-044` `ACEPTADA`. ✅ **Implementada** (2026-10-01): `backend/app/db`, `backend/app/ingestion`, `backend/db/migrations/0001_dataset_tables.sql`, `infra/docker-compose.yml`; dataset `ds-6c8ad65b4999` cargado e idempotente; 35 pruebas sin base + 43 de integración (`docs/04` §9.9) |
+| **U3** | `ForecastProvider` + baselines + forecasts persistidos (`docs/05` §19) | 4 (baseline) | US-050, US-057 (parcial) | `DT-P17` cerrada por `DT-056`; `DT-046` `ACEPTADA`; `DT-057` (persistencia y ejecución). ✅ **Implementada y validada (2026-10-02)**: `backend/app/forecasting`, `backend/app/runs`, migración `0002`; ejecución real 2025-12-31 con 3 990 forecasts (1 330 primarios, sin respaldos); criterios de `docs/05` §19.9 cumplidos |
+| **U4** | Ejecución de recomendaciones: base → forecast → motor → persistencia con trazabilidad (`docs/04` §9.11, `docs/06` §16.13) | 4 | US-045, US-046 | `DT-P18` cerrada por `DT-059` y `DT-P21` por `DT-058` (2026-10-03); `DT-058` a `DT-063` `ACEPTADA`. **Ninguna dependencia nueva**. ✅ **Implementada y validada (2026-10-03)**: `runs/recommendation*.py`, migración `0003` y `python -m app.runs recommend --as-of`; ejecución real 2025-12-31 con 100 evaluaciones (50 `RECOMMEND`, 40 `NO_NEED`, 10 `NOT_CALCULABLE`); criterios de `docs/06` §16.13.4 cumplidos, en local y en Docker |
+| **U5** | API de solo lectura con autenticación local y roles (`docs/07` §7) | 3 | US-030, US-033 (US-031 queda para después: V1 no expone proveedores ni órdenes) | `DT-064` (FastAPI 0.141.1, Starlette 1.3.1, Pydantic 2.13.5, uvicorn 0.52.4; pruebas con `httpx2` 2.13.1), `DT-065`, `DT-066` y `DT-067` `ACEPTADA` (2026-10-03). ✅ **Implementada y validada (2026-10-03)**: `backend/app/api`, `backend/app/db/read`, `.env.example`; 13 endpoints de solo lectura, `python -m app.api` solo con `APP_ENV=local`; criterios de `docs/07` §7.5 cumplidos, en local y en Docker |
+| **U6** | Explicación por plantilla + verificación de cifras (`docs/09` §14) | 4 | US-048 | `DT-068` (endpoint 14 `GET /api/v1/recommendations/{recommendation_id}/explanation`, contexto, `facts[]`, plantillas) y `DT-069` (presentación, verificación y degradación RS-010) `ACEPTADA` (2026-10-04). **Ninguna dependencia nueva**. ✅ **Implementada y validada (2026-10-04)**: `backend/app/genai`, endpoint 14, `template/1.0.0`; las 100 evaluaciones reales explicadas sin `DEGRADED`; criterios de `docs/09` §14.6 cumplidos, en local y en Docker |
+| Después | Interfaz (7) · ML (5) · Power BI (11) · Entra ID (8) · AI Search y OpenAI (9–10) · Docker y CI/CD (12–13) · QA (14) · Entrega (15) | — | — | Sus bloqueos de la tabla final |
+
+**Por qué el motor va primero** aunque el mapa ponga la Fase 4 después de las Fases 2 y 3: la parte
+pura del motor no depende técnicamente de ninguna de ellas (RNF-001) —sí su persistencia, su batch y
+sus endpoints, que van después— y no requiere dependencias nuevas. Sus **reglas** están cerradas
+(`DT-031`); su contrato de implementación (`DT-045`) quedó aceptado al autorizar U1, y `DT-P14`,
+`DT-P15` y `DT-P20` ya están cerradas. Los detalles del contrato se cerraron con `DT-048` a `DT-052`
+(2026-10-01) y `DT-P22`; no queda ninguna decisión pendiente. Razonamiento completo en `DT-047`.
+
 ---
 
-## FASE 0 — Preparación 🟡 (etapa actual — entregables completos, pendiente de aprobación)
+## FASE 0 — Preparación ✅ (superada)
 
 - **Objetivo:** dejar el repositorio preparado para un desarrollo ordenado, incremental y documentado.
 - **Entradas:** definición de alcance del responsable del proyecto.
@@ -33,7 +68,7 @@
 - **Criterio de finalización:** todos los documentos existen, son coherentes entre sí, los supuestos
   están marcados como tales y no hay hipótesis presentadas como requisitos.
 
-## FASE 1 — Datos
+## FASE 1 — Datos ✅ (completada el 2026-09-29; ingesta trasladada a la Etapa 2)
 
 - **Objetivo:** disponer de un dataset sintético que represente un escenario empresarial verosímil, y
   del proceso de ingesta que permitirá sustituirlo por datos reales.
@@ -150,6 +185,11 @@
   (`US-075` necesita el intervalo de `US-055`).
 - **Criterio de finalización:** todas las vistas navegables con datos reales de la API; el desglose
   del cálculo es visible en el detalle de producto; sin lógica de negocio duplicada en el cliente.
+- **Estado (2026-10-05):** ✅ **Autorizada para implementación — ⬜ no implementada** (`DT-070`; `docs/08` §12). Alcance V1:
+  US-070, US-072 (sin «bajo el punto de reorden»), US-073 (sin acciones), US-074, US-048, historial y US-075 con
+  banda nominal; US-071 y US-076 fuera por `BR-X03`. Autenticación simulada (la real es la Fase 8). Unidades:
+  F7a base, navegación, autenticación y cliente de API → F7b productos e inventario → F7c recomendaciones, desglose
+  y explicación → F7d predicciones e historial. Antes: PR de U1–U6 a `main` con merge commit.
 
 ## FASE 8 — Microsoft Entra ID
 
@@ -290,7 +330,7 @@ Estas fases **no pueden completarse** sin una decisión o una entrega del negoci
 
 | Fase | Bloqueo |
 |---|---|
-| 4 — Motor de abastecimiento | Parámetros de política: nivel de servicio, política de revisión, umbrales de riesgo y horizonte de cobertura (BR-X01, BR-X02, BR-X03, BR-X13); calendario laboral para fijar la conversión de granularidad (BR-X06, `DT-019`) |
+| 4 — Motor de abastecimiento | Parámetros de política: nivel de servicio, política de revisión, umbrales de riesgo y horizonte de cobertura (BR-X01, BR-X02, BR-X03, BR-X13); calendario laboral para fijar la conversión de granularidad (BR-X06, `DT-019`). **Dentro del entorno sintético, V1 los puentea** con las reglas provisionales de `DT-031`, salvo los umbrales de riesgo: sin `BR-X03` no hay clasificación de riesgo ni urgencia |
 | 5 — Machine Learning | Ninguno del negocio para avanzar; los **objetivos** de Nivel 2 sí requieren BR-X01 y BR-X04, pero la comparación contra el baseline es relativa y no los necesita |
 | 6 — Azure ML | Autorización para provisionar recursos y presupuesto |
 | 8 — Entra ID | Validación de roles y mapeo con grupos organizacionales |

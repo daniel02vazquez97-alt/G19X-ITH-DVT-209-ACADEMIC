@@ -2,7 +2,7 @@
 
 > Este archivo es la **fuente de verdad operativa** para cualquier agente de IA que trabaje sobre este repositorio.
 > Debe leerse **completo** al inicio de cada sesión, antes de cualquier modificación.
-> Última actualización: 2026-09-29 · Etapa vigente: **ETAPA 1 — Datos** (Fase 1, en progreso)
+> Última actualización: 2026-10-02 · Etapa vigente: **ETAPA 2 — Sistema principal** (iniciada: arquitectura y fundación) · Etapa 1 — Datos: **completada**
 
 ---
 
@@ -287,8 +287,18 @@ data/
 > final promociona el resultado a `output/`. El directorio existe **solo durante la ejecución**: se
 > elimina al terminar, bien o mal, y está excluido de Git por la regla `tmp/` del `.gitignore`.
 
-Carpetas que **aún no existen** y se crearán cuando su fase comience: `backend/`, `frontend/`,
-`ml/`, `infra/`, `.github/workflows/`.
+`backend/` existe desde U1 (2026-10-01): `backend/app/supply_engine/` (motor V1, solo biblioteca
+estándar) y `backend/tests/`, con `backend/pyproject.toml` (Python ≥ 3.11, sin dependencias
+obligatorias). U2 (2026-10-01) añade `backend/app/db/` (conexión y ejecutor de migraciones),
+`backend/app/ingestion/` (ingesta del dataset 0.4.0), `backend/db/migrations/` (SQL versionado),
+`backend/tests/ingestion/` y `backend/tests/db/`, y el grupo opcional `db` (`psycopg`) del `pyproject`.
+U3 (2026-10-02) añade `backend/app/forecasting/` (`ForecastProvider` y baselines V1, solo biblioteca
+estándar), `backend/app/runs/` (ejecución `forecast`), la migración `0002_forecast_tables.sql`,
+`backend/tests/forecasting/` y `backend/tests/runs/`.
+`infra/` existe desde U2 y contiene solo `docker-compose.yml` (PostgreSQL 16 local, `DT-055`).
+
+Carpetas que **aún no existen** y se crearán cuando su fase comience: `frontend/`, `ml/`,
+`.github/workflows/`.
 
 ## 15. Flujo de trabajo esperado del agente
 
@@ -323,8 +333,48 @@ Antes de sobrescribir **cualquier** archivo existente: leerlo completo y verific
 
 ## 17. Restricciones vigentes
 
+**Etapa 2 — Sistema principal: iniciada el 2026-09-30** por autorización explícita del responsable.
+La **Etapa 1 — Datos está completada**: `generator_version` 0.4.0, dataset `ds-6c8ad65b4999`
+validado (51/51 comprobaciones, 0 fallos) y 582 pruebas en verde.
+
+El primer bloque de la Etapa 2 es **arquitectura y fundación**: los contratos del sistema principal
+están en `docs/03` §16, `docs/04` §9, `docs/05` §19, `docs/06` §16, `docs/07` §7 y `docs/09` §14, y el
+orden de construcción en `DT-047` (`DT-043` y `DT-045` `ACEPTADA`; `DT-047` `ACEPTADA` en cuanto a U1,
+U2, U3, U4, U5 y U6; `DT-044` `ACEPTADA` el 2026-10-01; `DT-046` `ACEPTADA` el 2026-10-02). El contrato de U1 está cerrado en `docs/06` §16.11 (`DT-048` a
+`DT-052`, `DT-P22`, `DT-053` y `DT-054`), sin decisiones pendientes. **U1 está implementada**
+(`backend/app/supply_engine`, 146 pruebas en verde). **U2 está implementada** (2026-10-01, `DT-044`,
+`DT-055`): PostgreSQL 16, migraciones SQL y la ingesta validada, atómica e idempotente del 0.4.0
+(`docs/04` §9.9). **U3 está implementada y validada** (2026-10-02: `DT-P17` cerrada por `DT-056`, `DT-046` y
+`DT-057` `ACEPTADA`; `docs/05` §19.8 a §19.10). **U4 está implementada y validada** (2026-10-03:
+`DT-P18` y `DT-P21` cerradas; `DT-058` a `DT-063` `ACEPTADA`; `backend/app/runs/recommendation*.py`, migración
+`0003`, `python -m app.runs recommend --as-of`; `docs/04` §9.11 y `docs/06` §16.13). **U5 está implementada y validada** (2026-10-03: `DT-064`
+a `DT-067` `ACEPTADA`; `backend/app/api/`, `backend/app/db/read/`, `.env.example`; `python -m app.api` solo con
+`APP_ENV=local`; `docs/07` §7.4 y §7.5). Sus pruebas sin base van en `backend/tests/api` (sin `__init__.py`:
+`python -m unittest discover -s tests/api -t tests/api`, con los grupos `api` y `test` instalados). **U6 está implementada y validada**
+(2026-10-04: `DT-068` y `DT-069` `ACEPTADA`; `backend/app/genai/`, solo biblioteca estándar, y el endpoint 14
+`GET /api/v1/recommendations/{recommendation_id}/explanation`; `docs/09` §14.5 y §14.6; commits `55e0c39` y `5861fda`). Con U6 termina el orden de `DT-047`;
+lo siguiente requiere su propia autorización. **La Fase 7 (interfaz React) está autorizada para implementación y no
+está implementada** (2026-10-05: `DT-070`, separada de `DT-047`; `docs/08` §12): `frontend/` con versiones fijadas, autenticación
+simulada, proxy de `/api`, sin reglas de negocio en el cliente; unidades F7a–F7d, cada una con su rama `feature/frontend-<unidad>`
+desde `main` tras integrar U1–U6 por PR con merge commit.
+Restricciones vigentes, que se levantan solo por instrucción explícita:
+
+- **No escribir código de aplicación** hasta que el responsable autorice la primera unidad de
+  `DT-047`. Cada unidad (U1, U2, …) requiere su propia autorización.
+- El generador (`data/synthetic/`) y el dataset 0.4.0 son **upstream terminado**: no se modifican, y
+  el código del sistema consume su contrato, no su código.
+- No configurar servicios reales de Azure. No crear credenciales. No hacer commits automáticamente.
+- No instalar dependencias sin autorización: cada unidad declara las suyas (`DT-043`).
+- Las reglas V1 (`DT-031`) y los criterios `SYNTHETIC_COVERAGE_CRITERION` (`DT-041`) **no son
+  políticas de negocio**; toda recomendación calculada con ellas se marca como provisional.
+
+### Registro de la Etapa 1 — Datos (completada)
+
+*Texto con el que se trabajó durante la Etapa 1; se conserva como historial. Sus restricciones quedan
+sustituidas por la lista anterior.*
+
 La Etapa 0 está superada y la **Etapa 1 — Datos fue autorizada explícitamente por el responsable
-el 2026-09-14**. Las restricciones que siguen vigentes se levantan solo por instrucción explícita:
+el 2026-09-14**. Durante la Etapa 1 rigieron estas restricciones:
 
 - No desarrollar todavía la aplicación: el trabajo actual es el **generador de datos sintéticos**.
   Backend, frontend, base de datos, ML, Azure, contenedores y CI/CD llegan en sus propias fases.

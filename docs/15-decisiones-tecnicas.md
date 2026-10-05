@@ -1,6 +1,6 @@
 # 15 — Decisiones técnicas (ADR)
 
-**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-18) — `DT-024` a `DT-030`, preparación del Componente 2 · **Versión 1.3** (2026-09-19) — `DT-031`, reglas mínimas de V1 · **Versión 1.4** (2026-09-21) — cierre de las reglas V1: `DT-031` pasa a `ACEPTADA` con trece reglas · **Versión 1.5** (2026-09-21) — `DT-032` y `DT-033`, decisiones que el Componente 2 tenía que tomar al implementarse · **Versión 1.6** (2026-09-21) — tabla canónica de identificadores de componente en `DT-030` · **Versión 1.7** (2026-09-23) — `DT-034` y `DT-035`, demanda latente persistente y sus políticas de generación · **Versión 1.8** (2026-09-24) — `DT-036` y `DT-037`, políticas sintéticas de inventario y comportamiento de proveedores; **enmienda de `DT-027`** (restricción 3) y cierre del pendiente de `data_origin` de `DT-026` · **Versión 1.9** (2026-09-24) — `DT-038` y `DT-039`, contratos de salida de los Componentes 4 y 5, tras la auditoría pre-implementación; cierre de los pendientes de `DT-034` (recorte de la demanda y contrato de `consumption.csv`) y correcciones a `DT-036` y `DT-037` · **Versión 1.10** (2026-09-26) — cierre de D-01: `DT-040` (publicación atómica del dataset, W1), regla general de incremento de `generator_version` en `DT-033`, y actualizaciones de `DT-036`, `DT-038` y `DT-039` (A2, B2, `expected_at`, autoría de los identificadores) · **Versión 1.11** (2026-09-26) — implementación del Componente 4: enmienda de `DT-037` §3 (D-C4-1, reparto de la entrega partida) y actualización de `DT-038` (D-C4-2 precondiciones, D-C4-3 lead time y disparo diario, flujos pseudoaleatorios, `metrics` pendiente) · **Versión 1.12** (2026-09-27) — cierre de D-01, opción A: elegibilidad de las órdenes `CANCELLED` sintéticas respecto de `valid_to` (`DT-039` §5.2) · **Versión 1.13** (2026-09-28) — implementación del Componente 5 (`DT-039` §13), sin cambios en ninguna regla · **Versión 1.14** (2026-09-28) — implementación del Componente 6 (`DT-037` §6, decisiones A1 y A2) y corrección de texto en `DT-040` §3 · **Versión 1.15** (2026-09-29) — implementación de W1 (`DT-040` §9, detalles pendientes resueltos) y `generator_version` 0.3.0 · **Versión 1.16** (2026-09-29) — `DT-041`, contrato e implementación del Componente 7 (sin integrar en W1); notas de redacción en `DT-030` y `DT-031` (`V1-07`, `V1-08`) · **Versión 1.17** (2026-09-29) — `DT-042`, validador del dataset e informe de calidad; integración de C7 y C8 en W1 (`DT-040`); `generator_version` 0.4.0 (`DT-033`); formas de `scenario_assignment` y `quality_report` (`DT-025`); `metrics` de `DT-038` §12 cerrado
+**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-18) — `DT-024` a `DT-030`, preparación del Componente 2 · **Versión 1.3** (2026-09-19) — `DT-031`, reglas mínimas de V1 · **Versión 1.4** (2026-09-21) — cierre de las reglas V1: `DT-031` pasa a `ACEPTADA` con trece reglas · **Versión 1.5** (2026-09-21) — `DT-032` y `DT-033`, decisiones que el Componente 2 tenía que tomar al implementarse · **Versión 1.6** (2026-09-21) — tabla canónica de identificadores de componente en `DT-030` · **Versión 1.7** (2026-09-23) — `DT-034` y `DT-035`, demanda latente persistente y sus políticas de generación · **Versión 1.8** (2026-09-24) — `DT-036` y `DT-037`, políticas sintéticas de inventario y comportamiento de proveedores; **enmienda de `DT-027`** (restricción 3) y cierre del pendiente de `data_origin` de `DT-026` · **Versión 1.9** (2026-09-24) — `DT-038` y `DT-039`, contratos de salida de los Componentes 4 y 5, tras la auditoría pre-implementación; cierre de los pendientes de `DT-034` (recorte de la demanda y contrato de `consumption.csv`) y correcciones a `DT-036` y `DT-037` · **Versión 1.10** (2026-09-26) — cierre de D-01: `DT-040` (publicación atómica del dataset, W1), regla general de incremento de `generator_version` en `DT-033`, y actualizaciones de `DT-036`, `DT-038` y `DT-039` (A2, B2, `expected_at`, autoría de los identificadores) · **Versión 1.11** (2026-09-26) — implementación del Componente 4: enmienda de `DT-037` §3 (D-C4-1, reparto de la entrega partida) y actualización de `DT-038` (D-C4-2 precondiciones, D-C4-3 lead time y disparo diario, flujos pseudoaleatorios, `metrics` pendiente) · **Versión 1.12** (2026-09-27) — cierre de D-01, opción A: elegibilidad de las órdenes `CANCELLED` sintéticas respecto de `valid_to` (`DT-039` §5.2) · **Versión 1.13** (2026-09-28) — implementación del Componente 5 (`DT-039` §13), sin cambios en ninguna regla · **Versión 1.14** (2026-09-28) — implementación del Componente 6 (`DT-037` §6, decisiones A1 y A2) y corrección de texto en `DT-040` §3 · **Versión 1.15** (2026-09-29) — implementación de W1 (`DT-040` §9, detalles pendientes resueltos) y `generator_version` 0.3.0 · **Versión 1.16** (2026-09-29) — `DT-041`, contrato e implementación del Componente 7 (sin integrar en W1); notas de redacción en `DT-030` y `DT-031` (`V1-07`, `V1-08`) · **Versión 1.17** (2026-09-29) — `DT-042`, validador del dataset e informe de calidad; integración de C7 y C8 en W1 (`DT-040`); `generator_version` 0.4.0 (`DT-033`); formas de `scenario_assignment` y `quality_report` (`DT-025`); `metrics` de `DT-038` §12 cerrado · **Versión 1.18** (2026-09-30) — Etapa 2, arquitectura y fundación: `DT-043` a `DT-047` (todas `PROPUESTA`) y pendientes `DT-P13` a `DT-P21` · **Versión 1.19** (2026-09-30) — autorización de U1: `DT-043` y `DT-045` `ACEPTADA`, `DT-047` `ACEPTADA` en cuanto a U1; `DT-P15` y `DT-P20` cerradas; `DT-P14` abierta en parte y **bloquea U1** · **Versión 1.20** (2026-10-01) — `DT-P14` **cerrada** con el estimador poblacional, `INSUFFICIENT_HISTORY` para `n = 0` y la evaluación exacta B3 (`docs/06` §16.6); ninguna fórmula V1 cambia · **Versión 1.21** (2026-10-01) — cierre del contrato de U1: `DT-048` a `DT-052` `ACEPTADA` (aclaraciones A-1 en `DT-050` y A-2 en `DT-051`), y pendiente `DT-P22`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.22** (2026-10-01) — `DT-P22` `ACEPTADA` (opción (a)): `PRODUCT_OUT_OF_VALIDITY` cubre también la vigencia que termina dentro del horizonte; cierre de `DT-049`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.23** (2026-10-01) — `DT-053` (frontera de la salida parcial) y `DT-054` (sin monotonía global de `S` frente a `L` en V1), tras el audit de pre-codificación de U1; ninguna fórmula cambia · **Versión 1.24** (2026-10-01) — `DT-044` `ACEPTADA` (cantidades en `numeric`; `quantity_on_hand ≥ 0` compatible con `BR-X09`/`V1-13`); `DT-047` aceptada para U2; `DT-055` (entorno técnico de U2) · **Versión 1.25** (2026-10-02) — U3 autorizada para implementación: `DT-P17` cerrada por `DT-056` (baselines V1); `DT-046` `ACEPTADA`; `DT-057` (persistencia y ejecución del forecast); `DT-047` aceptada para U3; pendiente nueva `DT-P23` · **Versión 1.26** (2026-10-03) — cierre documental de U4 y autorización para implementación (no implementada): `DT-058` a `DT-063` `ACEPTADA`; `DT-P18` cerrada por `DT-059` y `DT-P21` por `DT-058`; `DT-047` aceptada para U4; nota en `DT-P16`, que sigue abierta · **Versión 1.27** (2026-10-03) — U4 implementada y validada: registro de la implementación en `DT-047` y en `DT-058` a `DT-063`; ninguna decisión cambia · **Versión 1.28** (2026-10-03) — U5 autorizada para implementación (no implementada): `DT-064` (dependencias), `DT-065` (autenticación local), `DT-066` (contrato de lectura) y `DT-067` (historia, desviación poblacional) `ACEPTADA`; `DT-047` aceptada para U5 · **Versión 1.29** (2026-10-03) — U5 implementada y validada: registro de la implementación en `DT-047` y en `DT-064` a `DT-067`; ninguna decisión cambia · **Versión 1.30** (2026-10-04) — U6 autorizada para implementación (no implementada): `DT-068` (entrega y contrato de la explicación) y `DT-069` (presentación, verificación y degradación de cifras) `ACEPTADA`; `DT-047` aceptada para U6 · **Versión 1.31** (2026-10-04) — U6 implementada y validada: registro de la implementación en `DT-047`, `DT-068` y `DT-069`; ninguna decisión cambia · **Versión 1.32** (2026-10-05) — Fase 7 autorizada para implementación (no implementada): `DT-070` (alcance, stack y versiones, autenticación local, contrato con la API, formato regional, proxy, partición F7a–F7d e integración con `main`) `ACEPTADA`; separada de `DT-047`
 
 Registro de decisiones arquitectónicas. Formato: ID, decisión, contexto, alternativas, razón,
 consecuencias, estado.
@@ -1592,6 +1592,1213 @@ consecuencias, estado.
   rechazar la ejecución (es visible y no silencioso).
 - **Estado:** `ACEPTADA`
 
+---
+
+> **`DT-043` a `DT-047` — Etapa 2, arquitectura y fundación del sistema principal (2026-09-30).** Las
+> cinco se toman juntas porque fijan los contratos entre los mismos componentes. **Todas están en
+> `PROPUESTA`** hasta que el responsable las apruebe; ninguna implementa nada. El detalle vive en los
+> documentos oficiales de cada tema, no en archivos aparte.
+
+## DT-043 — Estructura del código de la Etapa 2 y puertos locales
+
+- **Decisión:** Un único proyecto Python, `backend/`, como monolito modular (`DT-002`), con un paquete
+  por responsabilidad real: `supply_engine`, `ingestion`, `db`, `forecasting`, `runs`, `api`, `genai`.
+  `frontend/`, `ml/` e `infra/` se crean con la unidad que los usa. Sin carpetas genéricas
+  (`services/`, `repositories/`, `adapters/`, `domain/`…); cada puerto vive en el paquete que lo usa.
+  Se añade un puerto a los de `DT-003`: **`TokenValidator`**, con un doble de desarrollo que solo se activa
+  en local y en pruebas y se niega a arrancar en cualquier entorno desplegado, para que la API sea autenticada por defecto sin Entra ID (RNF-006). El
+  código del sistema **no importa el generador**: consume su contrato. Las ejecuciones (carga,
+  forecast, recomendaciones) son comandos batch; la API de V1 es de solo lectura. Dependencias por
+  unidad: U1 ninguna; U2 un controlador de PostgreSQL y un PostgreSQL local en contenedor, y
+  migraciones como **SQL versionado con un ejecutor mínimo propio**, sin ORM ni herramienta de
+  migraciones; U5 FastAPI y Pydantic, ya en el stack. **Cada dependencia se autoriza al abrir su unidad.**
+  *(U5, 2026-10-03: versiones exactas, servidor y cliente de pruebas en `DT-064`.)*
+- **Contexto:** El repositorio no tiene código de aplicación. La Etapa 2 exige una estructura pequeña
+  que no dé carpetas vacías ni capas sin consumidor (`CLAUDE.md` §6.2).
+- **Alternativas:** (a) La estructura sugerida `backend/app/{api,domain,db,services,config}`.
+  (b) Paquetes por responsabilidad. (c) El motor como proyecto instalable aparte. (d) Microservicios.
+- **Razón:** (a) crea `domain/` y `services/` sin decir qué contienen, que es exactamente lo que se
+  quiere evitar; el único dominio con reglas propias es el motor, y tiene nombre. (c) añade empaquetado
+  y versionado sin que exista un segundo consumidor fuera del backend; `ml/` puede importarlo desde el
+  mismo proyecto. (d) está descartado por `DT-002`. (b) hace visible la arquitectura de `docs/03` en el
+  árbol de carpetas.
+- **Consecuencias:** Las reglas de dependencia de `docs/03` §16.4 se verifican con pruebas. Un nuevo
+  puerto (`TokenValidator`). A cambio, las lecturas de la API consultan `db` directamente; si aparece un
+  segundo caso de uso con orquestación, se revisa.
+- **Estado:** `ACEPTADA` (2026-09-30): el responsable la da por aprobada al autorizar U1 («la estructura ya aprobada en `DT-043`/`DT-045`»). Detalle: `docs/03` §16, `docs/10` §15.
+
+## DT-044 — Ingesta del dataset sintético en PostgreSQL y modelo físico mínimo
+
+- **Decisión:** Una base PostgreSQL contiene **un solo linaje** de datos: la carga de un *snapshot*
+  de dataset se niega si la base ya contiene otro `dataset_version`, y es un **no-op** si contiene el
+  mismo con los mismos `sha256`. La carga es **todo o nada**, en una transacción, con validación previa
+  (manifiesto, `quality_report` en `PASS`, archivos, `sha256`, filas, cabeceras del contrato) y
+  posterior (recuentos, reconciliación de inventario y tránsito, recepciones, referencias polimórficas,
+  origen homogéneo). Se conservan los `id` del dataset como claves primarias; una tabla por archivo con
+  sus columnas; cantidades en `numeric`; `data_origin` por registro y el manifiesto íntegro en
+  `data_loads`. Se crean solo las tablas con consumidor (`docs/04` §9.2); `InventoryPolicy`,
+  `RiskAssessment`, `SupplierPerformance`, `AuditLog` y `AppUser` se difieren con su motivo.
+- **Contexto:** RF-022, RF-023, US-011 y el criterio de la Fase 2 («la posición almacenada coincide con
+  la reconstruida»). La Etapa 1 terminó con el generador; la ingesta, que el roadmap situaba en la
+  Fase 1, pasa a la Etapa 2 por instrucción del responsable (2026-09-30).
+- **Alternativas:** (a) Un linaje por base. (b) Varios datasets en la misma base con `dataset_id` en
+  cada fila y claves compuestas. (c) Sustituir el contenido al cargar otro dataset. (d) Cargar las
+  filas válidas y rechazar las demás.
+- **Razón:** (b) multiplica las claves de todo el esquema y hace posible mezclar SYNTHETIC y REAL en la
+  misma base, que `CLAUDE.md` §10.9 solo admite con bandera de origen; el linaje único lo evita por
+  construcción. (c) borra histórico (RNF-013). (d) deja el inventario irreconciliable, que
+  es el estado inconsistente que RF-022 prohíbe. (a) es la más simple y responde de forma única a «¿con
+  qué datos se calculó?».
+- **Consecuencias:** Cambiar de dataset es cambiar de base (en desarrollo, recrearla con las
+  migraciones). Las cargas incrementales de datos reales se diseñan cuando exista una fuente real.
+  `numeric` en cantidades no decide `docs/04` §7; lo deja abierto sin exigir rediseño.
+- **Ratificación al aceptarla (2026-10-01, decisión del responsable).**
+  - *Cantidades:* las cantidades físicas de los CSV se almacenan como `numeric` **sin precisión fija**;
+    no se usa `integer`. El dataset 0.4.0 solo trae enteros, pero el contrato admite cantidades
+    racionales (`docs/06` §16.12) y `integer` obligaría a una migración estructural.
+  - *`quantity_on_hand ≥ 0`:* compatible con el estado documental de `BR-X09`, cerrada para V1 por
+    `V1-13` («no se permite inventario negativo; es incidente de datos»). Si el negocio la cierra de
+    otro modo, es una migración (`docs/04` §9.3).
+  - El resto del texto se acepta sin cambios. Implementación: U2 (`DT-055`).
+- **Estado:** `ACEPTADA` (2026-10-01, decisión del responsable al abrir U2). Detalle: `docs/04` §9.
+
+## DT-045 — Contrato de implementación del motor de abastecimiento V1
+
+- **Decisión:** `supply_engine` expone una evaluación pura por producto–ubicación y fecha de corte
+  explícita, con una función por regla de `DT-031`. Recibe **todas** las relaciones con proveedor y
+  elige él (`V1-10`); recibe el consumo, las líneas abiertas, las observaciones de lead time, el
+  inventario al corte, el forecast y un conjunto de parámetros. Devuelve `outcome` (`RECOMMEND`,
+  `NO_NEED`, `NOT_CALCULABLE`), razones, marcas y el desglose completo de `docs/06` §13. Los
+  parámetros V1 son **reglas del motor** que viajan en `policy_snapshot` con `policy_set =
+  V1_PROVISIONAL`, no filas de `InventoryPolicy`. `urgency` queda nula y `reorder_point` persiste el
+  nivel objetivo `S`. El motor no lee `data_origin`.
+- **Contexto:** `DT-031` fijó las reglas; faltaba la forma en que se implementan sin que el motor
+  dependa de la base, de la API ni del LLM (RNF-001, RNF-002).
+- **Alternativas:** (a) El motor lee la base. (b) El motor recibe la relación ya elegida. (c) El motor
+  recibe todas las relaciones y elige. (d) Parámetros V1 en `InventoryPolicy`.
+- **Razón:** (a) rompe la pureza que exige `docs/06` §1. (b) saca `V1-10` del motor y lo reparte entre
+  llamadores. (d) desfigura la entidad: `z_v1` no es un nivel de servicio y `N_v1`, `N_MIN_v1` y
+  `LT_MAX_v1` no tienen campo; además presentaría como política lo que `DT-031` dice que no lo es.
+- **Consecuencias:** El motor se prueba sin nada más que Python. Los bordes temporales se cerraron
+  con `DT-P15` y los tres casos de §14 con `DT-P20`. Los tres detalles de `V1-05` que quedaban
+  abiertos se cerraron con `DT-P14` el 2026-10-01.
+- **Cierre de `DT-P14` (2026-10-01).** `σ_H` con estimador poblacional; `n = 0` → `NOT_CALCULABLE`
+  (`INSUFFICIENT_HISTORY`), `n = 1` → `σ_H = 0`. Estrategia **B3**: todos los términos racionales
+  exactos, `z_v1 = 33/20`, y toda decisión que depende de `σ_H` —`RECOMMEND` / `NO_NEED`, `Q_moq`,
+  `ceil`, `Q_final`, marcas— por comparación algebraica exacta de `x = P + √B/D`, sin tolerancias; la
+  raíz decimal (28 cifras significativas, `ROUND_HALF_EVEN`, correctamente redondeada) solo se usa
+  para **informar**. Entradas numéricas: entero, decimal finito o racional; `float`, NaN e infinito
+  se rechazan (`docs/13` §3.1). Es la forma de evaluar `V1-01`, `V1-04`, `V1-05`, `V1-06` y `V1-09`, no
+  una regla nueva. Texto normativo: `docs/06` §16.6.
+- **Corrección del 2026-09-30 (`DT-P15`).** La versión inicial llamaba `review_date = as_of_date + 1`
+  a la fecha de decisión y de emisión sugerida. `DT-031` llama a `as_of_date` «la fecha de la
+  decisión»; se corrige: la decisión y la emisión sugerida son `as_of_date`, y `as_of_date + 1` es solo
+  el primer día del horizonte (`horizon_start`). Ninguna cifra cambia.
+- **Cierre del contrato de U1 (2026-10-01).** Los detalles que §16.3 a §16.5 dejaban abiertos se
+  cierran en `DT-048` a `DT-052` (`docs/06` §16.11) y en `DT-P22`; no queda ningún punto abierto.
+- **Estado:** `ACEPTADA` (2026-09-30, al autorizar U1). Detalle: `docs/06` §16.
+
+## DT-046 — Contrato de `ForecastProvider` y semanas ancladas en el primer día del horizonte
+
+- **Decisión:** El proveedor de forecast recibe el consumo diario hasta `as_of_date` —y rechaza
+  cualquier fecha posterior— y devuelve periodos semanales **anclados en `horizon_start = as_of_date +
+  1`**, con intervalo, método, confianza y versión de modelo. El horizonte de V1 es el derivado de las
+  reglas del motor: 14 semanas. La demanda latente no es entrada ni *feature*.
+
+  **Frontera (aceptada el 2026-10-02, al autorizar U3).** `ForecastProvider` es una biblioteca **pura**
+  en `backend/app/forecasting/`, que solo usa la biblioteca estándar: no importa `db` ni
+  `supply_engine`, no accede a PostgreSQL, no persiste, no conoce `data_loads`, no calcula métricas de
+  evaluación y no decide compras.
+  - **Recibe** un `ForecastRequest` ya preparado: `product_id`, `location_id`, `as_of_date`,
+    `history_start` y la serie diaria **contigua** de consumo —cantidades `int`, `Decimal` finito o
+    `Fraction`, nunca `float`— con sus banderas `is_stockout_affected`, todo con fecha `≤ as_of_date`.
+  - **Devuelve** un `ForecastResult`: por cada baseline calculable, su definición (`name`, `version`,
+    `hyperparameters`) y los 14 periodos `(period_start, period_end, predicted_quantity, lower_bound,
+    upper_bound)` en `Decimal`; los baselines no calculables, con su motivo; y la serie primaria con su
+    `confidence_flag` (`DT-056`).
+  - Valida su entrada (contigüidad, fechas `≤ as_of_date`, tipos) y los invariantes de su salida antes
+    de devolverla.
+  - Leer la base, construir la petición, registrar `model_versions`, crear `calculation_runs` y persistir
+    `forecasts` corresponde a `backend/app/runs/` (`DT-057`).
+- **Contexto:** `V1-04` suma semanas completas desde el inicio del horizonte; con semanas de
+  calendario, la primera sería parcial y la fórmula dejaría de ser la de `DT-019`. Al autorizar U3 se
+  resolvieron dos contradicciones documentales sin decisión de negocio: el flujo conceptual de `docs/03`
+  §5.1 (Etapa 0), en el que `forecast_service` lee y guarda en PostgreSQL, y la firma conceptual
+  `predict(sku, horizon, as_of)` de `docs/03` §4. Prevalecen `docs/03` §16 (`DT-043`, `ACEPTADA`), más
+  específico y posterior, y este contrato.
+- **Alternativas:** (a) Semanas ISO de calendario. (b) Semanas ancladas en el primer día del horizonte.
+  Para la frontera: (c) proveedor con acceso directo a la base; (d) proveedor puro que recibe la serie
+  preparada.
+- **Razón:** (b) hace exacta `demand_over_horizon` sin una segunda regla de conversión; (a) exigiría
+  prorratear la primera semana, que es justo lo que `docs/06` §5.1 prohíbe reimplementar. (d) permite
+  probar los baselines sin PostgreSQL, respeta las reglas de dependencia de `docs/03` §16.4 y deja
+  sustituir el baseline por un modelo (Fases 5 y 6) detrás de la misma interfaz; (c) acoplaría el
+  cálculo a la base.
+- **Consecuencias:** Los periodos de un forecast dependen de su `as_of_date`; dos forecasts con cortes
+  distintos no comparten periodos. Es coherente con que un forecast nunca se sobrescribe. **Queda
+  abierto** cómo se concilia con `docs/05` §2 (forecast semanal, recálculo diario de recomendaciones):
+  generar un forecast por cada corte de recomendación, o que `demand_over_horizon` admita un inicio
+  desplazado con el mismo prorrateo uniforme. Es `DT-P21`, antes de U4 *(resuelto el 2026-10-03 por `DT-058`: un forecast por corte de recomendación, sin desplazamiento)*. El horizonte de 14 semanas
+  prevalece en V1 sobre el valor de trabajo de 8–12 semanas de `ASSUMPTION-002` (`docs/05` §2), como ya
+  reconoce `docs/05` §19.2; `ASSUMPTION-002` sigue vigente como supuesto.
+- **Estado:** `ACEPTADA` (2026-10-02, al autorizar U3; hasta entonces `PROPUESTA`). Detalle: `docs/05`
+  §19.
+
+## DT-047 — Orden de implementación de la Etapa 2 y primera unidad
+
+- **Decisión:** U1 motor V1 puro → U2 PostgreSQL + ingesta del 0.4.0 → U3 forecast baseline → U4
+  ejecución de recomendaciones persistida → U5 API de solo lectura → U6 explicación por plantilla;
+  después, interfaz (Fase 7), ML (Fase 5), Power BI (Fase 11), Entra ID (Fase 8), IA generativa real
+  (Fases 9–10), contenedores y CI/CD (Fases 12–13). **Primera unidad: el motor V1.**
+- **Contexto:** El roadmap ordena Fase 2 → Fase 3 → Fase 4. La parte pura de la Fase 4 no depende
+  técnicamente de las Fases 2 y 3 (RNF-001); sí dependen de ellas su persistencia, su proceso batch y
+  sus endpoints, que siguen después.
+- **Alternativas:** (a) Motor primero. (b) PostgreSQL + ingesta primero. (c) API primero.
+- **Razón:** Ambas (a) y (b) están en el camino crítico hacia la primera recomendación trazable y
+  ninguna depende de la otra. (a) no necesita ninguna dependencia ni infraestructura nueva, sus **reglas**
+  están cerradas y aceptadas (`DT-031`, once casos de prueba con dueño «motor») —su contrato de
+  implementación, `DT-045`, está propuesto y le faltan `DT-P14`, `DT-P15` y `DT-P20` *(las tres cerradas
+  después: `DT-P15` y `DT-P20` el 2026-09-30, `DT-P14` el 2026-10-01)*—, es la máxima
+  prioridad de pruebas (`CLAUDE.md` §12.6) y fija qué datos debe proveer la base. (b) necesita
+  autorizar un controlador de PostgreSQL, un entorno de base local y el mecanismo de migraciones, y
+  arrastra más decisiones abiertas. (c) no tiene nada que servir.
+- **Consecuencias:** El valor llega primero como biblioteca probada, no como pantalla. U2 puede
+  prepararse en paralelo en cuanto se autoricen sus dependencias.
+- **Autorización de U3 (2026-10-02).** U3 = `backend/app/forecasting/` (contrato de `DT-046`,
+  baselines de `DT-056`) + ejecución de forecast en `backend/app/runs/` + migración `0002` (`DT-057`).
+  Sin dependencias nuevas: `forecasting` solo usa la biblioteca estándar y `runs`, el grupo opcional
+  `db` de `DT-055`. U1 y U2 no se modifican y no se crea ninguna ruta de producción entre U1 y U3.
+  **Autorizar U3 significa que su implementación puede comenzar; U3 no está implementada.** Criterios
+  de cierre: `docs/05` §19.9.
+- **Autorización de U4 (2026-10-03).** U4 = `backend/app/runs/recommendation.py`,
+  `recommendation_inputs.py` y `recommendation_config.py` + migración `0003` (`recommendations` y las
+  columnas `forecast_run_id` y `engine_version` de `calculation_runs`) + subcomando
+  `python -m app.runs recommend --as-of AAAA-MM-DD`, según `DT-058` a `DT-063`. U1, U2 y U3 no cambian
+  su comportamiento; solo se amplían de forma aditiva `runs/__main__.py` y las pruebas de esquema y de
+  migraciones de U2/U3. Sin dependencias nuevas. **Autorizar U4 significa que su implementación puede
+  comenzar; U4 no está implementada y no existe código funcional de U4.** El siguiente paso es la
+  implementación. Criterios de cierre: `docs/06` §16.13.4.
+- **Implementación de U4 (2026-10-03).** Implementada y validada el mismo día, sin cambiar ninguna
+  decisión: `backend/app/runs/recommendation.py`, `recommendation_inputs.py` y `recommendation_config.py`,
+  migración `0003` y subcomando `recommend`. Ejecución real con `ds-6c8ad65b4999` y corte `2025-12-31`:
+  `COMPLETED`, 100 evaluaciones (50 `RECOMMEND`, 40 `NO_NEED`, 10 `NOT_CALCULABLE`, los diez esperados);
+  repetición `ALREADY_COMPUTED`; *rollback* verificado. 295 pruebas por defecto y 113 de integración en
+  verde, en local y en Docker. Los diez criterios de `docs/06` §16.13.4 se cumplen. Detalle: `docs/06`
+  §16.13.5.
+- **Autorización de U5 (2026-10-03).** U5 = `backend/app/api/` (aplicación, `TokenValidator`, roles,
+  errores, `correlation_id`, paginación, `provenance`, esquemas y routers de los trece endpoints de
+  `docs/07` §7.2) + `backend/app/db/read/` (consultas de solo lectura, ampliación aditiva de `app/db`) +
+  `.env.example` + grupos opcionales `api` y `test` de `backend/pyproject.toml`, según `DT-064` a
+  `DT-067` y `docs/07` §7.4. U1 a U4 no cambian. No queda ninguna decisión abierta necesaria para
+  implementar U5; `DT-P16`, `DT-P11`, `DT-P13`, `DT-P23` y `BR-X03` siguen abiertas y no la bloquean.
+  **Autorizar U5 significa que su implementación puede comenzar; U5 no está implementada.** Criterios de
+  cierre: `docs/07` §7.5.
+- **Implementación de U5 (2026-10-03).** Implementada y validada el mismo día, sin cambiar ninguna
+  decisión: `backend/app/api/`, `backend/app/db/read/`, `.env.example` y los grupos `api` y `test`. U1 a U4
+  no cambian. 295 pruebas por defecto, 56 de la API, 142 de integración y 582 del generador en verde, en
+  local y en Docker. Los veinte criterios de `docs/07` §7.5 se cumplen.
+- **Autorización de U6 (2026-10-04).** U6 = `backend/app/genai/` (`ExplanationContext`, `Fact`, `TextGenerator`
+  con la plantilla determinista `template/1.0.0`, presentación de cifras, verificación y degradación
+  RS-010), solo con la biblioteca estándar, + el endpoint 14
+  `GET /api/v1/recommendations/{recommendation_id}/explanation` en `backend/app/api/` + una lectura aditiva
+  de `unit_of_measure` en `backend/app/db/read/`, según `DT-068` y `DT-069` (`ACEPTADA`) y `docs/09` §14.5.
+  U1 a U4 no cambian; de U5 solo se amplían, de forma aditiva, la superficie de `api` y sus pruebas
+  (13 → 14 endpoints); ninguna respuesta existente cambia. Sin dependencias nuevas. Siguen abiertas, sin
+  bloquear U6: `DT-P16`, `DT-P11`, `DT-P13`, `DT-P23` y `BR-X03`. **Autorizar U6 significa que su
+  implementación puede comenzar; U6 no está implementada.** Criterios de cierre: `docs/09` §14.6.
+- **Implementación de U6 (2026-10-04).** Implementada y validada el mismo día, sin cambiar ninguna decisión:
+  `backend/app/genai/`, el endpoint 14 y la lectura aditiva de `unit_of_measure`. U1 a U4 no cambian; de U5
+  solo se ampliaron `app.py`, `db/read/recommendations.py`, `schemas.py` y, en sus pruebas, la lista de
+  endpoints y el test de OpenAPI (13 → 14). Las 100 evaluaciones reales se explican sin ninguna `DEGRADED`.
+  353 pruebas en la suite por defecto (295 + 58 de `tests/genai`), 56 de la API sin base, 151 de integración (142 + 9 de `test_api_explanation.py`), 146 de U1 y 582 del generador en verde, en local y en Docker. Los doce criterios de `docs/09` §14.6 se cumplen.
+- **Estado:** `ACEPTADA` en cuanto a U1 (autorizada el 2026-09-30), a U2 (autorizada el 2026-10-01), a U3 (autorizada el 2026-10-02; implementada y validada el mismo día), a U4 (autorizada el 2026-10-03; implementada y validada el mismo día) y a U5 (autorizada el 2026-10-03; implementada y validada el mismo día) y a U6 (autorizada el 2026-10-04; implementada y validada el mismo día).
+
+## DT-048 — Cobertura del forecast y significado de `FORECAST_TOO_SHORT`
+
+- **Decisión:** Con `q, r = divmod(H, 7)`, el motor necesita `K(H) = q + (1 si r > 0) = ⌈H/7⌉` semanas
+  de forecast. Forecast ausente → `NOT_CALCULABLE` con `FORECAST_MISSING`; forecast con `m < K(H)`
+  semanas, incluido `m = 0` → `NOT_CALCULABLE` con `FORECAST_TOO_SHORT`; con `m ≥ K(H)`, `DDH` por
+  `V1-04` con `F_1 … F_K(H)`, y las semanas restantes no influyen. Con `r = 0`, `F_{q+1}` no se exige.
+  No se trunca `H`, no se extrapola y no se rellena con ceros. `forecast.start_date = as_of_date + 1`
+  es obligatorio; una semana parcial o mal alineada es `InvalidInputError` (`DT-052`).
+- **Contexto:** `docs/06` §16.5 nombraba `FORECAST_TOO_SHORT` («no cubre `H`») sin definir «cubrir».
+- **Alternativas:** (a) Exigir `K(H)` semanas. (b) Exigir siempre `q + 1`. (c) Calcular con la cobertura
+  disponible (truncar o extrapolar).
+- **Razón:** (a) es la cobertura literal de los periodos de §16.2 y da el mismo valor que `V1-04`, cuyo
+  término `(r/7)·F_{q+1}` vale 0 con `r = 0`. (b) rechazaría forecasts que cubren `H`. (c) inventaría
+  demanda (`BR-009`) y cambiaría `V1-03` o `V1-04`.
+- **Consecuencias:** `K(97) = 14` coincide con el horizonte derivado de `docs/05` §19.2. El *fallback* al
+  baseline sigue siendo del llamador. `FORECAST_MISSING` y `FORECAST_TOO_SHORT` son excluyentes, y la
+  segunda solo se evalúa si `H` es calculable.
+- **Pruebas mínimas:** `m = K − 1`, `m = K`, `m > K` (el resto no influye); `r = 0` con `m = q`; `m = 0`;
+  forecast ausente; `start_date` desplazado → error; valor negativo → error; sin proveedor, la razón no
+  se emite.
+- **Estado:** `ACEPTADA` (2026-10-01, decisión del responsable). Ninguna fórmula V1 cambia. Detalle:
+  `docs/06` §16.11.1.
+
+## DT-049 — Vigencia del producto y horizonte que cruza `valid_to`
+
+- **Decisión:** `vigente(as_of) ⇔ valid_from ≤ as_of_date ∧ (valid_to es nulo ∨ as_of_date ≤
+  valid_to)`. `is_active = false` → `PRODUCT_INACTIVE`; no vigente → `PRODUCT_OUT_OF_VALIDITY`: dos
+  razones independientes, sin prioridad y acumulables. Si el producto está vigente en `as_of_date` y
+  `as_of_date ≤ valid_to < as_of_date + H`, el resultado es `NOT_CALCULABLE` con `PRODUCT_OUT_OF_VALIDITY`
+  (cierre de `DT-P22`, abajo), **sin** recortar `H` (`H = L + R`, `V1-03`), sin modificar `L` ni `DDH`,
+  sin extrapolar, sin recomendación parcial y **sin crear una razón nueva**. `valid_to < valid_from` es `InvalidInputError`.
+- **Contexto:** Solo `as_of_date > valid_to` se derivaba de lo documentado. Faltaban `as_of < valid_from`,
+  los extremos, la relación con `is_active` y el horizonte que cruza `valid_to`.
+- **Alternativas para el cruce:** (a) Sin efecto. (b) Una marca nueva. (c) `NOT_CALCULABLE`. (d) Recortar
+  `H`.
+- **Razón:** Elegida (c) por el responsable el 2026-10-01. Después de `valid_to` no hay demanda ni
+  consumo (`docs/04` §3.2, restricción 3; especificación §34), y un horizonte que la cruza sumaría
+  demanda que el modelo de datos excluye. (a) la habría contado; (b) ampliaba el contrato; (d) cambia
+  `V1-03` y `V1-04`. La independencia de las dos razones sale de `DT-027` («Relación con `is_active`:
+  deliberadamente no se define») y de `BR-P10`, que sigue propuesta.
+- **Consecuencias:** El cruce solo es evaluable si `H` es calculable. Sin efecto sobre el dataset 0.4.0:
+  los productos activos tienen `valid_to` nulo y los inactivos ya están fuera de vigencia en
+  2025-12-31. *(Al registrarse, el contenido de `reasons` en el caso del cruce quedó abierto como
+  `DT-P22`: la lista de §16.5 es cerrada, esta decisión excluía una razón nueva y ninguna existente
+  describía el caso. Se cerró el mismo día; ver el punto siguiente.)*
+- **Cierre de `DT-P22` (2026-10-01, decisión del responsable, opción (a)).**
+  - *Problema que resolvía:* qué razón acompaña al `NOT_CALCULABLE` cuando el producto está vigente en
+    `as_of_date` pero su vigencia termina dentro del horizonte.
+  - *Decisión:* se reutiliza `PRODUCT_OUT_OF_VALIDITY` y se amplía formalmente su significado:
+    **el producto no es válido durante todo el periodo requerido por la evaluación U1**, de
+    `as_of_date` a `as_of_date + H`.
+  - *Caso A:* `as_of_date < valid_from` o (`valid_to` no nulo ∧ `as_of_date > valid_to`) →
+    `NOT_CALCULABLE` con `PRODUCT_OUT_OF_VALIDITY`.
+  - *Caso B (cruce de `valid_to`):* `valid_to` no nulo ∧ `as_of_date ≤ valid_to` ∧ `valid_to <
+    as_of_date + H` → `NOT_CALCULABLE` con `PRODUCT_OUT_OF_VALIDITY`. Solo es evaluable si `H` es
+    calculable; el caso A se evalúa siempre.
+  - *Sin razón nueva:* la causa es exclusivamente `PRODUCT_OUT_OF_VALIDITY`; no se crea otra ni se
+    reutiliza otra distinta. Si se cumplen los dos casos, la razón aparece una sola vez.
+  - *Sin adaptación del horizonte:* `H` no se recorta, no se modifica y no se recalcula; tampoco se
+    recorta el forecast, se recalcula `DDH` con un horizonte menor, se extrapola ni se rellena el
+    periodo faltante, y el caso no pasa a ser calculable.
+  - *Ejemplo normativo:* `valid_to = 2025-03-31`, `as_of_date = 2025-03-20`, `H = 37` →
+    `as_of_date + H = 2025-04-26 > valid_to` → `NOT_CALCULABLE`, `reasons = (PRODUCT_OUT_OF_VALIDITY,)`;
+    no se usa un horizonte reducido de 11 días.
+  - *Alternativas descartadas:* (b) `reasons` vacío, que dejaría un `NOT_CALCULABLE` sin explicación;
+    (c) una razón nueva, que esta decisión excluía.
+- **Pruebas mínimas:** los extremos `valid_from − 1`, `valid_from`, `valid_to − H`, `valid_to − H + 1`,
+  `valid_to`, `valid_to + 1`; `valid_to` nulo; las cuatro combinaciones de `is_active` y vigencia;
+  `valid_to < valid_from` → error; el ejemplo normativo de `DT-P22` → `reasons =
+  (PRODUCT_OUT_OF_VALIDITY,)`; los casos A y B simultáneos → la razón una sola vez; caso B con `H` no
+  calculable → no se evalúa.
+- **Estado:** `ACEPTADA` (2026-10-01, decisión del responsable), completa desde el cierre de `DT-P22` el
+  mismo día. Detalle: `docs/06` §16.11.2.
+
+## DT-050 — Orden total de las observaciones de lead time
+
+- **Decisión:** Las observaciones del proveedor elegido con `completed_on ≤ as_of_date` se ordenan por
+  `completed_on` descendente y, si empatan, por `issued_on` ascendente (antes, el lead time más largo);
+  la ventana de `V1-09.1` son las `N` primeras. Un empate total no requiere un tercer criterio, porque
+  produce el mismo lead time; el resultado no depende del orden de la entrada. `completed_on <
+  issued_on` es `InvalidInputError`.
+- **Contexto:** `V1-09.1` toma «las 12 más recientes por fecha de finalización»; un empate en la frontera
+  podía cambiar la mediana y, con ella, `L`, `H`, `σ_H`, `SS`, `raw_need` y `Q_final`.
+- **Alternativas:** (a) `issued_on` ascendente. (b) `issued_on` descendente. (c) Incluir todos los
+  empatados. (d) Un identificador de línea.
+- **Razón:** Elegida (a) por el responsable. Es coherente con `DT-031` §`V1-09`, pregunta 3 («un día de
+  más en el lead time es el error seguro») y pregunta 1 («el comportamiento prudente»). (c) rompe «las
+  12»; (d) no tiene significado y no está en la entrada (§16.3).
+- **Consecuencias:** Precisa `V1-09.1` sin modificarla; el dataset 0.4.0 no tiene empates en la frontera.
+- **Aclaración A-1 (2026-10-01) — techo de `LT_MAX`.** `L = min(L_source, LT_MAX)` sea cual sea la
+  procedencia de `L_source`, observada o `AGREED_FALLBACK`; `LEAD_TIME_AGREED_FALLBACK` y
+  `LEAD_TIME_CAPPED` pueden coexistir, y el valor sin topar es `L_source`. Es la lectura literal del
+  pseudocódigo de `V1-09`, que aplica el techo después de las dos ramas, y la que presupone `docs/05`
+  §19.2 (14 semanas = horizonte más largo del motor). `DT-031` no se modifica. Ejemplo: acordado 120 sin
+  observaciones suficientes → `L = 90`, ambas marcas.
+- **Pruebas mínimas:** empate en la posición 12 (10 × 5 y 20 × 6, más A de 21 días y B de 10 días → `L =
+  20`); la entrada permutada da el mismo `L`; empate total; otro proveedor o `completed_on > as_of` →
+  ignorada; lead time negativo → error; acordado 90 (sin tope), 91 (tope) y fallback con tope.
+- **Estado:** `ACEPTADA` (2026-10-01, decisión del responsable), con la aclaración A-1. Detalle:
+  `docs/06` §16.11.3.
+
+## DT-051 — Contrato técnico de U1: tipos, aritmética, salida, orden y versión
+
+- **Decisión:**
+  1. **Tipos públicos** (Python ≥ 3.11, solo biblioteca estándar): `datetime.date` (se rechaza
+     `datetime.datetime`); identificadores `int` opacos; `bool` estricto; cantidades de entrada `int` ·
+     `Decimal` finito · `Fraction` (se rechazan `float`, NaN, infinito, `bool` y `str`); días y enteros
+     de política `int`; colecciones `tuple`; enumeraciones `StrEnum`; salida en dataclasses congeladas.
+     Bloques de entrada: `as_of_date`, `product`, `supplier_relations`, `inventory`, `open_lines`,
+     `lead_time_observations`, `consumption`, `forecast`, `policy`.
+  2. **Aritmética:** `Fraction` es la representación canónica del cálculo exacto; toda entrada se
+     convierte a `Fraction` sin pérdida. `Decimal` solo representa los valores que `docs/06` §16.6 punto
+     7 manda informar con 28 cifras significativas, se obtiene del valor exacto, no participa en ninguna
+     decisión y nunca vuelve a entrar en un cálculo. Sin `float`.
+  3. **`S = DDH + SS`** se añade a la lista de §16.6 punto 7: exacto si es racional y, si no, `Decimal`
+     de 28 cifras con `ROUND_HALF_EVEN`, obtenido de su valor exacto. Cierra un vacío; ninguna fórmula
+     B3 cambia.
+  4. **`missing_policy_parameters`:** `tuple[PolicyParameter, ...]` con `R`, `z`, `N`, `N_MIN`,
+     `LT_MAX`, en ese orden; vacío si y solo si `MISSING_POLICY_PARAMETER` no está en `reasons`; con
+     varios faltantes, una sola razón y todos en la tupla; `policy_set` no forma parte. No es un código
+     de error.
+  5. **Orden canónico** de `reasons` y de `flags`: el de las listas de §16.5, con las condiciones de las
+     marcas de §16.11.4.
+  6. **`NOT_CALCULABLE`:** se conservan los términos y las marcas calculados válidamente; lo demás vale
+     `None`.
+  7. **`engine_version = "0.1.0"`**, constante, en formato `MAJOR.MINOR.PATCH`, sin fechas, *hash* ni datos
+     de ejecución. PATCH: ninguna salida observable cambia; MINOR: alguna entrada válida produce una
+     salida distinta sin romper el contrato; MAJOR: cambio incompatible del contrato o de los tipos.
+- **Contexto:** `docs/06` §16.3 y §16.5 fijaban campos, pero no tipos, versión ni orden. `BR-009`,
+  `docs/06` §14 y `docs/13` §3.1 exigen indicar qué parámetro falta, y la salida no tenía dónde. §16.6
+  punto 7 omitía `S`, que es un término del desglose y se persiste como `reorder_point`.
+- **Alternativas:** `Fraction` solo interna (la salida necesitaría pares o cadenas para valores como
+  `680/7`); desglose vacío con `NOT_CALCULABLE`; `engine_version` `1.0.0`; orden alfabético.
+- **Razón:** Decisión del responsable (2026-10-01). El orden de §16.5 ya es semántico y evita reescribir
+  las listas; el criterio de versión es el de `generator_version` (`DT-033`); `0.x` refleja
+  `V1_PROVISIONAL`.
+- **Consecuencias:** El contrato público queda cerrado (`DT-P22` cerrada el 2026-10-01). La serialización byte a byte la
+  hace quien persiste (U4). Las decisiones de persistencia de racionales no decimales siguen siendo de
+  U4.
+- **Aclaración A-2 (2026-10-01) — `abc_class`.** La entrada no contiene `abc_class` ni
+  `rotation_class`, y no se añaden campos opcionales para ignorarlos. `V1-11` se cumple de forma
+  estructural, y el caso 11 de `DT-031` se verifica comprobando que ningún tipo de entrada tiene esos
+  atributos y que el paquete no los nombra. `DT-031` no se modifica.
+- **Pruebas mínimas:** rechazo de cada tipo prohibido; `Decimal("2.5")` equivale a `Fraction(5, 2)`;
+  con `A` no cuadrado, `σ_H`, `SS`, `S`, `raw_need` y `Q_moq` son `Decimal` y `Q_final` es exacto; con `A`
+  cuadrado, todo es exacto; orden con tres o más razones; varios parámetros faltantes; coexistencia de
+  marcas; salida parcial con `NOT_CALCULABLE`; entradas permutadas → resultados iguales;
+  `engine_version` igual a la constante; las dos comprobaciones de A-2.
+- **Estado:** `ACEPTADA` (2026-10-01, decisión del responsable). Detalle: `docs/06` §16.11.4 y §16.6 punto 7.
+
+## DT-052 — Entrada inválida: `InvalidInputError` y orden de validación
+
+- **Decisión:** `InvalidInputError(ValueError)` es la única excepción del contrato, con `field: str`
+  (ruta del contrato, con índices de posición y nunca identificadores) y un mensaje en inglés que
+  describe la regla incumplida, sin el valor recibido; `str(error)` = `"<field>: <mensaje>"`. Sin código
+  de error. Todo se valida antes de calcular, y solo se lanza el **primer** error: fase 1 (tipo, finitud
+  y signo, en el orden de bloques de `DT-051`, de campos de §16.3 y de índices) y fase 2, en este orden:
+  (a) `valid_to ≥ valid_from`; (b) como máximo una relación activa y preferente; (c) `(purchase_order_id,
+  item_id)` únicos; (d) `Σ quantity_pending = total_in_transit`; (e) `completed_on ≥ issued_on`; (f)
+  coherencia del consumo (`start_date ≥ valid_from` y, si no está vacío, último día =
+  `min(as_of_date, valid_to)`); (g) `forecast.start_date = as_of_date + 1`; (h) `policy_set =
+  V1_PROVISIONAL` y valores iguales a los de `DT-031`. **`on_hand < 0` no es entrada inválida**:
+  `NOT_CALCULABLE` con `NEGATIVE_ON_HAND`. El resto de cantidades negativas sí lo son.
+- **Contexto:** `docs/13` §3.1 exige un «error explícito» sin forma, y §16.3 prohíbe códigos nuevos. Había
+  que separar la entrada inválida de `NOT_CALCULABLE`, y definir los huecos de consumo y la relación con
+  `total_in_transit`.
+- **Alternativas:** Acumular todos los errores; tratar un día de consumo ausente como 0; confiar en
+  `total_in_transit` sin comprobarlo; tratar `on_hand < 0` como error.
+- **Razón:** Decisión del responsable (2026-10-01). Un solo error en orden canónico es determinista. El
+  consumo es denso (`DT-038` §4: «una fila con `quantity = 0` no es una fila ausente»). `total_in_transit`
+  es por definición `Σ` del pendiente de las mismas líneas (`docs/06` §4.1). `order_multiple ≥ 1` es la
+  precondición de §16.6 punto 5. Como máximo un preferente activo es el contrato de `DT-024`. Los
+  valores V1 solo cambian con un ADR (`DT-031`), y B3 fija `z = 33/20`. `on_hand < 0` es la regla
+  específica de `V1-13`, `docs/06` §16.5 y el caso 13 de `DT-031`.
+- **Consecuencias:** `docs/13` §3.1 recoge la excepción de `on_hand`. La conciliación de
+  `Inventory.quantity_in_transit` con la base sigue siendo de U2; U1 solo comprueba la coherencia
+  interna. Los mensajes no contienen valores ni identificadores (`CLAUDE.md` §9.4).
+- **Pruebas mínimas:** una por cada regla de las fases 1 y 2; con dos errores, se lanza el primero; los
+  mensajes no contienen el valor; `on_hand` negativo devuelve un resultado y no lanza; serie corta →
+  `INSUFFICIENT_HISTORY`.
+- **Estado:** `ACEPTADA` (2026-10-01, decisión del responsable). Detalle: `docs/06` §16.11.5.
+
+## DT-053 — Frontera de la salida parcial con `NOT_CALCULABLE` (P-1)
+
+- **Decisión:** Con `NOT_CALCULABLE`, U1 conserva las magnitudes **descriptivas** calculadas
+  válidamente antes de la frontera que impide la decisión (`L`, `H`, tránsito, posiciones, `DDLT`,
+  `DDH`, `σ_H`, `SS`, `S`, componentes de B3), siempre que sus precondiciones se cumplan y el cálculo no
+  reinterprete, recorte ni modifique el horizonte. Las magnitudes de **decisión** (`raw_need`, `Q_moq`,
+  `Q_final`) solo existen con `reasons == ()`; `MOQ_APPLIED` y `ORDER_MULTIPLE_ROUNDING` solo con
+  `RECOMMEND`. Por razón:
+  - `PRODUCT_INACTIVE` excluye el producto del cálculo operativo;
+  - el caso A de `PRODUCT_OUT_OF_VALIDITY` registra la razón sin `H` y no fabrica ninguna evaluación
+    parcial;
+  - el caso B conserva `H = L + R` y las magnitudes descriptivas sobre el horizonte completo;
+  - `NEGATIVE_ON_HAND` conserva las magnitudes independientes de la decisión, pero no las que dependen
+    de `on_hand` (posiciones de inventario y `P`).
+- **Contexto:** El audit de pre-codificación de U1 (2026-10-01) encontró que «se conserva lo que pudo
+  calcularse» (`DT-051`) podía leerse como autorización para informar cantidades de pedido con
+  `NOT_CALCULABLE`, en contra de §16.11.2 («no se calcula una recomendación parcial») y de `BR-P10`.
+- **Alternativas:** (a) Informar todo lo aritméticamente calculable. (b) Desglose vacío. (c) Frontera
+  entre magnitudes descriptivas y de decisión.
+- **Razón:** Elegida (c) por el responsable. (a) produciría una recomendación parcial; (b) perdería la
+  trazabilidad que `DT-051` quiso conservar.
+- **Consecuencias:** Con exclusión (`PRODUCT_INACTIVE` o caso A) no se produce `H`, de modo que las
+  razones que lo necesitan no son evaluables (`docs/06` §16.11.4); las demás se evalúan siempre. Es una
+  decisión de **alcance e interpretación** del contrato: ninguna fórmula V1 ni regla B3 cambia.
+- **Pruebas mínimas:** con cualquier `NOT_CALCULABLE`, `raw_need`, `Q_moq` y `Q_final` son `None`;
+  `PRODUCT_INACTIVE` sin magnitudes; `NEGATIVE_ON_HAND` con magnitudes descriptivas; el caso A sin `H`;
+  el caso B con `H` completo, `DDH` sin modificar y sin términos de recomendación; las marcas de decisión
+  solo con `RECOMMEND`.
+- **Estado:** `ACEPTADA` (2026-10-01, decisión del responsable). Detalle: `docs/06` §16.11.6.
+
+## DT-054 — Sin monotonía global de `S` frente a `L` en V1 (P-2)
+
+- **Decisión:** Se retira para V1 la propiedad «`L₂ ≥ L₁ ⇒ S₂ ≥ S₁`». No se implementa ni se prueba como
+  invariante. Se prueban `H = L + R` y, con `R = 7`, `H ≥ 7`, además de las dependencias que se siguen
+  directamente de las fórmulas.
+- **Contexto:** `docs/06` §16.8 y `docs/13` §3.1 pedían monotonía del punto de reorden frente al lead
+  time. En V1, `σ_H` se recalcula sobre ventanas de `H = L + R` días y no es monótona en `H`.
+  Contraejemplo auditado: consumo alternante `0, 2, …` y forecast `(10, 0, …)`; con `L: 0 → 1`,
+  `H: 7 → 8`, `σ_H: 1 → 0` y `S: 11,65 → 10`.
+- **Alternativas:** (a) Acotar la propiedad a `σ_H` fijo. (b) Limitarla a `DDH` frente a `L`. (c)
+  Retirarla para V1.
+- **Razón:** Elegida (c) por el responsable: la propiedad no se sigue de las fórmulas aceptadas, y
+  forzarla exigiría cambiarlas.
+- **Consecuencias:** `V1-03`, `V1-04`, `V1-05`, B3, `DDH`, `σ_H`, `SS` y `S` no cambian. El contraejemplo
+  puede conservarse como prueba de regresión que documenta que la monotonía global no es un
+  invariante de V1. Es una decisión de **alcance** del contrato, no un cambio de fórmula.
+- **Estado:** `ACEPTADA` (2026-10-01, decisión del responsable). Detalle: `docs/06` §16.11.7.
+
+## DT-055 — Entorno técnico de U2: PostgreSQL, `psycopg`, migraciones SQL y Docker
+
+- **Decisión:**
+  1. **PostgreSQL 16** es la base de desarrollo e integración.
+  2. **`psycopg` 3** (`psycopg[binary]==3.3.6`) es el único controlador, declarado como dependencia
+     **opcional** del grupo `db` de `backend/pyproject.toml`. `dependencies` sigue vacío: U1 no gana
+     ninguna dependencia y sigue siendo una biblioteca pura.
+  3. **Migraciones SQL versionadas y explícitas** en `backend/db/migrations/NNNN_nombre.sql`, aplicadas
+     en orden por un ejecutor mínimo propio (`app.db.migrations`). Cada migración se aplica en su propia
+     transacción y queda registrada en `schema_migrations` con su `sha256`; una migración aplicada cuyo
+     archivo cambia es un error. Sin ORM y sin Alembic (`DT-043`).
+  4. **Entorno local con Docker:** `infra/docker-compose.yml` levanta `postgres:16-alpine` solo en
+     `127.0.0.1`, con autenticación `trust` y **sin contraseña**: no se versiona ninguna credencial
+     (`CLAUDE.md` §9). La conexión se lee de la variable `DATABASE_URL`.
+  5. **Pruebas en dos suites:** `backend/tests/ingestion` no necesita base y forma parte de la suite por
+     defecto; `backend/tests/db` es la suite de integración contra un PostgreSQL real, se ejecuta de
+     forma explícita y **falla** —no se salta— si falta `U2_TEST_ADMIN_DSN` (`docs/13` §14).
+- **Contexto:** `DT-043` prevé para U2 «un controlador de PostgreSQL y un PostgreSQL local en
+  contenedor, y migraciones como SQL versionado con un ejecutor mínimo propio», y deja cada
+  dependencia a la autorización de su unidad (`docs/04` §9.8).
+- **Alternativas:** controlador `psycopg2` o `asyncpg`; Alembic o un ORM; PostgreSQL instalado en el
+  sistema; dependencia obligatoria en `dependencies`.
+- **Razón:** `psycopg` 3 es el controlador mantenido de referencia y su `COPY` carga las tablas grandes
+  sin una capa extra; la API de U1 no lo necesita, de ahí el grupo opcional. Las migraciones SQL a mano
+  bastan para un esquema de trece tablas y no añaden herramientas. Docker hace reproducible la versión
+  de PostgreSQL.
+- **Consecuencias:** Instalación de U2: `pip install -e "backend[db]"` (o el controlador fijado).
+  `docs/03` §16.6 situaba las migraciones dentro de `app/db/`; pasan a `backend/db/migrations/`, fuera
+  del paquete Python, por instrucción del responsable. Detalle de uso: `docs/04` §9.9.
+- **Estado:** `ACEPTADA` (2026-10-01, decisión del responsable al abrir U2).
+
+## DT-056 — Baselines V1 de U3: definición, intervalo, histórico mínimo y respaldo
+
+*Cierra `DT-P17`. Notación: `A` = `as_of_date`; `d(t)` = consumo diario; `Y_1 … Y_n` = semanas completas
+del histórico en orden cronológico, con `Y_n` la que termina en `A`; `F_h`, `L_h`, `U_h` = punto,
+límite inferior y límite superior de la semana `h` del horizonte, `h = 1 … 14`. Tabla de decisiones
+D-01 a D-22 y criterios de cierre: `docs/05` §19.8 y §19.9.*
+
+- **Decisión:**
+  1. **Histórico.** `consumption.quantity` diario y **contiguo**, solo con fecha `≤ A`, desde el primer
+     día con fila `S`. Se agrega en semanas completas ancladas en `A`: `n = ⌊(A − S + 1) / 7⌋` y
+     `Y_j = Σ d(t)` para `t ∈ [A − 7(n − j) − 6, A − 7(n − j)]`, `j = 1 … n`. Los `(A − S + 1) mod 7`
+     días más antiguos se descartan. Nada posterior a `A` interviene (RML-004).
+  2. **Horizonte.** 14 semanas; la semana `h` es `[A + 1 + 7(h − 1), A + 1 + 7h)` (`DT-046`, `DT-048`).
+  3. **Baselines.**
+     - Naïve: `F_h = Y_n` para todo `h`.
+     - Naïve estacional, con `L = 52` semanas: `F_h = Y_{n+h−52}`; usa `Y_{n−51} … Y_{n−38}`.
+     - Media móvil, con `k = 13`: `F_h = (Y_{n−12} + … + Y_n) / 13` para todo `h`. No se reduce la ventana.
+  4. **Intervalo: cuantiles empíricos del error histórico a cada horizonte.** Desde cada origen `t` del
+     histórico (se conocen `Y_1 … Y_t`) el mismo método predice la semana `t + h`: naïve `Y_t`;
+     estacional `Y_{t+h−52}`, con `t ≥ 53 − h`; media móvil `media(Y_{t−12} … Y_t)`, con `t ≥ 13`. El
+     error es `e = Y_{t+h} − ŷ_{t,h}`, y `E_h` reúne los de todos los orígenes válidos con `t + h ≤ n`.
+     Con `E_h` ordenado, `e_(1) ≤ … ≤ e_(m)`, la regla **nearest-rank** sin interpolación da
+     `q_lo = e_(⌈m/10⌉)` y `q_hi = e_(⌈9m/10⌉)`, y
+     `L_h = max(0, F_h + min(q_lo, 0))`, `U_h = F_h + max(q_hi, 0)`. Se cumple siempre
+     `0 ≤ L_h ≤ F_h ≤ U_h`: el `min` y el `max` amplían el intervalo hasta incluir el punto cuando todos
+     los errores tienen el mismo signo.
+  5. **`confidence_level = 0.80`.** `confidence_level = 0.80` es el nivel nominal del intervalo. No
+     constituye una garantía ni una medición empírica de cobertura. La calibración y validación de
+     cobertura corresponden a la Fase 5. Tampoco es un nivel de servicio. No se reutiliza
+     `z_v1 = 1,65`: es un parámetro del motor para el stock de seguridad de U1 (`DT-031` §`V1-05`), y el
+     método de este intervalo no usa ningún `z`.
+  6. **Mínimo de errores.** Con la regla de cuantiles nearest-rank 10/90 adoptada para el nivel nominal
+     0.80, se exige un mínimo operacional de 11 errores por horizonte (`m ≥ 11` para cada `h = 1 … 14`)
+     para que exista al menos una observación en cada cola. Con `m = 11`, `q_lo = e_(2)` y
+     `q_hi = e_(10)`: queda una observación extrema fuera del intervalo en cada cola. 11 es un mínimo
+     operacional de esta regla concreta, no una estimación universal; la cobertura real se evaluará en
+     la Fase 5.
+  7. **Histórico mínimo**, para producir punto e intervalo en las 14 semanas: naïve, 25 semanas completas
+     (`m_h = n − h`); media móvil, 37 (`m_h = n − h − 12`); naïve estacional, 63 (`m_h = n − 52`).
+  8. **Referencia provisional y respaldo.** La media móvil de 13 semanas se registra como referencia
+     provisional de V1. Esta elección es operativa y reversible y no implica que sea el baseline de mejor
+     desempeño. La selección definitiva por desempeño corresponde a la Fase 5. Cadena de la serie
+     **primaria** de cada producto: media móvil → naïve → sin forecast. Naïve estacional no forma parte
+     de la cadena. `confidence_flag`: `STANDARD` en general; `INSUFFICIENT_HISTORY` en la serie primaria
+     que procede del respaldo naïve. Un producto sin ningún baseline calculable (menos de 25 semanas) no
+     recibe forecast; el motivo queda en la ejecución (`DT-057`) y la estimación para ese caso es
+     `DT-P23`.
+  9. **Desabasto: tratamiento provisional de V1.** El consumo observado puede subrepresentar la demanda
+     potencial durante episodios de desabasto. En V1 se utiliza como proxy observable del
+     consumo/demanda satisfecha, sin corrección ni imputación: `consumption.quantity` bruto, sin excluir
+     días. `stockout_treatment = "NONE_RAW_CONSUMPTION_V1"`. `is_stockout_affected` viaja en la petición
+     (`docs/05` §19.2), pero V1 no la usa para modificar el cálculo. Cambiar este tratamiento exige una
+     versión nueva de cada baseline. La solución metodológica definitiva sigue siendo `DT-011`, que **no**
+     se cierra. `demand` nunca se usa (`DT-034`).
+  10. **Catálogo.** U3 pronostica productos activos y vigentes en `as_of_date`
+      (`is_active = true` y `valid_from ≤ A ≤ valid_to`, o `valid_to` nulo). U1 realiza posteriormente su
+      propia validación de vigencia sobre el horizonte concreto de la recomendación (`DT-049`,
+      `DT-P22`). Los inactivos o fuera de vigencia se excluyen con el motivo
+      `INACTIVE_OR_OUT_OF_VALIDITY`; un producto con huecos en el histórico, o sin fila el día `A`, se
+      excluye con el motivo `INVALID_HISTORY` y no se imputa. En el dataset 0.4.0, los 5 productos
+      descontinuados no tienen consumo después del 2025-04-02 y no se usan para generar forecasts
+      posteriores a esa fecha.
+  11. **Precisión.** Cálculo en `Fraction` exacta. `F_h`, `L_h` y `U_h` se cuantizan una sola vez, a la
+      salida del proveedor, al múltiplo de `10⁻⁶` más cercano con `ROUND_HALF_EVEN` y aritmética entera,
+      y se devuelven como `Decimal`. Nunca `float`. Sin redondeo a enteros ni reglas por unidad
+      (`EACH`, `BOX`, `KG`): no hay reglas de fraccionamiento documentadas. La cuantización es monótona y
+      conserva `0 ≤ L_h ≤ F_h ≤ U_h`.
+  12. **Versiones.** Cada baseline es una versión `1.0.0` con todos estos valores en `hyperparameters`
+      (`DT-057`); cambiar cualquiera exige una versión nueva.
+- **Contexto:** `DT-P17` bloqueaba U3. RF-010 exige intervalo, versión y fecha de generación, y respaldo
+  señalado; RML-007 exige que el método y la confianza consten; US-050 pide en la Fase 4 naïve, naïve
+  estacional y media móvil, con la referencia registrada, y aplaza a la Fase 5 la elección por
+  desempeño (`docs/05` §6).
+- **Alternativas:** intervalo normal con `σ` a un paso escalado por `√h`, o con un `σ` por horizonte;
+  nivel del 95 %; reutilizar `z_v1`; longitud estacional de 365 días; `k` = 4 u 8; excluir o imputar
+  los días con desabasto; redondear a enteros; persistir racionales exactos.
+- **Razón:** El intervalo empírico es exacto, no supone ninguna distribución (`DT-010`, alternativas
+  (c) y (d)) y funciona igual con ceros e intermitencia; el `√h` es la relación que `DT-010` advierte
+  que no es general. 52 semanas es un número entero de periodos del forecast: la semana `h` menos 52
+  cae sobre una semana histórica completa, sin prorratear; 365 días exigiría una segunda regla de
+  conversión. `k = 13` es un trimestre (`52/4`) y su ventana es comparable al horizonte. La referencia
+  provisional es una elección operativa: la media móvil exige menos histórico que naïve estacional (37
+  frente a 63 semanas) y su definición no depende de una única semana; no hay todavía evaluación de
+  desempeño que permita compararlos. El consumo bruto es el que usa U1 para `σ_H` (`DT-P14`); excluir
+  días rompería las semanas completas y la imputación es el método que `DT-011` aplaza. Ningún valor es
+  una política de negocio.
+- **Consecuencias:** En V1, U1 no consume el intervalo: calcula el stock de seguridad con la
+  variabilidad del consumo (`DT-031` §`V1-05`); el uso del intervalo por el motor (RML-006) sigue para
+  la Fase 5 (`DT-010`). Los productos con desabasto intenso pueden quedar subestimados, limitación
+  declarada hasta `DT-011`. Con el dataset 0.4.0 en `A = 2025-12-31`, los 95 productos elegibles tienen
+  156 semanas: no hay respaldos. `DT-011`, `DT-P23`, `DT-021`, `DT-P04` y la elección de la referencia
+  por desempeño siguen abiertos.
+- **Estado:** `ACEPTADA` (2026-10-02, decisión del responsable al autorizar U3). Detalle: `docs/05`
+  §19.8.
+
+## DT-057 — Persistencia y ejecución del forecast de U3
+
+- **Decisión:**
+  1. **Migración `0002`** con tres tablas, siguiendo `DT-055`:
+     - `model_versions`: clave única `(name, version)` y `created_at` técnico. Una fila por baseline
+       (`baseline.naive`, `baseline.seasonal_naive`, `baseline.moving_average`; `version = 1.0.0`;
+       `algorithm` = `NAIVE`, `SEASONAL_NAIVE`, `MOVING_AVERAGE`; `is_baseline = true`). En los
+       baselines, `trained_at`, `training_data_from`, `training_data_to`, `metrics`,
+       `baseline_metrics`, `status` y `external_ref` son `NULL`: no hay entrenamiento ni evaluación, y
+       el ciclo de vida de `docs/05` §13 es el de «cada modelo entrenado». CHECK
+       `is_baseline = (status IS NULL)`. `hyperparameters` (`jsonb`, obligatorio) lleva la definición
+       completa de `DT-056`.
+     - `calculation_runs`: `run_type` (`FORECAST` · `RECOMMENDATION`), `status` (`COMPLETED` ·
+       `FAILED`), `as_of_date`, `data_load_id` (FK, la carga `COMPLETED`), `reference_model_version_id`
+       (FK, obligatoria en `FORECAST`; sustituye al `model_version_id` propuesto en `docs/04` §9.6),
+       `config_sha256`, `summary` (`jsonb`: recuentos, productos excluidos o sin forecast con su motivo,
+       respaldos y versiones ejecutadas), `error` (solo en `FAILED`), `started_at`, `finished_at`.
+       Índice único parcial `(run_type, as_of_date, data_load_id, config_sha256) WHERE status =
+       'COMPLETED'`. Las columnas propias de U4 se añaden con U4.
+     - `forecasts`: `calculation_run_id`, `product_id`, `location_id`, `model_version_id` (FK),
+       `as_of_date`, `generated_at`, `period_start`, `period_end` (`= period_start + 7`),
+       `granularity`, `predicted_quantity`, `lower_bound`, `upper_bound` (`numeric`, CHECK
+       `0 ≤ lower ≤ predicted ≤ upper` y escala `≤ 6`), `confidence_level` (CHECK `0 < c < 1`),
+       `method_used`, `confidence_flag` (`STANDARD` · `INSUFFICIENT_HISTORY`), `is_primary`. Clave única
+       por ejecución `(calculation_run_id, model_version_id, product_id, location_id, period_start)` y
+       único parcial `(calculation_run_id, product_id, location_id, period_start) WHERE is_primary`.
+     - *Triggers* que rechazan `UPDATE` y `DELETE` en `forecasts` y en `calculation_runs`.
+  2. **Una ejecución por llamada** (C9): un único `calculation_run` persiste, por producto elegible,
+     las series de los tres baselines calculables, cada una con su `model_version_id`, y marca con
+     `is_primary` la que debe consumir U4 (la referencia o su respaldo, `DT-056`).
+  3. **Idempotencia** (C8): con el mismo `as_of_date`, la misma carga y la misma `config_sha256` (huella
+     del JSON canónico de modelos, referencia, horizonte, cuantización y política de catálogo) que una
+     ejecución `COMPLETED`, el resultado es `ALREADY_COMPUTED`: se devuelve su id y no se escribe nada.
+     Otra configuración crea otra ejecución. Las `FAILED` no bloquean.
+  4. **Ejecución:** `python -m app.runs forecast --as-of AAAA-MM-DD`, una fecha por llamada, validada
+     dentro de `[time_range.start, time_range.end)` de la carga `COMPLETED`; fuera de ese rango se
+     rechaza sin escribir. Bloqueo *advisory* propio; todo en una transacción; ante fallo, *rollback* y
+     fila `FAILED` en otra transacción. `runs` registra cada `model_versions` en su primer uso; si existe
+     con otros `hyperparameters`, es un error que obliga a subir la versión. Primera ejecución real:
+     `2025-12-31`. Sin backtesting.
+- **Contexto:** `docs/04` §9.6 proponía las columnas de trazabilidad y dejaba dos huecos: la clave única
+  conceptual de `docs/04` §3.14 no contempla ejecuciones (C8) y una ejecución con tres baselines no cabe
+  en un único `model_version_id` (C9).
+- **Alternativas:** una ejecución por baseline; persistir solo la serie primaria; rechazar la repetición
+  o duplicar las filas; mantener la clave de §3.14; marcar la referencia en `model_versions.status`.
+- **Razón:** Una ejecución es un hecho trazable y la salida es determinista, de modo que repetirla no
+  añade información. La clave por ejecución evita choques entre configuraciones que comparten una
+  versión. Persistir las tres series cumple US-050 («implementados» y disponibles) y sirve a la API
+  (`docs/07` §7). La referencia vive en la ejecución y deja libre la regla de «como máximo un
+  `PRODUCTION`» para el modelo de la Fase 5.
+- **Consecuencias:** En el modelo físico, la clave única de `docs/04` §3.14 queda sustituida por la
+  clave por ejecución. Con el dataset 0.4.0 en `2025-12-31`: 95 productos, 3 990 filas (95 × 3 × 14),
+  1 330 primarias, 5 excluidos. U4 decide la correspondencia entre las filas y el `forecast_id` de U1
+  y de `recommendations`, y qué ejecución consume *(decidido el 2026-10-03: `DT-060` y `DT-061`)*. `forecasts`, `model_versions` y `calculation_runs`
+  no llevan `data_origin` (`docs/04` §5.2).
+- **Estado:** `ACEPTADA` (2026-10-02, decisión del responsable al autorizar U3). Detalle: `docs/04`
+  §9.10.
+
+## DT-058 — Un forecast por corte de recomendación
+
+- **Decisión:** una ejecución de recomendaciones con corte `t` consume solo el forecast cuyo
+  `as_of_date` es exactamente `t`. La secuencia es `python -m app.runs forecast --as-of t` y después
+  `python -m app.runs recommend --as-of t`, ambas explícitas: **U4 no lanza el forecast**. En V1, `t`
+  debe ser el último día de la carga `COMPLETED` (`upper(time_range) − 1`, el `2025-12-31` para
+  `ds-6c8ad65b4999`), porque `inventory` es la instantánea al corte; cualquier otra fecha se rechaza
+  sin escribir. La simulación retrospectiva (inventario reconstruido desde los movimientos) queda
+  para la Fase 5.
+- **Contexto:** `docs/05` §2 pedía «forecast semanal, recálculo diario». `DT-046` ancla las semanas
+  en `as_of_date + 1` y U1 exige `forecast.start_date = as_of_date + 1` (`DT-052` (g)). `DT-046` dejaba
+  dos salidas abiertas (`DT-P21`).
+- **Alternativas:** (a) forecast por corte; (b) forecast vigente desplazado `d` días dentro de U1;
+  (c) reanclaje de las semanas en U4.
+- **Razón:** (b) reabre U1 (validación (g) y `demand_over_horizon`, `engine_version` MINOR) y, con 14
+  semanas (98 días) y `H ≤ 97`, cualquier `d ≥ 2` produce `FORECAST_TOO_SHORT` en los lead times
+  largos, lo que obligaría a ampliar el horizonte de U3. (c) crea un segundo punto de conversión de
+  granularidad, prohibido por `docs/06` §5.1 y `DT-019`, y separa las cantidades usadas de las
+  persistidas en `forecasts`. (a) no cambia U1 ni U3 y conserva la exactitud de `V1-04`.
+- **Consecuencias:** «recálculo diario» (`docs/05` §2) se lee como nueva instantánea → ejecución de
+  forecast → ejecución de recomendaciones con el mismo corte. El forecast sigue siendo semanal; lo
+  que se hace por corte es la ejecución. En V1, con un solo corte posible, **no se generan forecasts
+  diarios**. Con 14 semanas y `LT_MAX = 90`, `FORECAST_TOO_SHORT` no puede ocurrir en V1.
+- **Estado:** `ACEPTADA` (2026-10-03, decisión del responsable al autorizar U4); implementada y validada el mismo día (`docs/06` §16.13.5). Cierra `DT-P21`.
+  Detalle: `docs/06` §16.13.
+
+## DT-059 — Persistencia de las evaluaciones: `recommendations`
+
+- **Decisión:**
+  1. **Una fila inmutable por evaluación**, única por `(calculation_run_id, product_id, location_id)`,
+     para los tres `outcome`. `RECOMMEND` lleva sus magnitudes (`recommended_quantity > 0`,
+     `raw_quantity > 0`, `suggested_order_date = as_of_date`). `NO_NEED` se persiste con
+     `raw_quantity = 0` y **no** equivale a la ausencia de fila. `NOT_CALCULABLE` es una evaluación
+     válida con `reasons`, las marcas que correspondan y `NULL` en lo que U1 no calculó (`DT-053`). Un
+     fallo de la ejecución es `calculation_runs.status = 'FAILED'` y no deja recomendaciones:
+     **`NOT_CALCULABLE ≠ FAILED`**.
+  2. **Columnas:** `id`, `calculation_run_id`, `product_id`, `location_id`, `as_of_date`, `outcome`,
+     `reasons`, `flags`, `missing_policy_parameters` (`text[]` en el orden canónico de U1),
+     `forecast_id` (nulo si y solo si `FORECAST_MISSING ∈ reasons`), `suggested_supplier_id`,
+     `suggested_order_date`, `recommended_quantity` (`q_final`), `raw_quantity` (`raw_need`),
+     `reorder_point` (`S`), `safety_stock`, `lead_time_used_days`, `demand_during_lead_time`,
+     `inventory_position_at_calc` (`IP_decisión`), `policy_set` (`CHECK (policy_set =
+     'V1_PROVISIONAL')`), `policy_snapshot`, `calculation_inputs`, `engine_version` y `generated_at`
+     (`transaction_timestamp()`). `CHECK` por `outcome` y *trigger* de inmutabilidad.
+  3. **Sin `status`, `resolved_*`, `urgency` ni entidad de resolución en V1.** El `outcome` es un
+     resultado técnico inmutable; la decisión humana es un flujo separado que se modelará cuando exista
+     quien la escriba.
+  4. **Representación.** En JSON: `int` como decimal; `Fraction` con desarrollo decimal finito como
+     decimal exacto; `Fraction` periódica como `"p/q"` (por ejemplo `"270/7"`); `Decimal` aproximado
+     de U1 (28 cifras significativas) con su nombre en `approximate_terms` y los componentes B3
+     (`n`, `S1`, `S2`, `A`, `B`, `D`, `P`) para reconstruirlo. En `numeric`: exacto cuando es posible y,
+     para un racional periódico, 28 cifras significativas `ROUND_HALF_EVEN` calculadas desde el valor
+     exacto. Nunca `float`.
+  5. **`calculation_inputs`** = desglose completo con los nombres de U1 + bloque `forecast`
+     (`forecast_run_id`, `forecast_id`, modelo `{name, version}`, `method_used`, `confidence_flag`,
+     `start_date` y las 14 cantidades copiadas) + `input_sha256`.
+  6. **`input_sha256`** es el SHA-256 de la representación JSON canónica y normalizada de
+     `EvaluationInput` utilizada para persistencia. Las identidades técnicas autogeneradas de U3
+     (`forecast_id`, `model_version_id`) se representan por la identidad semántica del modelo (`name`,
+     `version`), de modo que la huella verifica las entradas semánticas utilizadas y no depende de IDs
+     técnicos generados por la base. Las colecciones van en orden canónico, los identificadores
+     conservados del dataset sí entran y no entran `generated_at` ni ids de ejecución. La huella sirve
+     para **verificar** que las entradas releídas son las mismas; **no** reconstruye las entradas por
+     sí sola.
+- **Contexto:** `docs/04` §3.16 mezcla el resultado calculado con el seguimiento humano; `docs/07`
+  §7.2 condicionaba la consulta de `NO_NEED` y `NOT_CALCULABLE` a `DT-P18`; `DT-051` deja a U4 la
+  persistencia de los racionales no decimales.
+- **Alternativas:** solo `RECOMMEND`; dos tablas; `status` mutable en la misma fila; guardar la
+  entrada completa en lugar de su huella.
+- **Razón:** cumple «todo el catálogo» (US-046) y la explicabilidad (US-045); un hecho calculado no se
+  muta (mismo criterio que `forecasts`, `DT-057`); no se crean columnas sin consumidor (`docs/04` §9.2).
+- **Consecuencias:** `/products/{id}/recommendation` devuelve siempre la evaluación. La
+  reconstrucción del contexto se hace desde la carga inmutable, las reglas de lectura versionadas
+  (`input_rules_version`) y `calculation_inputs`; `input_sha256` verifica que las entradas releídas
+  coinciden.
+- **Estado:** `ACEPTADA` (2026-10-03, decisión del responsable al autorizar U4); implementada y validada el mismo día (`docs/06` §16.13.5). Cierra `DT-P18`.
+  Detalle: `docs/04` §9.11.
+
+## DT-060 — `forecast_id`: forecast lógico y fila de anclaje
+
+- **Decisión:** el **forecast lógico** es la serie `(forecast_run_id, product_id, location_id)` con
+  `is_primary = true`: 14 filas con `period_start = as_of_date + 1 + 7(k−1)`, el mismo
+  `model_version_id`, `granularity = WEEKLY` y `method_used = BASELINE`; si no se cumple, la
+  ejecución termina en `FAILED`. **`forecast_id`** es el `id` de la fila h=1, que **ancla la serie
+  lógica**: no significa que la recomendación use una sola semana, sino las `K(H)` que necesita. El
+  mismo valor va en `Forecast.forecast_id` de U1 y en `recommendations.forecast_id`. `model_version`
+  de U1 = `model_version_id` de la serie; `weekly_quantities` = las 14 `predicted_quantity` en orden.
+  Las 14 cantidades se copian en `calculation_inputs`. Sin serie primaria: `forecast = None` y U1
+  devuelve `FORECAST_MISSING`.
+- **Contexto:** `docs/04` §3.16 prevé un solo `forecast_id`; `DT-057` persiste 14 filas por serie y
+  deja a U4 la correspondencia.
+- **Alternativas:** entidad padre en U3; array de 14 ids; referencia compuesta.
+- **Razón:** no reabre U3, conserva una clave foránea válida (un índice único parcial no puede ser
+  destino de una clave foránea) y la copia hace la recomendación autoexplicativa.
+- **Estado:** `ACEPTADA` (2026-10-03, decisión del responsable al autorizar U4); implementada y validada el mismo día (`docs/06` §16.13.5).
+
+## DT-061 — Ejecución de forecast consumida: `forecast_run_id`
+
+- **Decisión:** `calculation_runs.forecast_run_id` (FK a `calculation_runs(id)`), obligatoria si y
+  solo si `run_type = 'RECOMMENDATION'`; en `RECOMMENDATION`, `reference_model_version_id` es nulo. U4
+  consume exclusivamente la ejecución `FORECAST` `COMPLETED` con el mismo `as_of_date`, el mismo
+  `data_load_id` y el `config_sha256` de U3 vigente en el código (única por el índice parcial de U3).
+  Nunca «la última» ni por `generated_at`; nunca ejecuciones `FAILED`, configuraciones antiguas, otra
+  carga ni series no primarias. Si no existe, U4 rechaza sin escribir y no lanza el forecast. La
+  coherencia de la FK (tipo, estado, corte y carga) se verifica en código, dentro de la transacción,
+  y en pruebas.
+- **Razón:** selección explícita y determinista; la configuración de U3 identifica unívocamente la
+  ejecución.
+- **Estado:** `ACEPTADA` (2026-10-03, decisión del responsable al autorizar U4); implementada y validada el mismo día (`docs/06` §16.13.5).
+
+## DT-062 — Versión del motor, política e idempotencia de la ejecución de recomendaciones
+
+- **Decisión:**
+  1. **`engine_version`:** `calculation_runs.engine_version` (obligatoria si y solo si
+     `RECOMMENDATION`) y `recommendations.engine_version` toman la constante `ENGINE_VERSION` de U1
+     (valor actual `"0.1.0"`, que U4 no fija en su código); la ejecución y sus filas deben coincidir.
+  2. **Política:** `policy_set = "V1_PROVISIONAL"`, único valor y sin nombres equivalentes. U4
+     consume `V1_PROVISIONAL_PARAMETERS` de U1 (`R = 7`, `z = 33/20`, `N = 12`, `N_MIN = 3`,
+     `LT_MAX = 90`) y no redefine sus valores. `policy_snapshot` =
+     `{"policy_set":"V1_PROVISIONAL","R":7,"z":"1.65","N":12,"N_MIN":3,"LT_MAX":90}`, con `z` como
+     decimal exacto, nunca `float`. Sin `policy_version`.
+  3. **Idempotencia:** `config_sha256` = SHA-256 del JSON canónico de `run_type = "RECOMMENDATION"`,
+     `engine_version`, la política completa con `policy_set = "V1_PROVISIONAL"`,
+     `forecast_config_sha256`, `forecast_selection`, `catalog_policy = "ALL_PRODUCT_LOCATIONS"`,
+     `input_rules_version` y la representación (28 cifras, `ROUND_HALF_EVEN`); sin *timestamps*, ids
+     autogenerados, `generated_at` ni estado humano. Con una `COMPLETED` igual en `(RECOMMENDATION,
+     as_of_date, data_load_id, config_sha256)`: `ALREADY_COMPUTED`, sin escribir nada.
+  4. **Concurrencia:** bloqueo *advisory* sobre esa identidad.
+  5. **Atomicidad:** una transacción; ante cualquier fallo, incluido `InvalidInputError`, *rollback* y
+     fila `FAILED` en otra transacción, con `product_id` y `location_id` en el error.
+  6. **`data_origin`:** la ejecución exige una carga `SYNTHETIC` (`DT-063`); U1 no lee
+     `data_origin`.
+- **Razón:** misma pauta que `DT-057`; las versiones y la política forman parte de la identidad de la
+  salida (`DT-051`).
+- **Estado:** `ACEPTADA` (2026-10-03, decisión del responsable al autorizar U4); implementada y validada el mismo día (`docs/06` §16.13.5).
+
+## DT-063 — U4 V1 solo se ejecuta sobre cargas `SYNTHETIC`
+
+- **Decisión:** `python -m app.runs recommend` rechaza la ejecución, sin escribir nada, si
+  `data_loads.data_origin` de la carga `COMPLETED` no es exactamente `'SYNTHETIC'` (también si es
+  `NULL`). El motor sigue sin leer `data_origin` (`DT-045`, `docs/06` §16.7).
+- **Contexto:** `DT-031` §V1-05 puentea la política solo dentro del entorno sintético y exige que,
+  con datos reales, rija `BR-009`. `DT-P16` pregunta cómo impedirlo sin que el motor lea
+  `data_origin` y **no lo decide**. U4 es el primer componente que aplica `V1_PROVISIONAL` a datos
+  persistidos.
+- **Alternativas:** (a) rechazar la ejecución si la carga no es `SYNTHETIC`; (b) evaluar las cargas
+  `REAL` sin los parámetros puenteados (`R`, `z`), para obtener `NOT_CALCULABLE` con
+  `MISSING_POLICY_PARAMETER`; (c) no poner guarda.
+- **Razón:** (c) permitiría aplicar en silencio una política provisional a datos reales. (b) es un
+  posible mecanismo definitivo, pero elegirlo es precisamente `DT-P16`. (a) es la restricción mínima
+  que hace cumplir `DT-031` sin decidir `DT-P16`. No viola `BR-007`: no altera ninguna regla de
+  cálculo; es una precondición de alcance de la ejecución.
+- **Consecuencias:** con datos `REAL`, U4 V1 no produce recomendaciones hasta que se decida
+  `DT-P16`. Con `DT-044` (un linaje por base), una carga `REAL` sería otra base; el dataset 0.4.0 no
+  se ve afectado. Cuando se decida `DT-P16`, `DT-063` se revisa o se sustituye. **`DT-P16` sigue
+  abierta.**
+- **Estado:** `ACEPTADA` (2026-10-03, decisión del responsable al autorizar U4); implementada y validada el mismo día (`docs/06` §16.13.5).
+
+## DT-064 — Dependencias de U5: API y pruebas
+
+- **Decisión:** dos grupos opcionales nuevos en `backend/pyproject.toml`; `dependencies = []` y
+  `db = ["psycopg[binary]==3.3.6"]` no cambian:
+  - `api = ["fastapi==0.141.1", "starlette==1.3.1", "pydantic==2.13.5", "uvicorn==0.52.4"]`
+    (`uvicorn` sin extras);
+  - `test = ["httpx2==2.13.1"]`, cliente del `TestClient` de Starlette.
+
+  Instalación de U5: `pip install -e ".[db,api,test]"`. Ninguna otra dependencia: ni SQLAlchemy, ni
+  `psycopg_pool`, ni `pydantic-settings`, ni `python-dotenv`, ni bibliotecas JWT, ni ORM, ni
+  observabilidad, ni límite de tasa.
+- **Contexto:** `DT-043` autoriza las dependencias al abrir cada unidad y nombra FastAPI y Pydantic para
+  U5 (`CLAUDE.md` §5). Ejecutar la API exige un servidor ASGI y probarla, el cliente del `TestClient`;
+  ninguno estaba nombrado. FastAPI no fija límite superior para Starlette.
+- **Alternativas:** FastAPI 0.142.x; `fastapi[standard]`; sin servidor; `httpx==0.28.1` para las
+  pruebas.
+- **Razón:** FastAPI 0.142.x añade `opentelemetry-api` como dependencia obligatoria y era de la semana de
+  la consulta; `[standard]` arrastra CLI, plantillas y *multipart* sin consumidor; sin servidor la API no
+  se ejecuta. Starlette se fija en 1.3.1, la versión vigente al publicarse FastAPI 0.141.1, porque la
+  línea 1.x cambia deprisa. El `TestClient` de Starlette 1.3.1 importa `httpx2` y solo recurre a `httpx`
+  como alternativa obsoleta, con `StarletteDeprecationWarning`; por eso las pruebas usan
+  `httpx2==2.13.1` y no `httpx`.
+- **Verificación (2026-10-03, PyPI; datos externos, no decisiones del proyecto):** FastAPI 0.141.1
+  (`starlette>=0.46.0`, `pydantic>=2.9.0`, Python ≥ 3.10); Starlette 1.3.1 (`anyio>=3.6.2,<5`; extra
+  `full` con `httpx2>=2.0.0`); Pydantic 2.13.5 (`pydantic-core==2.46.5`); uvicorn 0.52.4; `httpx2`
+  2.13.1 (Python ≥ 3.10, publicado el 2026-09-23, no retirado). La resolución sin instalar
+  (`uv pip compile`, Python 3.11) de las cinco versiones junto con `psycopg[binary]==3.3.6` da 18
+  paquetes sin conflicto (transitivos: `annotated-doc`, `annotated-types`, `anyio`, `click`, `h11`,
+  `httpcore2`, `idna`, `pydantic-core`, `truststore`, `typing-extensions`, `typing-inspection`,
+  `psycopg-binary`). Inspección estática de las ruedas: todos los nombres que usa
+  `starlette/testclient.py` 1.3.1 (`Client`, `BaseTransport`, `ByteStream`, `Request`, `Response`,
+  `USE_CLIENT_DEFAULT`, `_client.UseClientDefault` y los alias de `_types`) existen en `httpx2` 2.13.1.
+  La prueba en ejecución llega con la implementación (criterio 1 de `docs/07` §7.5).
+- **Consecuencias:** `supply_engine` sigue sin dependencias; cambiar cualquiera de estas versiones exige
+  una decisión nueva.
+- **Estado:** `ACEPTADA` (2026-10-03, decisión del responsable al autorizar U5); implementada y validada el mismo día (`docs/07` §7.5).
+
+## DT-065 — Autenticación local de U5: `TokenValidator` de desarrollo, `APP_ENV` y roles
+
+- **Decisión:**
+  1. Puerto `TokenValidator` en `app/api`: `validate(token) → Identity{subject_id, roles}`; un token no
+     válido lanza un error que la API traduce a 401. La Fase 8 sustituye la implementación (Entra ID),
+     no el puerto.
+  2. `DevTokenValidator`: tokens **opacos** `^dev-[A-Za-z0-9_-]{16,64}$`, sin JWT, sin firma y sin
+     expiración (`exp`/`nbf` son de Entra ID, `docs/10` §2.3). Registro token → `{subject_id, roles}`:
+     en las pruebas, construido en el código; en local, la variable `DEV_AUTH_IDENTITIES` (JSON) de un
+     `.env` ignorado por Git, cargado por el shell o por `env_file` de Docker (la aplicación solo lee
+     `os.environ`). `subject_id` con `^[a-z0-9-]{1,64}$`; `roles` no vacío y dentro de `VIEWER`,
+     `ANALYST`, `PLANNER`, `ADMIN`. Un registro inválido o vacío impide arrancar. Comparación en tiempo
+     constante; los tokens nunca se registran (`docs/10` §4).
+  3. `APP_ENV` obligatorio, sin valor por defecto, con vocabulario `local | dev | staging | prod`.
+     Solo `local` (que incluye las pruebas) arranca la API con el validador de desarrollo; `dev`,
+     `staging`, `prod`, la variable ausente o cualquier otro valor la hacen negarse a arrancar: no hay
+     validador de Entra ID hasta la Fase 8.
+  4. Autorización: una dependencia por endpoint exige que los roles de la identidad intersequen los
+     permitidos por `docs/07` §7.2, sin jerarquía implícita (§7.1). Sin cabecera: 401
+     `AUTHENTICATION_REQUIRED`; esquema distinto de `Bearer`, token mal formado o desconocido: 401
+     `INVALID_TOKEN`; ambos con `WWW-Authenticate: Bearer`. Rol no permitido: 403 `FORBIDDEN`.
+- **Contexto:** `docs/10` §15 pide identidades ficticias que solo se activen en local y en pruebas y que
+  se nieguen a arrancar en `dev`, `staging` y `prod`; el vocabulario de `APP_ENV` de `docs/10` §6 no
+  tenía `local`, aunque `docs/12` §5 define el entorno Local.
+- **Alternativas:** JWT local firmado; tokens que declaran sus propios roles; activación implícita sin
+  `APP_ENV`.
+- **Razón:** lo mínimo que satisface `docs/10` §15 sin inventar criptografía y sin poder activarse por
+  accidente en un entorno desplegado.
+- **Estado:** `ACEPTADA` (2026-10-03, decisión del responsable al autorizar U5); implementada y validada el mismo día (`docs/07` §7.5).
+
+## DT-066 — Contrato de lectura de la API V1: ejecución por defecto, `provenance` y convenciones
+
+- **Decisión:**
+  1. **Ejecución por defecto** de `/forecasts`, `/products/{id}/forecast`, `/recommendations` y
+     `/products/{id}/recommendation`: la carga actual (la única `data_loads` `COMPLETED`, `DT-044`) →
+     entre sus ejecuciones del tipo correspondiente con `status = 'COMPLETED'`, el mayor `as_of_date` →
+     a igualdad, el mayor `id`. Nunca por `generated_at` ni `finished_at`; nunca `FAILED`. Sin
+     ejecución: 404 `RUN_NOT_FOUND`. Un `run_id` explícito debe existir, ser del tipo esperado y estar
+     `COMPLETED`; si no, 404 `RUN_NOT_FOUND`. `provenance.run_id` dice siempre cuál se usó.
+  2. **Forecasts:** solo la serie primaria (`is_primary`, la que consume U4, `DT-060`), paginada por
+     serie, con el modelo `{name, version}` de cada serie; las series no primarias no se exponen en V1.
+  3. **Recomendaciones:** las tres `outcome` se consultan; `NO_NEED` y `NOT_CALCULABLE` nunca son 404 ni
+     error técnico (`DT-059`). El detalle devuelve el desglose tal como se guardó.
+  4. **`provenance`** en toda respuesta con forecast o recomendación: `data_origin`, `dataset_version`,
+     `generator_version`, `data_load_id`, `as_of_date`, `run_id`; `model_version` en forecasts;
+     `engine_version`, `policy_set` y `forecast_run_id` en recomendaciones; `notices`.
+     `SYNTHETIC_DATA` si y solo si `data_loads.data_origin = 'SYNTHETIC'`; `V1_PROVISIONAL_POLICY` si y
+     solo si `policy_set = 'V1_PROVISIONAL'` (solo en recomendaciones); en ese orden; ningún otro código.
+  5. **Errores** con el formato de `docs/07` §1 y los códigos de §7.4, incluido 405 para escrituras;
+     sin trazas, SQL, hosts ni valores recibidos.
+  6. **`X-Correlation-ID`**: se acepta el del cliente si cumple `^[A-Za-z0-9._-]{8,64}$`; si no, el
+     servidor genera un UUID4. Va en la cabecera de toda respuesta, en el cuerpo de todo error y en el
+     log JSON de cada petición.
+  7. **Paginación** de §1 (`page ≥ 1`, `page_size` 1–200, por defecto 50) con desempate por `id`; página
+     fuera de rango → 200 con `items` vacío.
+  8. **Números:** `Decimal` como texto JSON; ningún `float`.
+  9. **Solo lectura:** consultas de SQL escrito a mano en `app/db/read/` (`docs/03` §16.2), conexión por
+     petición con `read_only = True` (una escritura falla con SQLSTATE 25006); `api` no importa
+     `supply_engine`, `forecasting` ni `runs`; ningún `GET` recalcula.
+  10. **`/health`**: `{status, version}`, público y sin tocar PostgreSQL. `/docs` y `/openapi.json`
+      públicos en `local`; `/redoc` desactivado; esquema de seguridad `HTTPBearer`.
+  11. **CORS y límite de tasa:** aplazados (Fase 7 y Fases 12–14), sin configuración ni dependencia.
+- **Contexto:** `docs/07` §7.2 fijaba «la última ejecución `FORECAST` completada» sin desempate y no
+  daba regla ni 404 para las recomendaciones; §1 y §7.1 dejaban por concretar `correlation_id`,
+  `provenance` y la representación numérica.
+- **Alternativas:** última por `finished_at`/`generated_at`; `run_id` obligatorio; reproducir la
+  configuración vigente de U4 (exigiría `api → runs`, prohibido por `docs/03` §16.4).
+- **Razón:** la regla depende solo del estado de la base, ignora `FAILED` y otras cargas y es la misma
+  para forecasts y recomendaciones.
+- **Estado:** `ACEPTADA` (2026-10-03, decisión del responsable al autorizar U5); implementada y validada el mismo día (`docs/07` §7.5).
+
+## DT-067 — Historia de consumo de `/products/{id}/history` (US-033, RF-009)
+
+- **Decisión:**
+  1. Fuente: solo `consumption` (demanda satisfecha), nunca `demand`; `occurred_on` sin conversión de
+     zona; sin corrección por desabasto (`DT-011` sigue abierta); `stockout_days` por periodo cuenta
+     los días con `is_stockout_affected`.
+  2. Rango `date_from`–`date_to` inclusivo y opcional (por defecto, la primera y la última fecha con
+     consumo del producto); `date_from > date_to` → 400 `INVALID_DATE_RANGE`.
+  3. `granularity` `daily | weekly | monthly`, por defecto `weekly`; semanas ISO de calendario (lunes a
+     domingo) y meses de calendario; `period_end` exclusivo.
+  4. Cada periodo: `period_start`, `period_end`, `days`, `days_observed`, `quantity` (Σ consumo),
+     `stockout_days`, `complete`. Un día sin fila es «no observado» y no cuenta como cero; un periodo es
+     completo si cae entero dentro del rango y todos sus días están observados.
+  5. Estadísticos solo sobre los n periodos completos: `periods_used = n`; `mean = Σqᵢ/n`;
+     **`std_dev` = desviación estándar poblacional** `√(Σ(qᵢ − mean)²/n)`, sin corrección de Bessel ni
+     desviación muestral; `cv = std_dev/mean` (nulo si `mean = 0`); `zero_periods` = periodos completos
+     con `quantity = 0`. Con n = 1, `std_dev = 0`; con n = 0, todos nulos.
+  6. Cálculo exacto (`Fraction`); la raíz en `Decimal` con 28 cifras; se informa con 6 decimales
+     `ROUND_HALF_EVEN`.
+- **Contexto:** RF-009, US-033 y `docs/07` piden media, desviación, coeficiente de variación y periodos en
+  cero sin fijar estimador, periodos ni tratamiento de huecos.
+- **Alternativas:** desviación muestral (n − 1); semanas ancladas en el corte (como el proveedor de U3,
+  `docs/05` §19); rellenar huecos con cero.
+- **Razón:** la desviación poblacional describe el conjunto observado que se usa, es la misma que usa U1
+  (`DT-P14`, `σ_H` poblacional) y queda definida con n = 1. Las semanas ISO son estables aunque cambie el
+  rango; rellenar huecos inventaría datos.
+- **Estado:** `ACEPTADA` (2026-10-03, decisión del responsable al autorizar U5); implementada y validada el mismo día (`docs/07` §7.5).
+
+## DT-068 — Entrega y contrato de la explicación por plantilla (U6)
+
+- **Decisión:**
+  1. **Entrega.** `GET /api/v1/recommendations/{recommendation_id}/explanation`: un recurso hijo de la
+     recomendación, de solo lectura, determinista e idempotente. No se usa
+     `POST /api/v1/assistant/explain/{recommendation_id}` (`docs/07` §2.12): `/assistant/*` queda reservado
+     al asistente con LLM de la Fase 10. Es una **ampliación** de la superficie aceptada: U5 = 13 endpoints
+     (`DT-066`, `docs/07` §7.4), U6 añade el **endpoint 14**. Ninguna respuesta de U5 cambia.
+  2. **Autenticación y roles.** `Authorization: Bearer` con el `TokenValidator` de U5 (`DT-065`); los
+     cuatro roles `VIEWER`, `ANALYST`, `PLANNER` y `ADMIN`, sin jerarquía, los mismos del detalle
+     `GET /api/v1/recommendations/{id}` (`docs/07` §3: «Asistente de IA — Explicaciones» para los cuatro).
+     401 y 403 exactamente como en U5; 404 `RECOMMENDATION_NOT_FOUND`; 422 con un `recommendation_id` no
+     válido. Formato de error, `X-Correlation-ID` y conexión de solo lectura: los de `DT-066`. Sin 503:
+     la plantilla no depende de ningún servicio externo.
+  3. **Respuesta 200**: `{recommendation_id, run_id, outcome, explanation {generator, status, narrative,
+     warning}, facts[], flags[], reasons[], reason_details[], missing_policy_parameters[], provenance}`.
+     `facts[]` = `{key, value, display, unit}`; `reason_details[]` = `{code, text}`; `provenance` es el
+     bloque de recomendaciones de `DT-066` (con `notices`). `status`: `VERIFIED` (narrativa generada y
+     verificada), `DEGRADED` (narrativa descartada, `DT-069`) o `NOT_APPLICABLE` (`NOT_CALCULABLE`).
+  4. **`ExplanationContext`** inmutable con `kind = RECOMMENDATION_EXPLANATION`, `recommendation_id`,
+     `run_id`, `outcome`, `facts`, `flags`, `reasons`, `missing_policy_parameters`, `lead_time_source`,
+     `unit_of_measure` y `provenance`. No es una copia del `RecommendationDetail`. Se construye **solo**
+     con valores persistidos: la fila de `recommendations` (`calculation_inputs.breakdown`, columnas
+     `flags`, `reasons`, `missing_policy_parameters`), el contexto de la ejecución (`DT-066`) y
+     `products.unit_of_measure`. U6 **lee → transforma → explica**; nunca recalcula ni llama a U1.
+  5. **`facts[]`**: vocabulario cerrado, en este orden: `q_final`, `raw_need`, `safety_stock`,
+     `target_level`, `lead_time_days`, `uncapped_lead_time_days`, `review_period_days`,
+     `coverage_horizon_days`, `demand_over_horizon`, `inventory_position_decision`,
+     `inventory_position_accounting`, `total_in_transit`, `effective_in_transit`, `moq`,
+     `order_multiple`, `q_moq`, `on_hand`, `reserved` (claves de `calculation_inputs.breakdown`). Contiene
+     **exactamente** las cifras que la plantilla del `outcome` puede usar (`docs/09` §14.5): sin la frase
+     condicionada, sin su cifra. `unit` ∈ `QUANTITY` · `DAYS` · `FACTOR` (`FACTOR` existe en el
+     vocabulario y ningún hecho de V1 lo usa). Fuera de `facts[]`: `a`, `b`, `d`, `p`, `s1`, `s2`,
+     `sigma_window_count`, `lead_time_observation_count`, `z`, `sigma_h`, `demand_over_lead_time`,
+     `forecast_id` y demás ids, `effective_lines`, `weekly_quantities`, `as_of_date`, `horizon_start` y
+     `engine_version`.
+  6. **Unidad de medida.** `api` lee `products.unit_of_measure` del producto de la recomendación con
+     `db/read` y la entrega como metadato `unit_of_measure` del contexto; no es una cifra ni entra en
+     `facts[]`. La narrativa escribe las cantidades seguidas del código tal como está en `products`
+     (`EACH`, `BOX`, `KG`), nunca el genérico «unidades». U4 no cambia.
+  7. **Plantillas** en `backend/app/genai/templates.py`, con `string.Template` de la biblioteca estándar:
+     una por `RECOMMEND` y otra por `NO_NEED`, frases fijas por marca, por razón y de provisionalidad.
+     Texto normativo en `docs/09` §14.5. Sin motores de plantillas, archivos, base de datos ni servicios.
+  8. **`NOT_CALCULABLE`**: `narrative = null`, `facts = []`, `status = NOT_APPLICABLE`; se conservan
+     `reasons`, `reason_details` (frase fija sin cifras por razón, en el orden canónico de `docs/06`
+     §16.11.4), `missing_policy_parameters` y `provenance`.
+  9. **US-048** («cada recomendación tiene una explicación») se interpreta así: `RECOMMEND` y `NO_NEED` →
+     explicación narrativa; `NOT_CALCULABLE` → explicación estructurada, `narrative = null`.
+  10. **Versionado:** `explanation.generator = "template/1.0.0"` (SemVer, mismo criterio que
+      `engine_version`, `DT-051`); todo cambio de texto que altere la narrativa sube la versión. Sin
+      `template_id` ni `explanation_version`: el `outcome` elige la plantilla y la explicación no se persiste.
+  11. **Inmutabilidad:** `@dataclass(frozen=True, slots=True)`, colecciones `tuple`, valores `str` o
+      enumeraciones de texto; ningún `dict` ni `list` dentro del contexto; el contexto copia sus entradas.
+      La serialización HTTP es de `api`.
+  12. **Arquitectura:** `api → genai`; `genai` no importa `api`, `db`, `psycopg`, `supply_engine`,
+      `forecasting` ni `runs`, no recibe conexiones ni funciones de cálculo y solo usa la biblioteca
+      estándar. Sin dependencias nuevas.
+  13. **Fuera de U6:** LLM, RAG, Azure OpenAI, embeddings, AI Search, `DocumentRetriever`, prompts, chat,
+      generación libre, explicaciones personalizadas, persistencia de explicaciones y CU-2 a CU-5; también
+      **prioridad, riesgo, urgencia y «qué ocurre si no se actúa»** de CU-1 (`docs/09` §4), que dependen
+      de `BR-X03`, abierta.
+- **Contexto:** `docs/09` §14 fijaba el flujo, la frontera y la verificación, pero no la vía de entrega
+  (`docs/07` §2.12 frente a §7.3 y §7.4), el conjunto exacto de cifras (§14.2 frente a `docs/06` §13), la
+  unidad de medida ni el caso `NOT_CALCULABLE`. Dossier de U6 (2026-10-04), alternativas A1, A2, B y C.
+- **Alternativas:** A1 `POST /assistant/explain` (contradice la V1 de solo lectura); B, un campo en el
+  detalle (cambia dos respuestas de U5 y acopla a ellas un generador futuro con costo y fallos, contra
+  RNF-010); C, solo el módulo (US-048 sin consumidor; contradice `docs/07` §7.3).
+- **Razón:** la explicación por plantilla es una representación derivada de una recomendación
+  persistida: un `GET` sobre ella es la forma de solo lectura, idempotente y de menor exposición, y no
+  toca ninguna respuesta existente.
+- **Consecuencias:** `docs/07` §7.2 pasa a 14 rutas (13 implementadas por U5; la 14 llega con U6);
+  `tests/api` (`ENDPOINTS`, OpenAPI con 14 rutas) y la matriz de roles se amplían en la implementación;
+  `db/read` recibe una lectura aditiva para `unit_of_measure`.
+- **Estado:** `ACEPTADA` (2026-10-04, decisión del responsable al autorizar U6); implementada y validada el mismo día (`docs/09` §14.6).
+
+## DT-069 — Presentación, verificación y degradación de cifras (U6, RS-010)
+
+- **Decisión:**
+  1. **`Fact`** = `{key, value, display, unit}`. `value` es la cadena persistida en
+     `calculation_inputs.breakdown`, sin tocar. `display` es la **única** representación que puede
+     aparecer en la narrativa; se calcula **una sola vez**, al construir el contexto.
+  2. **`display`**, desde `value`, sin `float`:
+     - entero (`"242"`): tal cual;
+     - racional `"p/q"` o decimal exacto: `Fraction` exacto → 6 decimales `ROUND_HALF_EVEN`;
+     - término aproximado (`approximate_terms`, `Decimal` de 28 cifras, `docs/06` §16.13.3): ese `Decimal`
+       → 6 decimales `ROUND_HALF_EVEN`;
+     - después se eliminan los ceros finales y el punto si queda solo (`1.650000` → `1.65`, `2.500000` →
+       `2.5`, `3.000000` → `3`); el cero es `0`, sin signo;
+     - separador decimal `.`, sin separador de miles. Es la misma precisión de `DT-067` y de los forecasts
+       de U3; no se crea ninguna nueva.
+  3. **Regla crítica:** el renderizador y el verificador usan exactamente la misma cadena `display`. No
+     existe una segunda operación de redondeo ni una comparación numérica.
+  4. **Cifra narrativa:** toda coincidencia maximal de `-?\d+(?:\.\d+)?` en el texto final. Es válida si y
+     solo si es **igual, como cadena**, al `display` de algún `Fact` del contexto. Sin tolerancia y sin
+     volver a convertir a número.
+  5. **Plantillas:** ningún dígito ni `%` literal; ni fechas, ni SKU, ni versiones, ni identificadores,
+     ni números escritos con letras. Las únicas cifras de la narrativa salen de placeholders de
+     `facts[]`. Los placeholders de texto (`unit_of_measure`, procedencia del plazo) no contienen dígitos.
+     A la izquierda de un placeholder numérico no hay dígito, `.` ni `-`; a la derecha no hay dígito, y
+     un `.` solo puede ir seguido de espacio o del fin del texto. Las restas se escriben con palabras.
+  6. **Degradación (RS-010, RNF-010):** si alguna cifra no es válida, el verificador lanza la excepción
+     interna `UnverifiedFigureError`; el servicio responde **HTTP 200** con `status = DEGRADED`,
+     `narrative = null` y `warning = NARRATIVE_UNVERIFIED`, y conserva `facts`, `flags`, `reasons`,
+     `reason_details`, `missing_policy_parameters` y `provenance`. No devuelve el texto rechazado, ni una
+     traza, ni un error HTTP. Registra el evento con su `correlation_id`. El aviso no se añade a
+     `provenance.notices` ni la modifica.
+     *(Aclaración de la implementación, 2026-10-04: la degradación cubre **solo** cifras ajenas en el texto
+     generado. Una violación interna del contrato —un hecho que la plantilla necesita y falta, la unidad o la
+     procedencia del plazo ausentes o desconocidas, un `outcome` desconocido— no es RS-010: lanza
+     `ExplanationError` y la API responde el 500 `INTERNAL_ERROR` uniforme de `DT-066`. Con los datos que
+     garantizan las restricciones de U4 no ocurre.)*
+  7. **Prueba RS-010:** un `TextGenerator` de prueba que introduce una cifra ajena (por ejemplo `999`, una
+     fecha, un SKU y un `-5` sin hecho) produce `DEGRADED` con los datos conservados.
+  8. **Provisionalidad:** los avisos son exactamente los de `DT-066` (`SYNTHETIC_DATA`,
+     `V1_PROVISIONAL_POLICY`) en `provenance.notices`. Con narrativa, una frase fija al final dice que las
+     cifras son provisionales y que no constituyen una recomendación de negocio definitiva (`docs/09`
+     §14.5). Con `NOT_CALCULABLE` o `DEGRADED` no hay narrativa y la provisionalidad queda solo en
+     `notices`. Ningún aviso nuevo.
+- **Contexto:** U4 persiste enteros, decimales exactos, racionales `"p/q"` y `Decimal` de 28 cifras
+  (`docs/06` §16.13.3); copiarlos al texto lo haría ilegible, y `docs/09` §8 y §14.3 exigían verificar sin
+  definir qué es una cifra ni cómo se degrada.
+- **Alternativas:** cifras literales; 2 decimales (precisión nueva); comparación numérica con tolerancia;
+  error HTTP al degradar.
+- **Razón:** una sola cadena para mostrar y verificar elimina los falsos positivos por redondeo; la
+  igualdad exacta de cadenas no admite ambigüedad; responder 200 con los datos cumple RNF-010.
+- **Consecuencias:** las comparaciones entre cifras mostradas pueden diferir en la sexta cifra decimal
+  de las exactas; por eso las plantillas no hacen aritmética en el texto. Una futura LLM (Fase 10) que
+  escriba números con letras no la detectaría este verificador: se revisará entonces.
+- **Estado:** `ACEPTADA` (2026-10-04, decisión del responsable al autorizar U6); implementada y validada el mismo día (`docs/09` §14.6).
+
+## DT-070 — Fase 7: interfaz React V1 (alcance, stack, autenticación local y contrato con la API)
+
+- **Decisión** (Fase 7 = `frontend/`, consumidor de la API V1 de solo lectura; no cambia U1–U6):
+  1. **Alcance (F7-01).** Sí: US-070 (estructura y navegación), US-072 sin el filtro «por debajo del punto
+     de reorden» (`docs/07` §7.3), US-073 **sin acciones** (lista y detalle), US-074 (detalle con
+     `CalculationBreakdown`), US-048 (explicación de U6) e historial de consumo (RF-009). US-075 **parcial**:
+     forecast, banda nominal, `confidence_flag`, método y modelo, con historia y forecast separados y sin
+     afirmar que la incertidumbre está validada; su cierre depende de US-055 (Fase 5). No: US-071 (dashboard
+     priorizado) y US-076 (riesgos y proveedores), acciones sobre recomendaciones, administración,
+     asistente y exportación. Nada que dependa de `BR-X03` (riesgo, prioridad, urgencia, cobertura, «qué
+     ocurre si no se actúa»). `GET /runs/{run_id}` solo como enlace desde `provenance.run_id` para PLANNER y
+     ADMIN.
+  2. **Routing (F7-02).** URLs estables por vista; filtros, paginación y selección en la URL, nunca solo en
+     memoria de React.
+  3. **Autenticación (F7-03).** La de U5 (`DT-065`): el usuario pega un token `dev-…`, se valida con
+     `GET /api/v1/me` y se guarda **solo en memoria**; al recargar se vuelve a autenticar; logout descarta el
+     token; cada petición lleva `Authorization: Bearer`; 401 → login; 403 → se conserva la sesión. Sin
+     `sessionStorage`, `localStorage`, MSAL, Entra ID, OAuth ni OIDC (Fase 8). Ningún token en el código, en
+     variables de build ni en el repositorio. Un `AuthProvider` aísla el mecanismo para sustituirlo en la
+     Fase 8 sin tocar las vistas.
+  4. **Roles (F7-04).** Copia explícita de la matriz de `docs/07` §7.2 (los cuatro roles en todo salvo
+     `/history`: ANALYST, PLANNER, ADMIN; `/runs`: PLANNER, ADMIN), sin jerarquía, con los `roles` de `/me`.
+     La navegación oculta lo no autorizado; un 403 del backend muestra «Sin permiso para ver esto» sin
+     cerrar sesión. La seguridad sigue en el backend (`docs/10` §2, RS-003).
+  5. **Layout (F7-05).** `AppShell` con navegación, contenido y estados globales de carga y error. La
+     navegación muestra solo lo disponible: Productos, Inventario, Recomendaciones, Predicciones (y el
+     historial dentro del detalle de producto). Dashboard priorizado, Riesgos, Proveedores, Administración y
+     Asistente no aparecen como funcionalidad activa.
+  6. **Diseño visual (F7-06).** Neutro y sobrio, sin identidad corporativa definitiva, con tokens de diseño
+     centralizados; interfaz en español; estado nunca solo por color; esqueletos durante la carga; unidades
+     siempre visibles.
+  7. **Estado (F7-07).** Estado del servidor con la librería de *data fetching*; sesión en un contexto de
+     React; filtros, paginación y selección en la URL; el resto, local al componente. Sin Redux ni Zustand.
+  8. **Cliente de API (F7-08).** Fino, sin recalcular nada, con base **relativa `/api`**. Tipos **generados
+     desde el OpenAPI** de la API (`openapi-typescript`, a partir de `GET /openapi.json` de la API local);
+     el archivo generado se versiona y se regenera con un script de npm cuando cambie el contrato; no se
+     duplica el contrato a mano.
+  9. **Errores (F7-09).** Un `ErrorState` común: 401 → login; 403 → «Sin permiso para ver esto»; 404 → «no
+     encontrado» o estado vacío según el endpoint (p. ej. producto sin forecast o sin evaluación en la
+     ejecución); 400/422 → filtro o entrada inválida, sin mostrar el valor; 500 → mensaje genérico; 503 →
+     servicio no disponible. Siempre el `correlation_id` cuando exista; nunca trazas ni detalles técnicos.
+  10. **Paginación (F7-10).** `page ≥ 1`, `page_size` 1–200 (50 por defecto); la UI usa `items`, `total`,
+      `page`, `page_size` del backend y nunca recalcula `total`; al cambiar un filtro, `page = 1`.
+  11. **Filtros (F7-11).** Solo los que la API admite: productos (`search`, `is_active`, `sort`,
+      `category_id` como identificador explícito), inventario (`product_id`, `category_id`, `sort`),
+      recomendaciones (`outcome`, `product_id`, `category_id`, `supplier_id`, `run_id`, `sort`), forecasts
+      (`product_id`, `category_id`, `run_id`). **No** se construyen selectores completos de categorías ni de
+      proveedores ni se fabrica un catálogo en el frontend: la API no tiene `/categories` ni `/suppliers` y
+      la Fase 7 no los crea. Una experiencia que necesite un catálogo completo queda pendiente de una fase o
+      decisión futura.
+  12. **Forecast (F7-12).** Los 14 periodos con `predicted_quantity`, `lower_bound`, `upper_bound`,
+      `confidence_level`, `method_used`, `confidence_flag` y `model_version`. Banda rotulada «nominal 0.80»
+      (el valor de `confidence_level`); aviso explícito con `INSUFFICIENT_HISTORY`. Historia y forecast
+      visualmente separados (semanas ISO frente a semanas ancladas en el corte, `DT-067`, `DT-056`), sin
+      continuidad aparente. El componente depende solo de esos campos, no de la media móvil ni de otro
+      algoritmo.
+  13. **Recomendaciones (F7-13).** Las tres `outcome` con `reasons`, `reason_details`, `flags`,
+      `missing_policy_parameters`, `provenance`, `policy_snapshot` y desglose. Orden por los campos que la API
+      admite, y la vista lo dice. Sin urgencia, prioridad, riesgo ni acciones.
+  14. **Explicación (F7-14).** Solo `GET /api/v1/recommendations/{id}/explanation` (`DT-068`), nunca
+      `POST /assistant/*`. `VERIFIED`: narrativa, `facts`, `generator` y `notices`. `DEGRADED`: «Explicación no
+      disponible», conservando `facts`, desglose, `warning` y `provenance`. `NOT_APPLICABLE`:
+      `reason_details` sin narrativa. No es un chat ni un asistente.
+  15. **Desglose (F7-15).** Dos niveles. Principal: `facts[].display` del servidor (`DT-069`) con sus
+      unidades. «Detalles técnicos del cálculo», desplegable: los demás términos de
+      `calculation_inputs.breakdown` cuando existan, en su **representación exacta** del backend (`value`,
+      racional `p/q` o `Decimal` textual), sin `float`, sin recalcular y sin reinterpretar fórmulas; un
+      término nulo se muestra como «no calculado». Así el `CalculationBreakdown` es completo (US-074).
+  16. **Provenance (F7-16).** `SYNTHETIC_DATA` y `V1_PROVISIONAL_POLICY` visibles de forma permanente en
+      forecast, recomendaciones y explicación cuando vienen en `notices`; ningún aviso nuevo. Productos e
+      inventario muestran su `data_origin` por fila.
+  17. **Responsive (F7-17).** Escritorio como escenario principal, tableta soportada, móvil para consulta
+      (`docs/08` §9, ASSUMPTION-018); los puntos de corte se fijan en la implementación dentro de esa regla.
+  18. **Accesibilidad (F7-18).** HTML semántico, teclado, foco visible, etiquetas, ARIA cuando haga falta,
+      contraste suficiente, estado no solo por color y alternativa textual de los gráficos. Sin afirmar
+      ninguna certificación (WCAG).
+  19. **Pruebas (F7-19).** Vitest + Testing Library (con jsdom). Cubren componentes, carga, vacío, errores,
+      autenticación, roles, filtros, paginación, recomendaciones, explicación, forecast, provenance y la
+      ausencia de fórmulas de negocio en el cliente. E2E aplazada (`DT-P07`).
+  20. **Stack y versiones (F7-20)**, fijadas a versión exacta (RS-013) en `package.json`, con
+      `package-lock.json` versionado; verificadas en el registro de npm y en nodejs.org el 2026-10-05, sin
+      instalar:
+
+      | Paquete | Versión | Nota de compatibilidad |
+      |---|---|---|
+      | Node.js | 24 LTS «Krypton», **≥ 24.15.0** (referencia 24.21.0) | Activa hasta el 2026-10-20; mantenimiento hasta el 2028-04-30. Mínimo por `jsdom` (`^24.15.0`) y `react-router` (`>=22.22.0`) |
+      | npm | **11.19.0** (la incluida en Node 24.21.0) | `packageManager` en `package.json` |
+      | `react`, `react-dom` | 19.3.0 | |
+      | `typescript` | **5.9.3** | No 6.x/7.x: `typescript-eslint` 8.71.0 exige `<6.1.0` y `openapi-typescript` 7.13.0 exige `^5.x` |
+      | `vite` | 8.3.2 | Node `^20.19.0 \|\| >=22.12.0` |
+      | `@vitejs/plugin-react` | 6.1.1 | `vite ^8` |
+      | `react-router` | 8.4.0 | `react >=19.2.7` |
+      | `@tanstack/react-query` | 5.104.1 | `react ^18 \|\| ^19` |
+      | `recharts` (+ `react-is` 19.3.0) | 3.10.1 | Gráfico con banda (área de rango); `react ^19` |
+      | `vitest` | 5.0.3 | `vite ^8`; Node `^22.12 \|\| ^24 \|\| >=26` |
+      | `jsdom` | 30.1.2 | Entorno de pruebas |
+      | `@testing-library/react` | 16.3.3 | con `@testing-library/dom` 10.4.2 |
+      | `@testing-library/jest-dom` | 7.0.1 | `vitest >=0.32` |
+      | `@testing-library/user-event` | 14.6.7 | |
+      | `@types/react`, `@types/react-dom` | 19.3.0 | |
+      | `eslint` | 10.12.0 | con `@eslint/js` 10.0.1 |
+      | `typescript-eslint` | 8.71.0 | `eslint ^10`, `typescript <6.1.0` |
+      | `eslint-plugin-react-hooks` | 7.1.1 | `eslint ^10` |
+      | `prettier` | 3.9.9 | |
+      | `openapi-typescript` | 7.13.0 | Generación de tipos (punto 8) |
+
+      Cualquier otra dependencia, o cualquier cambio de versión, exige una decisión nueva.
+  21. **Integración con `main` (F7-21).** Antes de la primera rama de la Fase 7: PR obligatorio
+      `feat/u1-supply-engine` → `main`, revisado, integrado con un **merge commit normal** que conserva los
+      commits de U1–U6 y sus hashes, citados en `project/status.md`. Sin *rebase*, sin *squash* y sin
+      `force push`: excepción puntual a la preferencia de `docs/12` §2.2 por el historial lineal, salvo que el
+      responsable decida formalmente actualizar las referencias y cambiar la política. Después, cada unidad
+      de la Fase 7 en su propia rama `feature/frontend-<unidad>` desde `main` actualizado.
+  22. **Formato regional (F7-22).** Locale **`es-MX`**; zona horaria de negocio **`America/Mexico_City`**
+      (decisión del responsable, 2026-10-05). La API sigue en UTC; la conversión solo se hace al presentar.
+      Las fechas sin hora (`as_of_date`, `period_start`…) se muestran sin conversión de zona; las marcas de
+      tiempo (`generated_at`, `last_movement_at`, `started_at`…) se convierten de UTC a `America/Mexico_City`.
+      Cifras sin `float`: se muestran el `display` del servidor o el texto exacto, **sin separador de miles**,
+      para que coincidan carácter a carácter con la narrativa verificada de U6 (`DT-069`); el separador
+      decimal de `es-MX` (`.`) coincide con el de la API. Una cifra que la API entrega sin `display`
+      (p. ej. `raw_quantity` en la lista) se presenta con la misma regla de `DT-069` (6 decimales
+      `ROUND_HALF_EVEN` sobre el texto, sin ceros finales), solo como presentación y nunca para decidir.
+  23. **CORS (F7-23).** Proxy del servidor de desarrollo de Vite: el frontend llama a `/api` y el proxy lo
+      reenvía a `127.0.0.1:8000`. FastAPI no cambia ni activa CORS en esta fase (cierra el aplazamiento de
+      `DT-066` punto 11 para el desarrollo local). En el futuro (Fase 12): frontend estático + proxy inverso
+      en el mismo origen `/api` (`docs/12` §3).
+  24. **Partición (F7-24).** F7a — base, navegación, autenticación local y cliente de API (US-070) · F7b —
+      productos e inventario (US-072) · F7c — recomendaciones, desglose y explicación (US-073, US-074,
+      US-048) · F7d — predicciones e historial (US-075, RF-009). Cada unidad con su rama, su PR y su
+      trazabilidad; ninguna mezcla trabajo de las Fases 5, 8, 10, 11, 12 o 13.
+- **Contexto:** dossier de la Fase 7 (2026-10-05), veredicto «READY WITH CONDITIONS». `docs/08` §1–§10 se
+  escribió para el sistema completo con Entra ID; `docs/08` §11 fijó las vistas V1 pero citaba una ruta de
+  explicación ya obsoleta; `DT-066` aplazó CORS a la Fase 7; ningún documento fijaba el stack del frontend,
+  la autenticación local de la interfaz ni el formato regional.
+- **Alternativas:** token en `sessionStorage` o selector de identidades; CORS en FastAPI (cambia U5);
+  servir la interfaz desde FastAPI; formatear el desglose en el cliente; TypeScript 6/7 (incompatible con
+  el linter y el generador); *squash* o *rebase* para la integración (rompe los hashes citados).
+- **Razón:** la interfaz V1 es un consumidor fiel de un contrato de solo lectura ya validado: no añade
+  reglas, no toca el backend y deja cada pieza externa (Entra ID, CORS de producción, ML) detrás de una
+  frontera que sus fases sustituyen.
+- **Consecuencias:** U1–U6 no cambian. `docs/08` §12 registra las diferencias con §1–§10. Las Fases 8
+  (`AuthProvider`), 12 (build estático, `/api` relativa) y 13 (lint, tipos y pruebas sin interacción)
+  heredan estas decisiones.
+- **Estado:** `ACEPTADA` (2026-10-05, decisión del responsable al autorizar la Fase 7). **Fase 7
+  autorizada para implementación; no implementada.** Separada de `DT-047`, que cubre U1–U6. Siguen
+  abiertas, sin bloquear la Fase 7: `DT-P16`, `DT-P11`, `DT-P13`, `DT-P23`, `BR-X03`, `DT-P08`, `DT-P07`,
+  `DT-010`, `DT-011`, `DT-021`, `DT-P03` y `DT-P04`.
+
 ## Decisiones deliberadamente NO tomadas
 
 | ID | Tema | Se decidirá en | Por qué no ahora |
@@ -1608,3 +2815,14 @@ consecuencias, estado.
 | `DT-P10` | Seguridad a nivel de fila en Power BI | Fase 11 | Depende del modelo de permisos del negocio |
 | `DT-P11` | Criterio de corte del tránsito efectivo (órdenes atrasadas) | Fase 4 | Requiere criterio de negocio (`DT-012`). Es además la razón de que la situación 12 de §25 sea Nivel C y no un eje (`DT-023`) |
 | `DT-P12` | Si §25 debe incluir «alta rotación» y «baja rotación» como filas | Pendiente del responsable | Decisión sobre la especificación, no sobre el Componente 1 (`DT-023` §7) |
+| `DT-P13` | Mutabilidad de `PurchaseOrder` y `PurchaseOrderItem`: `RNF-013` los llama «registros históricos inmutables»; `docs/04` §1 los clasifica como mutables con auditoría, `DT-006` no los incluye entre los *append-only* y `docs/07` prevé cambiar su estado | Antes de cualquier escritura de órdenes (`US-035`) | **Contradicción entre documentos**; no se resuelve unilateralmente. No afecta a U1–U5, que no escriben órdenes |
+| `DT-P14` | ✅ **CERRADA (2026-10-01).** Detalles de `V1-05`: definición, serie (consumo), ventanas móviles diarias de `H` días y todo el histórico hasta el corte (desde la documentación, 2026-09-30); estimador **poblacional**; `n = 0` → `INSUFFICIENT_HISTORY`, `n = 1` → `σ_H = 0`; evaluación exacta **B3**, con 28 cifras significativas y `ROUND_HALF_EVEN` solo para informar (decisión del responsable, 2026-10-01; `docs/06` §16.6 y §16.9) | — | Ninguna fórmula V1 cambia |
+| `DT-P15` | ✅ **CERRADA (2026-09-30).** `as_of_date` inclusivo y fecha de la decisión; horizonte `as_of_date + 1 … as_of_date + H`; tránsito efectivo con `as_of_date < expected_on ≤ as_of_date + H`; emisión sugerida = `as_of_date` (`docs/06` §16.2) | — | Resuelta con `DT-031` §`V1-02`, §`V1-03`, §`V1-09`, `docs/05` §5.3 y `DT-038` §3 |
+| `DT-P16` | Cómo se impide aplicar `V1_PROVISIONAL` a datos `REAL` sin que el motor lea `data_origin` (`BR-009` frente a `BR-007`). *Nota del 2026-10-03:* mientras no se decida, `DT-063` impide que U4 ejecute `V1_PROVISIONAL` sobre una carga no `SYNTHETIC`; no decide el mecanismo definitivo para datos `REAL` | Antes de la primera carga de datos reales | No hay datos reales todavía. **Sigue abierta** |
+| `DT-P17` | ✅ **CERRADA (2026-10-02) por `DT-056`.** Intervalo por cuantiles empíricos nearest-rank 10/90 del error histórico a cada horizonte, con `confidence_level = 0.80` como nivel nominal (no calibrado); longitud estacional de 52 semanas; `k = 13`; media móvil como referencia provisional, elección operativa y reversible, no por desempeño. *Problema original:* método del intervalo del baseline (RF-010 lo exige), `k` de la media móvil, longitud estacional y baseline de referencia | — | Decisión del responsable al autorizar U3 |
+| `DT-P18` | ✅ **CERRADA (2026-10-03) por `DT-059`.** Se persiste una fila por evaluación, única por `(calculation_run_id, product_id, location_id)`, con `outcome` `RECOMMEND`, `NO_NEED` (con `raw_quantity = 0`) o `NOT_CALCULABLE` (con sus `reasons`). El `outcome` es un resultado técnico inmutable; el `status` humano es un flujo separado que no se crea en V1 (sin `status`, `resolved_*` ni `urgency`). Un fallo de la ejecución (`FAILED`) no es un `outcome`: `NOT_CALCULABLE ≠ FAILED`. *Problema original:* persistencia de las evaluaciones sin recomendación y relación entre `outcome` y el `status` humano de `Recommendation` | — | Decisión del responsable al autorizar U4 |
+| `DT-P19` | Indicadores de riesgo sin clasificación (cobertura en días, fecha estimada de agotamiento): definición operativa de «demanda diaria estimada» | Antes de ofrecer riesgos | `docs/06` §9 no la define; `BR-X03` sigue pendiente para los niveles |
+| `DT-P20` | ✅ **CERRADA (2026-09-30).** Rige V1 para «demanda estimada cero», «lead time cero» y «`σ = 0`», sin reglas añadidas y sujetos a revisión si el negocio cambia la política (`docs/06` §16.10) | — | Decisión del responsable al autorizar U1 |
+| `DT-P21` | ✅ **CERRADA (2026-10-03) por `DT-058`.** Opción A: cada corte de recomendación consume el forecast cuyo `as_of_date` es exactamente ese corte (`forecast --as-of t` y después `recommend --as-of t`). El forecast sigue siendo semanal, con semanas ancladas en `as_of_date + 1`; lo que se ejecuta por corte es la **ejecución** de forecast. U1 no cambia, las semanas de U3 no se desplazan ni se reanclan y U4 no convierte granularidades ni lanza forecasts. *Problema original:* forecast semanal frente a recálculo diario con semanas ancladas en el primer día del horizonte | — | Decisión del responsable al autorizar U4 |
+| `DT-P22` | ✅ **ACEPTADA (2026-10-01), opción (a).** `PRODUCT_OUT_OF_VALIDITY` significa que el producto no es válido durante todo el periodo requerido por la evaluación U1: cubre `as_of_date` fuera de vigencia y `valid_to` no nulo con `as_of_date ≤ valid_to < as_of_date + H`. En ambos casos `NOT_CALCULABLE`, sin razón nueva y sin recortar `H` ni el forecast (`DT-049`, `docs/06` §16.11.2). *Problema original:* contenido de `reasons` cuando el horizonte cruza `valid_to`, con una lista cerrada y sin razón aplicable | — | Decisión del responsable; detectada al registrar `DT-049` |
+| `DT-P23` | Estimación para productos sin histórico suficiente para ningún baseline (menos de 25 semanas completas, `DT-056`): RML-007 exige que todo SKU obtenga una estimación por una vía documentada; en V1 no se genera forecast, el motivo queda en la ejecución (`DT-057`) y U1 devolverá `FORECAST_MISSING` | Fase 5 (`US-056`) o antes de la primera carga de datos `REAL` | Exige una analogía por categoría o un método específico que no están definidos; en el dataset 0.4.0 no ocurre |

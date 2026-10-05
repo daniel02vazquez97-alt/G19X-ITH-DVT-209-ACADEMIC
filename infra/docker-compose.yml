@@ -1,0 +1,31 @@
+# PostgreSQL local para desarrollo e integración de U2 (`DT-055`).
+#
+# Solo en 127.0.0.1 y con autenticación `trust`: no hay contraseña que guardar (CLAUDE.md §9). No es
+# una configuración de producción. Uso, desde la raíz del repositorio:
+#
+#     docker compose -f infra/docker-compose.yml up -d
+#     export DATABASE_URL=postgresql://postgres@127.0.0.1:5432/inventory
+#     cd backend && python -m app.db migrate && python -m app.ingestion ../data/synthetic/output
+#
+# Pruebas de integración (crean y borran bases temporales u2_test_*):
+#     U2_TEST_ADMIN_DSN=postgresql://postgres@127.0.0.1:5432/postgres \
+#         python -m unittest discover -s tests/db -t tests/db
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: inventory
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d inventory"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:

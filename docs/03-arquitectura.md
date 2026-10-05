@@ -1,9 +1,13 @@
 # 03 — Arquitectura
 
-**Estado:** Versión 1.0 — Etapa 0 (diseño, no implementado) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1
+**Estado:** Versión 1.0 — Etapa 0 (diseño, no implementado) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §16, arquitectura de implementación de la Etapa 2 (`DT-043`, `DT-047`); §§1–15 no cambian · **Versión 1.3** (2026-10-01) — §16.6: migraciones en `backend/db/migrations/` (`DT-055`) · **Versión 1.4** (2026-10-02) — notas en §4 y §5.1: frontera de `forecasting` y `runs` (`DT-046` `ACEPTADA`); estado de §16 · **Versión 1.5** (2026-10-03) — U4 autorizada, no implementada: §16.7, subcomando `recommend` explícito (`DT-058`); estado de §16 · **Versión 1.6** (2026-10-03) — U5 autorizada, no implementada: `app/db/read/` en §16.2 y §16.6, `python -m app.api` en §16.7; estado de §16 · **Versión 1.7** (2026-10-04) — U6 autorizada, no implementada: `genai` (`DT-068`, `DT-069`) en §16.2, §16.4, §16.5 y §16.7; `DocumentRetriever` fuera de U6 · **Versión 1.8** (2026-10-04) — U6 implementada: estado en §16 y §16.7 · **Versión 1.9** (2026-10-05) — Fase 7 autorizada, no implementada: interfaz en §16.2 y CORS/proxy en la tabla de integraciones (`DT-070`)
 
 > Este documento describe la arquitectura **objetivo**. Nada de lo aquí descrito está implementado
 > todavía. Las decisiones que lo sustentan están en `docs/15-decisiones-tecnicas.md`.
+>
+> **Etapa 2 (2026-09-30):** §16 traduce esta arquitectura a paquetes, contratos y orden de
+> construcción. Sigue sin existir código de aplicación; lo único ejecutable del repositorio es el
+> generador de datos sintéticos, terminado en la Etapa 1.
 
 ---
 
@@ -129,6 +133,10 @@ una real y una local/sustituta para desarrollo y pruebas.
 | `SecretProvider` | `get(nombre) -> valor` | Variables de entorno · almacén gestionado (producto sin fijar, `DT-022`) |
 | `DataSource` (ingesta) | `load(origen) -> registros validados + reporte` | Archivos sintéticos · Archivos reales · (futuro) ERP |
 
+*Nota del 2026-10-02 (`DT-046`, `ACEPTADA`): la firma de `ForecastProvider` de esta tabla es conceptual.
+En la Etapa 2 el proveedor recibe la serie diaria de consumo ya preparada, no un identificador de SKU
+(`docs/05` §19).*
+
 Consecuencia práctica: el sistema arranca y funciona sin ninguna credencial de Azure. Esto es un
 requisito operativo (RNF-006), no una comodidad de desarrollo.
 
@@ -159,6 +167,10 @@ sequenceDiagram
 
 Punto clave: el forecast se **persiste** antes de ser consumido. Así la recomendación queda anclada
 a una predicción concreta e identificable, y es reconstruible meses después (RF-024).
+
+*Nota del 2026-10-02 (`DT-046`, `ACEPTADA`): este flujo es conceptual (Etapa 0). En la Etapa 2 prevalece
+§16: `forecasting` es puro y no lee ni escribe en PostgreSQL; la ejecución de forecast (`runs`) lee el
+consumo, llama al proveedor y persiste el resultado con su ejecución (`DT-057`).*
 
 ### 5.2 Flujo de consulta interactiva
 
@@ -225,7 +237,7 @@ asistente de IA opera bajo la identidad del usuario y hereda sus restricciones (
 
 | Origen → Destino | Protocolo | Notas |
 |---|---|---|
-| React → FastAPI | HTTPS / REST JSON | Contrato OpenAPI generado; CORS restringido a orígenes conocidos |
+| React → FastAPI | HTTPS / REST JSON | Contrato OpenAPI generado; CORS restringido a orígenes conocidos. *(Fase 7, `DT-070` punto 23, 2026-10-05: sin CORS; la interfaz llama a `/api` en el mismo origen, mediante el proxy del servidor de desarrollo y, en la Fase 12, un proxy inverso)* |
 | FastAPI → PostgreSQL | TCP/TLS, pool de conexiones | Migraciones versionadas con credencial separada |
 | FastAPI → Azure ML | HTTPS al endpoint del modelo | Con reintentos acotados y *timeout*; ante fallo, baseline local |
 | FastAPI → Azure AI Search | HTTPS, SDK oficial | Autenticación por Entra ID preferida sobre clave |
@@ -353,3 +365,145 @@ Se documentan aquí para que no se tomen implícitamente durante la implementaci
 | Caché de respuestas de la API | Cuando exista evidencia de latencia | Evitar complejidad prematura |
 | Multi-ubicación / multi-almacén | Fase posterior | ASSUMPTION-006 |
 | Modelo analítico dedicado para Power BI (más allá de vistas) | Fase 11 | Depende del volumen y del comportamiento del informe |
+
+## 16. Etapa 2 — arquitectura de implementación
+
+*Añadido el 2026-09-30. Decisiones: `DT-043` (estructura), `ACEPTADA` el 2026-09-30, y `DT-047` (orden),
+`ACEPTADA` en cuanto a U1 y `PROPUESTA` para U2–U6 (desde el 2026-10-02: `ACEPTADA` en cuanto a U1, U2 y U3,
+`PROPUESTA` para U4–U6).
+Lo descrito aquí está **diseñado**; nada está implementado (actualización del 2026-10-01: U1,
+`backend/app/supply_engine`, está implementada; el resto sigue diseñado; actualización del 2026-10-02: U2
+—`app/db`, `app/ingestion`— está implementada, y U3 —`forecasting` y la ejecución de forecast en `runs`— está
+autorizada y no implementada, `DT-046`, `DT-056`, `DT-057`; actualización del 2026-10-03: U3 está implementada y
+validada desde el 2026-10-02, y U4 —ejecución de recomendaciones en `runs`— está autorizada y **no implementada**,
+`DT-058` a `DT-063`; `DT-047` `ACEPTADA` en cuanto a U1–U4, `PROPUESTA` para U5–U6; actualización del 2026-10-03: U4
+está implementada y validada, y U5 —`api` y `db/read`— está autorizada, `DT-064` a `DT-067` (implementada y validada el mismo día);
+`DT-047` `ACEPTADA` en cuanto a U1–U5, `PROPUESTA` para U6; actualización del 2026-10-04: U6 —`genai` y el endpoint
+de explicación— está autorizada y **no implementada**, `DT-068` y `DT-069`; `DT-047` `ACEPTADA` en cuanto a U1–U6;
+actualización del 2026-10-04: U6 está implementada y validada).*
+
+### 16.1 Estado real del que se parte
+
+| Existe | No existe |
+|---|---|
+| Documentación de las Etapas 0 y 1 | `backend/`, `frontend/`, `ml/`, `infra/`, `.github/workflows/` |
+| Generador de datos sintéticos (`data/synthetic/`), terminado: `generator_version` 0.4.0, 582 pruebas | Base de datos, esquema, migraciones |
+| Dataset `ds-6c8ad65b4999` en `data/synthetic/output/` (no versionado), validado por C8 (51/51) | API, motor, forecast, interfaz, integraciones de Azure |
+| Única dependencia externa del código: PyYAML (generador) | Archivo de dependencias del proyecto (ver *Problemas conocidos* de `project/status.md`) |
+
+El generador es un sistema **upstream**: el sistema principal consume su **contrato** (los CSV y el
+manifiesto), nunca su código.
+
+### 16.2 Componentes
+
+| Componente (§3) | Paquete | Responsabilidad | Depende de | Se crea en |
+|---|---|---|---|---|
+| `supply_engine` | `backend/app/supply_engine/` | Reglas V1, puras y deterministas (`docs/06` §16) | Solo la biblioteca estándar | U1 |
+| Ingesta y validación | `backend/app/ingestion/` | Dataset → PostgreSQL con validación previa y posterior (`docs/04` §9.5) | `db` | U2 |
+| Repositorios / acceso a datos | `backend/app/db/` | Conexión, migraciones SQL versionadas, consultas parametrizadas | Controlador de PostgreSQL | U2 |
+| `forecast_service` | `backend/app/forecasting/` | `ForecastProvider` y baselines (`docs/05` §19) | Biblioteca estándar | U3 |
+| Servicios de aplicación (batch) | `backend/app/runs/` | Ejecuciones de forecast y de recomendaciones: leer, llamar, persistir con trazabilidad | `db`, `forecasting`, `supply_engine` | U3–U4 |
+| Routers + Auth | `backend/app/api/` | Contrato HTTP de solo lectura en V1 (`docs/07` §7), autenticación y roles | `db` | U5 |
+| `genai_service` | `backend/app/genai/` | Contexto de explicación, `TextGenerator` (plantilla primero), verificación de cifras (`docs/09` §14 y §14.5). U6: `ExplanationContext`, `Fact`, plantilla `template/1.0.0`, verificador y degradación (`DT-068`, `DT-069`) | **Solo la biblioteca estándar**: no importa `api`, `db`, `psycopg`, `supply_engine`, `forecasting` ni `runs`; no recibe conexiones. `api` → `genai` | U6 |
+| Interfaz | `frontend/` | Vistas de `docs/08` §11 y §12 (`DT-070`): React + TypeScript + Vite, cliente fino con tipos generados del OpenAPI, sin reglas de negocio | API (`/api`), nunca la base | Fase 7 (autorizada, no implementada) |
+| Entrenamiento y evaluación | `ml/` | Backtesting, Nivel 1 y Nivel 2 | `app.forecasting`, `app.supply_engine` | Fase 5 |
+
+Los «servicios de aplicación» y los «repositorios» de §3 **no** se convierten en carpetas genéricas:
+el único caso de uso con orquestación real —las ejecuciones batch— vive en `runs/`, y las consultas
+viven en `db/` agrupadas por entidad. Las lecturas de la API llaman a esas consultas directamente
+(U5: `app/db/read/`, SQL escrito a mano y conexión de solo lectura, `DT-066`).
+Cuando aparezca un segundo caso de uso que lo justifique, se revisa.
+
+### 16.3 Flujo de la Etapa 2
+
+```mermaid
+flowchart LR
+    DS[(dataset 0.4.0<br/>CSV + manifest)] -->|ingestion| PG[(PostgreSQL<br/>un linaje por base)]
+    PG -->|consumo ≤ as_of| FC[forecasting<br/>ForecastProvider]
+    FC -->|forecasts persistidos| PG
+    PG -->|inventario, órdenes, recepciones,<br/>consumo, forecast| RUN[runs<br/>ejecución de recomendaciones]
+    RUN -->|entradas puras| SE[[supply_engine]]
+    SE -->|resultado + desglose| RUN
+    RUN -->|recommendations +<br/>calculation_runs| PG
+    PG --> API[api · solo lectura] --> UI[frontend]
+    PG --> PBI[vistas → Power BI]
+    API -->|cifras ya calculadas| GEN[genai · explica]
+```
+
+Tres flechas que **no** existen: `genai → PG` (sin escritura), `genai → supply_engine` (el LLM no
+invoca el cálculo) y `demand → forecasting/supply_engine` (la demanda latente no entra al cálculo).
+
+### 16.4 Reglas de dependencia (verificables por prueba)
+
+1. `supply_engine` importa **solo** la biblioteca estándar. Una prueba recorre sus imports.
+2. Nada en `backend/` importa `data.synthetic`. La ingesta lee archivos, no módulos.
+3. `api` no importa `supply_engine` ni `forecasting`: en V1 lee resultados persistidos; recalcular
+   es una ejecución batch explícita (§5.2).
+4. `genai` no recibe una conexión con permisos de escritura ni ninguna función de cálculo.
+   *(Concreción de U6, 2026-10-04, `DT-068`: `genai` no recibe **ninguna** conexión —la regla más estricta de
+   `docs/09` §14.2— y solo importa la biblioteca estándar; los datos los prepara `api` con `db/read` y se
+   entregan a un `ExplanationContext` inmutable.)*
+5. Nada importa `api`.
+
+### 16.5 Puertos y dobles locales
+
+Toda dependencia externa tiene una implementación local con la que el sistema arranca y se prueba
+sin red y sin credenciales (`DT-003`, RNF-006).
+
+| Puerto | Paquete | Local / doble | Real (fase) |
+|---|---|---|---|
+| `ForecastProvider` | `forecasting` | Baselines en proceso | Endpoint de Azure ML (6) |
+| `TextGenerator` | `genai` | Plantilla determinista (`DT-018`) | Azure OpenAI (10) |
+| `DocumentRetriever` | `genai` | Índice en memoria para pruebas; **no forma parte de U6** (`DT-068`): llega con la Fase 9 | Azure AI Search (9), **si existe corpus** |
+| `TokenValidator` *(nuevo, `DT-043`)* | `api` | Validador de desarrollo con identidades de prueba; solo en local y en pruebas, **se niega a arrancar en cualquier entorno desplegado** | Microsoft Entra ID (8) |
+| `SecretProvider` | configuración | Variables de entorno | Almacén gestionado (`DT-022`) |
+| `DataSource` | `ingestion` | Directorio de un dataset publicado | Archivos reales / ERP (futuro) |
+
+### 16.6 Estructura de carpetas propuesta
+
+```text
+.
+├── backend/                  U1 — el único proyecto Python del sistema
+│   ├── pyproject.toml        U1 — Python ≥ 3.11; sin dependencias en U1; cada unidad añade las suyas con autorización (U2: grupo opcional `db`)
+│   ├── app/
+│   │   ├── supply_engine/    U1
+│   │   ├── ingestion/        U2
+│   │   ├── db/               U2 — conexión y ejecutor de migraciones; `db/read/` (U5): consultas de solo lectura
+│   │   ├── forecasting/      U3
+│   │   ├── runs/             U3–U4
+│   │   ├── api/              U5
+│   │   └── genai/            U6
+│   ├── db/migrations/        U2 — NNNN_nombre.sql, fuera del paquete Python (`DT-055`)
+│   └── tests/                espejo de app/, unittest
+├── frontend/                 Fase 7
+├── ml/                       Fase 5
+├── infra/                    U2 — solo PostgreSQL local; Azure en Fases 12–13
+└── data/synthetic/           upstream terminado — no se modifica
+```
+
+*(Actualización del 2026-10-01, `DT-055`: las migraciones SQL salen de `app/db/` a `backend/db/migrations/`
+por instrucción del responsable; `app/db/` conserva la conexión y el ejecutor.)*
+
+**Deliberadamente ausentes:** `services/`, `managers/`, `processors/`, `orchestrators/`,
+`adapters/`, `handlers/`, `repositories/`, `factories/`, `builders/`, `ports/`, `domain/` genérico.
+Cada puerto vive en el paquete que lo usa. Cada carpeta se crea con la unidad que le da uso, no antes.
+
+### 16.7 Ejecución
+
+| Qué | Cómo | Por qué |
+|---|---|---|
+| Carga del dataset | Comando de línea (`python -m app.ingestion …`) | Acción de administración; no requiere API |
+| Forecast y recomendaciones | Comandos batch con `as_of_date` explícito: `python -m app.runs forecast --as-of AAAA-MM-DD` (U3) y `python -m app.runs recommend --as-of AAAA-MM-DD` (U4, implementada). `recommend` es un subcomando explícito que **no** ejecuta el forecast implícitamente: consume la ejecución de forecast con el mismo corte (`DT-058`, `DT-061`) | RNF-005: independiente de la API. Sin colas ni orquestadores (`DT-005`) |
+| Consulta | API de solo lectura: `python -m app.api` (U5, implementada; uvicorn en `127.0.0.1`, solo con `APP_ENV=local` hasta la Fase 8, `DT-065`). La explicación por plantilla es una lectura más: `GET /api/v1/recommendations/{recommendation_id}/explanation` (U6, implementada el 2026-10-04; `DT-068`) | La lectura nunca recalcula (§5.2) |
+
+### 16.8 Qué se ejecuta y se prueba en local
+
+Todo. El motor, el forecast y la explicación por plantilla, sin nada instalado aparte de Python. La
+ingesta y la API, con un PostgreSQL local en contenedor. Ninguna prueba necesita Azure, internet,
+OpenAI, AI Search, Azure ML ni Entra ID (`docs/13` §14).
+
+### 16.9 Qué no se construye en esta fase
+
+Ni la API completa, ni la interfaz, ni Power BI, ni RAG, ni autenticación real, ni CI/CD, ni
+recursos de Azure, ni entrenamiento. Esta fase deja **contratos y orden**; la primera línea de código
+llega con la autorización de U1 (`DT-047`).

@@ -1,6 +1,6 @@
 # Backlog inicial (Scrum)
 
-**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1
+**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — correspondencia con las unidades de la Etapa 2 · **Versión 1.3** (2026-10-04) — US-048: interpretación de U6 (`DT-068`)
 
 Backlog organizado en **Épicas → Historias de usuario → Tareas**.
 
@@ -60,6 +60,8 @@ ninguna hipótesis se presenta como requisito.
 `T-010.3` generar y validar coherencia · `T-010.4` informe de calidad del dataset
 
 ### US-011 — Ingesta y validación de datos
+> **Etapa 2, unidad U2** (2026-09-30): diseño en `docs/04` §9 y `DT-044`; no implementada.
+
 - **Descripción:** Como administrador, quiero cargar datos desde archivos con validación, para poder
   sustituir los sintéticos por reales sin cambiar el sistema.
 - **Prioridad:** P0
@@ -232,6 +234,9 @@ función**) · `T-040.4` punto de reorden · `T-040.5` pruebas exhaustivas
 - **Criterios de aceptación:** cada recomendación tiene una explicación en lenguaje natural generada
   por plantilla, **sin LLM**; todas sus cifras proceden del desglose almacenado.
 - **Dependencias:** US-045 · **Relacionado:** `DT-018`
+- *Interpretación (2026-10-04, `DT-068`, U6): `RECOMMEND` y `NO_NEED` → explicación narrativa; `NOT_CALCULABLE` →
+  explicación estructurada (`reasons`, `reason_details`, `missing_policy_parameters`), con `narrative = null`.
+  Contrato en `docs/09` §14.5.*
 
 ---
 
@@ -430,3 +435,11 @@ Cuando se autorice el inicio de la Etapa 1, el conjunto coherente y **sin bloque
 `US-010` (diseño del dataset) → `US-011` (ingesta) → `US-012` (marcado de desabasto)
 
 Es autocontenido, no depende de ninguna decisión del negocio y produce el insumo de todo lo demás.
+
+## Etapa 2 — correspondencia con las unidades de implementación
+
+*Añadido el 2026-09-30.* El orden en que se construyen las historias está en `project/roadmap.md`
+(tabla de unidades, `DT-047`: `ACEPTADA` en cuanto a U1, `PROPUESTA` para U2–U6). Las historias no cambian: las unidades las agrupan.
+En particular, **US-040 (sin `σ_L`: V1 ignora `BR-P02`), US-041, US-042 y la parte de cálculo de US-045** forman U1 y se construyen
+**sin** los bloqueos de negocio de la tabla anterior gracias a las reglas provisionales de `DT-031`,
+que solo valen dentro del entorno sintético; **US-043 y US-044 siguen bloqueadas** por `BR-X03`.
