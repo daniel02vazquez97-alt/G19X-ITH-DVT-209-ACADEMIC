@@ -1,0 +1,163 @@
+{
+  "items": [
+    {
+      "product": { "id": 1, "sku": "SKU-00001" },
+      "model_version": { "name": "baseline.moving_average", "version": "1.0.0" },
+      "periods": [
+        {
+          "period_start": "2026-01-01",
+          "period_end": "2026-01-08",
+          "predicted_quantity": "217.615385",
+          "lower_bound": "194.461538",
+          "upper_bound": "243.923077",
+          "confidence_level": "0.80",
+          "method_used": "BASELINE",
+          "confidence_flag": "STANDARD"
+        },
+        {
+          "period_start": "2026-01-08",
+          "period_end": "2026-01-15",
+          "predicted_quantity": "217.615385",
+          "lower_bound": "187.384615",
+          "upper_bound": "244.384615",
+          "confidence_level": "0.80",
+          "method_used": "BASELINE",
+          "confidence_flag": "STANDARD"
+        },
+        {
+          "period_start": "2026-01-15",
+          "period_end": "2026-01-22",
+          "predicted_quantity": "217.615385",
+          "lower_bound": "186.769231",
+          "upper_bound": "245.615385",
+          "confidence_level": "0.80",
+          "method_used": "BASELINE",
+          "confidence_flag": "STANDARD"
+        },
+        {
+          "period_start": "2026-01-22",
+          "period_end": "2026-01-29",
+          "predicted_quantity": "217.615385",
+          "lower_bound": "185.307692",
+          "upper_bound": "245.923077",
+          "confidence_level": "0.80",
+          "method_used": "BASELINE",
+          "confidence_flag": "STANDARD"
+        },
+        {
+          "period_start": "2026-01-29",
+          "period_end": "2026-02-05",
+          "predicted_quantity": "217.615385",
+          "lower_bound": "186.923077",
+          "upper_bound": "246.461538",
+          "confidence_level": "0.80",
+          "method_used": "BASELINE",
+          "confidence_flag": "STANDARD"
+        },
+        {
+          "period_start": "2026-02-05",
+          "period_end": "2026-02-12",
+          "predicted_quantity": "217.615385",
+          "lower_bound": "186.384615",
+          "upper_bound": "247.923077",
+          "confidence_level": "0.80",
+          "method_used": "BASELINE",
+          "confidence_flag": "STANDARD"
+        },
+        {
+          "period_start": "2026-02-12",
+          "period_end": "2026-02-19",
+          "predicted_quantity": "217.615385",
+          "lower_bound": "188.615385",
+          "upper_bound": "247.384615",
+          "confidence_level": "0.80",
+          "method_used": "BASELINE",
+          "confidence_flag": "STANDARD"
+        },
+        {
+          "period_start": "2026-02-19",
+          "period_end": "2026-02-26",
+          "predicted_quantity": "217.615385",
+          "lower_bound": "195.538462",
+          "upper_bound": "249.615385",
+          "confidence_level": "0.80",
+          "method_used": "BASELINE",
+          "confidence_flag": "STANDARD"
+        },
+        {
+          "period_start": "2026-02-26",
+          "period_end": "2026-03-05",
+          "predicted_quantity": "217.615385",
+          "lower_bound": "196.384615",
+          "upper_bound": "249.307692",
+          "confidence_level": "0.80",
+          "method_used": "BASELINE",
+          "confidence_flag": "STANDARD"
+        },
+        {
+          "period_start": "2026-03-05",
+          "period_end": "2026-03-12",
+          "predicted_quantity": "217.615385",
+          "lower_bound": "197.461538",
+          "upper_bound": "252.153846",
+          "confidence_level": "0.80",
+          "method_used": "BASELINE",
+          "confidence_flag": "STANDARD"
+        },
+        {
+          "period_start": "2026-03-12",
+          "period_end": "2026-03-19",
+          "predicted_quantity": "217.615385",
+          "lower_bound": "198.692308",
+          "upper_bound": "252.461538",
+          "confidence_level": "0.80",
+          "method_used": "BASELINE",
+          "confidence_flag": "STANDARD"
+        },
+        {
+          "period_start": "2026-03-19",
+          "period_end": "2026-03-26",
+          "predicted_quantity": "217.615385",
+          "lower_bound": "198.615385",
+          "upper_bound": "250.615385",
+          "confidence_level": "0.80",
+          "method_used": "BASELINE",
+          "confidence_flag": "STANDARD"
+        },
+        {
+          "period_start": "2026-03-26",
+          "period_end": "2026-04-02",
+          "predicted_quantity": "217.615385",
+          "lower_bound": "199.000000",
+          "upper_bound": "252.461538",
+          "confidence_level": "0.80",
+          "method_used": "BASELINE",
+          "confidence_flag": "STANDARD"
+        },
+        {
+          "period_start": "2026-04-02",
+          "period_end": "2026-04-09",
+          "predicted_quantity": "217.615385",
+          "lower_bound": "188.230769",
+          "upper_bound": "252.307692",
+          "confidence_level": "0.80",
+          "method_used": "BASELINE",
+          "confidence_flag": "STANDARD"
+        }
+      ]
+    }
+  ],
+  "total": 95,
+  "page": 1,
+  "page_size": 1,
+  "provenance": {
+    "data_origin": "SYNTHETIC",
+    "dataset_version": "ds-6c8ad65b4999",
+    "generator_version": "0.4.0",
+    "data_load_id": 1,
+    "as_of_date": "2025-12-31",
+    "run_id": 1,
+    "notices": ["SYNTHETIC_DATA"],
+    "model_version": { "name": "baseline.moving_average", "version": "1.0.0" }
+  }
+}

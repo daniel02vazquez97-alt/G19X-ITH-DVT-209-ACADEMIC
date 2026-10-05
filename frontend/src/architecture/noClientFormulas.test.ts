@@ -14,8 +14,10 @@ const sources = import.meta.glob<string>(
 /** Presentation rounding of DT-069 / DT-070 point 22, the only place allowed to use `BigInt`. */
 const DISPLAY_MODULE = '../format/numbers.ts';
 
+/** Chart geometry (Recharts needs numbers), the only place allowed to use `Number()`. */
+const CHART_MODULE = '../charts/chartValues.ts';
+
 const FORBIDDEN: Array<[string, RegExp]> = [
-  ['numeric conversion with Number()', /\bNumber\s*\(/],
   ['parseFloat', /\bparseFloat\b/],
   ['parseInt', /\bparseInt\b/],
   ['Math', /\bMath\./],
@@ -35,6 +37,20 @@ describe('no business formulas in the client', () => {
   it.each(FORBIDDEN)('no %s', (_label, pattern) => {
     const offenders = files.filter(([, text]) => pattern.test(text)).map(([path]) => path);
     expect(offenders).toEqual([]);
+  });
+
+  it('Number() only in the chart geometry module', () => {
+    const offenders = files
+      .filter(([path, text]) => path !== CHART_MODULE && /\bNumber\s*\(/.test(text))
+      .map(([path]) => path);
+    expect(offenders).toEqual([]);
+  });
+
+  it('chart numbers never reach text: only the chart uses the geometry module', () => {
+    const users = files
+      .filter(([path, text]) => path !== CHART_MODULE && text.includes('chartValues'))
+      .map(([path]) => path);
+    expect(users).toEqual(['../charts/ForecastChart.tsx']);
   });
 
   it('BigInt only in the display module', () => {

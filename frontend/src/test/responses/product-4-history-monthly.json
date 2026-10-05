@@ -1,0 +1,339 @@
+{
+  "product_id": 4,
+  "granularity": "monthly",
+  "date_from": "2023-01-01",
+  "date_to": "2025-12-31",
+  "periods": [
+    {
+      "period_start": "2023-01-01",
+      "period_end": "2023-02-01",
+      "days": 31,
+      "days_observed": 31,
+      "quantity": "1539",
+      "stockout_days": 0,
+      "complete": true
+    },
+    {
+      "period_start": "2023-02-01",
+      "period_end": "2023-03-01",
+      "days": 28,
+      "days_observed": 28,
+      "quantity": "1333",
+      "stockout_days": 0,
+      "complete": true
+    },
+    {
+      "period_start": "2023-03-01",
+      "period_end": "2023-04-01",
+      "days": 31,
+      "days_observed": 31,
+      "quantity": "1579",
+      "stockout_days": 1,
+      "complete": true
+    },
+    {
+      "period_start": "2023-04-01",
+      "period_end": "2023-05-01",
+      "days": 30,
+      "days_observed": 30,
+      "quantity": "1522",
+      "stockout_days": 0,
+      "complete": true
+    },
+    {
+      "period_start": "2023-05-01",
+      "period_end": "2023-06-01",
+      "days": 31,
+      "days_observed": 31,
+      "quantity": "1566",
+      "stockout_days": 0,
+      "complete": true
+    },
+    {
+      "period_start": "2023-06-01",
+      "period_end": "2023-07-01",
+      "days": 30,
+      "days_observed": 30,
+      "quantity": "1554",
+      "stockout_days": 0,
+      "complete": true
+    },
+    {
+      "period_start": "2023-07-01",
+      "period_end": "2023-08-01",
+      "days": 31,
+      "days_observed": 31,
+      "quantity": "1707",
+      "stockout_days": 0,
+      "complete": true
+    },
+    {
+      "period_start": "2023-08-01",
+      "period_end": "2023-09-01",
+      "days": 31,
+      "days_observed": 31,
+      "quantity": "1630",
+      "stockout_days": 0,
+      "complete": true
+    },
+    {
+      "period_start": "2023-09-01",
+      "period_end": "2023-10-01",
+      "days": 30,
+      "days_observed": 30,
+      "quantity": "1576",
+      "stockout_days": 2,
+      "complete": true
+    },
+    {
+      "period_start": "2023-10-01",
+      "period_end": "2023-11-01",
+      "days": 31,
+      "days_observed": 31,
+      "quantity": "1742",
+      "stockout_days": 0,
+      "complete": true
+    },
+    {
+      "period_start": "2023-11-01",
+      "period_end": "2023-12-01",
+      "days": 30,
+      "days_observed": 30,
+      "quantity": "1712",
+      "stockout_days": 0,
+      "complete": true
+    },
+    {
+      "period_start": "2023-12-01",
+      "period_end": "2024-01-01",
+      "days": 31,
+      "days_observed": 31,
+      "quantity": "1589",
+      "stockout_days": 4,
+      "complete": true
+    },
+    {
+      "period_start": "2024-01-01",
+      "period_end": "2024-02-01",
+      "days": 31,
+      "days_observed": 31,
+      "quantity": "1802",
+      "stockout_days": 0,
+      "complete": true
+    },
+    {
+      "period_start": "2024-02-01",
+      "period_end": "2024-03-01",
+      "days": 29,
+      "days_observed": 29,
+      "quantity": "1690",
+      "stockout_days": 0,
+      "complete": true
+    },
+    {
+      "period_start": "2024-03-01",
+      "period_end": "2024-04-01",
+      "days": 31,
+      "days_observed": 31,
+      "quantity": "1817",
+      "stockout_days": 0,
+      "complete": true
+    },
+    {
+      "period_start": "2024-04-01",
+      "period_end": "2024-05-01",
+      "days": 30,
+      "days_observed": 30,
+      "quantity": "1811",
+      "stockout_days": 0,
+      "complete": true
+    },
+    {
+      "period_start": "2024-05-01",
+      "period_end": "2024-06-01",
+      "days": 31,
+      "days_observed": 31,
+      "quantity": "1896",
+      "stockout_days": 0,
+      "complete": true
+    },
+    {
+      "period_start": "2024-06-01",
+      "period_end": "2024-07-01",
+      "days": 30,
+      "days_observed": 30,
+      "quantity": "1886",
+      "stockout_days": 0,
+      "complete": true
+    },
+    {
+      "period_start": "2024-07-01",
+      "period_end": "2024-08-01",
+      "days": 31,
+      "days_observed": 31,
+      "quantity": "1948",
+      "stockout_days": 0,
+      "complete": true
+    },
+    {
+      "period_start": "2024-08-01",
+      "period_end": "2024-09-01",
+      "days": 31,
+      "days_observed": 31,
+      "quantity": "1865",
+      "stockout_days": 2,
+      "complete": true
+    },
+    {
+      "period_start": "2024-09-01",
+      "period_end": "2024-10-01",
+      "days": 30,
+      "days_observed": 30,
+      "quantity": "1902",
+      "stockout_days": 0,
+      "complete": true
+    },
+    {
+      "period_start": "2024-10-01",
+      "period_end": "2024-11-01",
+      "days": 31,
+      "days_observed": 31,
+      "quantity": "2036",
+      "stockout_days": 0,
+      "complete": true
+    },
+    {
+      "period_start": "2024-11-01",
+      "period_end": "2024-12-01",
+      "days": 30,
+      "days_observed": 30,
+      "quantity": "2003",
+      "stockout_days": 0,
+      "complete": true
+    },
+    {
+      "period_start": "2024-12-01",
+      "period_end": "2025-01-01",
+      "days": 31,
+      "days_observed": 31,
+      "quantity": "2066",
+      "stockout_days": 0,
+      "complete": true
+    },
+    {
+      "period_start": "2025-01-01",
+      "period_end": "2025-02-01",
+      "days": 31,
+      "days_observed": 31,
+      "quantity": "2149",
+      "stockout_days": 0,
+      "complete": true
+    },
+    {
+      "period_start": "2025-02-01",
+      "period_end": "2025-03-01",
+      "days": 28,
+      "days_observed": 28,
+      "quantity": "1909",
+      "stockout_days": 0,
+      "complete": true
+    },
+    {
+      "period_start": "2025-03-01",
+      "period_end": "2025-04-01",
+      "days": 31,
+      "days_observed": 31,
+      "quantity": "2138",
+      "stockout_days": 0,
+      "complete": true
+    },
+    {
+      "period_start": "2025-04-01",
+      "period_end": "2025-05-01",
+      "days": 30,
+      "days_observed": 30,
+      "quantity": "2115",
+      "stockout_days": 0,
+      "complete": true
+    },
+    {
+      "period_start": "2025-05-01",
+      "period_end": "2025-06-01",
+      "days": 31,
+      "days_observed": 31,
+      "quantity": "2196",
+      "stockout_days": 1,
+      "complete": true
+    },
+    {
+      "period_start": "2025-06-01",
+      "period_end": "2025-07-01",
+      "days": 30,
+      "days_observed": 30,
+      "quantity": "2155",
+      "stockout_days": 0,
+      "complete": true
+    },
+    {
+      "period_start": "2025-07-01",
+      "period_end": "2025-08-01",
+      "days": 31,
+      "days_observed": 31,
+      "quantity": "2274",
+      "stockout_days": 0,
+      "complete": true
+    },
+    {
+      "period_start": "2025-08-01",
+      "period_end": "2025-09-01",
+      "days": 31,
+      "days_observed": 31,
+      "quantity": "2101",
+      "stockout_days": 3,
+      "complete": true
+    },
+    {
+      "period_start": "2025-09-01",
+      "period_end": "2025-10-01",
+      "days": 30,
+      "days_observed": 30,
+      "quantity": "2233",
+      "stockout_days": 0,
+      "complete": true
+    },
+    {
+      "period_start": "2025-10-01",
+      "period_end": "2025-11-01",
+      "days": 31,
+      "days_observed": 31,
+      "quantity": "2325",
+      "stockout_days": 0,
+      "complete": true
+    },
+    {
+      "period_start": "2025-11-01",
+      "period_end": "2025-12-01",
+      "days": 30,
+      "days_observed": 30,
+      "quantity": "2288",
+      "stockout_days": 0,
+      "complete": true
+    },
+    {
+      "period_start": "2025-12-01",
+      "period_end": "2026-01-01",
+      "days": 31,
+      "days_observed": 31,
+      "quantity": "2351",
+      "stockout_days": 0,
+      "complete": true
+    }
+  ],
+  "statistics": {
+    "periods_used": 36,
+    "mean": "1889.027778",
+    "std_dev": "267.138903",
+    "cv": "0.141416",
+    "zero_periods": 0
+  }
+}
