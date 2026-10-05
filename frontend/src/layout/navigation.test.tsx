@@ -29,17 +29,6 @@ describe('navigation by role', () => {
     expect(screen.getAllByText(/no están disponibles en V1/)).toHaveLength(1);
   });
 
-  it.each([['/predicciones', 'Predicciones', 'F7d']])(
-    '%s is a stable route under construction',
-    async (path, title, unit) => {
-      installFetch(withMe());
-      const { user } = renderApp(path);
-      await loginAs(user, 'VIEWER');
-      expect(screen.getByRole('heading', { level: 1, name: title })).toBeInTheDocument();
-      expect(screen.getByText(new RegExp(`unidad ${unit}`))).toBeInTheDocument();
-    },
-  );
-
   it.each([
     ['VIEWER', false],
     ['ANALYST', false],

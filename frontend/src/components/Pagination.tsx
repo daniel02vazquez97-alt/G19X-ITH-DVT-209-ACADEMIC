@@ -15,6 +15,11 @@ export function Pagination({ page, pageSize, total, onPage, onPageSize }: Pagina
   const sizeId = useId();
   const hasPrevious = page > 1;
   const hasNext = page * pageSize < total;
+  const current = String(pageSize);
+  // A page size typed in the URL stays visible even if it is not one of the usual ones.
+  const sizes: readonly string[] = PAGE_SIZES.includes(current as (typeof PAGE_SIZES)[number])
+    ? PAGE_SIZES
+    : [current, ...PAGE_SIZES];
   return (
     <nav className="pagination" aria-label="Paginación">
       <p className="pagination__status">
@@ -43,10 +48,10 @@ export function Pagination({ page, pageSize, total, onPage, onPageSize }: Pagina
         <select
           id={sizeId}
           className="field__input pagination__select"
-          value={String(pageSize)}
+          value={current}
           onChange={(event) => onPageSize(event.target.value)}
         >
-          {PAGE_SIZES.map((size) => (
+          {sizes.map((size) => (
             <option key={size} value={size}>
               {size}
             </option>

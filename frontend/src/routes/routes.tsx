@@ -4,11 +4,11 @@ import { ForbiddenState } from '../components/ForbiddenState';
 import { AppShell } from '../layout/AppShell';
 import { HomePage } from '../pages/HomePage';
 import { NotFoundPage } from '../pages/NotFoundPage';
-import { UnderConstructionPage } from '../pages/UnderConstructionPage';
 import { RoleGate } from '../roles/RoleGate';
 import { RecommendationDetailPage } from '../views/recommendations/RecommendationDetailPage';
 import { RecommendationsPage } from '../views/recommendations/RecommendationsPage';
 import { RunDetailPage } from '../views/runs/RunDetailPage';
+import { ForecastsPage } from '../views/forecasts/ForecastsPage';
 import { InventoryItemPage } from '../views/inventory/InventoryItemPage';
 import { InventoryPage } from '../views/inventory/InventoryPage';
 import { ProductDetailPage } from '../views/products/ProductDetailPage';
@@ -53,7 +53,7 @@ export const routes: RouteObject[] = [
       },
       {
         path: relative(PATHS.forecasts),
-        element: <UnderConstructionPage title="Predicciones" unit="F7d" />,
+        element: <ForecastsPage />,
       },
       {
         path: relative(PATHS.run),
