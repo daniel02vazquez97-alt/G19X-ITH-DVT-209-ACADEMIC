@@ -1,6 +1,6 @@
 # 12 — Estrategia DevOps
 
-**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-10-03) — §5: correspondencia entre los entornos y `APP_ENV` para la API de U5 (`DT-065`) · **Versión 1.3** (2026-10-05) — §2.2: excepción de merge commit para la integración inicial de U1–U6; §3.1: imagen `frontend` en el mismo origen que `/api` (`DT-070`)
+**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-10-03) — §5: correspondencia entre los entornos y `APP_ENV` para la API de U5 (`DT-065`) · **Versión 1.3** (2026-10-05) — §2.2: excepción de merge commit para la integración inicial de U1–U6; §3.1: imagen `frontend` en el mismo origen que `/api` (`DT-070`) · **Versión 1.4** (2026-10-05) — §2.2: merge commit para las unidades de la Fase 5 (`DT-085`)
 
 > No se crean workflows, imágenes ni recursos en esta etapa.
 
@@ -41,7 +41,9 @@ Ramas cortas: de horas a pocos días. Una rama de dos semanas genera conflictos 
 - Historial lineal (*squash merge* preferido).
 - *Excepción puntual (2026-10-05, `DT-070` punto 21):* la integración inicial de `feat/u1-supply-engine` (U1–U6) en
   `main` se hace por PR con **merge commit** normal, sin *rebase*, *squash* ni `force push`, para conservar los
-  commits y los hashes citados en `project/status.md`. Las ramas posteriores siguen la regla general.
+  commits y los hashes citados en `project/status.md`. *(Actualización 2026-10-05: la Fase 7 se integró también
+  con merge commit, y `DT-085` extiende esa práctica a la Fase 5: rama `feature/ml-<unidad>` desde `main`, un PR por
+  unidad, merge commit normal, sin *squash*, *rebase* ni `force push`.)*
 - Sin `force push`.
 
 ### 2.3 Convenciones
