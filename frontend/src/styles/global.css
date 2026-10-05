@@ -385,6 +385,10 @@ a {
   font-weight: 600;
 }
 
+.data-table td:first-child {
+  white-space: nowrap;
+}
+
 .data-table .numeric {
   text-align: right;
   font-variant-numeric: tabular-nums;

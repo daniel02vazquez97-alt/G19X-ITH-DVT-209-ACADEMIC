@@ -123,3 +123,15 @@ describe('ProductDetailPage (F7b)', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('No encontrado');
   });
 });
+
+describe('Pagination', () => {
+  it('shows the page size of the API even when it is not a usual one', async () => {
+    installFetch(
+      routeApi({ '/api/v1/products': () => jsonResponse(200, { ...PRODUCT_PAGE, page_size: 10 }) }),
+    );
+    const { user } = renderApp('/productos?page_size=10');
+    await loginAs(user, 'VIEWER');
+    await screen.findByRole('table');
+    expect(screen.getByLabelText('Por página')).toHaveValue('10');
+  });
+});

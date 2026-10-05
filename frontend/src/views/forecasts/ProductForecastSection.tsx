@@ -31,9 +31,6 @@ export function ProductForecastSection({ productId, unitOfMeasure }: ProductFore
         {(forecast) => (
           <>
             <ProvenancePanel provenance={forecast.provenance} />
-            <p>
-              Modelo {forecast.model_version.name} {forecast.model_version.version}
-            </p>
             {hasInsufficientHistory(forecast.periods) ? <InsufficientHistoryNotice /> : null}
             <NominalBandNote />
             <ForecastChart periods={forecast.periods} unit={unitOfMeasure} />

@@ -80,8 +80,9 @@ export function ForecastChart({ periods, unit }: ForecastChartProps) {
           <Area
             dataKey="band"
             name={`Banda nominal ${level}`}
-            stroke="none"
-            fill="var(--color-accent-soft)"
+            stroke="var(--color-band-stroke)"
+            fill="var(--color-band)"
+            fillOpacity={0.6}
             isAnimationActive={false}
           />
           <Line
