@@ -484,15 +484,20 @@ def render_markdown(summary: dict) -> str:
     official = us.get(OFFICIAL_BASELINE, {})
     within = official.get("horizons_within_band", {})
     if within:
-        verdict = ("**calibrada**" if within["current_late_cuts"] == within["of"]
-                   else "**«nominal 0,80, no validada»** (el intervalo actual no está calibrado en todos los horizontes)")
-        lines += [
-            "",
-            f"**Rótulo recomendado para la banda de la Fase 7** (media móvil 13, la que sirve U3): {verdict}. El intervalo "
-            f"actual queda en banda en {within['current_late_cuts']} de {within['of']} horizontes y la variante calibrada en "
-            f"{within['calibrated_late_cuts']} de {within['of']}. Adoptar la calibración exigiría cambiar U3 y la Fase 7, "
-            "fuera de F5c. Solo es una recomendación; la Fase 7 no se modifica.",
-        ]
+        n, of = within["current_late_cuts"], within["of"]
+        detail = (f"El intervalo actual de U3 queda en banda en {n} de {of} horizontes con todas las semanas y en "
+                  f"{within['current_late_cuts_no_stockout']} de {of} sin las semanas con desabasto; la variante calibrada, en "
+                  f"{within['calibrated_late_cuts']} de {of}.")
+        if n == of:
+            lines += ["", "**Rótulo recomendado para la banda de la Fase 7** (media móvil 13, la que sirve U3): "
+                      "**«nominal 0,80; cobertura comprobada solo con datos SYNTHETIC»**. " + detail + " No hace falta "
+                      "calibrarlo con estos datos. Con datos REAL la cobertura no está comprobada y la banda vuelve a «nominal "
+                      "0,80, no validada» hasta revalidarla. Cambiar el texto es un ajuste de F7d, fuera de F5c: la Fase 7 no se "
+                      "modifica."]
+        else:
+            lines += ["", "**Rótulo recomendado para la banda de la Fase 7** (media móvil 13, la que sirve U3): "
+                      "**«nominal 0,80, no validada»**. " + detail + " Adoptar una calibración exigiría cambiar U3 y F7d, "
+                      "fuera de F5c: la Fase 7 no se modifica."]
     lines += ["", "## 10. Paridad con F5a y F5b", "",
               "Huellas de los archivos de detalle de F5a y F5b recalculados desde F5c (sus cuatro modelos):", "",
               "| Archivo | F5c | Registrado | Igual |", "|---|---|---|---|"]

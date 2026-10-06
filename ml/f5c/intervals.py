@@ -133,16 +133,16 @@ def coverage_study(level1: F5cLevel1, grid: Sequence[float], nominal: float, lat
                 }
                 horizons[h][ALL_SEGMENTS]["mean_factor"] = math.fsum(factors) / len(factors) if factors else None
             per_view[view] = horizons
-        all_view = per_view[VIEW_ALL]
-
-        def within(key: str) -> int:
-            return sum(1 for h in all_view if all_view[h].get(ALL_SEGMENTS, {}).get(key) is not None
-                       and low <= all_view[h][ALL_SEGMENTS][key] <= high)
+        def within(view: str, key: str) -> int:
+            block = per_view[view]
+            return sum(1 for h in block if block[h].get(ALL_SEGMENTS, {}).get(key) is not None
+                       and low <= block[h][ALL_SEGMENTS][key] <= high)
 
         per_view["horizons_within_band"] = {
-            "current_late_cuts": within("current_late_cuts"),
-            "calibrated_late_cuts": within("calibrated_late_cuts"),
-            "of": len(all_view),
+            "current_late_cuts": within(VIEW_ALL, "current_late_cuts"),
+            "calibrated_late_cuts": within(VIEW_ALL, "calibrated_late_cuts"),
+            "current_late_cuts_no_stockout": within(VIEW_NO_STOCKOUT, "current_late_cuts"),
+            "of": len(per_view[VIEW_ALL]),
         }
         result["models"][model] = per_view
     return result
