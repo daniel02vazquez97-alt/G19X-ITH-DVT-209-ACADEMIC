@@ -1,6 +1,6 @@
 # Roadmap del proyecto
 
-**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — cierre de la Etapa 1, inicio de la Etapa 2 y orden de implementación propuesto (`DT-047`) · **Versión 1.3** (2026-10-01) — contrato de U1 cerrado (`DT-048` a `DT-052`) y pendiente `DT-P22` · **Versión 1.4** (2026-10-01) — `DT-P22` cerrada; contrato de U1 sin pendientes · **Versión 1.5** (2026-10-01) — U1 implementada · **Versión 1.6** (2026-10-02) — U2 implementada (2026-10-01) y U3 autorizada para implementación (`DT-056`, `DT-057`) · **Versión 1.7** (2026-10-02) — U3 implementada y validada · **Versión 1.8** (2026-10-03) — U4 autorizada para implementación, no implementada (`DT-058` a `DT-063`) · **Versión 1.9** (2026-10-03) — U4 implementada y validada · **Versión 1.10** (2026-10-03) — U5 autorizada para implementación, no implementada (`DT-064` a `DT-067`) · **Versión 1.11** (2026-10-03) — U5 implementada y validada · **Versión 1.12** (2026-10-04) — U6 autorizada para implementación, no implementada (`DT-068`, `DT-069`) · **Versión 1.13** (2026-10-04) — U6 implementada y validada; termina el orden de `DT-047` · **Versión 1.14** (2026-10-05) — Fase 7 autorizada para implementación, no implementada (`DT-070`) · **Versión 1.15** (2026-10-05) — F7a implementada y validada · **Versión 1.16** (2026-10-05) — Fase 7 completada · **Versión 1.17** (2026-10-05) — Fase 5: decisiones documentadas; F5a autorizada (`DT-086`) · **Versión 1.18** (2026-10-05) — F5a implementada, pendiente de revisión · **Versión 1.19** (2026-10-05) — F5a integrada en `main`; F5b autorizada (`DT-088`) · **Versión 1.20** (2026-10-05) — F5b implementada, pendiente de revisión
+**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — cierre de la Etapa 1, inicio de la Etapa 2 y orden de implementación propuesto (`DT-047`) · **Versión 1.3** (2026-10-01) — contrato de U1 cerrado (`DT-048` a `DT-052`) y pendiente `DT-P22` · **Versión 1.4** (2026-10-01) — `DT-P22` cerrada; contrato de U1 sin pendientes · **Versión 1.5** (2026-10-01) — U1 implementada · **Versión 1.6** (2026-10-02) — U2 implementada (2026-10-01) y U3 autorizada para implementación (`DT-056`, `DT-057`) · **Versión 1.7** (2026-10-02) — U3 implementada y validada · **Versión 1.8** (2026-10-03) — U4 autorizada para implementación, no implementada (`DT-058` a `DT-063`) · **Versión 1.9** (2026-10-03) — U4 implementada y validada · **Versión 1.10** (2026-10-03) — U5 autorizada para implementación, no implementada (`DT-064` a `DT-067`) · **Versión 1.11** (2026-10-03) — U5 implementada y validada · **Versión 1.12** (2026-10-04) — U6 autorizada para implementación, no implementada (`DT-068`, `DT-069`) · **Versión 1.13** (2026-10-04) — U6 implementada y validada; termina el orden de `DT-047` · **Versión 1.14** (2026-10-05) — Fase 7 autorizada para implementación, no implementada (`DT-070`) · **Versión 1.15** (2026-10-05) — F7a implementada y validada · **Versión 1.16** (2026-10-05) — Fase 7 completada · **Versión 1.17** (2026-10-05) — Fase 5: decisiones documentadas; F5a autorizada (`DT-086`) · **Versión 1.18** (2026-10-05) — F5a implementada, pendiente de revisión · **Versión 1.19** (2026-10-05) — F5a integrada en `main`; F5b autorizada (`DT-088`) · **Versión 1.20** (2026-10-05) — F5b implementada, pendiente de revisión · **Versión 1.21** (2026-10-05) — G1 de la Fase 5 (`DT-089` a `DT-091`); dependencias con las Fases 7 y 8
 
 ## Principios de secuenciación
 
@@ -28,7 +28,8 @@
 **Lo que la Fase 1 listaba y pasa a la Etapa 2.** El «proceso de ingesta y validación con marca de
 origen» (`US-011`) se diseña en la Etapa 2 (`docs/04` §9, `DT-044`) y se implementa en su unidad U2.
 Los umbrales de aceptación del modelo (`DT-P04`) siguen pendientes y se fijan en la Fase 5, con el
-dataset 0.4.0. El resto de criterios de la Fase 1 se cumplió con el generador.
+dataset 0.4.0. El resto de criterios de la Fase 1 se cumplió con el generador. *(2026-10-05: valores provisionales
+en `DT-091`, solo con datos `SYNTHETIC`.)*
 
 ### Orden de implementación de la Etapa 2 (`DT-047`: `ACEPTADA` en cuanto a U1, U2, U3, U4, U5 y U6)
 
@@ -158,7 +159,22 @@ sus endpoints, que van después— y no requiere dependencias nuevas. Sus **regl
   reproducibilidad pasan; el sistema degrada correctamente al baseline si el modelo no está.
   Si la mejora de Nivel 1 **no** se traduce en mejora de Nivel 2, ese hallazgo se documenta y el modelo
   **no se promueve**.
-- **Estado (2026-10-05):** 🟡 **F5a integrada en `main`** (PR #8, merge `ea72df5`) y **F5b autorizada** (`DT-088`; OD-S1 a
+- **Estado (2026-10-05, G1):** 🟡 **G1 registrado; F5c pendiente de autorización** (`DT-089` a `DT-091`,
+  `docs/05` §20.5). Todo es provisional y `SYNTHETIC`.
+  - **Hecho:** F5a y F5b integradas en `main` (PR #8 y #9).
+  - **G1:**
+    - baseline oficial, la media móvil de 13 semanas (`DT-089`);
+    - SES, candidato más fuerte, no promovido (mejor en Nivel 1, dentro del ruido en Nivel 2);
+    - métrica primaria MASE (`DT-090`);
+    - valores de aceptación provisionales (`DT-091`).
+  - **Sigue abierto:**
+    - segmentación (`DT-077`) e imputación (`DT-081`), que pertenecen a F5c;
+    - la banda de sesgo y la tolerancia de cobertura, antes de evaluar candidatos;
+    - el bloqueo de `DT-083` para F5d.
+  - **El *holdout* (G2) no se ha usado.**
+  - **Dependencias:** la Fase 7 no cambia y su banda de predicción sigue siendo **«nominal 0.80, no validada»**
+    hasta US-055 (F5c); la Fase 8 no depende de la Fase 5.
+- **Estado anterior (2026-10-05, antes de G1):** 🟡 **F5a integrada en `main`** (PR #8, merge `ea72df5`) y **F5b autorizada** (`DT-088`; OD-S1 a
   OD-S4 `ACEPTADA` en `DT-080`), **implementada y pendiente de revisión** en `feature/ml-f5b`: simulador de Nivel 2
   en bucle cerrado de los cuatro baselines con U1 sin cambios, informe `SYNTHETIC` en
   `docs/reports/fase5-f5b-nivel2-sintetico.md`, sin elegir baseline oficial, métrica ni tolerancias. F5a: `ml/` con backtesting de
@@ -194,7 +210,8 @@ sus endpoints, que van después— y no requiere dependencias nuevas. Sus **regl
   Autenticación simulada hasta la Fase 8.
 - **Entregables:** aplicación web funcional, componentes, pruebas.
 - **Dependencias:** Fases 3 y 4; además la Fase 5 para la vista de predicciones con incertidumbre
-  (`US-075` necesita el intervalo de `US-055`).
+  (`US-075` necesita el intervalo de `US-055`). *(2026-10-05, tras G1: US-055 sigue pendiente de F5c, así que la vista
+  de predicciones sigue mostrando la banda de U3 como **«nominal 0.80, no validada»**; la interfaz no cambia.)*
 - **Criterio de finalización:** todas las vistas navegables con datos reales de la API; el desglose
   del cálculo es visible en el detalle de producto; sin lógica de negocio duplicada en el cliente.
 - **Estado (2026-10-05):** ✅ **Completada** — F7a a F7d integradas en `main` (PR #2 a #5, `22f1805`) y
@@ -214,6 +231,7 @@ sus endpoints, que van después— y no requiere dependencias nuevas. Sus **regl
   autorización a todos los endpoints; pruebas de seguridad completas.
 - **Entregables:** autenticación y autorización operativas, matriz aplicada, pruebas.
 - **Dependencias:** Fases 3 y 7. **Requiere validación de los roles con el negocio** (ASSUMPTION-010, RS-002).
+  *(2026-10-05: no depende de la Fase 5; G1 no la cambia.)*
 - **Criterio de finalización:** ningún endpoint responde sin token válido; cada rol accede exactamente
   a lo previsto; las pruebas de la matriz rol × endpoint pasan.
 
