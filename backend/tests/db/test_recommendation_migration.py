@@ -40,9 +40,11 @@ class RecommendationMigrationTest(DatabaseTestCase):
         }
 
     def test_from_scratch_the_three_migrations_apply_in_order_and_once(self) -> None:
-        self.assertEqual(
-            apply_migrations(self.conn), ["0001_dataset_tables", "0002_forecast_tables", "0003_recommendation_tables"]
+        applied = apply_migrations(self.conn)
+        self.assertEqual(  # U9 adds 0004 after them
+            applied[:3], ["0001_dataset_tables", "0002_forecast_tables", "0003_recommendation_tables"]
         )
+        self.assertEqual(applied, [m.version for m in discover()])
         self.assertEqual(apply_migrations(self.conn), [])
         stored = dict(self.conn.execute("SELECT version, sha256 FROM schema_migrations").fetchall())
         self.assertEqual(stored, {m.version: m.sha256 for m in discover()})
@@ -53,7 +55,7 @@ class RecommendationMigrationTest(DatabaseTestCase):
         apply_migrations(self.conn, self._only("0001_dataset_tables.sql", "0002_forecast_tables.sql"))
         load_dataset(self.conn, DATASET_DIR)
         forecast = run_forecast(self.conn, A)
-        self.assertEqual(apply_migrations(self.conn), ["0003_recommendation_tables"])
+        self.assertEqual(apply_migrations(self.conn)[0], "0003_recommendation_tables")  # U9 adds 0004 after it
         row = self.conn.execute(
             "SELECT run_type, status, forecast_run_id, engine_version FROM calculation_runs WHERE id = %s",
             (forecast.calculation_run_id,),

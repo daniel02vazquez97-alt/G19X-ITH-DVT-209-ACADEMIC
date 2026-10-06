@@ -21,6 +21,7 @@ class RefusedExecutionTest(DatabaseTestCase):
         self.assertEqual(self.count("model_versions"), 0)
 
     def test_without_the_schema_the_execution_is_refused(self) -> None:
+        self.conn.execute("DROP SCHEMA analytics CASCADE")  # the views of U9 (0004) depend on these tables
         self.conn.execute("DROP TABLE recommendations, forecasts, calculation_runs")  # U4 (0003) depends on them
         with self.assertRaises(ForecastRunError):
             run_forecast(self.conn, A)
