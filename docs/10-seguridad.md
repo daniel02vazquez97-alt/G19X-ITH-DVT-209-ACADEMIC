@@ -162,7 +162,7 @@ inmediato y explícito a un arranque con configuración incompleta que falle má
 |---|---|
 | **Usuario de aplicación** | Privilegios mínimos: `SELECT`/`INSERT`/`UPDATE` sobre las tablas necesarias. **Sin DDL** |
 | **Usuario de migraciones** | Credencial separada, usada solo por el proceso de migración |
-| **Usuario de lectura analítica** | Solo lectura, sobre las vistas expuestas a Power BI |
+| **Usuario de lectura analítica** | Solo lectura, sobre las vistas expuestas a Power BI. *(2026-10-06, U9, `DT-097`: rol `analytics_reader` sin `LOGIN`, con `USAGE` sobre el esquema `analytics` y `SELECT` sobre sus vistas, nada sobre las tablas; la cuenta de conexión de U16 será miembro del rol, con su secreto fuera del repositorio.)* |
 | **Conexión** | TLS obligatorio; sin acceso público a la instancia |
 | **Contraseñas** | En el almacén de secretos; nunca en el código ni en la URL versionada |
 | **Consultas** | Siempre parametrizadas. Prohibida la concatenación de SQL con entrada del usuario |

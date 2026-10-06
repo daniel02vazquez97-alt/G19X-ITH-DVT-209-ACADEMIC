@@ -380,6 +380,11 @@ modelo: SES sigue siendo el candidato fuerte, sin promover; la estrategia (b) de
 *(2026-10-06: `DT-094` fija el alcance de cierre de la Etapa 2: el stack completo por unidades U7 a U16, cada una con su
 propia autorización. **U7 (Docker) autorizada** e implementada, pendiente de revisión (`DT-095`). «No configurar
 servicios reales de Azure» y «No crear credenciales» siguen vigentes hasta la autorización de U10.)*
+*(2026-10-06: U7 integrada en `main` (PR #13). **U8 (CI) autorizada** e implementada, pendiente de revisión (`DT-096`):
+sin linter de Python (ni Ruff ni Black), frontend con ESLint, Prettier y `tsc`, permisos `contents: read`, sin OIDC.)*
+*(2026-10-06: **U9 autorizada** e implementada, pendiente de revisión (`DT-097`): migración `0004`, esquema `analytics`
+y rol `analytics_reader`; sin Power BI. Las vistas dependen de tablas operativas: una migración que las altere debe
+recrearlas.)*
 Restricciones vigentes, que se levantan solo por instrucción explícita:
 
 - **No escribir código de aplicación fuera de una unidad autorizada.** Cada unidad (U1 a U6 de `DT-047`,

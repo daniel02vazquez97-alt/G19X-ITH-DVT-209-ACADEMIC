@@ -1,6 +1,6 @@
 # 15 — Decisiones técnicas (ADR)
 
-**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-18) — `DT-024` a `DT-030`, preparación del Componente 2 · **Versión 1.3** (2026-09-19) — `DT-031`, reglas mínimas de V1 · **Versión 1.4** (2026-09-21) — cierre de las reglas V1: `DT-031` pasa a `ACEPTADA` con trece reglas · **Versión 1.5** (2026-09-21) — `DT-032` y `DT-033`, decisiones que el Componente 2 tenía que tomar al implementarse · **Versión 1.6** (2026-09-21) — tabla canónica de identificadores de componente en `DT-030` · **Versión 1.7** (2026-09-23) — `DT-034` y `DT-035`, demanda latente persistente y sus políticas de generación · **Versión 1.8** (2026-09-24) — `DT-036` y `DT-037`, políticas sintéticas de inventario y comportamiento de proveedores; **enmienda de `DT-027`** (restricción 3) y cierre del pendiente de `data_origin` de `DT-026` · **Versión 1.9** (2026-09-24) — `DT-038` y `DT-039`, contratos de salida de los Componentes 4 y 5, tras la auditoría pre-implementación; cierre de los pendientes de `DT-034` (recorte de la demanda y contrato de `consumption.csv`) y correcciones a `DT-036` y `DT-037` · **Versión 1.10** (2026-09-26) — cierre de D-01: `DT-040` (publicación atómica del dataset, W1), regla general de incremento de `generator_version` en `DT-033`, y actualizaciones de `DT-036`, `DT-038` y `DT-039` (A2, B2, `expected_at`, autoría de los identificadores) · **Versión 1.11** (2026-09-26) — implementación del Componente 4: enmienda de `DT-037` §3 (D-C4-1, reparto de la entrega partida) y actualización de `DT-038` (D-C4-2 precondiciones, D-C4-3 lead time y disparo diario, flujos pseudoaleatorios, `metrics` pendiente) · **Versión 1.12** (2026-09-27) — cierre de D-01, opción A: elegibilidad de las órdenes `CANCELLED` sintéticas respecto de `valid_to` (`DT-039` §5.2) · **Versión 1.13** (2026-09-28) — implementación del Componente 5 (`DT-039` §13), sin cambios en ninguna regla · **Versión 1.14** (2026-09-28) — implementación del Componente 6 (`DT-037` §6, decisiones A1 y A2) y corrección de texto en `DT-040` §3 · **Versión 1.15** (2026-09-29) — implementación de W1 (`DT-040` §9, detalles pendientes resueltos) y `generator_version` 0.3.0 · **Versión 1.16** (2026-09-29) — `DT-041`, contrato e implementación del Componente 7 (sin integrar en W1); notas de redacción en `DT-030` y `DT-031` (`V1-07`, `V1-08`) · **Versión 1.17** (2026-09-29) — `DT-042`, validador del dataset e informe de calidad; integración de C7 y C8 en W1 (`DT-040`); `generator_version` 0.4.0 (`DT-033`); formas de `scenario_assignment` y `quality_report` (`DT-025`); `metrics` de `DT-038` §12 cerrado · **Versión 1.18** (2026-09-30) — Etapa 2, arquitectura y fundación: `DT-043` a `DT-047` (todas `PROPUESTA`) y pendientes `DT-P13` a `DT-P21` · **Versión 1.19** (2026-09-30) — autorización de U1: `DT-043` y `DT-045` `ACEPTADA`, `DT-047` `ACEPTADA` en cuanto a U1; `DT-P15` y `DT-P20` cerradas; `DT-P14` abierta en parte y **bloquea U1** · **Versión 1.20** (2026-10-01) — `DT-P14` **cerrada** con el estimador poblacional, `INSUFFICIENT_HISTORY` para `n = 0` y la evaluación exacta B3 (`docs/06` §16.6); ninguna fórmula V1 cambia · **Versión 1.21** (2026-10-01) — cierre del contrato de U1: `DT-048` a `DT-052` `ACEPTADA` (aclaraciones A-1 en `DT-050` y A-2 en `DT-051`), y pendiente `DT-P22`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.22** (2026-10-01) — `DT-P22` `ACEPTADA` (opción (a)): `PRODUCT_OUT_OF_VALIDITY` cubre también la vigencia que termina dentro del horizonte; cierre de `DT-049`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.23** (2026-10-01) — `DT-053` (frontera de la salida parcial) y `DT-054` (sin monotonía global de `S` frente a `L` en V1), tras el audit de pre-codificación de U1; ninguna fórmula cambia · **Versión 1.24** (2026-10-01) — `DT-044` `ACEPTADA` (cantidades en `numeric`; `quantity_on_hand ≥ 0` compatible con `BR-X09`/`V1-13`); `DT-047` aceptada para U2; `DT-055` (entorno técnico de U2) · **Versión 1.25** (2026-10-02) — U3 autorizada para implementación: `DT-P17` cerrada por `DT-056` (baselines V1); `DT-046` `ACEPTADA`; `DT-057` (persistencia y ejecución del forecast); `DT-047` aceptada para U3; pendiente nueva `DT-P23` · **Versión 1.26** (2026-10-03) — cierre documental de U4 y autorización para implementación (no implementada): `DT-058` a `DT-063` `ACEPTADA`; `DT-P18` cerrada por `DT-059` y `DT-P21` por `DT-058`; `DT-047` aceptada para U4; nota en `DT-P16`, que sigue abierta · **Versión 1.27** (2026-10-03) — U4 implementada y validada: registro de la implementación en `DT-047` y en `DT-058` a `DT-063`; ninguna decisión cambia · **Versión 1.28** (2026-10-03) — U5 autorizada para implementación (no implementada): `DT-064` (dependencias), `DT-065` (autenticación local), `DT-066` (contrato de lectura) y `DT-067` (historia, desviación poblacional) `ACEPTADA`; `DT-047` aceptada para U5 · **Versión 1.29** (2026-10-03) — U5 implementada y validada: registro de la implementación en `DT-047` y en `DT-064` a `DT-067`; ninguna decisión cambia · **Versión 1.30** (2026-10-04) — U6 autorizada para implementación (no implementada): `DT-068` (entrega y contrato de la explicación) y `DT-069` (presentación, verificación y degradación de cifras) `ACEPTADA`; `DT-047` aceptada para U6 · **Versión 1.31** (2026-10-04) — U6 implementada y validada: registro de la implementación en `DT-047`, `DT-068` y `DT-069`; ninguna decisión cambia · **Versión 1.32** (2026-10-05) — Fase 7 autorizada para implementación (no implementada): `DT-070` (alcance, stack y versiones, autenticación local, contrato con la API, formato regional, proxy, partición F7a–F7d e integración con `main`) `ACEPTADA`; separada de `DT-047` · **Versión 1.33** (2026-10-05) — Fase 7 implementada: estado e implementación de `DT-070` · **Versión 1.34** (2026-10-05) — Fase 5, cierre documental (no autorizada): `DT-071` a `DT-085` (partición y puertas, `ml/`, dependencias, enmienda acotada de D-12, backtesting, Nivel 1, segmentación `PROPUESTA`, regla de `DT-021`, criterios `PROPUESTA`, simulador de Nivel 2 con decisiones `OPEN`, estudios de `DT-011` y `DT-010`, intervalos, promoción y Git); notas en `DT-010`, `DT-011`, `DT-021`, `DT-056`, `DT-P03`, `DT-P04` y `DT-P23`; `DT-086` autoriza F5a por separado; propuestas del responsable para OD-S1 a OD-S4, criterio serie-corte en `DT-078`, aclaración del Nivel 1 con días imputados y bloqueo de U1 para `DT-010` (`DT-083`) · **Versión 1.35** (2026-10-05) — `DT-087` `ACEPTADA` (población por corte a la fecha, enmienda de interpretación de `DT-075` punto 6); notas en `DT-075` y `DT-079` tras la revisión de F5a · **Versión 1.36** (2026-10-05) — notas en `DT-073` (JSON versionado como resumen) y `DT-077` (el «19 intermitentes» era un artefacto de `valid_to`) · **Versión 1.37** (2026-10-05) — `DT-088` autoriza F5b; OD-S1 a OD-S4 `ACEPTADA` en `DT-080` con sus refinamientos · **Versión 1.38** (2026-10-05) — `DT-080`: decisiones del responsable al cerrar F5b; nota en `DT-078` (las candidatas ordenan igual por serie-corte) · **Versión 1.39** (2026-10-05) — G1: `DT-089` (baseline oficial), `DT-090` (MASE) y `DT-091` (valores de aceptación), `ACEPTADA` y provisionales (`SYNTHETIC`); notas en `DT-010`, `DT-011`, `DT-021` (cerrada por `DT-090`), `DT-077`, `DT-079`, `DT-081`, `DT-P03` y `DT-P04` · **Versión 1.40** (2026-10-06) — `DT-092` autoriza F5c; `DT-093`, criterios complementarios de G1 (horizonte L + R, cortes comparables, tolerancias, banda de sesgo, cobertura, segmentación y estacionalidad, estimadores de `DT-081`, ajuste de modelos, Holt-Winters con 104 semanas y sustitución en el simulador); notas en `DT-071`, `DT-077` a `DT-082`, `DT-090` y `DT-091` · **Versión 1.41** (2026-10-06) — `DT-092`: registro de la implementación de F5c (pendiente de revisión); ninguna decisión cambia · **Versión 1.42** (2026-10-06) — revisión de F5c: `DT-093` puntos 12 a 14 (interpretaciones aceptadas, sensibilidad de cadencia, tabla de criterios con SES y por estrategia); nota en `DT-081` (conclusión provisional y propuesta de (b)) · **Versión 1.43** (2026-10-06) — `DT-094` (alcance de cierre de la Etapa 2: stack completo por unidades U7 a U16, Azure for Students, Bicep, corpus sintético) y `DT-095` (U7, Docker: autorizada; implementación pendiente de revisión)
+**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-18) — `DT-024` a `DT-030`, preparación del Componente 2 · **Versión 1.3** (2026-09-19) — `DT-031`, reglas mínimas de V1 · **Versión 1.4** (2026-09-21) — cierre de las reglas V1: `DT-031` pasa a `ACEPTADA` con trece reglas · **Versión 1.5** (2026-09-21) — `DT-032` y `DT-033`, decisiones que el Componente 2 tenía que tomar al implementarse · **Versión 1.6** (2026-09-21) — tabla canónica de identificadores de componente en `DT-030` · **Versión 1.7** (2026-09-23) — `DT-034` y `DT-035`, demanda latente persistente y sus políticas de generación · **Versión 1.8** (2026-09-24) — `DT-036` y `DT-037`, políticas sintéticas de inventario y comportamiento de proveedores; **enmienda de `DT-027`** (restricción 3) y cierre del pendiente de `data_origin` de `DT-026` · **Versión 1.9** (2026-09-24) — `DT-038` y `DT-039`, contratos de salida de los Componentes 4 y 5, tras la auditoría pre-implementación; cierre de los pendientes de `DT-034` (recorte de la demanda y contrato de `consumption.csv`) y correcciones a `DT-036` y `DT-037` · **Versión 1.10** (2026-09-26) — cierre de D-01: `DT-040` (publicación atómica del dataset, W1), regla general de incremento de `generator_version` en `DT-033`, y actualizaciones de `DT-036`, `DT-038` y `DT-039` (A2, B2, `expected_at`, autoría de los identificadores) · **Versión 1.11** (2026-09-26) — implementación del Componente 4: enmienda de `DT-037` §3 (D-C4-1, reparto de la entrega partida) y actualización de `DT-038` (D-C4-2 precondiciones, D-C4-3 lead time y disparo diario, flujos pseudoaleatorios, `metrics` pendiente) · **Versión 1.12** (2026-09-27) — cierre de D-01, opción A: elegibilidad de las órdenes `CANCELLED` sintéticas respecto de `valid_to` (`DT-039` §5.2) · **Versión 1.13** (2026-09-28) — implementación del Componente 5 (`DT-039` §13), sin cambios en ninguna regla · **Versión 1.14** (2026-09-28) — implementación del Componente 6 (`DT-037` §6, decisiones A1 y A2) y corrección de texto en `DT-040` §3 · **Versión 1.15** (2026-09-29) — implementación de W1 (`DT-040` §9, detalles pendientes resueltos) y `generator_version` 0.3.0 · **Versión 1.16** (2026-09-29) — `DT-041`, contrato e implementación del Componente 7 (sin integrar en W1); notas de redacción en `DT-030` y `DT-031` (`V1-07`, `V1-08`) · **Versión 1.17** (2026-09-29) — `DT-042`, validador del dataset e informe de calidad; integración de C7 y C8 en W1 (`DT-040`); `generator_version` 0.4.0 (`DT-033`); formas de `scenario_assignment` y `quality_report` (`DT-025`); `metrics` de `DT-038` §12 cerrado · **Versión 1.18** (2026-09-30) — Etapa 2, arquitectura y fundación: `DT-043` a `DT-047` (todas `PROPUESTA`) y pendientes `DT-P13` a `DT-P21` · **Versión 1.19** (2026-09-30) — autorización de U1: `DT-043` y `DT-045` `ACEPTADA`, `DT-047` `ACEPTADA` en cuanto a U1; `DT-P15` y `DT-P20` cerradas; `DT-P14` abierta en parte y **bloquea U1** · **Versión 1.20** (2026-10-01) — `DT-P14` **cerrada** con el estimador poblacional, `INSUFFICIENT_HISTORY` para `n = 0` y la evaluación exacta B3 (`docs/06` §16.6); ninguna fórmula V1 cambia · **Versión 1.21** (2026-10-01) — cierre del contrato de U1: `DT-048` a `DT-052` `ACEPTADA` (aclaraciones A-1 en `DT-050` y A-2 en `DT-051`), y pendiente `DT-P22`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.22** (2026-10-01) — `DT-P22` `ACEPTADA` (opción (a)): `PRODUCT_OUT_OF_VALIDITY` cubre también la vigencia que termina dentro del horizonte; cierre de `DT-049`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.23** (2026-10-01) — `DT-053` (frontera de la salida parcial) y `DT-054` (sin monotonía global de `S` frente a `L` en V1), tras el audit de pre-codificación de U1; ninguna fórmula cambia · **Versión 1.24** (2026-10-01) — `DT-044` `ACEPTADA` (cantidades en `numeric`; `quantity_on_hand ≥ 0` compatible con `BR-X09`/`V1-13`); `DT-047` aceptada para U2; `DT-055` (entorno técnico de U2) · **Versión 1.25** (2026-10-02) — U3 autorizada para implementación: `DT-P17` cerrada por `DT-056` (baselines V1); `DT-046` `ACEPTADA`; `DT-057` (persistencia y ejecución del forecast); `DT-047` aceptada para U3; pendiente nueva `DT-P23` · **Versión 1.26** (2026-10-03) — cierre documental de U4 y autorización para implementación (no implementada): `DT-058` a `DT-063` `ACEPTADA`; `DT-P18` cerrada por `DT-059` y `DT-P21` por `DT-058`; `DT-047` aceptada para U4; nota en `DT-P16`, que sigue abierta · **Versión 1.27** (2026-10-03) — U4 implementada y validada: registro de la implementación en `DT-047` y en `DT-058` a `DT-063`; ninguna decisión cambia · **Versión 1.28** (2026-10-03) — U5 autorizada para implementación (no implementada): `DT-064` (dependencias), `DT-065` (autenticación local), `DT-066` (contrato de lectura) y `DT-067` (historia, desviación poblacional) `ACEPTADA`; `DT-047` aceptada para U5 · **Versión 1.29** (2026-10-03) — U5 implementada y validada: registro de la implementación en `DT-047` y en `DT-064` a `DT-067`; ninguna decisión cambia · **Versión 1.30** (2026-10-04) — U6 autorizada para implementación (no implementada): `DT-068` (entrega y contrato de la explicación) y `DT-069` (presentación, verificación y degradación de cifras) `ACEPTADA`; `DT-047` aceptada para U6 · **Versión 1.31** (2026-10-04) — U6 implementada y validada: registro de la implementación en `DT-047`, `DT-068` y `DT-069`; ninguna decisión cambia · **Versión 1.32** (2026-10-05) — Fase 7 autorizada para implementación (no implementada): `DT-070` (alcance, stack y versiones, autenticación local, contrato con la API, formato regional, proxy, partición F7a–F7d e integración con `main`) `ACEPTADA`; separada de `DT-047` · **Versión 1.33** (2026-10-05) — Fase 7 implementada: estado e implementación de `DT-070` · **Versión 1.34** (2026-10-05) — Fase 5, cierre documental (no autorizada): `DT-071` a `DT-085` (partición y puertas, `ml/`, dependencias, enmienda acotada de D-12, backtesting, Nivel 1, segmentación `PROPUESTA`, regla de `DT-021`, criterios `PROPUESTA`, simulador de Nivel 2 con decisiones `OPEN`, estudios de `DT-011` y `DT-010`, intervalos, promoción y Git); notas en `DT-010`, `DT-011`, `DT-021`, `DT-056`, `DT-P03`, `DT-P04` y `DT-P23`; `DT-086` autoriza F5a por separado; propuestas del responsable para OD-S1 a OD-S4, criterio serie-corte en `DT-078`, aclaración del Nivel 1 con días imputados y bloqueo de U1 para `DT-010` (`DT-083`) · **Versión 1.35** (2026-10-05) — `DT-087` `ACEPTADA` (población por corte a la fecha, enmienda de interpretación de `DT-075` punto 6); notas en `DT-075` y `DT-079` tras la revisión de F5a · **Versión 1.36** (2026-10-05) — notas en `DT-073` (JSON versionado como resumen) y `DT-077` (el «19 intermitentes» era un artefacto de `valid_to`) · **Versión 1.37** (2026-10-05) — `DT-088` autoriza F5b; OD-S1 a OD-S4 `ACEPTADA` en `DT-080` con sus refinamientos · **Versión 1.38** (2026-10-05) — `DT-080`: decisiones del responsable al cerrar F5b; nota en `DT-078` (las candidatas ordenan igual por serie-corte) · **Versión 1.39** (2026-10-05) — G1: `DT-089` (baseline oficial), `DT-090` (MASE) y `DT-091` (valores de aceptación), `ACEPTADA` y provisionales (`SYNTHETIC`); notas en `DT-010`, `DT-011`, `DT-021` (cerrada por `DT-090`), `DT-077`, `DT-079`, `DT-081`, `DT-P03` y `DT-P04` · **Versión 1.40** (2026-10-06) — `DT-092` autoriza F5c; `DT-093`, criterios complementarios de G1 (horizonte L + R, cortes comparables, tolerancias, banda de sesgo, cobertura, segmentación y estacionalidad, estimadores de `DT-081`, ajuste de modelos, Holt-Winters con 104 semanas y sustitución en el simulador); notas en `DT-071`, `DT-077` a `DT-082`, `DT-090` y `DT-091` · **Versión 1.41** (2026-10-06) — `DT-092`: registro de la implementación de F5c (pendiente de revisión); ninguna decisión cambia · **Versión 1.42** (2026-10-06) — revisión de F5c: `DT-093` puntos 12 a 14 (interpretaciones aceptadas, sensibilidad de cadencia, tabla de criterios con SES y por estrategia); nota en `DT-081` (conclusión provisional y propuesta de (b)) · **Versión 1.43** (2026-10-06) — `DT-094` (alcance de cierre de la Etapa 2: stack completo por unidades U7 a U16, Azure for Students, Bicep, corpus sintético) y `DT-095` (U7, Docker: autorizada; implementación pendiente de revisión) · **Versión 1.44** (2026-10-06) — `DT-096` (U8, CI con GitHub Actions: autorizada; implementación pendiente de revisión) y digests de las imágenes base en `DT-095`, pendientes de verificación externa · **Versión 1.45** (2026-10-06) — `DT-097` (U9, capa analítica de solo lectura y migración `0004`: autorizada; implementación pendiente de revisión)
 
 Registro de decisiones arquitectónicas. Formato: ID, decisión, contexto, alternativas, razón,
 consecuencias, estado.
@@ -3524,8 +3524,18 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
   2. **Bases fijadas por versión exacta**, comprobadas contra `docker-library/official-images` el 2026-10-06:
      `python:3.11.17-slim-trixie` (Python 3.11, la línea con la que se validó el backend; `requires-python >= 3.11`),
      `node:24.21.0-trixie-slim` (la referencia de `DT-070`), `nginx:1.30.5-alpine` (línea estable) y
-     `postgres:16.15-alpine3.24` (antes `16-alpine`, misma versión 16.15; `DT-055`). **Digest pendiente:** el registro
-     no es accesible desde el entorno de verificación y no se inventa; desviación declarada de `docs/12` §3.2, regla 2.
+     `postgres:16.15-alpine3.24` (antes `16-alpine`, misma versión 16.15; `DT-055`). *(Al implementarse U7, sin digest:
+     el registro no era accesible desde el entorno de verificación.)*
+     **Digests** (2026-10-06, U8): el del índice multiplataforma de cada etiqueta, tomado de `docker-library/repo-info`
+     (`repos/<imagen>/remote/<etiqueta>.md`), el repositorio de metadatos que publican los mantenedores de las imágenes
+     oficiales. Quedan fijados en los Dockerfiles y en `infra/docker-compose.yml`:
+     `python:3.11.17-slim-trixie@sha256:0dd364ba7e10242f07755449e3a3d0e35f9efd987952737b90def6709ab0c5ce`,
+     `node:24.21.0-trixie-slim@sha256:173f125896c3b47ddf056734c7ea789d04595a6a08769a8f78e0df642781fb66`,
+     `nginx:1.30.5-alpine@sha256:0985e772fb9f729e6fa0980da05fca5d9c468e870eed43071545afa9d2e27d94` y
+     `postgres:16.15-alpine3.24@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea`.
+     **Pendiente de verificación externa:** el entorno del agente no alcanza el registro y no ha descargado ninguna imagen
+     por digest. La primera ejecución del job `docker` de CI (`DT-096`), o una construcción en Docker Desktop, los
+     confirma; si alguno no existiera, la construcción falla en lugar de usar otra imagen.
   3. **Dependencias de Python** leídas de `backend/pyproject.toml` (grupos `db` y `api`, sin `test`), sin ninguna
      nueva. Las transitivas no están bloqueadas: el proyecto no tiene archivo de bloqueo (punto abierto).
   4. **nginx** como servidor estático y proxy inverso de `/api/` en el mismo origen (`DT-070` punto 23): sin CORS,
@@ -3563,10 +3573,170 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
 
   Además, la suite por defecto (353) y la de la API (56) siguen en verde: `backend/`, `frontend/`, `ml/` y el
   generador no cambian. **Falta la construcción con las imágenes oficiales** en la máquina del responsable o en el CI de U8.
-- **Puntos abiertos:** digests de las cuatro bases; bloqueo de dependencias transitivas; tamaño de las imágenes
-  oficiales sin medir; aviso conocido de paquete de 774 kB de la interfaz (`docs/08`).
+- **Puntos abiertos:** confirmación de los digests contra el registro (punto 2; job `docker` de `DT-096`); bloqueo de
+  dependencias transitivas; tamaño de las imágenes oficiales sin medir; aviso conocido de paquete de 774 kB de la
+  interfaz (`docs/08`).
 - **Estado:** autorización `ACEPTADA` (2026-10-06, decisión del responsable con el prompt «Implementación de la Etapa 2
   por bloques»); implementación pendiente de revisión.
+
+## DT-096 — U8: integración continua con GitHub Actions
+
+- **Decisión:** **U8 autorizada** (Fase 13, bloque A de `DT-094`): CI del repositorio completo sin Azure ni
+  credenciales, y verificación de las imágenes oficiales de U7. No cubre U9, U10, Azure, despliegues ni cambios en
+  U1–U6, `ml/` o el generador.
+- **Decisiones del responsable para U8:** ningún linter de Python (ni Ruff, ni Black, ni otro; el proyecto no define
+  uno y no es deuda bloqueante); el frontend conserva sus comprobaciones (ESLint, Prettier, `tsc`); Python 3.11.16 y
+  Node 24.21.0 con npm 11.19.0.
+- **Contrato de implementación** (`PROPUESTA` del desarrollador, pendiente de revisión; `docs/12` §4.5):
+  1. **Un workflow**, `.github/workflows/ci.yml`, en `pull_request`, `push` a `main` y `workflow_dispatch`, con
+     `concurrency` que cancela ejecuciones superadas de la misma rama. Runner `ubuntu-24.04`.
+  2. **Permisos mínimos:** `contents: read` para todo el workflow; `actions/checkout` con
+     `persist-credentials: false`; ningún secreto de GitHub, ninguna escritura, **sin OIDC** (llega con U10/U12).
+  3. **Acciones oficiales fijadas por SHA de commit**, verificadas en la API de GitHub el 2026-10-06:
+     `actions/checkout` v7.0.1 (`3d3c42e5aac5ba805825da76410c181273ba90b1`), `actions/setup-python` v7.0.0
+     (`5fda3b95a4ea91299a34e894583c3862153e4b97`) y `actions/setup-node` v7.0.0
+     (`820762786026740c76f36085b0efc47a31fe5020`). Python 3.11.16 figura en `actions/python-versions` para
+     Ubuntu 24.04 x64; el job del frontend comprueba que npm sea 11.19.0.
+  4. **Ocho jobs** independientes, cada uno con el comando oficial de su suite y sin fijar números de pruebas:
+
+     | Job | Qué ejecuta |
+     |---|---|
+     | `secret-scan` | `python infra/ci/secret_scan.py` |
+     | `ml` | publica el dataset; `PYTHONPATH=backend python -m unittest discover -s ml/tests -t .` |
+     | `backend` | publica el dataset; suite por defecto **sin dependencias opcionales** (`backend/`: `discover -s tests -t .`) |
+     | `api` | grupos `db`, `api` y `test`; `discover -s tests/api -t tests/api` |
+     | `integration` | servicio PostgreSQL efímero; publica el dataset; `python -m app.db migrate`; `discover -s tests/db -t tests/db` |
+     | `generator` | PyYAML; `discover -s data/synthetic/tests -t .` |
+     | `frontend` | `npm ci`, ESLint, `tsc`, Prettier (`format:check`, ya definido en `package.json`), Vitest y build |
+     | `docker` | pruebas estáticas de `infra/tests`; construcción de las imágenes de U7; `up` del perfil `app`; espera a `healthy`; `smoke.py`; registros si falla; `down -v` siempre |
+  5. **Dataset:** los jobs que lo necesitan lo publican con el generador 0.4.0 sin modificarlo y comprueban
+     `ds-6c8ad65b4999` en el manifiesto; nada se versiona.
+  6. **Dependencias:** las del backend salen de `backend/pyproject.toml` con `infra/ci/backend_requirements.py`, que
+     falla con un grupo desconocido o con una versión no fijada con `==`; PyYAML, de `data/synthetic/requirements.txt`;
+     el frontend, de `package-lock.json` con `npm ci`. Caché solo de npm (`setup-node`, con clave en el lockfile); pip
+     sin caché. Ninguna dependencia nueva en el proyecto. Las transitivas de Python siguen sin bloquear (punto abierto).
+  7. **PostgreSQL de integración:** contenedor de servicio del job, `postgres:16.15-alpine3.24` por digest, con `trust`
+     como en `DT-055` (sin contraseña); se destruye con el job.
+  8. **Detección de secretos** con `infra/ci/secret_scan.py` (solo biblioteca estándar, 8 pruebas en
+     `infra/tests/test_secret_scan.py`):
+     - **qué revisa:** los archivos que Git confirmaría (versionados y no ignorados);
+     - **archivos prohibidos**, espejo de `.gitignore`: `.env`, `.env.*` salvo `.env.example`, claves, certificados y
+       archivos de credenciales;
+     - **patrones:** claves privadas, credenciales de Azure (clave de cuenta de almacenamiento, `SharedAccessKey`,
+       firma SAS, secreto de cliente de Entra ID, claves de servicio), tokens de GitHub, AWS, Google y Slack, JWT,
+       cadenas de conexión con contraseña y asignaciones de secretos; los marcadores de documentación no cuentan;
+     - **nunca imprime el valor encontrado.**
+
+     Limitaciones: revisa el estado actual, no el historial de Git, y es heurístico. Se descartó gitleaks o
+     trufflehog: binario o acción de terceros como dependencia nueva.
+  9. **Job `docker`:** es la única verificación automática de U7 con las imágenes oficiales y sus digests. Reutiliza
+     `infra/docker-compose.yml` y `smoke.py` sin duplicar lógica. Coste estimado: unos 3 a 5 minutos por ejecución, en
+     paralelo con los demás jobs.
+- **Defecto del repositorio encontrado, no corregido** (`backend/` queda fuera de U8):
+  - **Síntoma:** la instalación documentada en `backend/pyproject.toml`, `pip install -e ".[db]"`, falla en un entorno
+    limpio con setuptools actual: «Multiple top-level packages discovered in a flat-layout: ['db', 'app']».
+  - **Impacto:** solo esa instrucción de instalación. Ni CI ni las imágenes dependen de ella.
+  - **Corrección mínima propuesta** (requiere autorización): declarar el paquete en `backend/pyproject.toml`, por ejemplo
+    `[tool.setuptools.packages.find]` con `include = ["app*"]`, o cambiar la instrucción documentada.
+- **Verificación (2026-10-06):**
+  - `actionlint` 1.7.12, con `shellcheck`: sin hallazgos.
+  - Cada job se reprodujo en una copia limpia con fin de línea LF, como la que obtiene un checkout en Linux:
+    - `ml`: 129 pruebas en verde;
+    - `backend`: 353 en verde, sin dependencias opcionales y sin omitidas con el dataset publicado;
+    - `api`: 56;
+    - `integration`: migraciones aplicadas y 152 pruebas en verde contra un PostgreSQL 16.15 efímero;
+    - `generator`: 582;
+    - `frontend`: lint, `tsc`, Prettier, 148 pruebas y build;
+    - `docker`: build, `healthy` y smoke 8/8;
+    - detector de secretos: 0 hallazgos en el repositorio;
+    - `infra/tests`: 22 pruebas (14 de contenedores y 8 del detector).
+  - Los jobs de Python corrieron con Python 3.11.17 en la copia limpia; las suites del backend y de `infra/`, además, con
+    3.11.16 en la máquina del responsable.
+  - El frontend corrió con Node 24.19.0 y npm 11.19.0, la versión de Node disponible en el entorno.
+  - El job `docker` usó imágenes base sustitutas sin digest, porque el entorno no alcanza el registro.
+  - **No ejecutado:** una ejecución real en GitHub Actions, que confirmará también los digests de `DT-095`.
+- **Estado:** autorización `ACEPTADA` (2026-10-06, decisión del responsable con el prompt «U8 CI + verificación final de
+  U7»); implementación pendiente de revisión.
+
+## DT-097 — U9: capa analítica de solo lectura en PostgreSQL (migración `0004`)
+
+- **Decisión:** **U9 autorizada** (Fase 11, datos; bloque A de `DT-094`). Alcance: vistas analíticas, rol de solo
+  lectura y migración `0004`. **Fuera de U9:** Power BI (Desktop o Service), RLS, publicación, Import o
+  DirectQuery (`DT-014`, `DT-P10`) y todo lo de Azure. Esos puntos pertenecen a U16.
+- **Contrato de implementación** (`PROPUESTA` del desarrollador, pendiente de revisión; catálogo en `docs/11` §10 y
+  definiciones en `knowledge/glossary.md`, «Indicadores analíticos»):
+  1. **Esquema propio `analytics`**, separado de las tablas operativas de `public`. Contiene 13 vistas simples, sin
+     tablas ni vistas materializadas:
+     - carga vigente: `data_load`;
+     - seis dimensiones: `dim_date`, `dim_product`, `dim_category`, `dim_supplier`, `dim_location` y
+       `dim_model_version`;
+     - seis hechos: `fact_consumption`, `fact_inventory_current`, `fact_inventory_daily`,
+       `fact_purchase_order_line`, `fact_forecast` y `fact_recommendation`.
+
+     Son las del modelo en estrella de `docs/11` §3 que el dataset 0.4.0 permite calcular (`docs/11` §9).
+  2. **Solo hechos y valores ya calculados.** Ninguna fórmula del motor se reimplementa (`docs/11` §1). Las lecturas
+     que coinciden con U4 usan su misma regla: fecha esperada de la línea o de la cabecera, línea abierta, y
+     observación de lead time = línea completamente recibida y fechada por su última recepción (V1-09). Los instantes
+     se pasan a fecha en UTC (`docs/04` §9.7).
+  3. **`fact_inventory_daily`** reconstruye la existencia al cierre de cada día como suma acumulada de los movimientos,
+     la misma regla con la que la ingesta reconcilia `inventory`. El último día coincide con la instantánea en los
+     100 pares del dataset.
+  4. **Rol `analytics_reader`:**
+     - sin `LOGIN`, `SUPERUSER`, `CREATEDB`, `CREATEROLE`, `REPLICATION` ni `BYPASSRLS`;
+     - `CONNECT` sobre la base, `USAGE` sobre `analytics` y `SELECT` sobre sus vistas; nada sobre `public`;
+     - privilegios por defecto en `analytics`: las vistas que añadan migraciones posteriores son legibles sin otro
+       `GRANT`;
+     - las vistas se ejecutan con los privilegios de su propietario, así que el rol no lee ninguna tabla.
+
+     El rol es del clúster y se crea solo si no existe. La cuenta con la que se conecte Power BI se crea **fuera del
+     repositorio**, con su secreto en el almacén (`DT-022`), como miembro del rol (U16).
+  5. **Migración `0004_analytics_views.sql`** con el ejecutor existente: una transacción, sha en
+     `schema_migrations`. Sin mecanismo de reversión, como `0001`–`0003`. El procedimiento del proyecto es una
+     migración nueva; quitar la capa entera es `DROP SCHEMA analytics CASCADE`, sin tocar ninguna tabla.
+- **Interpretaciones** (`PROPUESTA`; `docs/11` §4 no las fija):
+  - **cumplimiento en tiempo:** por línea completamente recibida (última recepción ≤ fecha esperada), con la
+    granularidad de V1-09, no por recepción;
+  - **cumplimiento en cantidad:** Σ recibido ÷ Σ pedido en líneas de órdenes cerradas (`RECEIVED` o `CANCELLED`);
+  - **«nivel de servicio alcanzado»** de `docs/11` §4.5 = tasa de satisfacción (*fill rate*) del glosario, solo con
+    datos `SYNTHETIC`, porque usa la demanda latente.
+- **Fuera de U9** (`docs/11` §9):
+  - valor de inventario y capital inmovilizado: falta la regla de valoración;
+  - cobertura: `DT-P19`;
+  - productos críticos y sobreinventario: `BR-X03`;
+  - recomendaciones abiertas, conversión y descarte: V1 no tiene resolución (`DT-059`);
+  - inventario sin movimiento: N sin definir;
+  - error, sesgo y cobertura del intervalo, y su evolución por versión: no hay observaciones después del único
+    corte, y las métricas de la Fase 5 viven en `ml/`;
+  - concentración de proveedor, compras urgentes e impacto en el stock de seguridad: sin definición operativa.
+
+  Quedan para U16 con su decisión.
+- **Consecuencias:**
+  - una migración futura que borre o cambie columnas usadas por las vistas tendrá que recrear las vistas afectadas:
+    PostgreSQL impide borrar una tabla con vistas dependientes;
+  - por la misma dependencia, una prueba de U3 que borra tablas para simular un esquema ausente borra antes el esquema
+    `analytics`;
+  - dos pruebas de U4 dejan de fijar la lista completa de migraciones (ahora termina en `0004`), como ya hizo U4 con
+    la de U3;
+  - las consultas de U2 a U6 no cambian.
+- **Limitación conocida:** por el privilegio por defecto `TEMPORARY` de `PUBLIC` en la base, el rol podría crear tablas
+  temporales de sesión. No cambian el esquema ni persisten. Revocarlo afectaría a todos los roles; queda para la
+  configuración de entornos desplegados (U12).
+- **Verificación (2026-10-06):** `backend/tests/db/test_analytics.py`, 25 pruebas:
+  - **migración:** desde cero y sobre `0003` con datos, sin cambiar las tablas operativas, e idempotente; también en
+    una segunda base del mismo clúster;
+  - **esquema:** columnas, tipos y solo vistas;
+  - **valores:** con datos de prueba calculados a mano (conversión UTC, saldo inicial, la fecha de la línea sustituye
+    a la de la cabecera); con `ds-6c8ad65b4999`, sin duplicados en el grano de cada vista. Coinciden con las tablas
+    (3 990 forecasts, 1 330 primarios, 100 evaluaciones 50/40/10), con la posición contable de la API y con las
+    observaciones de lead time de U4;
+  - **seguridad:** el rol lee las 13 vistas y ninguna tabla. Se le rechaza escribir, `TRUNCATE`, crear, borrar o
+    renombrar objetos, conceder permisos y ejecutar las migraciones. Las vistas posteriores en `analytics` son
+    legibles y las tablas nuevas en `public`, no.
+
+  Suite de integración completa: 177 pruebas en verde con PostgreSQL 16.15; con PostgreSQL 16.2, las de U9. Dos
+  mutaciones de la migración (un `GRANT` sobre `public` y un lead time desplazado) hacen fallar sus pruebas.
+- **Estado:** autorización `ACEPTADA` (2026-10-06, decisión del responsable con el prompt «U9: Vistas analíticas
+  PostgreSQL + rol de solo lectura»); implementación pendiente de revisión.
 
 ## Decisiones deliberadamente NO tomadas
 
