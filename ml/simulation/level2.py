@@ -218,10 +218,11 @@ def spearman(xs: Sequence[float], ys: Sequence[float]) -> float | None:
         return r
 
     rx, ry = ranks(xs), ranks(ys)
-    mx, my = sum(rx) / len(rx), sum(ry) / len(ry)
-    sxy = sum((a - mx) * (b - my) for a, b in zip(rx, ry))
-    sxx = sum((a - mx) ** 2 for a in rx)
-    syy = sum((b - my) ** 2 for b in ry)
+    # math.fsum: correctly rounded, so the result does not depend on the Python version (3.12 changed sum()).
+    mx, my = math.fsum(rx) / len(rx), math.fsum(ry) / len(ry)
+    sxy = math.fsum((a - mx) * (b - my) for a, b in zip(rx, ry))
+    sxx = math.fsum((a - mx) ** 2 for a in rx)
+    syy = math.fsum((b - my) ** 2 for b in ry)
     if sxx == 0 or syy == 0:
         return None
     return sxy / math.sqrt(sxx * syy)
@@ -262,7 +263,7 @@ def model_level_spearman(
             values = [v for v in per_cut.values() if v is not None]
             out.setdefault(horizon, {})[metric] = {
                 "per_cut": per_cut,
-                "mean": sum(values) / len(values) if values else None,
+                "mean": math.fsum(values) / len(values) if values else None,
                 "min": min(values) if values else None,
                 "max": max(values) if values else None,
                 "n_cuts": len(values),
