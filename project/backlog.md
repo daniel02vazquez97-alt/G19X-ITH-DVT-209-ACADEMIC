@@ -1,6 +1,6 @@
 # Backlog inicial (Scrum)
 
-**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — correspondencia con las unidades de la Etapa 2 · **Versión 1.3** (2026-10-04) — US-048: interpretación de U6 (`DT-068`) · **Versión 1.4** (2026-10-05) — notas de la Fase 5 en US-050 a US-058 (`DT-071` a `DT-085`; no autorizada) · **Versión 1.5** (2026-10-05) — US-058: F5b autorizada (`DT-088`) · **Versión 1.6** (2026-10-05) — US-050 a US-058 tras G1 (`DT-089` a `DT-091`): cerradas o pendientes · **Versión 1.7** (2026-10-06) — F5c autorizada (`DT-092`): notas en US-051 a US-055 y US-058
+**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — correspondencia con las unidades de la Etapa 2 · **Versión 1.3** (2026-10-04) — US-048: interpretación de U6 (`DT-068`) · **Versión 1.4** (2026-10-05) — notas de la Fase 5 en US-050 a US-058 (`DT-071` a `DT-085`; no autorizada) · **Versión 1.5** (2026-10-05) — US-058: F5b autorizada (`DT-088`) · **Versión 1.6** (2026-10-05) — US-050 a US-058 tras G1 (`DT-089` a `DT-091`): cerradas o pendientes · **Versión 1.7** (2026-10-06) — F5c autorizada (`DT-092`): notas en US-051 a US-055 y US-058 · **Versión 1.8** (2026-10-06) — F5c implementada: notas en US-054, US-055 y US-058
 
 Backlog organizado en **Épicas → Historias de usuario → Tareas**.
 
@@ -290,6 +290,7 @@ función**) · `T-040.4` punto de reorden · `T-040.5` pruebas exhaustivas
 - *Fase 5 (2026-10-05):* niveles 1–2 en F5c; criterios en `DT-079` (valores `OPEN` hasta G1); métrica primaria según `DT-078`.
 - *G1 (2026-10-05):* **pendiente** (F5c, sin autorizar). Métrica primaria MASE (`DT-090`); valores de aceptación provisionales en `DT-091`; la banda de sesgo sigue sin valor.
 - *F5c (2026-10-06):* en curso (`DT-092`): Holt, Holt-Winters, Croston, SBA y TSB evaluados en Nivel 1 y Nivel 2 con los criterios de `DT-091` y `DT-093`, **sin promoción**.
+- *F5c (2026-10-06, implementada, pendiente de revisión):* Nivel 1 y Nivel 2 de los cinco candidatos y tabla automática de criterios en `docs/reports/fase5-f5c-candidatos-sintetico.md`; ninguno cumple el criterio de unidades faltantes de Nivel 2 frente a la media móvil 13 (`SYNTHETIC`). Sin promoción.
 
 ### US-055 — Cuantificación de la incertidumbre
 - **Prioridad:** P0
@@ -301,6 +302,7 @@ función**) · `T-040.4` punto de reorden · `T-040.5` pruebas exhaustivas
 - *Fase 5 (2026-10-05):* protocolo en `DT-082` (nivel 0,80; calibración por horizonte solo con cortes anteriores); tolerancia de cobertura `OPEN` (`DT-079`).
 - *G1 (2026-10-05):* **pendiente** (F5c). Hasta entonces la banda de U3 es nominal 0,80 y no está validada; la tolerancia de cobertura sigue sin valor.
 - *F5c (2026-10-06):* en curso (`DT-092`): cobertura del intervalo actual frente a una variante calibrada por horizonte; calibrado si queda entre 0,75 y 0,85 (`DT-093` punto 6). Solo decide el rótulo de la banda.
+- *F5c (2026-10-06, implementada, pendiente de revisión):* el intervalo actual de la media móvil 13 queda entre 0,75 y 0,85 en los 14 horizontes de los cortes tardíos; rótulo recomendado «nominal 0,80; cobertura comprobada solo con datos SYNTHETIC». La Fase 7 no cambia.
 
 ### US-056 — Tratamiento de series con datos insuficientes
 - **Prioridad:** P1
@@ -327,6 +329,7 @@ función**) · `T-040.4` punto de reorden · `T-040.5` pruebas exhaustivas
 - *Fase 5 (2026-10-05):* protocolo del simulador en `DT-080` (F5b); OD-S1 a OD-S4 `ACEPTADA` y F5b autorizada (`DT-088`): simulación retrospectiva en bucle cerrado de los cuatro baselines con U1 sin cambios, sin elegir baseline oficial ni métrica.
 - *G1 (2026-10-05):* el simulador está hecho (F5b, `docs/05` §20.5). La comparación con un modelo de ML queda **pendiente** de F5c y F5d. Con SES, el Nivel 2 no muestra una mejora distinguible del ruido (`DT-089`).
 - *F5c (2026-10-06):* en curso (`DT-092`): los candidatos de F5c se simulan como ramas nuevas con las mismas reglas; la comparación es informativa y no promueve nada.
+- *F5c (2026-10-06, implementada, pendiente de revisión):* 17 ramas simuladas (nueve modelos y las estrategias (b) y (c) de cuatro); paridad con F5b comprobada.
 
 ### US-057 — Versionado y persistencia de predicciones
 - **Prioridad:** P0

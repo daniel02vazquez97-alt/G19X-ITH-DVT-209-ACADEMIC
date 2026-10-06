@@ -1,6 +1,6 @@
 # 05 — Motor predictivo (estrategia de Machine Learning)
 
-**Estado:** Versión 1.0 — Etapa 0 (estrategia, no implementada) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §19, contrato de `ForecastProvider` para la Etapa 2 (`DT-046`); §§1–18 no cambian · **Versión 1.3** (2026-10-02) — `DT-046` `ACEPTADA`; §19.8 y §19.9, decisiones y criterios de cierre de U3 (`DT-056`, `DT-057`); nota de V1 en §6 · **Versión 1.4** (2026-10-02) — §19.10, registro de la implementación de U3; ninguna decisión cambia · **Versión 1.5** (2026-10-03) — `DT-P21` cerrada por `DT-058`: frecuencia de §2 leída como una ejecución de forecast por corte de recomendación; §19.7 · **Versión 1.6** (2026-10-05) — §20: protocolo y decisiones de la Fase 5 (`DT-071` a `DT-085`); notas en §2, §6, §8, §9.1, §10, §11 y §19.8. Fase 5 **no autorizada** (condiciones en §20.4) · **Versión 1.7** (2026-10-05) — §20.3: población por corte a la fecha (`DT-087`) y cortes no independientes (nota de `DT-079`) · **Versión 1.8** (2026-10-05) — §20.3: segmentación sobre la vida activa de cada serie (nota de `DT-077`) · **Versión 1.9** (2026-10-05) — §20: F5b autorizada (`DT-088`); OD-S1 a OD-S4 `ACEPTADA` · **Versión 1.10** (2026-10-05) — §20.1: F5b implementada, pendiente de revisión · **Versión 1.11** (2026-10-05) — §20.3: criterio serie-corte de `DT-078`; §20.4: OD-S1 a OD-S4 cerradas · **Versión 1.12** (2026-10-05) — G1 (`DT-089` a `DT-091`): nota en §6, §20.1, §20.2, §20.4 y §20.5 nueva · **Versión 1.13** (2026-10-06) — §20.6: F5c autorizada (`DT-092`) y criterios complementarios de G1 (`DT-093`); notas en §20.1 y §20.4
+**Estado:** Versión 1.0 — Etapa 0 (estrategia, no implementada) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §19, contrato de `ForecastProvider` para la Etapa 2 (`DT-046`); §§1–18 no cambian · **Versión 1.3** (2026-10-02) — `DT-046` `ACEPTADA`; §19.8 y §19.9, decisiones y criterios de cierre de U3 (`DT-056`, `DT-057`); nota de V1 en §6 · **Versión 1.4** (2026-10-02) — §19.10, registro de la implementación de U3; ninguna decisión cambia · **Versión 1.5** (2026-10-03) — `DT-P21` cerrada por `DT-058`: frecuencia de §2 leída como una ejecución de forecast por corte de recomendación; §19.7 · **Versión 1.6** (2026-10-05) — §20: protocolo y decisiones de la Fase 5 (`DT-071` a `DT-085`); notas en §2, §6, §8, §9.1, §10, §11 y §19.8. Fase 5 **no autorizada** (condiciones en §20.4) · **Versión 1.7** (2026-10-05) — §20.3: población por corte a la fecha (`DT-087`) y cortes no independientes (nota de `DT-079`) · **Versión 1.8** (2026-10-05) — §20.3: segmentación sobre la vida activa de cada serie (nota de `DT-077`) · **Versión 1.9** (2026-10-05) — §20: F5b autorizada (`DT-088`); OD-S1 a OD-S4 `ACEPTADA` · **Versión 1.10** (2026-10-05) — §20.1: F5b implementada, pendiente de revisión · **Versión 1.11** (2026-10-05) — §20.3: criterio serie-corte de `DT-078`; §20.4: OD-S1 a OD-S4 cerradas · **Versión 1.12** (2026-10-05) — G1 (`DT-089` a `DT-091`): nota en §6, §20.1, §20.2, §20.4 y §20.5 nueva · **Versión 1.13** (2026-10-06) — §20.6: F5c autorizada (`DT-092`) y criterios complementarios de G1 (`DT-093`); notas en §20.1 y §20.4 · **Versión 1.14** (2026-10-06) — §20.7: F5c implementada, resultados `SYNTHETIC`, pendiente de revisión
 
 > **No se implementa ningún modelo en esta etapa.** Este documento fija la estrategia, las reglas de
 > evaluación y los criterios de aceptación **antes** de entrenar, para que la evaluación no se ajuste
@@ -683,7 +683,7 @@ es `SYNTHETIC` y debe revalidarse con datos REAL.*
 |---|---|---|
 | F5a | Backtesting, Nivel 1, segmentación, suavizado exponencial simple y comparación de baselines (sin candidatos). **Autorizada** (`DT-086`) | — |
 | F5b | Simulador de Nivel 2 aplicado a los baselines. **Autorizada** (`DT-088`; OD-S1 a OD-S4 `ACEPTADA` en `DT-080`); implementada el 2026-10-05 en `ml/simulation/`, pendiente de revisión (`docs/reports/fase5-f5b-nivel2-sintetico.md`) *(revisada e integrada en `main`, PR #9)* | F5a |
-| F5c | Modelos de niveles 1–2, estudio de `DT-011` e intervalos. G1 registrado (`DT-089` a `DT-091`); **pendiente de autorización** y de las condiciones de §20.4 *(2026-10-06: **autorizada**, `DT-092`; criterios en `DT-093`, §20.6)* | F5a, F5b y G1 |
+| F5c | Modelos de niveles 1–2, estudio de `DT-011` e intervalos. G1 registrado (`DT-089` a `DT-091`); **pendiente de autorización** y de las condiciones de §20.4 *(2026-10-06: **autorizada**, `DT-092`; criterios en `DT-093`, §20.6; **implementada, pendiente de revisión**: `ml/candidates.py`, `ml/f5c/`, `docs/reports/fase5-f5c-candidatos-sintetico.md`, §20.7)* | F5a, F5b y G1 |
 | F5d | Estudio de `DT-010` y, si procede, promoción e integración | F5c, G2 y G3 |
 
 Las puertas G1 (antes de evaluar candidatos), G2 (*holdout* de uso único) y G3 (aprobación humana) están
@@ -837,3 +837,60 @@ provisionales (`SYNTHETIC`).*
 | Ajuste de modelos | Rejillas pequeñas, error cuadrático a un paso y desempate por el parámetro menor; reoptimización en cada corte y, en el simulador, cada 4 decisiones (cambio provisional de `DT-080`) |
 | Holt-Winters | Elegible con ≥ 104 semanas de entrenamiento: en 7 de los 17 cortes |
 | Simulador sin modelo elegible | Usa los puntos del baseline oficial y se cuenta |
+
+### 20.7 F5c: resultados (SYNTHETIC, pendiente de revisión)
+
+*Añadido el 2026-10-06. Informe: `docs/reports/fase5-f5c-candidatos-sintetico.md` (`results_sha256` `df9f8753…`,
+igual en Python 3.11 y 3.13). Todo es `SYNTHETIC`. El informe **no recomienda ni promueve** ningún modelo; G2 y G3
+siguen sin autorizar.*
+
+**Nivel 1.** MASE en `L + R` frente a la media móvil 13, en el conjunto común de cada par.
+
+| Modelo | Cortes | MASE | Relativo |
+|---|---|---|---|
+| SES (provisional) | 17 | 0,669 | −16,4 % |
+| Holt | 17 | 0,753 | −5,9 % |
+| Holt-Winters | 7 | 0,643 | −18,3 % |
+| Croston | 17 | 0,688 | −14,0 % |
+| SBA | 17 | 0,903 | +12,8 % |
+| TSB | 17 | 0,687 | −14,2 % |
+
+**Nivel 2.** Periodo completo, 95 series.
+
+| Rama | Unidades faltantes |
+|---|---|
+| Media móvil 13 | 3 882 |
+| SES | 3 860 |
+| Holt | 5 490 |
+| Holt-Winters | 4 218 |
+| Croston | 4 271 |
+| SBA | 4 928 |
+| TSB | 4 170 |
+
+- La mejora de Nivel 1 de los candidatos **no se traduce en Nivel 2**: ninguno cumple el criterio de unidades
+  faltantes (+2 %).
+- Croston y TSB cumplen todos los criterios de Nivel 1 y de sesgo, y solo fallan ese.
+- Holt-Winters falla además el segmento intermitente.
+- Holt falla el segmento intermitente, su sesgo y el *fill rate*.
+- SBA no mejora el Nivel 1.
+
+**Estudio de `DT-011`.** Las estrategias (b) y (c) reducen las unidades faltantes en todos los modelos estudiados,
+con un inventario medio entre 1,7 % y 2,1 % mayor que el de la media móvil 13 (a):
+
+| Modelo | (a) | (b) | (c) |
+|---|---|---|---|
+| Media móvil 13 | 3 882 | 3 314 | 3 306 |
+| SES | 3 860 | 3 187 | 3 153 |
+| Holt-Winters | 4 218 | 3 493 | 3 511 |
+| TSB | 4 170 | 3 168 | 3 173 |
+
+- Contra la demanda latente, el MASE en `L + R` de la media móvil baja de 0,809 a 0,622 con (b).
+- Cinco series con más de la mitad de los días en desabasto se informan aparte.
+- La comparación con la demanda latente solo vale para datos `SYNTHETIC`.
+
+**US-055.** El intervalo actual de la media móvil 13 queda entre 0,75 y 0,85 en los 14 horizontes de los cortes
+tardíos (13 de 14 sin las semanas con desabasto). El de Holt-Winters cubre de menos (0,64–0,67), y su variante
+calibrada queda en banda en 8 de 14 horizontes. El rótulo recomendado para la banda de la Fase 7 es «nominal 0,80;
+cobertura comprobada solo con datos SYNTHETIC»; la Fase 7 no se modifica.
+
+**Paridad.** Los archivos de detalle de F5a y F5b recalculados desde F5c coinciden con sus huellas registradas.
