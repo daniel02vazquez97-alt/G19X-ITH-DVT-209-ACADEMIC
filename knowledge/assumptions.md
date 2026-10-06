@@ -342,6 +342,22 @@ un registro de supuestos es una lista de deseos.
   2026-09-24. **No es una regla del motor real de abastecimiento** y no debe presentarse como un lead
   time acordado con ningún proveedor.
 
+## ASSUMPTION-026 — La vigencia histórica de los productos está disponible en los datos maestros
+
+- **Supuesto:** Con datos reales, cada producto tiene una vigencia histórica fiable (`valid_from` y
+  `valid_to`) que permite saber si estaba vigente en cualquier fecha pasada, sin depender de `is_active`,
+  que solo describe el estado actual.
+- **Origen:** `DT-087` toma la población de cada corte del backtesting «a la fecha» (vigencia en el corte,
+  sin `is_active`) para evitar información del futuro y sesgo de supervivencia. En el dataset sintético la
+  vigencia existe; con datos reales es un requisito de los datos maestros.
+- **Impacto:** Población de cada corte de la Fase 5 y, con ella, todas las métricas de Nivel 1 y Nivel 2
+  calculadas sobre cortes pasados.
+- **Validación:** Confirmar con el negocio que el ERP conserva las fechas de alta y baja de cada producto
+  (y no solo un indicador activo/inactivo) y que esas fechas son coherentes con el consumo registrado.
+- **Si es falso:** No se puede reconstruir la población de cortes pasados sin inferirla del consumo, lo que
+  requiere una decisión nueva; la regla literal de U3 reintroduciría el sesgo de supervivencia.
+- **Estado:** `VIGENTE` (2026-10-05).
+
 ---
 
 ## Cómo gestionar los supuestos
