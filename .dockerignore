@@ -1,0 +1,26 @@
+# Contexto de construcción de las imágenes de U7 (`DT-095`), que es la raíz del repositorio.
+#
+# Lista de permitidos: se excluye todo y solo se readmite lo que copian los Dockerfiles de
+# infra/docker/. Así ningún `.env`, dato generado, artefacto local ni metadato de Git entra en una
+# imagen (docs/12 §3.2, regla 6; CLAUDE.md §9).
+*
+!backend/pyproject.toml
+!backend/app/
+!backend/db/
+!frontend/
+!data/__init__.py
+!data/synthetic/__init__.py
+!data/synthetic/requirements.txt
+!data/synthetic/config/
+!data/synthetic/generator/
+!infra/docker/
+
+# Dentro de lo readmitido, nunca:
+**/__pycache__
+**/*.py[cod]
+**/.env
+**/.env.*
+frontend/node_modules
+frontend/dist
+frontend/coverage
+frontend/*.local
