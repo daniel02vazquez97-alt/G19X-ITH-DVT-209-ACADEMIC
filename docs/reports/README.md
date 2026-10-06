@@ -11,6 +11,7 @@ Reportes de cierre de etapa y de fase, informes de evaluación y resultados de v
 | [`dataset-sintetico-0.4.0-calidad.md`](dataset-sintetico-0.4.0-calidad.md) — remite a `manifest.quality_report` | 2026-09-29 |
 | [`fase5-f5a-backtest-sintetico.md`](fase5-f5a-backtest-sintetico.md) y su resumen [`fase5-f5a-backtest-sintetico.json`](fase5-f5a-backtest-sintetico.json) — F5a: backtesting de baselines, Nivel 1 y segmentación provisional (`SYNTHETIC`; sin elección de baseline ni de métrica; incluye la huella, el comando exacto y la fecha de generación) | 2026-10-05 |
 | [`fase5-f5b-nivel2-sintetico.md`](fase5-f5b-nivel2-sintetico.md) y su resumen [`fase5-f5b-nivel2-sintetico.json`](fase5-f5b-nivel2-sintetico.json) — F5b: simulador de Nivel 2 en bucle cerrado aplicado a los cuatro baselines y cruce informativo con el Nivel 1 (`DT-078`) (`SYNTHETIC`, con la demanda latente; sin elección de baseline, métrica ni tolerancias) | 2026-10-05 |
+| [`fase5-f5c-candidatos-sintetico.md`](fase5-f5c-candidatos-sintetico.md) y su resumen [`fase5-f5c-candidatos-sintetico.json`](fase5-f5c-candidatos-sintetico.json) — F5c: Holt, Holt-Winters, Croston, SBA y TSB en Nivel 1 y Nivel 2, tabla automática de criterios sin recomendación, estudio de `DT-011` y cobertura de intervalos (US-055) (`SYNTHETIC`; sin *holdout* ni promoción) | 2026-10-06 |
 
 ## Reportes previstos
 
