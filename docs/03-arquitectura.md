@@ -408,7 +408,7 @@ manifiesto), nunca su código.
 | Interfaz | `frontend/` | Vistas de `docs/08` §11 y §12 (`DT-070`): React + TypeScript + Vite, cliente fino con tipos generados del OpenAPI, sin reglas de negocio | API (`/api`), nunca la base | Fase 7 (implementada, 2026-10-05) |
 | Entrenamiento y evaluación | `ml/` | Backtesting, Nivel 1 y Nivel 2 | `app.forecasting`, `app.supply_engine` | Fase 5 (decisiones `DT-071` a `DT-086`; solo F5a autorizada; `float` solo aquí y en el proveedor de modelo, `DT-074`) |
 
-Las pruebas de `ml/` solo pueden importar `app.runs` en la prueba de paridad del lead time con el adaptador puro de U4; la excepción está documentada en `docs/13` §14.
+Las pruebas de `ml/` solo pueden importar `app.runs` en las pruebas de paridad con el adaptador puro de U4 (lead time en F5a y entradas del motor en F5b); la excepción está documentada en `docs/13` §14.
 
 Los «servicios de aplicación» y los «repositorios» de §3 **no** se convierten en carpetas genéricas:
 el único caso de uso con orquestación real —las ejecuciones batch— vive en `runs/`, y las consultas
