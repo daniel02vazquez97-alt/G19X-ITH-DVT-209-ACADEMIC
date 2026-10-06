@@ -16,7 +16,7 @@
 | Motor U1 (`ENGINE_VERSION`) | 0.1.0 |
 | Baselines U3 | `baseline.moving_average` 1.0.0, `baseline.naive` 1.0.0, `baseline.seasonal_naive` 1.0.0 |
 | SES | `ml.ses` 0.1.0-provisional (PROPUESTA, `DT-076` punto 7) |
-| Commit | `ded5e6b6ff2cc4e8f74574693eb4e9472d2f07bc` (cambios sin commit en archivos versionados: False) |
+| Commit | `2c3d9c6bf68fcf1f3a1aabe2680e041ddff889de` (cambios sin commit en archivos versionados: False) |
 | Python | 3.11.16 |
 | Aleatoriedad | none (no randomness) |
 | `results_sha256` | `67608e958eb87ad5cb02e40532b47b6a54940e3b153d56fbd266b32d6bbe433a` |
@@ -62,7 +62,7 @@
 
 ### 4.1 Población, descontinuados y series fuera de L + R
 
-- Población por corte con la regla vigencia al corte (DT-087): 100 (2024-03-27 a 2025-03-26); 95 (2025-04-23 a 2025-06-18), de 100 candidatas.
+- Población por corte con la regla de vigencia al corte (`DT-087`): 100 (2024-03-27 a 2025-03-26); 95 (2025-04-23 a 2025-06-18), de 100 candidatas.
 - Fuera de la población (`INACTIVE_OR_OUT_OF_VALIDITY`; en el desglose por segmento figuran como «descontinuado»): ninguno (2024-03-27 a 2025-03-26); 21, 26, 37, 56, 61 (2025-04-23 a 2025-06-18). «Población» y «descontinuado» suman siempre las candidatas.
 - Productos con `is_active = false` en la foto del dataset que están dentro de la población: 5 (2024-03-27 a 2025-03-26); 0 (2025-04-23 a 2025-06-18).
 - Sin proveedor preferente activo (U1 se detiene antes de `H`: fuera de `L + R`, dentro de `h = 1`): productos 3, 20, 57, 71, 74 (2024-03-27 a 2025-06-18). El `is_active` de los proveedores es una foto sin historial: no se infiere ni se reconstruye (`DT-087`).
@@ -227,11 +227,11 @@ La cobertura no se informa en `L + R`: los intervalos son semanales y no existe 
 
 ## 6. Comparación de reglas de población (efecto del sesgo de supervivencia)
 
-Misma ejecución con las dos reglas: **vigencia al corte (DT-087)** (la de este informe) y **literal de U3**. Diferencias descriptivas, `SYNTHETIC`; sin conclusiones de promoción ni elección de métrica.
+Misma ejecución con las dos reglas: **vigencia al corte (`DT-087`)** (la de este informe) y **literal de U3**. Diferencias descriptivas, `SYNTHETIC`; sin conclusiones de promoción ni elección de métrica.
 
-Población por corte — vigencia al corte (DT-087): 100 (2024-03-27 a 2025-03-26); 95 (2025-04-23 a 2025-06-18); literal de U3: 95 (2024-03-27 a 2025-06-18).
+Población por corte — vigencia: 100 (2024-03-27 a 2025-03-26); 95 (2025-04-23 a 2025-06-18); U3 literal: 95 (2024-03-27 a 2025-06-18).
 
-| Horizonte | Vista | Segmento | n (vigencia al corte (DT-087)) | n (literal de U3) |
+| Horizonte | Vista | Segmento | n vigencia | n U3 literal |
 |---|---|---|---|---|
 | h = 1 (semana 1) | todas las semanas | todos | 1685 | 1615 |
 | h = 1 (semana 1) | todas las semanas | suave | 1430 | 1360 |
@@ -247,7 +247,7 @@ Población por corte — vigencia al corte (DT-087): 100 (2024-03-27 a 2025-03-2
 | L + R (horizonte de protección) | solo objetivos sin desabasto | suave | 784 | 742 |
 | L + R (horizonte de protección) | solo objetivos sin desabasto | intermitente | 131 | 131 |
 
-Media entre cortes, todos los segmentos (celda: vigencia al corte (DT-087) / literal de U3):
+Media entre cortes, todos los segmentos (celda: vigencia / U3 literal):
 
 | Horizonte | Vista | Modelo | MASE | RMSSE | WAPE | MAE | sesgo relativo |
 |---|---|---|---|---|---|---|---|
@@ -270,7 +270,7 @@ Media entre cortes, todos los segmentos (celda: vigencia al corte (DT-087) / lit
 
 ## 7. Salidas para `DT-078` (sin Nivel 2) y datos detallados
 
-`f5a-observations.csv` contiene, por modelo × corte × serie × horizonte, el error y su versión escalada (MASE/RMSSE de la serie-corte) y la marca de conjunto común; con ello se calculan después el acuerdo serie-corte y el Spearman entre modelos cuando F5b aporte el indicador de Nivel 2. Los datos detallados (`f5a-observations.csv`, `f5a-series-cuts.csv` y `f5a-summary.json`, con las métricas por corte) no se versionan: se regeneran de forma determinista con el comando de §1 en el directorio de salida (`ml/out/`, ignorado por Git). Huellas de los CSV:
+`f5a-observations.csv` contiene, por modelo × corte × serie × horizonte, el error y su versión escalada (MASE/RMSSE de la serie-corte) y la marca de conjunto común; con ello se calculan después el acuerdo serie-corte y el Spearman entre modelos cuando F5b aporte el indicador de Nivel 2. Junto a este informe se versiona un JSON resumido (mismo nombre, extensión `.json`): metadatos, configuración, huella y agregados entre cortes por modelo × segmento × horizonte × vista, sin tablas por corte (`DT-073`). Los datos detallados (`f5a-observations.csv`, `f5a-series-cuts.csv` y `f5a-summary.json`, con las métricas por corte) no se versionan: se regeneran de forma determinista con el comando de §1 en el directorio de salida (`ml/out/`, ignorado por Git). Huellas de los CSV:
 
 - `f5a-observations.csv`: `f52abd6a91c9d73b62ad293b95ef078c74c9bbb7019cf5e0d00cf956d1f875b3`
 - `f5a-series-cuts.csv`: `b7d18a0fee5d45bc840ef21db260bff4c0f45682aca051fab7b71db0da61a849`
