@@ -1,6 +1,6 @@
 # Backlog inicial (Scrum)
 
-**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — correspondencia con las unidades de la Etapa 2 · **Versión 1.3** (2026-10-04) — US-048: interpretación de U6 (`DT-068`) · **Versión 1.4** (2026-10-05) — notas de la Fase 5 en US-050 a US-058 (`DT-071` a `DT-085`; no autorizada)
+**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — correspondencia con las unidades de la Etapa 2 · **Versión 1.3** (2026-10-04) — US-048: interpretación de U6 (`DT-068`) · **Versión 1.4** (2026-10-05) — notas de la Fase 5 en US-050 a US-058 (`DT-071` a `DT-085`; no autorizada) · **Versión 1.5** (2026-10-05) — US-058: F5b autorizada (`DT-088`)
 
 Backlog organizado en **Épicas → Historias de usuario → Tareas**.
 
@@ -312,7 +312,7 @@ función**) · `T-040.4` punto de reorden · `T-040.5` pruebas exhaustivas
   - **No se fija ningún valor objetivo**: la comparación es relativa al baseline.
 - **Dependencias:** US-046, US-050, US-054 · **Cubre:** RML-013 · **Relacionado:** `DT-020`
 - *Añadida en la revisión 0.1: la estrategia de evaluación de Nivel 2 no tenía ninguna historia que la ejecutara.*
-- *Fase 5 (2026-10-05):* protocolo del simulador en `DT-080` (F5b); OD-S1 a OD-S4 como `PROPUESTA` del responsable, pendientes de confirmación antes de implementar.
+- *Fase 5 (2026-10-05):* protocolo del simulador en `DT-080` (F5b); OD-S1 a OD-S4 `ACEPTADA` y F5b autorizada (`DT-088`): simulación retrospectiva en bucle cerrado de los cuatro baselines con U1 sin cambios, sin elegir baseline oficial ni métrica.
 
 ### US-057 — Versionado y persistencia de predicciones
 - **Prioridad:** P0

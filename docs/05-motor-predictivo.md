@@ -1,6 +1,6 @@
 # 05 — Motor predictivo (estrategia de Machine Learning)
 
-**Estado:** Versión 1.0 — Etapa 0 (estrategia, no implementada) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §19, contrato de `ForecastProvider` para la Etapa 2 (`DT-046`); §§1–18 no cambian · **Versión 1.3** (2026-10-02) — `DT-046` `ACEPTADA`; §19.8 y §19.9, decisiones y criterios de cierre de U3 (`DT-056`, `DT-057`); nota de V1 en §6 · **Versión 1.4** (2026-10-02) — §19.10, registro de la implementación de U3; ninguna decisión cambia · **Versión 1.5** (2026-10-03) — `DT-P21` cerrada por `DT-058`: frecuencia de §2 leída como una ejecución de forecast por corte de recomendación; §19.7 · **Versión 1.6** (2026-10-05) — §20: protocolo y decisiones de la Fase 5 (`DT-071` a `DT-085`); notas en §2, §6, §8, §9.1, §10, §11 y §19.8. Fase 5 **no autorizada** (condiciones en §20.4) · **Versión 1.7** (2026-10-05) — §20.3: población por corte a la fecha (`DT-087`) y cortes no independientes (nota de `DT-079`) · **Versión 1.8** (2026-10-05) — §20.3: segmentación sobre la vida activa de cada serie (nota de `DT-077`)
+**Estado:** Versión 1.0 — Etapa 0 (estrategia, no implementada) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §19, contrato de `ForecastProvider` para la Etapa 2 (`DT-046`); §§1–18 no cambian · **Versión 1.3** (2026-10-02) — `DT-046` `ACEPTADA`; §19.8 y §19.9, decisiones y criterios de cierre de U3 (`DT-056`, `DT-057`); nota de V1 en §6 · **Versión 1.4** (2026-10-02) — §19.10, registro de la implementación de U3; ninguna decisión cambia · **Versión 1.5** (2026-10-03) — `DT-P21` cerrada por `DT-058`: frecuencia de §2 leída como una ejecución de forecast por corte de recomendación; §19.7 · **Versión 1.6** (2026-10-05) — §20: protocolo y decisiones de la Fase 5 (`DT-071` a `DT-085`); notas en §2, §6, §8, §9.1, §10, §11 y §19.8. Fase 5 **no autorizada** (condiciones en §20.4) · **Versión 1.7** (2026-10-05) — §20.3: población por corte a la fecha (`DT-087`) y cortes no independientes (nota de `DT-079`) · **Versión 1.8** (2026-10-05) — §20.3: segmentación sobre la vida activa de cada serie (nota de `DT-077`) · **Versión 1.9** (2026-10-05) — §20: F5b autorizada (`DT-088`); OD-S1 a OD-S4 `ACEPTADA`
 
 > **No se implementa ningún modelo en esta etapa.** Este documento fija la estrategia, las reglas de
 > evaluación y los criterios de aceptación **antes** de entrenar, para que la evaluación no se ajuste
@@ -668,7 +668,7 @@ el que no se escribe nada.
 ## 20. Fase 5 — protocolo de evaluación y decisiones (`DT-071` a `DT-085`)
 
 *Añadido el 2026-10-05 en el cierre documental de la Fase 5. **La Fase 5 no está autorizada para
-implementación, salvo F5a** (`DT-086`): el resto depende de las decisiones que se enumeran en §20.4. Toda evidencia de la fase
+implementación, salvo F5a y F5b** (`DT-086`, `DT-088`): el resto depende de las decisiones que se enumeran en §20.4. Toda evidencia de la fase
 es `SYNTHETIC` y debe revalidarse con datos REAL.*
 
 ### 20.1 Unidades y puertas
@@ -676,7 +676,7 @@ es `SYNTHETIC` y debe revalidarse con datos REAL.*
 | Unidad | Contenido | Necesita |
 |---|---|---|
 | F5a | Backtesting, Nivel 1, segmentación, suavizado exponencial simple y comparación de baselines (sin candidatos). **Autorizada** (`DT-086`) | — |
-| F5b | Simulador de Nivel 2 aplicado a los baselines | F5a; OD-S1 a OD-S4 confirmadas |
+| F5b | Simulador de Nivel 2 aplicado a los baselines. **Autorizada** (`DT-088`; OD-S1 a OD-S4 `ACEPTADA` en `DT-080`) | F5a |
 | F5c | Modelos de niveles 1–2, estudio de `DT-011` e intervalos | F5a, F5b y G1 |
 | F5d | Estudio de `DT-010` y, si procede, promoción e integración | F5c, G2 y G3 |
 
@@ -696,7 +696,7 @@ definidas en `DT-071`.
 | 7 | Qué pasa con el *holdout* | Corte 2025-09-24, uso único en G2, nunca para elegir nada (`DT-075`) |
 | 8 | Qué métrica y cuándo se fija | Una de MASE, RMSSE o WAPE, fijada en G1 antes de evaluar candidatos; `DT-021` sigue `OPEN` (`DT-078`) |
 | 9 | Cómo se acepta o rechaza un modelo | Nivel 1 mejora y Nivel 2 no se degrada; valores numéricos `OPEN` hasta G1 (`DT-079`) |
-| 10 | Cómo funciona el simulador de Nivel 2 | `DT-080`; OD-S1 a OD-S4 como `PROPUESTA` del responsable: bucle cerrado, órdenes con lead time realizado, desabasto diario con unidades faltantes e inventario medio relativo al baseline |
+| 10 | Cómo funciona el simulador de Nivel 2 | `DT-080`; OD-S1 a OD-S4 `ACEPTADA` (`DT-088`): bucle cerrado; órdenes en `suggested_order_date` que llegan tras el `L` usado por el motor; demanda latente, ventas perdidas y desabasto por día con unidades faltantes; inventario medio relativo al baseline sin umbral absoluto |
 | 11 | Cómo se trata el desabasto en la simulación | Ventas perdidas = demanda latente − consumo simulado; sin pedidos pendientes; inventario nunca negativo (`DT-080`) |
 | 12 | Cómo se estudia `DT-011` | Estrategias (a), (b) y (c) con el mismo protocolo; la latente solo como verdad (`DT-081`) |
 | 13 | Cómo se estudia `DT-010` | Alternativas (a)–(e) en simulación, sin tocar U1 (`DT-083`) |
@@ -733,7 +733,7 @@ definidas en `DT-071`.
 
 | Decisión | Contenido | Cuándo |
 |---|---|---|
-| OD-S1 a OD-S4 (`DT-080`) | `PROPUESTA` del responsable, pendiente de su confirmación: bucle cerrado; órdenes en `suggested_order_date` con lead time realizado, sin cancelaciones ni parciales; desabasto por día más unidades faltantes; inventario medio relativo al baseline | Antes de F5b |
+| OD-S1 a OD-S4 (`DT-080`) | **`ACEPTADA`** el 2026-10-05 (`DT-088`). Queda pendiente la discrepancia entre el punto 7 de `DT-080` (`expected_on`) y OD-S1 («llegadas reales») para las líneas abiertas al primer corte | Antes de cerrar F5b |
 | `DT-077` | Umbrales de segmentación y criterio de estacionalidad | G1 |
 | `DT-079` / `DT-P04` | 2/3 de los cortes, **5 %**, banda de sesgo, tolerancia de cobertura y tolerancia de «igual» en el Nivel 2 | G1 |
 | `DT-078` / `DT-021` | Elección de la métrica primaria con el procedimiento aceptado | G1 |
