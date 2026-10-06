@@ -374,8 +374,9 @@ con datos `SYNTHETIC`:
 **F5c y F5d siguen sin autorizar.** Ningún modelo se promueve ni se integra, el *holdout* no se ha usado y la banda de
 predicción sigue siendo nominal 0,80, no validada. *(2026-10-06: **autorizadas F5a, F5b y F5c** (`DT-086`, `DT-088`,
 `DT-092`), con los criterios complementarios de G1 de `DT-093`. F5c trabaja solo en `ml/`, sin *holdout* ni promoción.
-**F5d, G2 y G3 siguen sin autorizar.**)* *(2026-10-06: F5c implementada en `ml/candidates.py` y `ml/f5c/`, pendiente
-de revisión; resultados `SYNTHETIC` en `docs/05` §20.7.)*
+**F5d, G2 y G3 siguen sin autorizar.**)* *(2026-10-06: F5c implementada en `ml/candidates.py` y `ml/f5c/`, revisada
+e integrada en `main` (PR #11, merge commit `6a1d777`); resultados `SYNTHETIC` en `docs/05` §20.7. No promueve ningún
+modelo: SES sigue siendo el candidato fuerte, sin promover; la estrategia (b) de `DT-011` sigue pendiente de decisión.)*
 Restricciones vigentes, que se levantan solo por instrucción explícita:
 
 - **No escribir código de aplicación** hasta que el responsable autorice la primera unidad de
