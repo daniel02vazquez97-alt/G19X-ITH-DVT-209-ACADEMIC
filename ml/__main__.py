@@ -75,6 +75,10 @@ def main(argv: list[str] | None = None) -> int:
     cand.add_argument("--workers", type=int, default=1, help="worker processes (results do not depend on it)")
     cand.add_argument("--cache-dir", type=Path, help="resumable cache (e.g. ml/out/f5c-cache)")
     cand.add_argument("--time-budget", type=float, help="seconds; stop cleanly and resume on the next call (needs --cache-dir)")
+    cand.add_argument(
+        "--reuse-cache", type=Path,
+        help="use this cache folder as is, without the fingerprint check (only when the computation code did not change)",
+    )
     cand.add_argument("--products", type=lambda s: [int(x) for x in s.split(",")], help="restrict the simulation to these product ids")
     cand.add_argument(
         "--period-end", type=_dt.date.fromisoformat, default=None, help="end of the simulated period (default and maximum: 2025-09-24)"
@@ -137,7 +141,7 @@ def _candidates(args: argparse.Namespace, command: str) -> int:
     sim_config = SimConfig() if args.period_end is None else SimConfig(period_end=args.period_end)
     try:
         run = run_f5c(args.data, sim_config=sim_config, workers=args.workers, products=args.products,
-                      cache_dir=args.cache_dir, time_budget=args.time_budget)
+                      cache_dir=args.cache_dir, time_budget=args.time_budget, reuse_cache=args.reuse_cache)
     except IncompleteRun as exc:
         print(f"F5c candidates: incomplete ({exc}) after {time.monotonic() - started:.1f}s")
         return 3

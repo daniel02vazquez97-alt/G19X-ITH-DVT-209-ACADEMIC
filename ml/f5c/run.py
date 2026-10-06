@@ -18,7 +18,7 @@ import hashlib
 import json
 import time
 from concurrent.futures import ProcessPoolExecutor
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from decimal import Decimal
 from pathlib import Path
 
@@ -56,6 +56,8 @@ class F5cRun:
     top: tuple[str, ...]
     study: list[StudyCut]
     simulation: SimulationResult
+    #: Cadence sensitivity (`DT-093` point 9): per product, Level 2 windows of the branches re-optimised every decision.
+    cadence: list[dict] = field(default_factory=list)
 
 
 def top_candidates(level1: F5cLevel1, n: int) -> tuple[str, ...]:
@@ -104,6 +106,37 @@ def _study_cut(args):
     return [s for f in series_cuts if (s := study_series_cut(inputs.dataset, f, models, config, total)) is not None]
 
 
+#: Branches of the cadence sensitivity: the official baseline and the candidates that re-optimise every decision.
+CADENCE_BRANCHES: tuple[str, ...] = ("baseline.moving_average", "ml.holt", "ml.croston", "ml.tsb")
+PERIOD_FULL = "FULL"
+PERIOD_NO_WARMUP = "NO_WARMUP"
+
+
+def periods(sim_config: SimConfig) -> dict[str, tuple[_dt.date, _dt.date]]:
+    return {
+        PERIOD_FULL: (sim_config.first_cut + _ONE_DAY, sim_config.period_end),
+        PERIOD_NO_WARMUP: (sim_config.first_cut + _ONE_DAY * (7 * sim_config.warmup_weeks + 1), sim_config.period_end),
+    }
+
+
+def _cadence(key: SeriesKey) -> dict:
+    """One product of the cadence sensitivity: candidates re-optimised at every weekly decision (refit every 1)."""
+    from ..simulation.level2 import window_metrics
+
+    inputs, config = _WORKER["inputs"], _WORKER["config"]
+    sim_config = replace(_WORKER["sim_config"], branches=CADENCE_BRANCHES)
+    forecaster = F5cForecaster(config.candidates, 1, config.impute_window_days)
+    ps = simulate_product(inputs, key, sim_config, forecaster)
+    cost = inputs.unit_costs.get(key[0])
+    out: dict = {"key": key, "windows": {}, "substitutions": {}}
+    for period, (first, last) in periods(sim_config).items():
+        if first <= last:
+            out["windows"][period] = {b: window_metrics(ps, b, first, last, cost) for b in CADENCE_BRANCHES}
+    for b in CADENCE_BRANCHES:
+        out["substitutions"][b] = sum(1 for d in ps.traces[b].decisions if d.substitution)
+    return out
+
+
 def _simulate(args) -> ProductSimulation:
     key, branches = args
     sim_config = replace(_WORKER["sim_config"], branches=branches)
@@ -124,7 +157,10 @@ def run_f5c(
     products: list[int] | None = None,
     cache_dir: Path | None = None,
     time_budget: float | None = None,
+    reuse_cache: Path | None = None,
 ) -> F5cRun:
+    """``reuse_cache`` uses that cache folder as is, without the fingerprint check: only valid when the code that
+    produced it and the current computation code are the same (the report records the option)."""
     started = time.monotonic()
     config = config or F5cConfig()
     sim_config = sim_config or SimConfig()
@@ -132,7 +168,11 @@ def run_f5c(
     _init(directory, config, sim_config)
     inputs = _WORKER["inputs"]
     cache = None
-    if cache_dir is not None:
+    if reuse_cache is not None:
+        cache = Path(reuse_cache)
+        if not cache.is_dir():
+            raise FileNotFoundError(f"{cache} is not a cache folder")
+    elif cache_dir is not None:
         cache = Path(cache_dir) / _fingerprint(config, sim_config, inputs.dataset.dataset_version)
         cache.mkdir(parents=True, exist_ok=True)
 
@@ -186,5 +226,6 @@ def run_f5c(
         keys = [k for k in keys if k[0] in wanted]
         excluded = [e for e in excluded if e["product_id"] in wanted]
     sims = stage("sim", [(k, branches) for k in keys], _simulate, lambda u: f"{u[0][0]}-{u[0][1]}")
+    cadence = stage("cadence", list(keys), _cadence, lambda k: f"{k[0]}-{k[1]}")
     final_sim = replace(sim_config, branches=branches)
-    return F5cRun(config, final_sim, inputs, level1, top, study, SimulationResult(final_sim, sims, excluded))
+    return F5cRun(config, final_sim, inputs, level1, top, study, SimulationResult(final_sim, sims, excluded), cadence)

@@ -26,10 +26,22 @@ from .config import OFFICIAL_BASELINE, Criteria
 CUMPLE = "CUMPLE"
 NO_CUMPLE = "NO CUMPLE"
 NO_CONCLUYENTE = "NO CONCLUYENTE"
+NOT_EVALUATED = "NO EVALUADO"
 
 
 def _status(ok: bool) -> str:
     return CUMPLE if ok else NO_CUMPLE
+
+
+def verdict(rows: Sequence[dict]) -> dict:
+    """Summary of the deciding rows (the period without warm-up is informative): what fails, what was not evaluated.
+
+    It states facts only; meeting every criterion is not a recommendation and promotes nothing (`DT-084`).
+    """
+    deciding = [r for r in rows if not r.get("informative")]
+    failing = [r["criterion"] for r in deciding if r["status"] == NO_CUMPLE]
+    open_ = [r["criterion"] for r in deciding if r["status"] in (NO_CONCLUYENTE, NOT_EVALUATED)]
+    return {"meets_all": not failing and not open_, "failing": failing, "not_conclusive_or_not_evaluated": open_}
 
 
 def pairwise_per_cut(
@@ -74,9 +86,12 @@ def relative_level1(observations: Sequence[Observation], model: str, metric: str
     return m / r if m is not None and r else None
 
 
-def level1_rows(observations: Sequence[Observation], candidate: str, crit: Criteria) -> list[dict]:
+def level1_rows(
+    observations: Sequence[Observation], candidate: str, crit: Criteria, reference: str = OFFICIAL_BASELINE
+) -> list[dict]:
+    """Level 1 and bias rows of ``candidate`` against ``reference`` (the official baseline, or its strategy branch)."""
     metric, horizon = crit.primary_metric, crit.primary_horizon
-    per_cut = pairwise_per_cut(observations, candidate, OFFICIAL_BASELINE, horizon)
+    per_cut = pairwise_per_cut(observations, candidate, reference, horizon)
     cuts = sorted(c for c, segs in per_cut.items() if ALL_SEGMENTS in segs and segs[ALL_SEGMENTS]["model"][metric] is not None)
     n = len(cuts)
     rows: list[dict] = []
@@ -153,11 +168,11 @@ def level1_rows(observations: Sequence[Observation], candidate: str, crit: Crite
     return rows
 
 
-def level2_rows(aggregates: dict, candidate: str, crit: Criteria, period: str) -> list[dict]:
+def level2_rows(aggregates: dict, candidate: str, crit: Criteria, period: str, reference: str = OFFICIAL_BASELINE) -> list[dict]:
     block = aggregates.get(period, {}).get("segments", {}).get(ALL_SEGMENTS, {}).get("branches", {})
-    if candidate not in block or OFFICIAL_BASELINE not in block:
-        return [{"criterion": f"N2 ({period})", "value": None, "threshold": "—", "status": NO_CONCLUYENTE}]
-    c, b = block[candidate], block[OFFICIAL_BASELINE]
+    if candidate not in block or reference not in block:
+        return [{"criterion": f"N2 ({period})", "value": None, "threshold": "—", "status": NOT_EVALUATED}]
+    c, b = block[candidate], block[reference]
     cs, bs = float(c["units_short"]), float(b["units_short"])
     return [
         {

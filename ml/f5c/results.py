@@ -20,7 +20,7 @@ from ..backtest import ALL_SEGMENTS, HORIZONS, VIEW_NO_STOCKOUT, VIEWS, Backtest
 from ..candidates import CANDIDATE_NAMES, HOLT_WINTERS_NAME
 from ..cuts import development_cuts
 from ..metrics import Observation, aggregate
-from ..models import MODEL_NAMES
+from ..models import MODEL_NAMES, SES_NAME
 from ..report import observations_csv, series_cuts_csv
 from ..segmentation import SEGMENTS
 from ..simulation.level2 import (
@@ -36,14 +36,12 @@ from ..simulation.report import detail_csvs as f5b_detail_csvs
 from ..simulation.simulator import ProductSimulation, SimulationResult
 from .backtest import ALL_MODELS, NOT_ELIGIBLE, OK, SUBSTITUTED
 from .config import OFFICIAL_BASELINE, STRATEGIES
-from .criteria import level1_rows, level2_rows, pairwise_per_cut
-from .forecaster import split_branch
+from .criteria import level1_rows, level2_rows, pairwise_per_cut, verdict
+from .forecaster import branch_name, split_branch
 from .intervals import coverage_study
-from .run import F5cRun
-from .study import studied_models
+from .run import CADENCE_BRANCHES, PERIOD_FULL, PERIOD_NO_WARMUP, F5cRun
+from .study import TRUTH_OBSERVED, studied_models
 
-PERIOD_FULL = "FULL"
-PERIOD_NO_WARMUP = "NO_WARMUP"
 _ONE_DAY = _dt.timedelta(days=1)
 _WINDOW_DAYS = 98
 STUDY_METRICS = ("mase", "rmsse", "wape", "bias_rel")
@@ -251,15 +249,119 @@ def level2(run: F5cRun) -> dict:
 # --- Criteria table --------------------------------------------------------------------------------------
 
 
-def criteria_table(run: F5cRun, l2: dict) -> dict:
-    crit = run.config.criteria
+#: Models of the criteria table: SES (the strongest candidate of `DT-089`) and the five F5c candidates.
+CRITERIA_MODELS: tuple[str, ...] = (SES_NAME,) + CANDIDATE_NAMES
+
+
+def _rows(observations, aggregates, model: str, reference: str, crit) -> list[dict]:
+    rows = level1_rows(observations, model, crit, reference)
+    rows += level2_rows(aggregates, model, crit, PERIOD_FULL, reference)
+    rows += [dict(r, informative=True) for r in level2_rows(aggregates, model, crit, PERIOD_NO_WARMUP, reference)]
+    return rows
+
+
+def criteria_table(run: F5cRun, l2: dict, crit=None) -> dict:
+    """Each model against the official baseline (strategy (a)): rows and a factual verdict, without recommendation."""
+    crit = crit or run.config.criteria
     out = {}
-    for name in CANDIDATE_NAMES:
-        rows = level1_rows(run.level1.observations, name, crit)
-        rows += level2_rows(l2["aggregates"], name, crit, PERIOD_FULL)
-        rows += [dict(r, informative=True) for r in level2_rows(l2["aggregates"], name, crit, PERIOD_NO_WARMUP)]
-        out[name] = rows
+    for name in CRITERIA_MODELS:
+        rows = _rows(run.level1.observations, l2["aggregates"], name, OFFICIAL_BASELINE, crit)
+        out[name] = {"rows": rows, "verdict": verdict(rows)}
     return out
+
+
+def study_observations(run: F5cRun) -> list[Observation]:
+    """Observed-truth observations of the `DT-011` study, without the extreme-stockout series-cuts (`DT-093` point 8)."""
+    return [o for s in run.study if not s.extreme for o in s.observations.get(TRUTH_OBSERVED, [])]
+
+
+def strategy_criteria(run: F5cRun, l2: dict, crit=None) -> dict:
+    """The criteria of each studied model under each strategy, against the official baseline under the SAME strategy.
+
+    Level 1 comes from the `DT-011` study (observed consumption, extreme series apart); Level 2 from the strategy
+    branches of the simulation. A missing input is reported as NO EVALUADO, never filled in.
+    """
+    crit = crit or run.config.criteria
+    observations = study_observations(run)
+    out: dict = {}
+    for strategy in STRATEGIES:
+        reference = branch_name(OFFICIAL_BASELINE, strategy)
+        for model in studied_models(run.top):
+            if model == OFFICIAL_BASELINE:
+                continue
+            rows = _rows(observations, l2["aggregates"], branch_name(model, strategy), reference, crit)
+            out.setdefault(strategy, {})[model] = {"rows": rows, "verdict": verdict(rows)}
+    return out
+
+
+def _flatten(main: dict, strategies: dict) -> tuple[dict, dict]:
+    """``(strategy, model, criterion) → status`` and ``(strategy, model) → meets_all``; strategy (a) for the main table."""
+    statuses, verdicts = {}, {}
+    for model, e in main.items():
+        verdicts[("a*", model)] = e["verdict"]["meets_all"]
+        statuses.update({("a*", model, r["criterion"]): r["status"] for r in e["rows"]})
+    for strategy, table in strategies.items():
+        for model, e in table.items():
+            verdicts[(strategy, model)] = e["verdict"]["meets_all"]
+            statuses.update({(strategy, model, r["criterion"]): r["status"] for r in e["rows"]})
+    return statuses, verdicts
+
+
+def segment_sensitivity(run: F5cRun, l2: dict, base_main: dict, base_strategy: dict) -> dict:
+    """How many statuses and verdicts change if a segment blocks from 9 or from 11 products instead of 10."""
+    """Strategy ``a*`` is the main table (§7); ``a``, ``b`` and ``c`` are the strategy tables (§8)."""
+    out = {}
+    base, base_verdicts = _flatten(base_main, base_strategy)
+    for threshold in (9, 11):
+        crit = replace(run.config.criteria, segment_min_products=threshold)
+        now, verdicts = _flatten(criteria_table(run, l2, crit), strategy_criteria(run, l2, crit))
+        out[str(threshold)] = {
+            "status_changes": [list(k) + [base[k], now.get(k)] for k in sorted(base) if base[k] != now.get(k)],
+            "verdict_changes": [list(k) + [base_verdicts[k], verdicts.get(k)] for k in sorted(base_verdicts)
+                                if base_verdicts[k] != verdicts.get(k)],
+            "compared": len(base),
+        }
+    return out
+
+
+def cadence_sensitivity(run: F5cRun, l2: dict) -> dict:
+    """Level 2 with the candidates re-optimised at every decision (`DT-093` point 9), against the official baseline."""
+    crit = run.config.criteria
+    aggregates: dict = {}
+    rows_csv = []
+    for period in (PERIOD_FULL, PERIOD_NO_WARMUP):
+        per_branch = {b: [p["windows"][period][b] for p in run.cadence if period in p["windows"]] for b in CADENCE_BRANCHES}
+        branches = {b: pooled(ws) for b, ws in per_branch.items() if ws}
+        aggregates[period] = {"segments": {ALL_SEGMENTS: {"branches": branches,
+                                                         "avg_inventory_relative_to_reference": relative_inventory(branches, REFERENCE.name)}}}
+    for p in sorted(run.cadence, key=lambda p: p["key"]):
+        for period in sorted(p["windows"]):
+            for b in CADENCE_BRANCHES:
+                d = p["windows"][period][b].as_dict()
+                rows_csv.append(",".join([str(p["key"][0]), str(p["key"][1]), period, b, d["units_short"], str(d["stockout_days"]),
+                                          d["consumption"], repr(d["avg_inventory"]), str(p["substitutions"][b])]))
+    main_ma = l2["aggregates"][PERIOD_FULL]["segments"][ALL_SEGMENTS]["branches"][OFFICIAL_BASELINE]
+    same_baseline = aggregates[PERIOD_FULL]["segments"][ALL_SEGMENTS]["branches"].get(OFFICIAL_BASELINE) == main_ma
+    criteria = {}
+    for b in CADENCE_BRANCHES:
+        if b == OFFICIAL_BASELINE:
+            continue
+        rows = level2_rows(aggregates, b, crit, PERIOD_FULL)
+        rows += [dict(r, informative=True) for r in level2_rows(aggregates, b, crit, PERIOD_NO_WARMUP)]
+        criteria[b] = rows
+    return {
+        "refit_every_decisions": 1,
+        "branches": list(CADENCE_BRANCHES),
+        "aggregates": aggregates,
+        "level2_criteria": criteria,
+        "baseline_identical_to_main_run": same_baseline,
+        "substitutions": {b: sum(p["substitutions"][b] for p in run.cadence) for b in CADENCE_BRANCHES},
+        "sha256": _sha("\n".join(rows_csv) + "\n"),
+    }
+
+
+def meeting_all(table: dict) -> list[str]:
+    return [m for m, e in table.items() if e["verdict"]["meets_all"]]
 
 
 # --- Parity with F5a and F5b -----------------------------------------------------------------------------
@@ -302,6 +404,8 @@ def parity(run: F5cRun, l2: dict, reports_dir: Path | None) -> dict:
 def build_results(run: F5cRun, reports_dir: Path | None) -> dict:
     l2 = level2(run)
     crit = run.config.criteria
+    main = criteria_table(run, l2)
+    strategies = strategy_criteria(run, l2)
     return {
         "top_candidates": list(run.top),
         "eligibility": eligibility(run),
@@ -310,6 +414,11 @@ def build_results(run: F5cRun, reports_dir: Path | None) -> dict:
         "us055": coverage_study(run.level1, run.config.widening_grid, crit.nominal_level, run.config.late_cut_index,
                                 crit.coverage_low, crit.coverage_high),
         "level2": l2,
-        "criteria": criteria_table(run, l2),
+        "criteria": main,
+        "criteria_meeting_all": meeting_all(main),
+        "strategy_criteria": strategies,
+        "strategy_meeting_all": {s: meeting_all(t) for s, t in strategies.items()},
+        "segment_sensitivity": segment_sensitivity(run, l2, main, strategies),
+        "cadence_sensitivity": cadence_sensitivity(run, l2) if run.cadence else None,
         "parity": parity(run, l2, reports_dir),
     }

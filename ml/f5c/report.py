@@ -214,11 +214,32 @@ def compact_summary(summary: dict) -> dict:
                        "engine_versions": l2["engine_versions"], "aggregates": aggregates,
                        "substitutions": {b: d["substitutions"] for b, d in l2["decisions"].items() if d["substitutions"]},
                        "cross": {"series_cut_agreement": agreement, "model_level_spearman": spearman}},
-            "criteria": {n: [{"criterion": row["criterion"], "status": row["status"], "informative": row.get("informative", False)}
-                             for row in rows] for n, rows in r["criteria"].items()},
+            "criteria": {n: _compact_entry(e) for n, e in r["criteria"].items()},
+            "criteria_meeting_all": r["criteria_meeting_all"],
+            "strategy_criteria": {s: {m: _compact_entry(e) for m, e in t.items()} for s, t in r["strategy_criteria"].items()},
+            "strategy_meeting_all": r["strategy_meeting_all"],
+            "segment_sensitivity": r["segment_sensitivity"],
+            "cadence_sensitivity": _compact_cadence(r["cadence_sensitivity"]),
             "parity": {n: p["equal"] for n, p in r["parity"].items()},
         },
     })
+
+
+def _compact_entry(entry: dict) -> dict:
+    return {"statuses": [[row["criterion"], row["status"], bool(row.get("informative"))] for row in entry["rows"]],
+            "verdict": entry["verdict"]}
+
+
+def _compact_cadence(cadence: dict | None) -> dict | None:
+    if cadence is None:
+        return None
+    agg = {p: {b: [a["units_short"], a["stockout_days"], a["fill_rate"], a["avg_inventory"]]
+               for b, a in block["segments"][ALL_SEGMENTS]["branches"].items()} for p, block in cadence["aggregates"].items()}
+    return {"refit_every_decisions": cadence["refit_every_decisions"], "fields": ["units_short", "stockout_days", "fill_rate", "avg_inventory"],
+            "aggregates": agg, "baseline_identical_to_main_run": cadence["baseline_identical_to_main_run"],
+            "criteria": {b: [[row["criterion"], row["status"], bool(row.get("informative"))] for row in rows]
+                         for b, rows in cadence["level2_criteria"].items()},
+            "substitutions": cadence["substitutions"], "sha256": cadence["sha256"]}
 
 
 def compact_json_text(summary: dict) -> str:
@@ -228,6 +249,144 @@ def compact_json_text(summary: dict) -> str:
 
 
 # --- Markdown -------------------------------------------------------------------------------------------------
+
+#: Band label of the Phase 7 recommended by the responsable (review of F5c); applied only by a later F7d change.
+BAND_LABEL = ("Intervalo nominal 0,80. Cobertura observada entre 0,75 y 0,85 en pruebas con datos sintéticos; "
+              "no validada con datos reales.")
+_SHORT = {"CUMPLE": "C", "NO CUMPLE": "**N**", "NO CONCLUYENTE": "NC", "NO EVALUADO": "NE"}
+_COLUMNS = ("N1 agregado", "N1 cortes", "N1 segmentos", "Sesgo", "Sesgo por segmento", "N2 faltantes", "N2 *fill rate*",
+            "N2 inventario")
+
+
+def _es_pct(value: float, digits: int) -> str:
+    return f"{value * 100:.{digits}f}".replace(".", ",") + " %"
+
+
+def _verdict_text(v: dict) -> str:
+    if v["meets_all"]:
+        return "cumple todos los criterios que deciden (sin recomendación ni promoción)."
+    parts = []
+    if v["failing"]:
+        parts.append("no cumple: " + "; ".join(v["failing"]))
+    if v["not_conclusive_or_not_evaluated"]:
+        parts.append("no concluyente o no evaluado: " + "; ".join(v["not_conclusive_or_not_evaluated"]))
+    return " — ".join(parts) + "."
+
+
+def _strategy_section(r: dict) -> list[str]:
+    lines = [
+        "## 8. Criterios por estrategia de `DT-011`",
+        "",
+        "Los mismos criterios para cada modelo estudiado bajo cada estrategia, con la media móvil de 13 semanas **bajo la "
+        "misma estrategia** como referencia. Nivel 1 del estudio de `DT-011` (consumo observado, sin las series de desabasto "
+        "extremo); Nivel 2 de las ramas «(b)» y «(c)» de §5. C = cumple, **N** = no cumple, NC = no concluyente, NE = no "
+        "evaluado. Sin recomendación.",
+        "",
+        "> **Posible sesgo de selección:** Holt-Winters entró al estudio por su Nivel 1 medido en solo 7 cortes comparables "
+        "(semanas 104 a 128), frente a 17 de los demás.",
+        "",
+        "| Estrategia | Modelo | MASE `L + R` (modelo / media móvil) | Unidades faltantes (modelo / media móvil) | "
+        + " | ".join(_COLUMNS) + " | Cumple todo |",
+        "|---|---|---|---|" + "---|" * len(_COLUMNS) + "---|",
+    ]
+    for strategy, table in sorted(r["strategy_criteria"].items()):
+        for model, entry in sorted(table.items(), key=lambda kv: ALL_MODELS.index(kv[0])):
+            rows = [row for row in entry["rows"] if not row.get("informative")]
+            statuses = [_SHORT.get(row["status"], row["status"]) for row in rows]
+            if len(statuses) != len(_COLUMNS):
+                statuses = (statuses + ["NE"] * len(_COLUMNS))[: len(_COLUMNS)]
+            l1 = rows[0]["value"] if rows and isinstance(rows[0]["value"], dict) else {}
+            l2 = next((row["value"] for row in rows if row["criterion"].startswith("N2") and "faltantes" in row["criterion"]
+                       and isinstance(row["value"], dict)), {})
+            lines.append(
+                f"| ({strategy}) | {label(model)} | {_f(l1.get('candidate'))} / {_f(l1.get('official_baseline'))} "
+                f"| {_f(l2.get('candidate'), 0)} / {_f(l2.get('official_baseline'), 0)} | " + " | ".join(statuses)
+                + f" | {'sí' if entry['verdict']['meets_all'] else 'no'} |"
+            )
+    lines += ["", "Cumplen todos los criterios que deciden, por estrategia: "
+              + "; ".join(f"({s}) " + (", ".join(label(m) for m in ms) or "ninguno") for s, ms in r["strategy_meeting_all"].items())
+              + ".", ""]
+    return lines
+
+
+def _dt011_conclusion(r: dict) -> list[str]:
+    block = r["level2"]["aggregates"][PERIOD_FULL]["segments"][ALL_SEGMENTS]
+    branches, relative = block["branches"], block["avg_inventory_relative_to_reference"]
+    reductions, inventories = [], []
+    for model in r["study"]["models"]:
+        base = float(branches[model]["units_short"])
+        for strategy in ("b", "c"):
+            name = f"{model}@{strategy}"
+            if name in branches and base:
+                reductions.append(1 - float(branches[name]["units_short"]) / base)
+                inventories.append(relative[name] - 1)
+    if not reductions:
+        return []
+    return [
+        "**Conclusión provisional del estudio** (revisión del responsable, 2026-10-06; solo con datos `SYNTHETIC`): las "
+        f"estrategias (b) y (c) reducen las unidades faltantes entre un {_es_pct(min(reductions), 0)} y un {_es_pct(max(reductions), 0)} "
+        f"en los modelos estudiados, con un inventario medio entre un {_es_pct(min(inventories), 1)} y un {_es_pct(max(inventories), 1)} "
+        "mayor que el de "
+        "la media móvil 13 con (a). Adoptar una en producción exige una unidad propia que cambie U3 y una DT nueva.",
+        "",
+        "**PROPUESTA del desarrollador** (pendiente de decisión del responsable): preferir (b). La diferencia con (c) está "
+        "dentro del ruido, (b) no necesita un estimador con parámetros propios y la API ya expone `days_observed` y "
+        "`stockout_days` por periodo.",
+        "",
+    ]
+
+
+def _sensitivity_section(r: dict, md: dict) -> list[str]:
+    lines = ["## 10. Sensibilidades", ""]
+    cad = r.get("cadence_sensitivity")
+    if cad:
+        block = cad["aggregates"][PERIOD_FULL]["segments"][ALL_SEGMENTS]
+        lines += [
+            "### Cadencia de reoptimización",
+            "",
+            "Los candidatos reoptimizan cada 4 decisiones (`DT-093` punto 9). Aquí, Holt, Croston y TSB reoptimizan en cada "
+            "decisión semanal, con la media móvil 13 en la misma simulación. Se calcula en el mismo comando de §1 (etapa "
+            f"«cadence»); huella del detalle: `{cad['sha256']}`. Media móvil idéntica a la de §5: "
+            f"{'sí' if cad['baseline_identical_to_main_run'] else 'no'}.",
+            "",
+            "| Rama | Unidades faltantes | Relativo a media móvil | *Fill rate* | Inventario relativo | N2 faltantes | N2 *fill rate* | N2 inventario |",
+            "|---|---|---|---|---|---|---|---|",
+        ]
+        base = float(block["branches"][OFFICIAL_BASELINE]["units_short"])
+        for b, a in block["branches"].items():
+            statuses = [row["status"] for row in cad["level2_criteria"].get(b, []) if not row.get("informative")]
+            statuses = statuses or ["—", "—", "—"]
+            lines.append(
+                f"| {label(b)} | {_f(a['units_short'], 0)} | {_pct(float(a['units_short']) / base - 1)} | {_f(a['fill_rate'], 4)} "
+                f"| {_f(block['avg_inventory_relative_to_reference'].get(b))} | " + " | ".join(statuses) + " |"
+            )
+        meeting = [b for b, rows in cad["level2_criteria"].items()
+                   if all(row["status"] == "CUMPLE" for row in rows if not row.get("informative"))]
+        lines += ["", "Con reoptimización semanal cumplen los criterios de Nivel 2: "
+                  + (", ".join(label(b) for b in meeting) or "ninguno") + ".", ""]
+    seg = r["segment_sensitivity"]
+    lines += [
+        "### Tamaño mínimo de segmento",
+        "",
+        "El segmento intermitente tiene en promedio 10 series por corte, justo en el umbral de `DT-091`. Cambios respecto al "
+        "umbral de 10, sobre las tablas de §7 y §8:",
+        "",
+        "| Umbral | Resultados que cambian | Veredictos que cambian |",
+        "|---|---|---|",
+    ]
+    def where(strategy: str, model: str) -> str:
+        return f"{label(model)} ({'§7' if strategy == 'a*' else '§8, (' + strategy + ')'})"
+
+    for threshold, s in seg.items():
+        changes = [f"{where(st, m)}: {'cumple todo' if new else 'no cumple todo'} (antes: {'cumple todo' if old else 'no cumple todo'})"
+                   for st, m, old, new in s["verdict_changes"]]
+        lines.append(f"| {threshold} | {len(s['status_changes'])} de {s['compared']} | " + ("; ".join(changes) or "ninguno") + " |")
+    for threshold, s in seg.items():
+        if s["status_changes"]:
+            lines += ["", f"Con {threshold}: " + "; ".join(f"{where(st, m)}, «{c}»: {old} → {new}" for st, m, c, old, new in s["status_changes"]) + "."]
+    lines.append("")
+    return lines
+
 
 
 def _f(v: object, digits: int = 3) -> str:
@@ -419,20 +578,25 @@ def render_markdown(summary: dict) -> str:
                              f"| {_f(s['max'])} | {s['n_cuts']} |")
     lines += [
         "",
-        "## 7. Criterios por candidato (cumple / no cumple, sin recomendación)",
+        "## 7. Criterios por modelo (cumple / no cumple, sin recomendación)",
         "",
-        "Automático, frente a la media móvil de 13 semanas. «Informativo»: periodo sin calentamiento, no decide.",
+        "Automático, frente a la media móvil de 13 semanas con la estrategia (a). Incluye SES, el candidato más fuerte de "
+        "`DT-089`. «Informativo»: periodo sin calentamiento, no decide.",
+        "",
+        "**Cumplen todos los criterios que deciden:** " + (", ".join(label(m) for m in r["criteria_meeting_all"]) or "ninguno")
+        + ". Es un hecho del cálculo, no una recomendación: sin G2 ni G3 no se promueve nada (`DT-084`).",
         "",
     ]
-    for name in CANDIDATE_NAMES:
+    for name, entry in sorted(r["criteria"].items(), key=lambda kv: ALL_MODELS.index(kv[0])):
         lines += [f"### {label(name)}", "", "| Criterio | Valor | Umbral | Resultado |", "|---|---|---|---|"]
-        for row in r["criteria"][name]:
+        for row in entry["rows"]:
             crit = row["criterion"] + (" (informativo)" if row.get("informative") else "")
             lines.append(f"| {crit} | {_value_text(row['value'])} | {row['threshold']} | {row['status']} |")
-        lines.append("")
+        lines += ["", "Veredicto: " + _verdict_text(entry["verdict"]), ""]
+    lines += _strategy_section(r)
     st = r["study"]
     lines += [
-        "## 8. Estudio de `DT-011` (desabasto)",
+        "## 9. Estudio de `DT-011` (desabasto)",
         "",
         "Estrategias de entrenamiento: " + "; ".join(STRATEGY_LABELS[s] for s in STRATEGIES) + ". La verdad nunca es un valor "
         "imputado. Conjunto común de las tres estrategias de cada modelo; series con más del 50 % de días con desabasto "
@@ -459,9 +623,11 @@ def render_markdown(summary: dict) -> str:
     if st["substitutions"]:
         lines += ["", "Sustituciones en el estudio: " + ", ".join(f"{label(k)}: {v}" for k, v in st["substitutions"].items()) + "."]
     lines += ["", "Nivel 2 de las estrategias: filas «(b)» y «(c)» de §5 (población completa).", ""]
+    lines += _dt011_conclusion(r)
+    lines += _sensitivity_section(r, md)
     us = r["us055"]["models"]
     lines += [
-        "## 9. US-055: cobertura de los intervalos",
+        "## 11. US-055: cobertura de los intervalos",
         "",
         "Cobertura semanal (nominal 0,80) contra el consumo observado. Calibrado si la cobertura en los cortes tardíos está "
         "entre 0,75 y 0,85 en el horizonte (`DT-093` punto 6). Solo decide el rótulo de la banda.",
@@ -489,23 +655,21 @@ def render_markdown(summary: dict) -> str:
                   f"{within['current_late_cuts_no_stockout']} de {of} sin las semanas con desabasto; la variante calibrada, en "
                   f"{within['calibrated_late_cuts']} de {of}.")
         if n == of:
-            lines += ["", "**Rótulo recomendado para la banda de la Fase 7** (media móvil 13, la que sirve U3): "
-                      "**«nominal 0,80; cobertura comprobada solo con datos SYNTHETIC»**. " + detail + " No hace falta "
-                      "calibrarlo con estos datos. Con datos REAL la cobertura no está comprobada y la banda vuelve a «nominal "
-                      "0,80, no validada» hasta revalidarla. Cambiar el texto es un ajuste de F7d, fuera de F5c: la Fase 7 no se "
-                      "modifica."]
+            lines += ["", "**Rótulo recomendado para la banda de la Fase 7** (media móvil 13, la que sirve U3; texto del "
+                      "responsable): **«" + BAND_LABEL + "»** " + detail + " No hace falta calibrarlo con estos datos. "
+                      "Es un ajuste posterior de F7d que se autoriza aparte: la Fase 7 no se modifica."]
         else:
             lines += ["", "**Rótulo recomendado para la banda de la Fase 7** (media móvil 13, la que sirve U3): "
                       "**«nominal 0,80, no validada»**. " + detail + " Adoptar una calibración exigiría cambiar U3 y F7d, "
                       "fuera de F5c: la Fase 7 no se modifica."]
-    lines += ["", "## 10. Paridad con F5a y F5b", "",
+    lines += ["", "## 12. Paridad con F5a y F5b", "",
               "Huellas de los archivos de detalle de F5a y F5b recalculados desde F5c (sus cuatro modelos):", "",
               "| Archivo | F5c | Registrado | Igual |", "|---|---|---|---|"]
     for name, p in r["parity"].items():
         lines.append(f"| `{name}` | `{p['f5c'][:16]}…` | `{(p['recorded'] or '—')[:16]}…` | {p['equal']} |")
     lines += [
         "",
-        "## 11. Salidas",
+        "## 13. Salidas",
         "",
         "Junto a este informe se versiona un JSON resumido (mismo nombre, `.json`). El detalle se regenera de forma "
         "determinista con el comando de §1 en `ml/out/`, ignorado por Git. Huellas:",
