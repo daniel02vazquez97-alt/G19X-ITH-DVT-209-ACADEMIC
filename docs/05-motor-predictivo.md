@@ -1,6 +1,6 @@
 # 05 — Motor predictivo (estrategia de Machine Learning)
 
-**Estado:** Versión 1.0 — Etapa 0 (estrategia, no implementada) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §19, contrato de `ForecastProvider` para la Etapa 2 (`DT-046`); §§1–18 no cambian · **Versión 1.3** (2026-10-02) — `DT-046` `ACEPTADA`; §19.8 y §19.9, decisiones y criterios de cierre de U3 (`DT-056`, `DT-057`); nota de V1 en §6 · **Versión 1.4** (2026-10-02) — §19.10, registro de la implementación de U3; ninguna decisión cambia · **Versión 1.5** (2026-10-03) — `DT-P21` cerrada por `DT-058`: frecuencia de §2 leída como una ejecución de forecast por corte de recomendación; §19.7 · **Versión 1.6** (2026-10-05) — §20: protocolo y decisiones de la Fase 5 (`DT-071` a `DT-085`); notas en §2, §6, §8, §9.1, §10, §11 y §19.8. Fase 5 **no autorizada** (condiciones en §20.4) · **Versión 1.7** (2026-10-05) — §20.3: población por corte a la fecha (`DT-087`) y cortes no independientes (nota de `DT-079`) · **Versión 1.8** (2026-10-05) — §20.3: segmentación sobre la vida activa de cada serie (nota de `DT-077`) · **Versión 1.9** (2026-10-05) — §20: F5b autorizada (`DT-088`); OD-S1 a OD-S4 `ACEPTADA` · **Versión 1.10** (2026-10-05) — §20.1: F5b implementada, pendiente de revisión · **Versión 1.11** (2026-10-05) — §20.3: criterio serie-corte de `DT-078`; §20.4: OD-S1 a OD-S4 cerradas
+**Estado:** Versión 1.0 — Etapa 0 (estrategia, no implementada) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §19, contrato de `ForecastProvider` para la Etapa 2 (`DT-046`); §§1–18 no cambian · **Versión 1.3** (2026-10-02) — `DT-046` `ACEPTADA`; §19.8 y §19.9, decisiones y criterios de cierre de U3 (`DT-056`, `DT-057`); nota de V1 en §6 · **Versión 1.4** (2026-10-02) — §19.10, registro de la implementación de U3; ninguna decisión cambia · **Versión 1.5** (2026-10-03) — `DT-P21` cerrada por `DT-058`: frecuencia de §2 leída como una ejecución de forecast por corte de recomendación; §19.7 · **Versión 1.6** (2026-10-05) — §20: protocolo y decisiones de la Fase 5 (`DT-071` a `DT-085`); notas en §2, §6, §8, §9.1, §10, §11 y §19.8. Fase 5 **no autorizada** (condiciones en §20.4) · **Versión 1.7** (2026-10-05) — §20.3: población por corte a la fecha (`DT-087`) y cortes no independientes (nota de `DT-079`) · **Versión 1.8** (2026-10-05) — §20.3: segmentación sobre la vida activa de cada serie (nota de `DT-077`) · **Versión 1.9** (2026-10-05) — §20: F5b autorizada (`DT-088`); OD-S1 a OD-S4 `ACEPTADA` · **Versión 1.10** (2026-10-05) — §20.1: F5b implementada, pendiente de revisión · **Versión 1.11** (2026-10-05) — §20.3: criterio serie-corte de `DT-078`; §20.4: OD-S1 a OD-S4 cerradas · **Versión 1.12** (2026-10-05) — G1 (`DT-089` a `DT-091`): nota en §6, §20.1, §20.2, §20.4 y §20.5 nueva
 
 > **No se implementa ningún modelo en esta etapa.** Este documento fija la estrategia, las reglas de
 > evaluación y los criterios de aceptación **antes** de entrenar, para que la evaluación no se ajuste
@@ -187,6 +187,8 @@ en `ModelVersion` con `is_baseline = true`.
 > referencia queda en cada ejecución (`calculation_runs.reference_model_version_id`, `DT-057`).
 >
 > **Fase 5 (2026-10-05):** el baseline oficial se elige en la puerta G1, con la métrica primaria y antes de evaluar candidatos (`DT-071`, `DT-076`).
+>
+> **G1 (2026-10-05):** el baseline oficial es la **media móvil de 13 semanas** (`DT-089`), provisional con datos `SYNTHETIC`. SES no se promueve (§20.5).
 
 ## 7. Modelos candidatos
 
@@ -671,17 +673,19 @@ el que no se escribe nada.
 implementación, salvo F5a y F5b** (`DT-086`, `DT-088`): el resto depende de las decisiones que se enumeran en §20.4. Toda evidencia de la fase
 es `SYNTHETIC` y debe revalidarse con datos REAL.*
 
+*Actualización del 2026-10-05: G1 registrado (`DT-089` a `DT-091`). F5c y F5d siguen sin autorizar. Resumen en §20.5.*
+
 ### 20.1 Unidades y puertas
 
 | Unidad | Contenido | Necesita |
 |---|---|---|
 | F5a | Backtesting, Nivel 1, segmentación, suavizado exponencial simple y comparación de baselines (sin candidatos). **Autorizada** (`DT-086`) | — |
-| F5b | Simulador de Nivel 2 aplicado a los baselines. **Autorizada** (`DT-088`; OD-S1 a OD-S4 `ACEPTADA` en `DT-080`); implementada el 2026-10-05 en `ml/simulation/`, pendiente de revisión (`docs/reports/fase5-f5b-nivel2-sintetico.md`) | F5a |
-| F5c | Modelos de niveles 1–2, estudio de `DT-011` e intervalos | F5a, F5b y G1 |
+| F5b | Simulador de Nivel 2 aplicado a los baselines. **Autorizada** (`DT-088`; OD-S1 a OD-S4 `ACEPTADA` en `DT-080`); implementada el 2026-10-05 en `ml/simulation/`, pendiente de revisión (`docs/reports/fase5-f5b-nivel2-sintetico.md`) *(revisada e integrada en `main`, PR #9)* | F5a |
+| F5c | Modelos de niveles 1–2, estudio de `DT-011` e intervalos. G1 registrado (`DT-089` a `DT-091`); **pendiente de autorización** y de las condiciones de §20.4 | F5a, F5b y G1 |
 | F5d | Estudio de `DT-010` y, si procede, promoción e integración | F5c, G2 y G3 |
 
 Las puertas G1 (antes de evaluar candidatos), G2 (*holdout* de uso único) y G3 (aprobación humana) están
-definidas en `DT-071`.
+definidas en `DT-071`. G1 se registró el 2026-10-05 (`DT-089` a `DT-091`), sin tocar el *holdout*.
 
 ### 20.2 Respuestas del contrato
 
@@ -694,8 +698,8 @@ definidas en `DT-071`.
 | 5 | Cómo se convierte `float` al contrato | `Decimal(x)` exacto, cuantizado a 6 decimales `ROUND_HALF_EVEN`, sin corregir valores inválidos (`DT-074`) |
 | 6 | Cómo se hacen los 17 backtests | Semanas 64 a 128, cada 4 semanas, 14 semanas de horizonte y ventana expansiva (`DT-075`) |
 | 7 | Qué pasa con el *holdout* | Corte 2025-09-24, uso único en G2, nunca para elegir nada (`DT-075`) |
-| 8 | Qué métrica y cuándo se fija | Una de MASE, RMSSE o WAPE, fijada en G1 antes de evaluar candidatos; `DT-021` sigue `OPEN` (`DT-078`) |
-| 9 | Cómo se acepta o rechaza un modelo | Nivel 1 mejora y Nivel 2 no se degrada; valores numéricos `OPEN` hasta G1 (`DT-079`) |
+| 8 | Qué métrica y cuándo se fija | Una de MASE, RMSSE o WAPE, fijada en G1 antes de evaluar candidatos; `DT-021` sigue `OPEN` (`DT-078`) *(2026-10-05: MASE, `DT-090`)* |
+| 9 | Cómo se acepta o rechaza un modelo | Nivel 1 mejora y Nivel 2 no se degrada; valores numéricos `OPEN` hasta G1 (`DT-079`) *(2026-10-05: valores provisionales en `DT-091`)* |
 | 10 | Cómo funciona el simulador de Nivel 2 | `DT-080`; OD-S1 a OD-S4 `ACEPTADA` (`DT-088`): bucle cerrado; órdenes en `suggested_order_date` que llegan tras el `L` usado por el motor; demanda latente, ventas perdidas y desabasto por día con unidades faltantes; inventario medio relativo al baseline sin umbral absoluto |
 | 11 | Cómo se trata el desabasto en la simulación | Ventas perdidas = demanda latente − consumo simulado; sin pedidos pendientes; inventario nunca negativo (`DT-080`) |
 | 12 | Cómo se estudia `DT-011` | Estrategias (a), (b) y (c) con el mismo protocolo; la latente solo como verdad (`DT-081`) |
@@ -737,9 +741,72 @@ definidas en `DT-071`.
 | Decisión | Contenido | Cuándo |
 |---|---|---|
 | OD-S1 a OD-S4 (`DT-080`) | **`ACEPTADA`** el 2026-10-05 (`DT-088`), con las decisiones de cierre de F5b: las órdenes abiertas al primer corte llegan en su `expected_on` (las vencidas, el día siguiente al corte) | Cerrada |
-| `DT-077` | Umbrales de segmentación y criterio de estacionalidad | G1 |
-| `DT-079` / `DT-P04` | 2/3 de los cortes, **5 %**, banda de sesgo, tolerancia de cobertura y tolerancia de «igual» en el Nivel 2 | G1 |
-| `DT-078` / `DT-021` | Elección de la métrica primaria con el procedimiento aceptado | G1 |
-| `DT-081` | Estimador de imputación y agregación de los días excluidos | G1 |
+| `DT-077` | Umbrales de segmentación y criterio de estacionalidad | G1 *(G1: sin cambios; pertenecen a F5c, `DT-089`)* |
+| `DT-079` / `DT-P04` | 2/3 de los cortes, **5 %**, banda de sesgo, tolerancia de cobertura y tolerancia de «igual» en el Nivel 2 | G1 *(G1: valores provisionales en `DT-091`; banda de sesgo y cobertura abiertas, antes de evaluar candidatos de F5c)* |
+| `DT-078` / `DT-021` | Elección de la métrica primaria con el procedimiento aceptado | G1 *(cerrada: MASE, `DT-090`)* |
+| `DT-081` | Estimador de imputación y agregación de los días excluidos | G1 *(G1: sin cambios; pertenecen a F5c, `DT-089`)* |
 | `DT-076`, punto 7 | Detalle del suavizado exponencial simple | Revisión de F5a |
 | `DT-083` | Vía para comparar las alternativas (c) y (d) de `DT-010`: U1 no las expone (bloqueo) | Antes del estudio de `DT-010` (F5d) |
+
+### 20.5 G1: resultados de los baselines y decisiones
+
+*Añadido el 2026-10-05. Decisiones `DT-089` a `DT-091`, `ACEPTADA` por el responsable en la revisión de F5b.
+Todas son **provisionales**: valen solo con datos `SYNTHETIC` y se revalidan con datos REAL (§17). G1 no autoriza
+F5c ni F5d.*
+
+**Decisiones**
+
+| Decisión | Contenido | DT |
+|---|---|---|
+| Baseline oficial | Media móvil de 13 semanas, la que U3 calcula y la API sirve, en aritmética exacta | `DT-089` |
+| Candidato más fuerte | SES: mejor en Nivel 1, dentro del ruido en Nivel 2. **No se promueve**: exigiría una unidad con `float` en el proveedor (`DT-074`) y su respaldo al baseline | `DT-089` |
+| Métrica primaria | **MASE**, decisión del responsable en G1 (cierra `DT-021`) | `DT-090` |
+| Valores de aceptación | 5 % por segmento con mínimo de 10 productos para bloquear; agregado y 2/3 de los cortes comparables (no independientes); inventario +5 %; «igual» en Nivel 2 = unidades faltantes no peores en más del 2 % y *fill rate* no peor en más de 0,2 puntos | `DT-091` |
+| Segmentación e imputación | Sin cambios; pertenecen a F5c | `DT-077`, `DT-081` |
+
+**Los cuatro baselines** (`SYNTHETIC`, dataset `ds-6c8ad65b4999`). Nivel 1: media de los 17 cortes, todos los
+segmentos (`docs/reports/fase5-f5a-backtest-sintetico.md`). Nivel 2: periodo completo del 2024-03-28 al 2025-09-24,
+95 series (`docs/reports/fase5-f5b-nivel2-sintetico.md`).
+
+| Indicador | Media móvil 13 (oficial) | Naïve | Naïve estacional | SES (provisional) |
+|---|---|---|---|---|
+| N1 · `h = 1` · MASE (n = 1685) | 0,983 | 0,981 | 1,688 | 0,886 |
+| N1 · `h = 1` · WAPE | 0,135 | 0,132 | 0,199 | 0,119 |
+| N1 · `L + R` · MASE (n = 1593) | 0,800 | 0,951 | 1,292 | 0,669 |
+| N1 · `L + R` · RMSSE | 0,446 | 0,540 | 0,758 | 0,363 |
+| N1 · `L + R` · WAPE | 0,109 | 0,134 | 0,140 | 0,087 |
+| N1 · `L + R` sin semanas con desabasto · MASE (n = 915) | 0,728 | 0,761 | 1,473 | 0,600 |
+| N2 · unidades faltantes | 3 882 | 5 137 | 11 953 | 3 860 |
+| N2 · días con desabasto | 255 | 336 | 755 | 255 |
+| N2 · *fill rate* | 0,9943 | 0,9925 | 0,9826 | 0,9944 |
+| N2 · servicio por ciclos | 0,9841 | 0,9811 | 0,9437 | 0,9842 |
+| N2 · inventario medio (unidades) | 18 062,9 | 19 236,7 | 17 056,4 | 17 892,9 |
+| N2 · inventario relativo a la media móvil | 1,000 | 1,065 | 0,944 | 0,991 |
+| N2 · órdenes simuladas | 4 714 | 4 372 | 4 689 | 4 715 |
+| N2 sin calentamiento (8 semanas) · unidades faltantes | 1 166 | 2 540 | 8 375 | 1 180 |
+| N2 sin calentamiento · inventario relativo | 1,000 | 1,066 | 0,934 | 0,990 |
+
+Lectura:
+
+- SES mejora el Nivel 1 en todas las vistas.
+- En Nivel 2, la diferencia con la media móvil cambia de signo según el tramo (completo o sin calentamiento) y el
+  segmento (suave: 3 364 frente a 3 277).
+- Cruce de `DT-078`:
+  - acuerdo serie-corte de 0,59 a 0,61, y de 0,13 a 0,15 si además se exige la restricción de inventario con
+    tolerancia 0;
+  - Spearman medio entre ramas de 0,64 a 0,79.
+  - Por serie-corte no distingue MASE, RMSSE y WAPE, que ordenan igual por construcción.
+
+**Lo que sigue abierto** (§20.4):
+
+| Qué | Dónde | Estado |
+|---|---|---|
+| Umbrales de segmentación y criterio de estacionalidad | F5c | `DT-077` sin cambios |
+| Estimador de imputación y agregación de los días excluidos | F5c (estudio de `DT-011`) | `DT-081` sin cambios |
+| Banda de sesgo y tolerancia de cobertura | Antes de evaluar candidatos de F5c (`DT-071` punto 4) | `DT-079` punto 3 |
+| Intervalos y su calibración (US-055) | F5c | `DT-082`; hasta entonces la banda de U3 es **nominal 0,80, no validada** |
+| Vía para comparar (c) y (d) de `DT-010` (U1b) | Antes del estudio de `DT-010` (F5d) | `DT-083`, bloqueo |
+| *Holdout* (G2) y aprobación de una promoción (G3) | Final de F5c/F5d | Sin usar |
+| Series sin histórico suficiente | — | `DT-P23`, US-056 |
+
+**Siguiente paso:** la autorización de F5c es una decisión aparte del responsable (`DT-071`).

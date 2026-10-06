@@ -1,6 +1,6 @@
 # 15 — Decisiones técnicas (ADR)
 
-**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-18) — `DT-024` a `DT-030`, preparación del Componente 2 · **Versión 1.3** (2026-09-19) — `DT-031`, reglas mínimas de V1 · **Versión 1.4** (2026-09-21) — cierre de las reglas V1: `DT-031` pasa a `ACEPTADA` con trece reglas · **Versión 1.5** (2026-09-21) — `DT-032` y `DT-033`, decisiones que el Componente 2 tenía que tomar al implementarse · **Versión 1.6** (2026-09-21) — tabla canónica de identificadores de componente en `DT-030` · **Versión 1.7** (2026-09-23) — `DT-034` y `DT-035`, demanda latente persistente y sus políticas de generación · **Versión 1.8** (2026-09-24) — `DT-036` y `DT-037`, políticas sintéticas de inventario y comportamiento de proveedores; **enmienda de `DT-027`** (restricción 3) y cierre del pendiente de `data_origin` de `DT-026` · **Versión 1.9** (2026-09-24) — `DT-038` y `DT-039`, contratos de salida de los Componentes 4 y 5, tras la auditoría pre-implementación; cierre de los pendientes de `DT-034` (recorte de la demanda y contrato de `consumption.csv`) y correcciones a `DT-036` y `DT-037` · **Versión 1.10** (2026-09-26) — cierre de D-01: `DT-040` (publicación atómica del dataset, W1), regla general de incremento de `generator_version` en `DT-033`, y actualizaciones de `DT-036`, `DT-038` y `DT-039` (A2, B2, `expected_at`, autoría de los identificadores) · **Versión 1.11** (2026-09-26) — implementación del Componente 4: enmienda de `DT-037` §3 (D-C4-1, reparto de la entrega partida) y actualización de `DT-038` (D-C4-2 precondiciones, D-C4-3 lead time y disparo diario, flujos pseudoaleatorios, `metrics` pendiente) · **Versión 1.12** (2026-09-27) — cierre de D-01, opción A: elegibilidad de las órdenes `CANCELLED` sintéticas respecto de `valid_to` (`DT-039` §5.2) · **Versión 1.13** (2026-09-28) — implementación del Componente 5 (`DT-039` §13), sin cambios en ninguna regla · **Versión 1.14** (2026-09-28) — implementación del Componente 6 (`DT-037` §6, decisiones A1 y A2) y corrección de texto en `DT-040` §3 · **Versión 1.15** (2026-09-29) — implementación de W1 (`DT-040` §9, detalles pendientes resueltos) y `generator_version` 0.3.0 · **Versión 1.16** (2026-09-29) — `DT-041`, contrato e implementación del Componente 7 (sin integrar en W1); notas de redacción en `DT-030` y `DT-031` (`V1-07`, `V1-08`) · **Versión 1.17** (2026-09-29) — `DT-042`, validador del dataset e informe de calidad; integración de C7 y C8 en W1 (`DT-040`); `generator_version` 0.4.0 (`DT-033`); formas de `scenario_assignment` y `quality_report` (`DT-025`); `metrics` de `DT-038` §12 cerrado · **Versión 1.18** (2026-09-30) — Etapa 2, arquitectura y fundación: `DT-043` a `DT-047` (todas `PROPUESTA`) y pendientes `DT-P13` a `DT-P21` · **Versión 1.19** (2026-09-30) — autorización de U1: `DT-043` y `DT-045` `ACEPTADA`, `DT-047` `ACEPTADA` en cuanto a U1; `DT-P15` y `DT-P20` cerradas; `DT-P14` abierta en parte y **bloquea U1** · **Versión 1.20** (2026-10-01) — `DT-P14` **cerrada** con el estimador poblacional, `INSUFFICIENT_HISTORY` para `n = 0` y la evaluación exacta B3 (`docs/06` §16.6); ninguna fórmula V1 cambia · **Versión 1.21** (2026-10-01) — cierre del contrato de U1: `DT-048` a `DT-052` `ACEPTADA` (aclaraciones A-1 en `DT-050` y A-2 en `DT-051`), y pendiente `DT-P22`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.22** (2026-10-01) — `DT-P22` `ACEPTADA` (opción (a)): `PRODUCT_OUT_OF_VALIDITY` cubre también la vigencia que termina dentro del horizonte; cierre de `DT-049`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.23** (2026-10-01) — `DT-053` (frontera de la salida parcial) y `DT-054` (sin monotonía global de `S` frente a `L` en V1), tras el audit de pre-codificación de U1; ninguna fórmula cambia · **Versión 1.24** (2026-10-01) — `DT-044` `ACEPTADA` (cantidades en `numeric`; `quantity_on_hand ≥ 0` compatible con `BR-X09`/`V1-13`); `DT-047` aceptada para U2; `DT-055` (entorno técnico de U2) · **Versión 1.25** (2026-10-02) — U3 autorizada para implementación: `DT-P17` cerrada por `DT-056` (baselines V1); `DT-046` `ACEPTADA`; `DT-057` (persistencia y ejecución del forecast); `DT-047` aceptada para U3; pendiente nueva `DT-P23` · **Versión 1.26** (2026-10-03) — cierre documental de U4 y autorización para implementación (no implementada): `DT-058` a `DT-063` `ACEPTADA`; `DT-P18` cerrada por `DT-059` y `DT-P21` por `DT-058`; `DT-047` aceptada para U4; nota en `DT-P16`, que sigue abierta · **Versión 1.27** (2026-10-03) — U4 implementada y validada: registro de la implementación en `DT-047` y en `DT-058` a `DT-063`; ninguna decisión cambia · **Versión 1.28** (2026-10-03) — U5 autorizada para implementación (no implementada): `DT-064` (dependencias), `DT-065` (autenticación local), `DT-066` (contrato de lectura) y `DT-067` (historia, desviación poblacional) `ACEPTADA`; `DT-047` aceptada para U5 · **Versión 1.29** (2026-10-03) — U5 implementada y validada: registro de la implementación en `DT-047` y en `DT-064` a `DT-067`; ninguna decisión cambia · **Versión 1.30** (2026-10-04) — U6 autorizada para implementación (no implementada): `DT-068` (entrega y contrato de la explicación) y `DT-069` (presentación, verificación y degradación de cifras) `ACEPTADA`; `DT-047` aceptada para U6 · **Versión 1.31** (2026-10-04) — U6 implementada y validada: registro de la implementación en `DT-047`, `DT-068` y `DT-069`; ninguna decisión cambia · **Versión 1.32** (2026-10-05) — Fase 7 autorizada para implementación (no implementada): `DT-070` (alcance, stack y versiones, autenticación local, contrato con la API, formato regional, proxy, partición F7a–F7d e integración con `main`) `ACEPTADA`; separada de `DT-047` · **Versión 1.33** (2026-10-05) — Fase 7 implementada: estado e implementación de `DT-070` · **Versión 1.34** (2026-10-05) — Fase 5, cierre documental (no autorizada): `DT-071` a `DT-085` (partición y puertas, `ml/`, dependencias, enmienda acotada de D-12, backtesting, Nivel 1, segmentación `PROPUESTA`, regla de `DT-021`, criterios `PROPUESTA`, simulador de Nivel 2 con decisiones `OPEN`, estudios de `DT-011` y `DT-010`, intervalos, promoción y Git); notas en `DT-010`, `DT-011`, `DT-021`, `DT-056`, `DT-P03`, `DT-P04` y `DT-P23`; `DT-086` autoriza F5a por separado; propuestas del responsable para OD-S1 a OD-S4, criterio serie-corte en `DT-078`, aclaración del Nivel 1 con días imputados y bloqueo de U1 para `DT-010` (`DT-083`) · **Versión 1.35** (2026-10-05) — `DT-087` `ACEPTADA` (población por corte a la fecha, enmienda de interpretación de `DT-075` punto 6); notas en `DT-075` y `DT-079` tras la revisión de F5a · **Versión 1.36** (2026-10-05) — notas en `DT-073` (JSON versionado como resumen) y `DT-077` (el «19 intermitentes» era un artefacto de `valid_to`) · **Versión 1.37** (2026-10-05) — `DT-088` autoriza F5b; OD-S1 a OD-S4 `ACEPTADA` en `DT-080` con sus refinamientos · **Versión 1.38** (2026-10-05) — `DT-080`: decisiones del responsable al cerrar F5b; nota en `DT-078` (las candidatas ordenan igual por serie-corte)
+**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-18) — `DT-024` a `DT-030`, preparación del Componente 2 · **Versión 1.3** (2026-09-19) — `DT-031`, reglas mínimas de V1 · **Versión 1.4** (2026-09-21) — cierre de las reglas V1: `DT-031` pasa a `ACEPTADA` con trece reglas · **Versión 1.5** (2026-09-21) — `DT-032` y `DT-033`, decisiones que el Componente 2 tenía que tomar al implementarse · **Versión 1.6** (2026-09-21) — tabla canónica de identificadores de componente en `DT-030` · **Versión 1.7** (2026-09-23) — `DT-034` y `DT-035`, demanda latente persistente y sus políticas de generación · **Versión 1.8** (2026-09-24) — `DT-036` y `DT-037`, políticas sintéticas de inventario y comportamiento de proveedores; **enmienda de `DT-027`** (restricción 3) y cierre del pendiente de `data_origin` de `DT-026` · **Versión 1.9** (2026-09-24) — `DT-038` y `DT-039`, contratos de salida de los Componentes 4 y 5, tras la auditoría pre-implementación; cierre de los pendientes de `DT-034` (recorte de la demanda y contrato de `consumption.csv`) y correcciones a `DT-036` y `DT-037` · **Versión 1.10** (2026-09-26) — cierre de D-01: `DT-040` (publicación atómica del dataset, W1), regla general de incremento de `generator_version` en `DT-033`, y actualizaciones de `DT-036`, `DT-038` y `DT-039` (A2, B2, `expected_at`, autoría de los identificadores) · **Versión 1.11** (2026-09-26) — implementación del Componente 4: enmienda de `DT-037` §3 (D-C4-1, reparto de la entrega partida) y actualización de `DT-038` (D-C4-2 precondiciones, D-C4-3 lead time y disparo diario, flujos pseudoaleatorios, `metrics` pendiente) · **Versión 1.12** (2026-09-27) — cierre de D-01, opción A: elegibilidad de las órdenes `CANCELLED` sintéticas respecto de `valid_to` (`DT-039` §5.2) · **Versión 1.13** (2026-09-28) — implementación del Componente 5 (`DT-039` §13), sin cambios en ninguna regla · **Versión 1.14** (2026-09-28) — implementación del Componente 6 (`DT-037` §6, decisiones A1 y A2) y corrección de texto en `DT-040` §3 · **Versión 1.15** (2026-09-29) — implementación de W1 (`DT-040` §9, detalles pendientes resueltos) y `generator_version` 0.3.0 · **Versión 1.16** (2026-09-29) — `DT-041`, contrato e implementación del Componente 7 (sin integrar en W1); notas de redacción en `DT-030` y `DT-031` (`V1-07`, `V1-08`) · **Versión 1.17** (2026-09-29) — `DT-042`, validador del dataset e informe de calidad; integración de C7 y C8 en W1 (`DT-040`); `generator_version` 0.4.0 (`DT-033`); formas de `scenario_assignment` y `quality_report` (`DT-025`); `metrics` de `DT-038` §12 cerrado · **Versión 1.18** (2026-09-30) — Etapa 2, arquitectura y fundación: `DT-043` a `DT-047` (todas `PROPUESTA`) y pendientes `DT-P13` a `DT-P21` · **Versión 1.19** (2026-09-30) — autorización de U1: `DT-043` y `DT-045` `ACEPTADA`, `DT-047` `ACEPTADA` en cuanto a U1; `DT-P15` y `DT-P20` cerradas; `DT-P14` abierta en parte y **bloquea U1** · **Versión 1.20** (2026-10-01) — `DT-P14` **cerrada** con el estimador poblacional, `INSUFFICIENT_HISTORY` para `n = 0` y la evaluación exacta B3 (`docs/06` §16.6); ninguna fórmula V1 cambia · **Versión 1.21** (2026-10-01) — cierre del contrato de U1: `DT-048` a `DT-052` `ACEPTADA` (aclaraciones A-1 en `DT-050` y A-2 en `DT-051`), y pendiente `DT-P22`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.22** (2026-10-01) — `DT-P22` `ACEPTADA` (opción (a)): `PRODUCT_OUT_OF_VALIDITY` cubre también la vigencia que termina dentro del horizonte; cierre de `DT-049`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.23** (2026-10-01) — `DT-053` (frontera de la salida parcial) y `DT-054` (sin monotonía global de `S` frente a `L` en V1), tras el audit de pre-codificación de U1; ninguna fórmula cambia · **Versión 1.24** (2026-10-01) — `DT-044` `ACEPTADA` (cantidades en `numeric`; `quantity_on_hand ≥ 0` compatible con `BR-X09`/`V1-13`); `DT-047` aceptada para U2; `DT-055` (entorno técnico de U2) · **Versión 1.25** (2026-10-02) — U3 autorizada para implementación: `DT-P17` cerrada por `DT-056` (baselines V1); `DT-046` `ACEPTADA`; `DT-057` (persistencia y ejecución del forecast); `DT-047` aceptada para U3; pendiente nueva `DT-P23` · **Versión 1.26** (2026-10-03) — cierre documental de U4 y autorización para implementación (no implementada): `DT-058` a `DT-063` `ACEPTADA`; `DT-P18` cerrada por `DT-059` y `DT-P21` por `DT-058`; `DT-047` aceptada para U4; nota en `DT-P16`, que sigue abierta · **Versión 1.27** (2026-10-03) — U4 implementada y validada: registro de la implementación en `DT-047` y en `DT-058` a `DT-063`; ninguna decisión cambia · **Versión 1.28** (2026-10-03) — U5 autorizada para implementación (no implementada): `DT-064` (dependencias), `DT-065` (autenticación local), `DT-066` (contrato de lectura) y `DT-067` (historia, desviación poblacional) `ACEPTADA`; `DT-047` aceptada para U5 · **Versión 1.29** (2026-10-03) — U5 implementada y validada: registro de la implementación en `DT-047` y en `DT-064` a `DT-067`; ninguna decisión cambia · **Versión 1.30** (2026-10-04) — U6 autorizada para implementación (no implementada): `DT-068` (entrega y contrato de la explicación) y `DT-069` (presentación, verificación y degradación de cifras) `ACEPTADA`; `DT-047` aceptada para U6 · **Versión 1.31** (2026-10-04) — U6 implementada y validada: registro de la implementación en `DT-047`, `DT-068` y `DT-069`; ninguna decisión cambia · **Versión 1.32** (2026-10-05) — Fase 7 autorizada para implementación (no implementada): `DT-070` (alcance, stack y versiones, autenticación local, contrato con la API, formato regional, proxy, partición F7a–F7d e integración con `main`) `ACEPTADA`; separada de `DT-047` · **Versión 1.33** (2026-10-05) — Fase 7 implementada: estado e implementación de `DT-070` · **Versión 1.34** (2026-10-05) — Fase 5, cierre documental (no autorizada): `DT-071` a `DT-085` (partición y puertas, `ml/`, dependencias, enmienda acotada de D-12, backtesting, Nivel 1, segmentación `PROPUESTA`, regla de `DT-021`, criterios `PROPUESTA`, simulador de Nivel 2 con decisiones `OPEN`, estudios de `DT-011` y `DT-010`, intervalos, promoción y Git); notas en `DT-010`, `DT-011`, `DT-021`, `DT-056`, `DT-P03`, `DT-P04` y `DT-P23`; `DT-086` autoriza F5a por separado; propuestas del responsable para OD-S1 a OD-S4, criterio serie-corte en `DT-078`, aclaración del Nivel 1 con días imputados y bloqueo de U1 para `DT-010` (`DT-083`) · **Versión 1.35** (2026-10-05) — `DT-087` `ACEPTADA` (población por corte a la fecha, enmienda de interpretación de `DT-075` punto 6); notas en `DT-075` y `DT-079` tras la revisión de F5a · **Versión 1.36** (2026-10-05) — notas en `DT-073` (JSON versionado como resumen) y `DT-077` (el «19 intermitentes» era un artefacto de `valid_to`) · **Versión 1.37** (2026-10-05) — `DT-088` autoriza F5b; OD-S1 a OD-S4 `ACEPTADA` en `DT-080` con sus refinamientos · **Versión 1.38** (2026-10-05) — `DT-080`: decisiones del responsable al cerrar F5b; nota en `DT-078` (las candidatas ordenan igual por serie-corte) · **Versión 1.39** (2026-10-05) — G1: `DT-089` (baseline oficial), `DT-090` (MASE) y `DT-091` (valores de aceptación), `ACEPTADA` y provisionales (`SYNTHETIC`); notas en `DT-010`, `DT-011`, `DT-021` (cerrada por `DT-090`), `DT-077`, `DT-079`, `DT-081`, `DT-P03` y `DT-P04`
 
 Registro de decisiones arquitectónicas. Formato: ID, decisión, contexto, alternativas, razón,
 consecuencias, estado.
@@ -204,6 +204,8 @@ consecuencias, estado.
 
 - **Nota (2026-10-05):** la Fase 5 compara (a)–(e) solo en simulación, sin modificar U1 (`DT-083`); si una gana, el cambio del motor es una unidad posterior con nueva `engine_version`. Estado sin cambios.
 
+- **Nota (2026-10-05, G1):** G1 no cambia esta decisión. El estudio de (a)–(e) sigue en F5d (`DT-083`) y sigue bloqueado: U1 solo implementa (a) (`V1-05`), y comparar (c) y (d) exige una unidad posterior de U1 (U1b en la decisión del responsable). Estado sin cambios.
+
 ## DT-011 — Tratamiento de la demanda censurada por desabasto
 
 - **Decisión:** Marcar los periodos afectados por desabasto (`is_stockout_affected`) y darles un
@@ -219,6 +221,8 @@ consecuencias, estado.
 - **Estado:** `PENDIENTE` (el marcado del dato es `ACEPTADA`; el método de tratamiento, pendiente)
 
 - **Nota (2026-10-05):** protocolo de la Fase 5 en `DT-081`: se comparan (a) consumo tal cual, (b) exclusión y (c) imputación; (d) no se evalúa en la Fase 5. La demanda latente solo es verdad de evaluación y no existe con datos REAL. Estado sin cambios.
+
+- **Nota (2026-10-05, G1):** G1 no fija el estimador de imputación ni la agregación de los días excluidos (`DT-081`); el estudio pertenece a F5c. Los baselines siguen con el consumo tal cual (alternativa (a), `DT-056` D-10). Estado sin cambios.
 
 ## DT-012 — Tránsito total frente a tránsito efectivo
 
@@ -447,6 +451,8 @@ consecuencias, estado.
   Fase 5. El descarte de MAPE como métrica de decisión sí es `ACEPTADA`.
 
 - **Nota (2026-10-05):** no se decidió al cerrar la Fase 1. `DT-078` fija el procedimiento: elección en la puerta G1 de la Fase 5, antes de evaluar candidatos y del *holdout*, sin cambio posterior. La métrica sigue `PENDIENTE`.
+
+- **Nota (2026-10-05, G1): cerrada por `DT-090`.** La métrica primaria es **MASE**, decisión del responsable en G1 (no un desempate heredado), provisional con datos `SYNTHETIC`. El procedimiento de `DT-078` queda como referencia; cambiar la métrica exige una DT nueva y repetir la evaluación. El descarte de MAPE no cambia.
 
 ## DT-022 — Almacén de secretos gestionado
 
@@ -2953,6 +2959,9 @@ D-01 a D-22 y criterios de cierre: `docs/05` §19.8 y §19.9.*
   como cero las semanas posteriores a `valid_to` de los 5 productos descontinuados, que mientras están vigentes son
   suaves (`DT-087`). La segmentación definitiva se calcula sobre la vida activa de cada serie, con datos `≤ as_of`;
   en los cortes de F5a resultan 85 suaves, 14 intermitentes y 1 irregular mientras esos 5 están vigentes.
+- **Nota (2026-10-05, G1; el estado no cambia):** G1 no fija los umbrales ni el criterio de estacionalidad, que
+  pertenecen a F5c (`DT-089` punto 3). La clasificación provisional de F5a se usa para informar y para el criterio
+  por segmento de `DT-091`.
 
 ## DT-078 — Fase 5: regla de fijación de la métrica primaria (`DT-021`)
 
@@ -2996,6 +3005,13 @@ D-01 a D-22 y criterios de cierre: `docs/05` §19.8 y §19.9.*
   solapan (14 semanas cada 4, `DT-075`), así que los 17 cortes **no** son observaciones independientes. La regla de
   «al menos 2/3 de los cortes» del punto 2 (a) no constituye evidencia independiente: cuenta cortes que comparten
   semanas evaluadas. Se tendrá en cuenta al fijar los valores en G1.
+- **Nota (2026-10-05, G1):** el responsable fija valores provisionales en `DT-091`:
+  - 5 % por segmento, con un mínimo de 10 productos para bloquear;
+  - mejora en el agregado y en 2/3 de los cortes comparables;
+  - inventario +5 %;
+  - «igual» con unidades faltantes no peores en más del 2 % y *fill rate* no peor en más de 0,2 puntos.
+
+  La banda de sesgo y la tolerancia de cobertura siguen sin valor.
 
 ## DT-080 — Fase 5: simulador de Nivel 2 (protocolo mínimo reproducible)
 
@@ -3106,6 +3122,8 @@ D-01 a D-22 y criterios de cierre: `docs/05` §19.8 y §19.9.*
 - **Abiertos:** el estimador de imputación de (c) y la agregación semanal de (b) cuando se excluyen días.
 - **Estado:** puntos 1–5 `ACEPTADA` (2026-10-05). Los dos abiertos son **`OPEN` hasta G1**. `DT-011` sigue
   `PENDIENTE`.
+- **Nota (2026-10-05, G1; el estado no cambia):** G1 no fija los dos abiertos, que pertenecen a F5c (`DT-089`
+  punto 3).
 
 ## DT-082 — Fase 5: intervalos (US-055)
 
@@ -3231,14 +3249,97 @@ D-01 a D-22 y criterios de cierre: `docs/05` §19.8 y §19.9.*
 - **Sigue sin autorizar:** G1, F5c, F5d y el resto de la Fase 5.
 - **Estado:** `ACEPTADA` (2026-10-05, decisión del responsable).
 
+## DT-089 — Fase 5: G1 — baseline oficial y candidato más fuerte
+
+- **Decisión:**
+  1. **Baseline oficial: media móvil de 13 semanas** (`k = 13`, `DT-056`), la que U3 calcula y la API sirve, en
+     aritmética exacta. Es la elección de `docs/05` §6 y `DT-076` punto 6 (ampliación de US-050). Hasta ahora era
+     solo la referencia operativa de V1 (`DT-056` D-01). Es la referencia contra la que se juzgarán los candidatos
+     de F5c (`DT-079`, `DT-091`) y el respaldo permanente (`DT-084` punto 6).
+  2. **SES** (`DT-076` punto 7) es el **candidato más fuerte observado y no se promueve**:
+     - **Nivel 1:** mejor. MASE en `L + R` de 0,669 frente a 0,800; en `h = 1`, 0,886 frente a 0,983.
+     - **Nivel 2:** dentro del ruido. Periodo completo: 3 860 frente a 3 882 unidades faltantes, los mismos 255
+       días con desabasto e inventario medio relativo de 0,991. Sin las 8 semanas de calentamiento el orden de
+       las unidades faltantes se invierte (1 180 frente a 1 166), y también en el segmento suave (3 364 frente a
+       3 277).
+     - **Para promoverlo** haría falta una unidad nueva con `float` en el proveedor (`DT-074`) y su respaldo al
+       baseline (`DT-084` punto 6, `RNF-010`), además de G2 y G3.
+  3. `DT-077` (umbrales de segmentación y criterio de estacionalidad) y `DT-081` (estimador de imputación y
+     agregación de los días excluidos) **no cambian**: la estacionalidad y la imputación pertenecen a F5c.
+- **Contexto:**
+  - `DT-071` punto 4 asigna cinco decisiones a G1:
+    - el baseline oficial, en esta DT;
+    - la métrica primaria, en `DT-090`;
+    - los valores de aceptación, en `DT-091`;
+    - los umbrales de segmentación y el estimador de imputación, que quedan sin cambios.
+  - Entre los tres baselines exactos de U3, la media móvil es la mejor en MASE de `L + R` (0,800; naïve 0,951,
+    naïve estacional 1,292) y en unidades faltantes (3 882; 5 137 y 11 953). En `h = 1` empata en la práctica
+    con el naïve (0,983 frente a 0,981).
+  - Cifras completas en `docs/05` §20.5.
+- **Razón:** es el baseline que el sistema ya sirve, en aritmética exacta y sin cambios de código. La mejora de
+  Nivel 1 de SES no se traduce en una mejora de Nivel 2 distinguible del ruido (`docs/05` §10, `DT-079` punto 1).
+- **Consecuencias:**
+  - G1 no autoriza F5c ni F5d. Siguen pendientes de autorización y de las condiciones abiertas de `docs/05` §20.4.
+  - G2 no se ha usado: el *holdout* sigue sin leerse.
+- **Estado:** `ACEPTADA` (2026-10-05, decisión del responsable en G1, tomada en la revisión de F5b y formalizada con el
+  envío del prompt de G1). **Provisional:** vale solo con datos `SYNTHETIC` y se revalida con datos REAL (`docs/05` §17).
+
+## DT-090 — Fase 5: métrica primaria de pronóstico (`DT-021`) — MASE
+
+- **Decisión:** la métrica primaria de Nivel 1 es **MASE**. Es una **decisión del responsable en G1**, no un
+  desempate heredado de ningún documento.
+- **Razón (del responsable):**
+  1. Es independiente de la escala (criterio 2 de `DT-021`).
+  2. Es estándar para series con ceros e intermitentes (criterio 1).
+  3. La evidencia de F5a y F5b no permite distinguirla de RMSSE ni de WAPE por serie y corte. Cada serie-corte
+     tiene un único error agregado por horizonte, así que las tres ordenan las variantes igual por construcción
+     (nota de `DT-078`).
+- **Alcance:**
+  - Definición y escala de `DT-076` puntos 1 y 4, tal como las calcula F5a.
+  - RMSSE, WAPE, sesgo y el resto de `docs/05` §9.1 se siguen informando como métricas complementarias.
+  - MAPE sigue descartada como métrica de decisión (`DT-021`).
+- **Consecuencias:**
+  - `DT-021` queda cerrada con una nota que remite aquí.
+  - El procedimiento de `DT-078` queda como referencia. Su punto 4 sigue vigente: la métrica no se cambia por
+    resultados de candidatos ni del *holdout*, y cambiarla exige una DT nueva y repetir la evaluación completa.
+- **Estado:** `ACEPTADA` (2026-10-05, decisión del responsable en G1, tomada en la revisión de F5b y formalizada con el
+  envío del prompt de G1). **Provisional:** vale solo con datos `SYNTHETIC` y se revalida con datos REAL (`docs/05` §17).
+
+## DT-091 — Fase 5: valores provisionales de aceptación (`DT-079`, `DT-P04`)
+
+- **Decisión:** valores del punto 2 de `DT-079` y de la tolerancia de «igual» de su punto 3.
+  1. **Segmentos:** ningún segmento empeora más de un **5 %** relativo en la métrica primaria (MASE, `DT-090`).
+     - Solo bloquea un segmento con **al menos 10 productos**.
+     - Uno menor (en F5a, el irregular, con 1 serie) se informa sin bloquear.
+  2. **Agregado y cortes:** mejora en el agregado y en **al menos 2/3 de los cortes comparables**.
+     - Los cortes se solapan y no son observaciones independientes (nota de `DT-079`).
+     - El recuento indica consistencia; no es evidencia independiente.
+  3. **Nivel 2, inventario:** el inventario medio admite como máximo un **+5 %** relativo al baseline (OD-S4,
+     `DT-080`).
+  4. **Nivel 2, «igual»:** las unidades faltantes no empeoran más de un **2 %** relativo y el *fill rate* no
+     empeora más de **0,2 puntos** porcentuales (0,002 en proporción).
+- **Siguen sin valor:**
+  - la banda de sesgo admisible (`docs/05` §10, criterio 3);
+  - la tolerancia de cobertura del intervalo (criterio 4, `DT-082`).
+
+  Como `DT-071` punto 4 fija los criterios antes de evaluar candidatos, son condiciones abiertas para autorizar
+  F5c (`docs/05` §20.4).
+- **Alcance:**
+  - Se aplican a los candidatos de F5c frente al baseline oficial (`DT-089`).
+  - La tolerancia de inventario 0 del cruce informativo de `DT-078` (decisiones de cierre de F5b en `DT-080`) no
+    cambia: es un parámetro de ese indicador, no un criterio de aceptación.
+- **Estado:** `ACEPTADA` (2026-10-05, decisión del responsable en G1, tomada en la revisión de F5b y formalizada con el
+  envío del prompt de G1). **Provisional:** vale solo con datos `SYNTHETIC` y se revalida con datos REAL (`docs/05` §17). `DT-P04` queda cerrada en estos valores; la banda de sesgo y la tolerancia de cobertura siguen
+  abiertas.
+
 ## Decisiones deliberadamente NO tomadas
 
 | ID | Tema | Se decidirá en | Por qué no ahora |
 |---|---|---|---|
 | `DT-P01` | Servicio de cómputo en Azure (App Service / Container Apps / AKS) | Fase 12–13 | Requiere carga real y presupuesto |
 | `DT-P02` | Inferencia en línea vs. solo por lotes | Fase 5–6 | Depende del tiempo de cálculo real |
-| `DT-P03` | Algoritmo concreto del modelo de producción | Fase 5 | Se decide con datos, no por preferencia *(2026-10-05: se decide en F5c/F5d con los criterios de `DT-079`; niveles 3–4 fuera, `DT-071`.)* |
-| `DT-P04` | Umbrales numéricos de aceptación del modelo | Fase 1–5 | Fijarlos sin datos sería inventar un requisito *(2026-10-05: valores propuestos en `DT-079`, incluido el 5 %, `OPEN` hasta la puerta G1.)* |
+| `DT-P03` | Algoritmo concreto del modelo de producción | Fase 5 | Se decide con datos, no por preferencia *(2026-10-05: se decide en F5c/F5d con los criterios de `DT-079`; niveles 3–4 fuera, `DT-071`.)* *(2026-10-05, G1: sigue sin decidir. La referencia es el baseline oficial, la media móvil de 13 semanas (`DT-089`), con MASE (`DT-090`) y los valores de `DT-091`.)* |
+| `DT-P04` | Umbrales numéricos de aceptación del modelo | Fase 1–5 | Fijarlos sin datos sería inventar un requisito *(2026-10-05: valores propuestos en `DT-079`, incluido el 5 %, `OPEN` hasta la puerta G1.)* *(2026-10-05, G1: valores provisionales `ACEPTADA` en `DT-091`, solo con datos `SYNTHETIC`; siguen abiertas la banda de sesgo y la tolerancia de cobertura.)* |
 | `DT-P05` | Política de revisión (continua o periódica) | Definición del negocio | Es una decisión de negocio, no técnica |
 | `DT-P06` | Estrategia de particionamiento en PostgreSQL | Fase 2, si el volumen lo exige | No justificado con el volumen de referencia |
 | `DT-P07` | Herramientas de E2E y de pruebas de carga | Fases 7 y 14 | Dependen del stack ya construido |

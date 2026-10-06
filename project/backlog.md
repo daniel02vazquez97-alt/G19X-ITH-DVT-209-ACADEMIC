@@ -1,6 +1,6 @@
 # Backlog inicial (Scrum)
 
-**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — correspondencia con las unidades de la Etapa 2 · **Versión 1.3** (2026-10-04) — US-048: interpretación de U6 (`DT-068`) · **Versión 1.4** (2026-10-05) — notas de la Fase 5 en US-050 a US-058 (`DT-071` a `DT-085`; no autorizada) · **Versión 1.5** (2026-10-05) — US-058: F5b autorizada (`DT-088`)
+**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — correspondencia con las unidades de la Etapa 2 · **Versión 1.3** (2026-10-04) — US-048: interpretación de U6 (`DT-068`) · **Versión 1.4** (2026-10-05) — notas de la Fase 5 en US-050 a US-058 (`DT-071` a `DT-085`; no autorizada) · **Versión 1.5** (2026-10-05) — US-058: F5b autorizada (`DT-088`) · **Versión 1.6** (2026-10-05) — US-050 a US-058 tras G1 (`DT-089` a `DT-091`): cerradas o pendientes
 
 Backlog organizado en **Épicas → Historias de usuario → Tareas**.
 
@@ -252,6 +252,7 @@ función**) · `T-040.4` punto de reorden · `T-040.5` pruebas exhaustivas
 - **Ampliación en Fase 5:** suavizado exponencial simple y elección del baseline oficial por desempeño.
 - **Dependencias:** EPIC-03
 - *Fase 5 (2026-10-05):* suavizado exponencial simple en F5a (`DT-076` punto 7, `PROPUESTA`); baseline oficial elegido en la puerta G1 (`DT-071`).
+- *G1 (2026-10-05):* **cerrada.** Baseline oficial: media móvil de 13 semanas (`DT-089`), provisional con datos `SYNTHETIC`. SES, implementado en F5a, es el candidato más fuerte y no se promueve.
 
 ### US-051 — Segmentación del catálogo
 - **Prioridad:** P1
@@ -259,6 +260,7 @@ función**) · `T-040.4` punto de reorden · `T-040.5` pruebas exhaustivas
   `docs/05-motor-predictivo.md` §4; la clasificación es visible en la salida.
 - **Dependencias:** US-050
 - *Fase 5 (2026-10-05):* umbrales propuestos en `DT-077` (Syntetos-Boylan, provisionales), `OPEN` hasta G1; criterio de estacionalidad `OPEN`. F5a, autorizada (`DT-086`), calcula la clasificación provisional.
+- *G1 (2026-10-05):* **pendiente** (F5c). G1 no fija los umbrales ni la estacionalidad de `DT-077`; la clasificación provisional de F5a solo informa y alimenta el criterio por segmento de `DT-091`.
 
 ### US-052 — Pipeline de features sin fuga temporal
 - **Prioridad:** P0
@@ -266,6 +268,7 @@ función**) · `T-040.4` punto de reorden · `T-040.5` pruebas exhaustivas
   existe una prueba automatizada que lo verifica; el escalado se ajusta solo con datos de entrenamiento.
 - **Dependencias:** US-050
 - *Fase 5 (2026-10-05):* features solo con datos `≤ as_of` en cada corte (`DT-075`); solo biblioteca estándar (`DT-073`).
+- *G1 (2026-10-05):* **pendiente** (F5c): todavía no hay modelos con features. El backtesting de F5a ya usa solo datos `≤ as_of`.
 
 ### US-053 — Backtesting con validación temporal
 - **Prioridad:** P0
@@ -273,6 +276,7 @@ función**) · `T-040.4` punto de reorden · `T-040.5` pruebas exhaustivas
   holdout final se usa una sola vez; las métricas se reportan con su dispersión y por segmento.
 - **Dependencias:** US-052
 - *Fase 5 (2026-10-05):* 17 cortes (semanas 64 a 128, cada 4), horizonte de 14 semanas, sin zona muerta y *holdout* 2025-09-24 de uso único (`DT-075`); métricas en `DT-076`.
+- *G1 (2026-10-05):* **cerrada** en cuanto al backtesting (F5a, sobre los baselines). El *holdout* no se ha usado y queda reservado para G2.
 
 ### US-054 — Modelo de predicción de demanda
 - **Prioridad:** P0
@@ -281,6 +285,7 @@ función**) · `T-040.4` punto de reorden · `T-040.5` pruebas exhaustivas
   entrenamiento es reproducible.
 - **Dependencias:** US-053
 - *Fase 5 (2026-10-05):* niveles 1–2 en F5c; criterios en `DT-079` (valores `OPEN` hasta G1); métrica primaria según `DT-078`.
+- *G1 (2026-10-05):* **pendiente** (F5c, sin autorizar). Métrica primaria MASE (`DT-090`); valores de aceptación provisionales en `DT-091`; la banda de sesgo sigue sin valor.
 
 ### US-055 — Cuantificación de la incertidumbre
 - **Prioridad:** P0
@@ -290,6 +295,7 @@ función**) · `T-040.4` punto de reorden · `T-040.5` pruebas exhaustivas
   la fuente ya decidida.
 - **Dependencias:** US-054 · **Relacionado:** `DT-010`
 - *Fase 5 (2026-10-05):* protocolo en `DT-082` (nivel 0,80; calibración por horizonte solo con cortes anteriores); tolerancia de cobertura `OPEN` (`DT-079`).
+- *G1 (2026-10-05):* **pendiente** (F5c). Hasta entonces la banda de U3 es nominal 0,80 y no está validada; la tolerancia de cobertura sigue sin valor.
 
 ### US-056 — Tratamiento de series con datos insuficientes
 - **Prioridad:** P1
@@ -297,6 +303,7 @@ función**) · `T-040.4` punto de reorden · `T-040.5` pruebas exhaustivas
   indica el método usado y la confianza; ningún SKU queda sin predicción sin explicación.
 - **Dependencias:** US-051
 - *Fase 5 (2026-10-05):* el dataset 0.4.0 no tiene series cortas; solo recortes artificiales para validar el algoritmo (`docs/05` §20.3). `DT-P23` sigue abierta.
+- *G1 (2026-10-05):* **pendiente**; `DT-P23` sigue abierta.
 
 ### US-058 — Evaluación de abastecimiento y comparación baseline vs. ML
 - **Descripción:** Como responsable técnico, necesito medir si el forecast del modelo produce **mejores
@@ -313,6 +320,7 @@ función**) · `T-040.4` punto de reorden · `T-040.5` pruebas exhaustivas
 - **Dependencias:** US-046, US-050, US-054 · **Cubre:** RML-013 · **Relacionado:** `DT-020`
 - *Añadida en la revisión 0.1: la estrategia de evaluación de Nivel 2 no tenía ninguna historia que la ejecutara.*
 - *Fase 5 (2026-10-05):* protocolo del simulador en `DT-080` (F5b); OD-S1 a OD-S4 `ACEPTADA` y F5b autorizada (`DT-088`): simulación retrospectiva en bucle cerrado de los cuatro baselines con U1 sin cambios, sin elegir baseline oficial ni métrica.
+- *G1 (2026-10-05):* el simulador está hecho (F5b, `docs/05` §20.5). La comparación con un modelo de ML queda **pendiente** de F5c y F5d. Con SES, el Nivel 2 no muestra una mejora distinguible del ruido (`DT-089`).
 
 ### US-057 — Versionado y persistencia de predicciones
 - **Prioridad:** P0
@@ -320,6 +328,7 @@ función**) · `T-040.4` punto de reorden · `T-040.5` pruebas exhaustivas
   método; **nunca se sobrescribe** una predicción anterior.
 - **Dependencias:** US-054
 - *Fase 5 (2026-10-05):* estados de `model_versions` sin migración nueva y promoción con aprobación humana (`DT-084`).
+- *G1 (2026-10-05):* **pendiente** (F5d): no hay modelo que versionar ni promover.
 
 ---
 

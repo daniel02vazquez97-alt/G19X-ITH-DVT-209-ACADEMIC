@@ -2,7 +2,7 @@
 
 > Este archivo es la **fuente de verdad operativa** para cualquier agente de IA que trabaje sobre este repositorio.
 > Debe leerse **completo** al inicio de cada sesión, antes de cualquier modificación.
-> Última actualización: 2026-10-02 · Etapa vigente: **ETAPA 2 — Sistema principal** (iniciada: arquitectura y fundación) · Etapa 1 — Datos: **completada**
+> Última actualización: 2026-10-05 · Etapa vigente: **ETAPA 2 — Sistema principal** (iniciada: arquitectura y fundación) · Etapa 1 — Datos: **completada**
 
 ---
 
@@ -364,6 +364,15 @@ desde `main` tras integrar U1–U6 por PR con merge commit (en la práctica, ram
 (2026-10-05: `DT-071` a `DT-088`, `docs/05` §20; F5a por `DT-086`: baselines, Nivel 1 y segmentación provisional, sin elegir
 baseline oficial ni métrica; F5b por `DT-088`: simulador de Nivel 2 aplicado a los baselines): `ml/` con solo la biblioteca estándar, `float` solo en `ml/` y en un proveedor
 de modelo (`DT-074`), U1 sin cambios; antes de implementar hay que decidir las condiciones de `docs/05` §20.4.
+**G1 está registrado** (2026-10-05: `DT-089` a `DT-091`, `docs/05` §20.5), con decisiones provisionales válidas solo
+con datos `SYNTHETIC`:
+- baseline oficial, la media móvil de 13 semanas de U3;
+- SES, no promovido;
+- métrica primaria MASE;
+- valores de aceptación de `DT-091`.
+
+**F5c y F5d siguen sin autorizar.** Ningún modelo se promueve ni se integra, el *holdout* no se ha usado y la banda de
+predicción sigue siendo nominal 0,80, no validada.
 Restricciones vigentes, que se levantan solo por instrucción explícita:
 
 - **No escribir código de aplicación** hasta que el responsable autorice la primera unidad de
