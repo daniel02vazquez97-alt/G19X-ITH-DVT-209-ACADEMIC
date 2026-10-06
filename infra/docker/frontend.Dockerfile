@@ -1,8 +1,8 @@
 # Imagen `frontend` (U7, `DT-095`): build de React con Node 24 LTS y servidor estático nginx que hace de
 # proxy inverso de `/api` en el mismo origen (`DT-070` punto 23, docs/12 §3.1). Contexto: raíz del repositorio.
-# Imágenes base fijadas por versión exacta; el digest queda pendiente (`DT-095`).
+# Imágenes base fijadas por versión exacta y digest del índice multiplataforma (`DT-095`).
 
-FROM node:24.21.0-trixie-slim AS build
+FROM node:24.21.0-trixie-slim@sha256:173f125896c3b47ddf056734c7ea789d04595a6a08769a8f78e0df642781fb66 AS build
 WORKDIR /src
 COPY frontend/package.json frontend/package-lock.json frontend/.npmrc ./
 RUN npm ci --no-audit --no-fund
@@ -10,7 +10,7 @@ COPY frontend/ ./
 # `build` = `tsc --noEmit && vite build` (package.json); lint y pruebas quedan para CI (U8).
 RUN npm run build
 
-FROM nginx:1.30.5-alpine
+FROM nginx:1.30.5-alpine@sha256:0985e772fb9f729e6fa0980da05fca5d9c468e870eed43071545afa9d2e27d94
 ARG VERSION=0.1.0
 ARG VCS_REF=unknown
 LABEL org.opencontainers.image.title="inventory-frontend" \

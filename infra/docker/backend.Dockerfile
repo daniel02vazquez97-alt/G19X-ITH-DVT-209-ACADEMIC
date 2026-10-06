@@ -2,10 +2,10 @@
 # recomendaciones— sobre la misma base (docs/12 §3.1). Contexto: raíz del repositorio.
 #
 # Dependencias: las fijadas en backend/pyproject.toml, grupos `db` y `api` (`DT-055`, `DT-064`); el
-# grupo `test` no entra en la imagen. Imagen base fijada por versión exacta; el digest queda pendiente
-# de resolverse contra el registro (`DT-095`).
+# grupo `test` no entra en la imagen. Imagen base fijada por versión exacta y digest del índice
+# multiplataforma (`DT-095`).
 
-FROM python:3.11.17-slim-trixie AS deps
+FROM python:3.11.17-slim-trixie@sha256:0dd364ba7e10242f07755449e3a3d0e35f9efd987952737b90def6709ab0c5ce AS deps
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=1
 WORKDIR /build
@@ -15,7 +15,7 @@ RUN python -c "import tomllib; p = tomllib.load(open('pyproject.toml', 'rb'))['p
  && python -m venv /opt/venv \
  && /opt/venv/bin/pip install --requirement requirements.txt
 
-FROM python:3.11.17-slim-trixie
+FROM python:3.11.17-slim-trixie@sha256:0dd364ba7e10242f07755449e3a3d0e35f9efd987952737b90def6709ab0c5ce
 ARG VERSION=0.0.0
 ARG VCS_REF=unknown
 LABEL org.opencontainers.image.title="inventory-backend" \

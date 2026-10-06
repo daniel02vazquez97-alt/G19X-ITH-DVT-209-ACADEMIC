@@ -18,8 +18,9 @@ DOCKER = ROOT / "infra" / "docker"
 COMPOSE = ROOT / "infra" / "docker-compose.yml"
 DOCKERFILES = {name: DOCKER / f"{name}.Dockerfile" for name in ("backend", "dataset", "frontend")}
 APP_SERVICES = ("dataset", "init", "api", "frontend")
-# An exact release (major.minor.patch, or major.minor for PostgreSQL) plus an optional variant.
-PINNED = re.compile(r"^[a-z0-9/._-]+:\d+\.\d+(\.\d+)?(-[a-z0-9.-]+)?$")
+# An exact release (major.minor.patch, or major.minor for PostgreSQL), an optional variant and the digest
+# of the multi-platform index (docs/12 §3.2, rule 2; `DT-095`).
+PINNED = re.compile(r"^[a-z0-9/._-]+:\d+\.\d+(\.\d+)?(-[a-z0-9.-]+)?@sha256:[0-9a-f]{64}$")
 
 
 def text(path: Path) -> str:

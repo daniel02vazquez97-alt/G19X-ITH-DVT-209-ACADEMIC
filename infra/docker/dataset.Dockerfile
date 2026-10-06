@@ -3,7 +3,7 @@
 # El sistema sigue consumiendo el contrato del dataset (archivos publicados), no el código del generador.
 # Contexto: raíz del repositorio. Dependencia: la de data/synthetic/requirements.txt (`DT-024`).
 
-FROM python:3.11.17-slim-trixie
+FROM python:3.11.17-slim-trixie@sha256:0dd364ba7e10242f07755449e3a3d0e35f9efd987952737b90def6709ab0c5ce
 ARG VCS_REF=unknown
 LABEL org.opencontainers.image.title="inventory-dataset" \
       org.opencontainers.image.revision="${VCS_REF}"

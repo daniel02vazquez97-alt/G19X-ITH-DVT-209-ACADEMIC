@@ -1,6 +1,6 @@
 # 12 — Estrategia DevOps
 
-**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-10-03) — §5: correspondencia entre los entornos y `APP_ENV` para la API de U5 (`DT-065`) · **Versión 1.3** (2026-10-05) — §2.2: excepción de merge commit para la integración inicial de U1–U6; §3.1: imagen `frontend` en el mismo origen que `/api` (`DT-070`) · **Versión 1.4** (2026-10-05) — §2.2: merge commit para las unidades de la Fase 5 (`DT-085`) · **Versión 1.5** (2026-10-06) — §3.4: U7 implementada, pendiente de revisión (`DT-095`): imágenes, `docker compose` del sistema completo y verificación; el resto de este documento sigue siendo diseño
+**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-10-03) — §5: correspondencia entre los entornos y `APP_ENV` para la API de U5 (`DT-065`) · **Versión 1.3** (2026-10-05) — §2.2: excepción de merge commit para la integración inicial de U1–U6; §3.1: imagen `frontend` en el mismo origen que `/api` (`DT-070`) · **Versión 1.4** (2026-10-05) — §2.2: merge commit para las unidades de la Fase 5 (`DT-085`) · **Versión 1.5** (2026-10-06) — §3.4: U7 implementada, pendiente de revisión (`DT-095`): imágenes, `docker compose` del sistema completo y verificación; el resto de este documento sigue siendo diseño · **Versión 1.6** (2026-10-06) — §4.5: U8 implementada, pendiente de revisión (`DT-096`); §3.4: bases de U7 fijadas por digest, pendiente de verificación externa
 
 > No se crean workflows, imágenes ni recursos en esta etapa.
 
@@ -100,7 +100,7 @@ Sin `--profile app`, el mismo archivo sigue levantando **solo PostgreSQL**, como
 
 | Servicio | Imagen | Qué hace | Termina en |
 |---|---|---|---|
-| `postgres` | `postgres:16.15-alpine3.24` | PostgreSQL 16, `trust`, `127.0.0.1:5432`, volumen `pgdata` | `healthy` (`pg_isready`) |
+| `postgres` | `postgres:16.15-alpine3.24` (por digest) | PostgreSQL 16, `trust`, `127.0.0.1:5432`, volumen `pgdata` | `healthy` (`pg_isready`) |
 | `dataset` | `infra/docker/dataset.Dockerfile` | Publica `ds-6c8ad65b4999` en el volumen `dataset` con el generador 0.4.0 sin modificar (unos 30 s); si ya está, lo reutiliza | Salida 0 |
 | `init` | `infra/docker/backend.Dockerfile` | `migrate` → `ingestion` → `forecast` → `recommend` con `RUN_AS_OF=2025-12-31` (`DT-058`); idempotente | Salida 0 |
 | `api` | `infra/docker/backend.Dockerfile` | API V1 con `APP_ENV=local` y las identidades ficticias de `.env.example` (`DT-065`), en `127.0.0.1:8000` | `healthy` (`/health`) |
@@ -117,8 +117,9 @@ Sin `--profile app`, el mismo archivo sigue levantando **solo PostgreSQL**, como
 - `HEALTHCHECK`;
 - etiquetas OCI con versión y `VCS_REF`.
 
-**Excepción declarada:** las bases están fijadas por versión exacta, pero aún **sin digest** (regla 2). El digest se
-resolverá contra el registro en la primera construcción con acceso a él.
+**Regla 2:** las bases están fijadas por versión exacta **y digest** del índice multiplataforma (2026-10-06, U8), tomado
+de `docker-library/repo-info`. Ese digest queda **pendiente de verificación externa** hasta la primera construcción con
+acceso al registro, que será el job `docker` de CI (`DT-095`, `DT-096`).
 
 **Verificación:**
 
@@ -184,6 +185,32 @@ Entra ID, con ámbito restringido al repositorio, la rama o el entorno concretos
 - Ejecución en paralelo de trabajos independientes.
 - El pipeline debe tardar poco: un CI lento se acaba evitando.
 - **Falla rápido**: primero lo barato (formato, lint), después lo caro (pruebas, build).
+
+### 4.5 Implementación de U8 (`DT-096`, 2026-10-06, pendiente de revisión)
+
+`.github/workflows/ci.yml` implementa la parte de CI de `ci.yml` de §4.2, sin cobertura (el proyecto no define
+herramienta) ni linter de Python (decisión del responsable). Se ejecuta en cada PR, en cada push a `main` y a mano.
+
+| Job | Comprobación |
+|---|---|
+| `secret-scan` | `python infra/ci/secret_scan.py`: archivos prohibidos y patrones de secretos, sin imprimir valores |
+| `ml` | Suite de `ml/` (solo biblioteca estándar) con el dataset publicado en el job |
+| `backend` | Suite por defecto, sin dependencias opcionales |
+| `api` | Suite de la API sin base, con los grupos `db`, `api` y `test` |
+| `integration` | PostgreSQL 16 efímero (contenedor de servicio): migraciones y suite de integración |
+| `generator` | Suite del generador |
+| `frontend` | `npm ci`, ESLint, `tsc`, Prettier, Vitest y build con Node 24.21.0 y npm 11.19.0 |
+| `docker` | Pruebas de `infra/tests`, construcción de las imágenes de U7, sistema completo `healthy` y `smoke.py` |
+
+Puntos clave:
+
+- **Permisos:** `contents: read`, sin persistir credenciales.
+- **Acciones:** fijadas por SHA (§4.4).
+- **Azure:** sin secretos ni OIDC hacia Azure (§4.3), que llegan con U10/U12.
+- **`build.yml`, `deploy.yml`, `ml-train.yml`, `db-migrate.yml` y `security.yml`** siguen siendo diseño.
+
+**Antes de hacer `main` obligatoria** (§2.2, la activa el responsable en GitHub), conviene ver la primera ejecución en
+verde. Los jobs que conviene exigir son los ocho de la tabla.
 
 ## 5. Entornos
 
