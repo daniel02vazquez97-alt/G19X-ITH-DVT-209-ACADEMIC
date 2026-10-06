@@ -1,6 +1,6 @@
 # 05 — Motor predictivo (estrategia de Machine Learning)
 
-**Estado:** Versión 1.0 — Etapa 0 (estrategia, no implementada) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §19, contrato de `ForecastProvider` para la Etapa 2 (`DT-046`); §§1–18 no cambian · **Versión 1.3** (2026-10-02) — `DT-046` `ACEPTADA`; §19.8 y §19.9, decisiones y criterios de cierre de U3 (`DT-056`, `DT-057`); nota de V1 en §6 · **Versión 1.4** (2026-10-02) — §19.10, registro de la implementación de U3; ninguna decisión cambia · **Versión 1.5** (2026-10-03) — `DT-P21` cerrada por `DT-058`: frecuencia de §2 leída como una ejecución de forecast por corte de recomendación; §19.7 · **Versión 1.6** (2026-10-05) — §20: protocolo y decisiones de la Fase 5 (`DT-071` a `DT-085`); notas en §2, §6, §8, §9.1, §10, §11 y §19.8. Fase 5 **no autorizada** (condiciones en §20.4) · **Versión 1.7** (2026-10-05) — §20.3: población por corte a la fecha (`DT-087`) y cortes no independientes (nota de `DT-079`) · **Versión 1.8** (2026-10-05) — §20.3: segmentación sobre la vida activa de cada serie (nota de `DT-077`) · **Versión 1.9** (2026-10-05) — §20: F5b autorizada (`DT-088`); OD-S1 a OD-S4 `ACEPTADA` · **Versión 1.10** (2026-10-05) — §20.1: F5b implementada, pendiente de revisión · **Versión 1.11** (2026-10-05) — §20.3: criterio serie-corte de `DT-078`; §20.4: OD-S1 a OD-S4 cerradas · **Versión 1.12** (2026-10-05) — G1 (`DT-089` a `DT-091`): nota en §6, §20.1, §20.2, §20.4 y §20.5 nueva · **Versión 1.13** (2026-10-06) — §20.6: F5c autorizada (`DT-092`) y criterios complementarios de G1 (`DT-093`); notas en §20.1 y §20.4 · **Versión 1.14** (2026-10-06) — §20.7: F5c implementada, resultados `SYNTHETIC`, pendiente de revisión
+**Estado:** Versión 1.0 — Etapa 0 (estrategia, no implementada) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §19, contrato de `ForecastProvider` para la Etapa 2 (`DT-046`); §§1–18 no cambian · **Versión 1.3** (2026-10-02) — `DT-046` `ACEPTADA`; §19.8 y §19.9, decisiones y criterios de cierre de U3 (`DT-056`, `DT-057`); nota de V1 en §6 · **Versión 1.4** (2026-10-02) — §19.10, registro de la implementación de U3; ninguna decisión cambia · **Versión 1.5** (2026-10-03) — `DT-P21` cerrada por `DT-058`: frecuencia de §2 leída como una ejecución de forecast por corte de recomendación; §19.7 · **Versión 1.6** (2026-10-05) — §20: protocolo y decisiones de la Fase 5 (`DT-071` a `DT-085`); notas en §2, §6, §8, §9.1, §10, §11 y §19.8. Fase 5 **no autorizada** (condiciones en §20.4) · **Versión 1.7** (2026-10-05) — §20.3: población por corte a la fecha (`DT-087`) y cortes no independientes (nota de `DT-079`) · **Versión 1.8** (2026-10-05) — §20.3: segmentación sobre la vida activa de cada serie (nota de `DT-077`) · **Versión 1.9** (2026-10-05) — §20: F5b autorizada (`DT-088`); OD-S1 a OD-S4 `ACEPTADA` · **Versión 1.10** (2026-10-05) — §20.1: F5b implementada, pendiente de revisión · **Versión 1.11** (2026-10-05) — §20.3: criterio serie-corte de `DT-078`; §20.4: OD-S1 a OD-S4 cerradas · **Versión 1.12** (2026-10-05) — G1 (`DT-089` a `DT-091`): nota en §6, §20.1, §20.2, §20.4 y §20.5 nueva · **Versión 1.13** (2026-10-06) — §20.6: F5c autorizada (`DT-092`) y criterios complementarios de G1 (`DT-093`); notas en §20.1 y §20.4 · **Versión 1.14** (2026-10-06) — §20.7: F5c implementada, resultados `SYNTHETIC`, pendiente de revisión · **Versión 1.15** (2026-10-06) — revisión de F5c: SES en la tabla de criterios, criterios por estrategia, sensibilidades, conclusión provisional de `DT-011` y rótulo de la banda (§20.6 y §20.7)
 
 > **No se implementa ningún modelo en esta etapa.** Este documento fija la estrategia, las reglas de
 > evaluación y los criterios de aceptación **antes** de entrenar, para que la evaluación no se ajuste
@@ -838,6 +838,26 @@ provisionales (`SYNTHETIC`).*
 | Holt-Winters | Elegible con ≥ 104 semanas de entrenamiento: en 7 de los 17 cortes |
 | Simulador sin modelo elegible | Usa los puntos del baseline oficial y se cuenta |
 
+**Revisión de F5c (2026-10-06, decisiones del responsable, `ACEPTADA` y provisionales; `DT-093` punto 12):**
+
+- **Interpretaciones aceptadas:**
+  - cortes comparables por par, frente a la media móvil 13;
+  - tamaño de segmento = media de series por corte;
+  - sesgo comparado en valor absoluto;
+  - Nivel 2 juzgado en el periodo completo, informando también el periodo sin calentamiento;
+  - SES y baselines con la cadencia de F5b y candidatos cada 4 decisiones (la sensibilidad semanal no cambia la
+    conclusión).
+- **Conclusión provisional de `DT-011`** (solo con datos `SYNTHETIC`):
+  - las estrategias (b) y (c) reducen las unidades faltantes entre un 15 % y un 24 % en los modelos estudiados, con un
+    inventario medio entre un 1,7 % y un 2,1 % mayor;
+  - adoptar una en producción exige una unidad propia que cambie U3 y una DT nueva;
+  - **PROPUESTA del desarrollador** (pendiente de decisión del responsable): preferir (b). La diferencia con (c) está
+    dentro del ruido, (b) no necesita un estimador con parámetros propios y la API ya expone `days_observed` y
+    `stockout_days`.
+- **Rótulo recomendado para la banda de la Fase 7:** «Intervalo nominal 0,80. Cobertura observada entre 0,75 y 0,85 en pruebas con datos sintéticos; no validada con datos reales.» Es un ajuste posterior de F7d que se autoriza
+  aparte; `frontend/` no cambia.
+- Resultados de la revisión: §20.7.
+
 ### 20.7 F5c: resultados (SYNTHETIC, pendiente de revisión)
 
 *Añadido el 2026-10-06. Informe: `docs/reports/fase5-f5c-candidatos-sintetico.md` (`results_sha256` `df9f8753…`,
@@ -867,8 +887,10 @@ siguen sin autorizar.*
 | SBA | 4 928 |
 | TSB | 4 170 |
 
-- La mejora de Nivel 1 de los candidatos **no se traduce en Nivel 2**: ninguno cumple el criterio de unidades
-  faltantes (+2 %).
+- La mejora de Nivel 1 de los cinco candidatos nuevos **no se traduce en Nivel 2**: ninguno de los cinco cumple el
+  criterio de unidades faltantes (+2 %). *(Corregido en la revisión del 2026-10-06: la primera versión decía «ninguno
+  cumple» sin haber evaluado a SES. **SES cumple todos los criterios que deciden** (3 860 frente a 3 882 unidades
+  faltantes, MASE −16,4 %, inventario 0,991), sin recomendación ni promoción.)*
 - Croston y TSB cumplen todos los criterios de Nivel 1 y de sesgo, y solo fallan ese.
 - Holt-Winters falla además el segmento intermitente.
 - Holt falla el segmento intermitente, su sesgo y el *fill rate*.
@@ -894,3 +916,33 @@ calibrada queda en banda en 8 de 14 horizontes. El rótulo recomendado para la b
 cobertura comprobada solo con datos SYNTHETIC»; la Fase 7 no se modifica.
 
 **Paridad.** Los archivos de detalle de F5a y F5b recalculados desde F5c coinciden con sus huellas registradas.
+
+**Revisión (2026-10-06).** Informe regenerado; `results_sha256` `1ce5ea29…`, igual en Python 3.11, regenerado desde la
+caché con `--reuse-cache`, y en Python 3.13 con una ejecución completa sin caché.
+
+- **Criterios frente a la media móvil 13 con (a):** **SES cumple todos** los que deciden. Croston y TSB solo fallan
+  las unidades faltantes; Holt-Winters falla además el segmento intermitente; Holt y SBA fallan varios.
+- **Criterios por estrategia**, con la media móvil 13 bajo la misma estrategia (informe §8):
+
+  | Estrategia | Modelo | Unidades faltantes | Media móvil 13 | Cumple todo |
+  |---|---|---|---|---|
+  | (a) | SES | 3 860 | 3 882 | sí |
+  | (a) | TSB | 4 170 | 3 882 | no |
+  | (a) | Holt-Winters | 4 218 | 3 882 | no |
+  | (b) | SES | 3 187 | 3 314 | sí |
+  | (b) | TSB | 3 168 | 3 314 | sí |
+  | (b) | Holt-Winters | 3 493 | 3 314 | no |
+  | (c) | SES | 3 153 | 3 306 | sí |
+  | (c) | TSB | 3 173 | 3 306 | sí |
+  | (c) | Holt-Winters | 3 511 | 3 306 | no |
+
+  Holt-Winters entró al estudio con solo 7 cortes comparables: posible sesgo de selección.
+- **Condición de F5d** (`DT-071`, `DT-084`): ya hay modelos que cumplen los criterios en los cortes con datos
+  `SYNTHETIC`: SES con (a), y SES y TSB con (b) y (c). Ninguno se promueve sin G2 (*holdout*) y G3 (aprobación),
+  que siguen sin autorizar.
+- **Sensibilidad de cadencia:** con reoptimización semanal, unidades faltantes de TSB 3 973, Croston 4 025 y Holt
+  5 658 frente a 3 882; ninguno cumple el +2 %. Huella del detalle `28ce7c4f…`; mismo comando del informe.
+- **Sensibilidad del umbral de segmento:** el segmento intermitente tiene en promedio 10 series por corte.
+  - Con un umbral de 9 no cambia ningún resultado.
+  - Con 11 cambian 7 de 165 resultados (Holt y Holt-Winters pasan a cumplir el criterio por segmento), pero ningún
+    veredicto, porque esos modelos fallan otros criterios.

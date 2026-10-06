@@ -1,6 +1,6 @@
 # 13 — Estrategia de testing
 
-**Estado:** Versión 1.0 — Etapa 0 (estrategia, **no implementada**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §14, capas de prueba de la Etapa 2; §§1–13 no cambian · **Versión 1.3** (2026-10-01) — §3.1: aclaración de `InvalidInputError` y excepción de `on_hand < 0` para U1 (`DT-052`) · **Versión 1.4** (2026-10-01) — §3.1: sin monotonía global del punto de reorden frente al lead time en U1 (`DT-054`) · **Versión 1.5** (2026-10-01) — §14: dónde viven las suites de U2 (`DT-055`) · **Versión 1.6** (2026-10-03) — §14: pruebas exigibles de U4 (autorizada, no implementada; `DT-058` a `DT-063`) · **Versión 1.7** (2026-10-03) — §14: pruebas exigibles de U5 (autorizada, no implementada; `DT-064` a `DT-067`) y rutas públicas de la capa API · **Versión 1.8** (2026-10-03) — §14: U5 implementada; registro de sus suites · **Versión 1.9** (2026-10-04) — §14: pruebas exigibles de U6 (autorizada, no implementada; `DT-068` y `DT-069`) · **Versión 1.10** (2026-10-04) — §14: U6 implementada; registro de sus suites · **Versión 1.11** (2026-10-05) — §14: capa «Interfaz» de la Fase 7 (autorizada, no implementada; `DT-070`) · **Versión 1.12** (2026-10-05) — §14: capa «Interfaz» implementada (148 pruebas) · **Versión 1.13** (2026-10-05) — §6 y §14: capa ML de la Fase 5 (decisiones `DT-071` a `DT-085`, no autorizada) · **Versión 1.14** (2026-10-05) — §6: los cortes de evaluación consecutivos se solapan; §14: F5a implementada, registro de su suite y excepción de dependencias de sus pruebas · **Versión 1.15** (2026-10-05) — §14: 57 pruebas de F5a (determinismo y tamaño del JSON resumido) · **Versión 1.16** (2026-10-05) — §14: F5b implementada; 81 pruebas de `ml/` y segunda excepción de paridad con U4 · **Versión 1.17** (2026-10-06) — §14: F5c implementada; 121 pruebas de `ml/`
+**Estado:** Versión 1.0 — Etapa 0 (estrategia, **no implementada**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §14, capas de prueba de la Etapa 2; §§1–13 no cambian · **Versión 1.3** (2026-10-01) — §3.1: aclaración de `InvalidInputError` y excepción de `on_hand < 0` para U1 (`DT-052`) · **Versión 1.4** (2026-10-01) — §3.1: sin monotonía global del punto de reorden frente al lead time en U1 (`DT-054`) · **Versión 1.5** (2026-10-01) — §14: dónde viven las suites de U2 (`DT-055`) · **Versión 1.6** (2026-10-03) — §14: pruebas exigibles de U4 (autorizada, no implementada; `DT-058` a `DT-063`) · **Versión 1.7** (2026-10-03) — §14: pruebas exigibles de U5 (autorizada, no implementada; `DT-064` a `DT-067`) y rutas públicas de la capa API · **Versión 1.8** (2026-10-03) — §14: U5 implementada; registro de sus suites · **Versión 1.9** (2026-10-04) — §14: pruebas exigibles de U6 (autorizada, no implementada; `DT-068` y `DT-069`) · **Versión 1.10** (2026-10-04) — §14: U6 implementada; registro de sus suites · **Versión 1.11** (2026-10-05) — §14: capa «Interfaz» de la Fase 7 (autorizada, no implementada; `DT-070`) · **Versión 1.12** (2026-10-05) — §14: capa «Interfaz» implementada (148 pruebas) · **Versión 1.13** (2026-10-05) — §6 y §14: capa ML de la Fase 5 (decisiones `DT-071` a `DT-085`, no autorizada) · **Versión 1.14** (2026-10-05) — §6: los cortes de evaluación consecutivos se solapan; §14: F5a implementada, registro de su suite y excepción de dependencias de sus pruebas · **Versión 1.15** (2026-10-05) — §14: 57 pruebas de F5a (determinismo y tamaño del JSON resumido) · **Versión 1.16** (2026-10-05) — §14: F5b implementada; 81 pruebas de `ml/` y segunda excepción de paridad con U4 · **Versión 1.17** (2026-10-06) — §14: F5c implementada; 121 pruebas de `ml/` · **Versión 1.18** (2026-10-06) — §14: revisión de F5c; 129 pruebas de `ml/`
 
 ---
 
@@ -276,6 +276,16 @@ Sus pruebas (121 en total en `ml/tests`) cubren:
 - la reoptimización cada 4 decisiones;
 - la reproducibilidad con 1 y 2 procesos;
 - la **paridad con F5a y F5b**: sus archivos de detalle recalculados desde F5c tienen la misma huella.
+
+*Revisión de F5c (2026-10-06):* 8 pruebas más (129 en total). Cubren:
+- la referencia bajo la misma estrategia;
+- las filas «NO EVALUADO»;
+- el veredicto, que ignora las filas informativas;
+- SES en la tabla;
+- las tablas por estrategia;
+- la sensibilidad de cadencia con la misma media móvil;
+- los umbrales de segmento 9 y 11;
+- la reutilización de la caché con `--reuse-cache`.
 
 **Reglas de ejecución:** `unittest`, que es la convención vigente del repositorio (instalar `pytest`
 no está autorizado). Las pruebas que necesitan PostgreSQL forman una **suite separada** que se ejecuta

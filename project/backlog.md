@@ -1,6 +1,6 @@
 # Backlog inicial (Scrum)
 
-**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — correspondencia con las unidades de la Etapa 2 · **Versión 1.3** (2026-10-04) — US-048: interpretación de U6 (`DT-068`) · **Versión 1.4** (2026-10-05) — notas de la Fase 5 en US-050 a US-058 (`DT-071` a `DT-085`; no autorizada) · **Versión 1.5** (2026-10-05) — US-058: F5b autorizada (`DT-088`) · **Versión 1.6** (2026-10-05) — US-050 a US-058 tras G1 (`DT-089` a `DT-091`): cerradas o pendientes · **Versión 1.7** (2026-10-06) — F5c autorizada (`DT-092`): notas en US-051 a US-055 y US-058 · **Versión 1.8** (2026-10-06) — F5c implementada: notas en US-054, US-055 y US-058
+**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — correspondencia con las unidades de la Etapa 2 · **Versión 1.3** (2026-10-04) — US-048: interpretación de U6 (`DT-068`) · **Versión 1.4** (2026-10-05) — notas de la Fase 5 en US-050 a US-058 (`DT-071` a `DT-085`; no autorizada) · **Versión 1.5** (2026-10-05) — US-058: F5b autorizada (`DT-088`) · **Versión 1.6** (2026-10-05) — US-050 a US-058 tras G1 (`DT-089` a `DT-091`): cerradas o pendientes · **Versión 1.7** (2026-10-06) — F5c autorizada (`DT-092`): notas en US-051 a US-055 y US-058 · **Versión 1.8** (2026-10-06) — F5c implementada: notas en US-054, US-055 y US-058 · **Versión 1.9** (2026-10-06) — revisión de F5c: corrección en US-054 (SES cumple los criterios)
 
 Backlog organizado en **Épicas → Historias de usuario → Tareas**.
 
@@ -290,7 +290,7 @@ función**) · `T-040.4` punto de reorden · `T-040.5` pruebas exhaustivas
 - *Fase 5 (2026-10-05):* niveles 1–2 en F5c; criterios en `DT-079` (valores `OPEN` hasta G1); métrica primaria según `DT-078`.
 - *G1 (2026-10-05):* **pendiente** (F5c, sin autorizar). Métrica primaria MASE (`DT-090`); valores de aceptación provisionales en `DT-091`; la banda de sesgo sigue sin valor.
 - *F5c (2026-10-06):* en curso (`DT-092`): Holt, Holt-Winters, Croston, SBA y TSB evaluados en Nivel 1 y Nivel 2 con los criterios de `DT-091` y `DT-093`, **sin promoción**.
-- *F5c (2026-10-06, implementada, pendiente de revisión):* Nivel 1 y Nivel 2 de los cinco candidatos y tabla automática de criterios en `docs/reports/fase5-f5c-candidatos-sintetico.md`; ninguno cumple el criterio de unidades faltantes de Nivel 2 frente a la media móvil 13 (`SYNTHETIC`). Sin promoción.
+- *F5c (2026-10-06, implementada, pendiente de revisión):* Nivel 1 y Nivel 2 de los cinco candidatos y tabla automática de criterios en `docs/reports/fase5-f5c-candidatos-sintetico.md`; ninguno de los cinco cumple el criterio de unidades faltantes de Nivel 2 frente a la media móvil 13 (`SYNTHETIC`). Sin promoción. *(Corregido en la revisión del 2026-10-06: SES cumple todos los criterios; con (b) y (c), también TSB.)*
 
 ### US-055 — Cuantificación de la incertidumbre
 - **Prioridad:** P0
