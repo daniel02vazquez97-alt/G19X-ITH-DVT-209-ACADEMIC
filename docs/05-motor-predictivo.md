@@ -1,6 +1,6 @@
 # 05 — Motor predictivo (estrategia de Machine Learning)
 
-**Estado:** Versión 1.0 — Etapa 0 (estrategia, no implementada) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §19, contrato de `ForecastProvider` para la Etapa 2 (`DT-046`); §§1–18 no cambian · **Versión 1.3** (2026-10-02) — `DT-046` `ACEPTADA`; §19.8 y §19.9, decisiones y criterios de cierre de U3 (`DT-056`, `DT-057`); nota de V1 en §6 · **Versión 1.4** (2026-10-02) — §19.10, registro de la implementación de U3; ninguna decisión cambia · **Versión 1.5** (2026-10-03) — `DT-P21` cerrada por `DT-058`: frecuencia de §2 leída como una ejecución de forecast por corte de recomendación; §19.7 · **Versión 1.6** (2026-10-05) — §20: protocolo y decisiones de la Fase 5 (`DT-071` a `DT-085`); notas en §2, §6, §8, §9.1, §10, §11 y §19.8. Fase 5 **no autorizada** (condiciones en §20.4) · **Versión 1.7** (2026-10-05) — §20.3: población por corte a la fecha (`DT-087`) y cortes no independientes (nota de `DT-079`) · **Versión 1.8** (2026-10-05) — §20.3: segmentación sobre la vida activa de cada serie (nota de `DT-077`) · **Versión 1.9** (2026-10-05) — §20: F5b autorizada (`DT-088`); OD-S1 a OD-S4 `ACEPTADA` · **Versión 1.10** (2026-10-05) — §20.1: F5b implementada, pendiente de revisión
+**Estado:** Versión 1.0 — Etapa 0 (estrategia, no implementada) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §19, contrato de `ForecastProvider` para la Etapa 2 (`DT-046`); §§1–18 no cambian · **Versión 1.3** (2026-10-02) — `DT-046` `ACEPTADA`; §19.8 y §19.9, decisiones y criterios de cierre de U3 (`DT-056`, `DT-057`); nota de V1 en §6 · **Versión 1.4** (2026-10-02) — §19.10, registro de la implementación de U3; ninguna decisión cambia · **Versión 1.5** (2026-10-03) — `DT-P21` cerrada por `DT-058`: frecuencia de §2 leída como una ejecución de forecast por corte de recomendación; §19.7 · **Versión 1.6** (2026-10-05) — §20: protocolo y decisiones de la Fase 5 (`DT-071` a `DT-085`); notas en §2, §6, §8, §9.1, §10, §11 y §19.8. Fase 5 **no autorizada** (condiciones en §20.4) · **Versión 1.7** (2026-10-05) — §20.3: población por corte a la fecha (`DT-087`) y cortes no independientes (nota de `DT-079`) · **Versión 1.8** (2026-10-05) — §20.3: segmentación sobre la vida activa de cada serie (nota de `DT-077`) · **Versión 1.9** (2026-10-05) — §20: F5b autorizada (`DT-088`); OD-S1 a OD-S4 `ACEPTADA` · **Versión 1.10** (2026-10-05) — §20.1: F5b implementada, pendiente de revisión · **Versión 1.11** (2026-10-05) — §20.3: criterio serie-corte de `DT-078`; §20.4: OD-S1 a OD-S4 cerradas
 
 > **No se implementa ningún modelo en esta etapa.** Este documento fija la estrategia, las reglas de
 > evaluación y los criterios de aceptación **antes** de entrenar, para que la evaluación no se ajuste
@@ -723,6 +723,9 @@ definidas en `DT-071`.
   de `L + R` y dentro de `h = 1`.
 - **Cortes no independientes:** las ventanas de evaluación de cortes consecutivos se solapan (14 semanas cada 4);
   ver la nota de `DT-079`.
+- **Criterio serie-corte de `DT-078`:** cada serie-corte tiene un único error agregado por horizonte, así que MASE,
+  RMSSE y WAPE ordenan las variantes igual por construcción y ese criterio no puede discriminar entre ellas (nota de
+  `DT-078`).
 - **Segmentación (`DT-077`):** el «19 intermitentes» de la medición orientativa era un artefacto de contar como cero
   las semanas posteriores a `valid_to`; la segmentación definitiva se calcula sobre la vida activa de cada serie
   (nota de `DT-077`).
@@ -733,7 +736,7 @@ definidas en `DT-071`.
 
 | Decisión | Contenido | Cuándo |
 |---|---|---|
-| OD-S1 a OD-S4 (`DT-080`) | **`ACEPTADA`** el 2026-10-05 (`DT-088`). Queda pendiente la discrepancia entre el punto 7 de `DT-080` (`expected_on`) y OD-S1 («llegadas reales») para las líneas abiertas al primer corte | Antes de cerrar F5b |
+| OD-S1 a OD-S4 (`DT-080`) | **`ACEPTADA`** el 2026-10-05 (`DT-088`), con las decisiones de cierre de F5b: las órdenes abiertas al primer corte llegan en su `expected_on` (las vencidas, el día siguiente al corte) | Cerrada |
 | `DT-077` | Umbrales de segmentación y criterio de estacionalidad | G1 |
 | `DT-079` / `DT-P04` | 2/3 de los cortes, **5 %**, banda de sesgo, tolerancia de cobertura y tolerancia de «igual» en el Nivel 2 | G1 |
 | `DT-078` / `DT-021` | Elección de la métrica primaria con el procedimiento aceptado | G1 |
