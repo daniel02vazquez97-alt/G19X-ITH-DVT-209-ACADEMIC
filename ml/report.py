@@ -112,7 +112,9 @@ def _git(*args: str) -> str | None:
 def run_metadata(dataset_version: str, data_origin: str, generated_on: _dt.date, command: str = "") -> dict:
     """Traceability of the run (`DT-073`): date, dataset, code versions, commit and Python (outside the hash)."""
     commit = _git("rev-parse", "HEAD")
-    status = _git("status", "--porcelain", "--untracked-files=no")
+    # Tracked changes against HEAD, ignoring CR at end of line: a Windows working tree checked out with
+    # CRLF is not a change (the repository stores LF).
+    status = _git("diff", "--ignore-cr-at-eol", "--name-only", "HEAD")
     return {
         "generated_on": generated_on.isoformat(),
         "command": command,
