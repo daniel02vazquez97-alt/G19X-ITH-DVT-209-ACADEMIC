@@ -38,6 +38,7 @@ READ_FILES = (
     "purchase_orders.csv",
     "purchase_order_items.csv",
     "purchase_order_receipts.csv",
+    "inventory_movements.csv",  # F5b: on_hand at the first cut (DT-080 point 5)
 )
 FORBIDDEN_FILES = frozenset({"demand.csv"})
 
@@ -248,3 +249,105 @@ def _lead_time_observations(base: Path, limit: _dt.date) -> tuple[LeadTimeObserv
 def daily_window(first: _dt.date, days: int) -> tuple[_dt.date, _dt.date]:
     """``[first, first + days − 1]`` as an inclusive pair."""
     return first, first + _ONE_DAY * (days - 1)
+
+
+# --- F5b: initial state of the Level 2 simulation (DT-080 point 5, OD-S1) ---------------------------
+
+
+@dataclass(frozen=True, slots=True)
+class ExogenousLine:
+    """A real purchase-order line open at the first cut: an exogenous event, identical in every branch.
+
+    ``received_at_cut`` counts the receipts dated ``≤ cut``; ``receipts_after`` lists the later real receipts
+    up to the readable limit (holdout excluded).
+    """
+
+    purchase_order_id: int
+    item_id: int
+    product_id: int
+    location_id: int
+    supplier_id: int
+    issued_on: _dt.date
+    expected_on: _dt.date
+    quantity_ordered: Decimal
+    received_at_cut: Decimal
+    receipts_after: tuple[tuple[_dt.date, Decimal], ...]
+
+    @property
+    def pending_at_cut(self) -> Decimal:
+        return self.quantity_ordered - self.received_at_cut
+
+
+def on_hand_at(directory: Path | str, cut: _dt.date) -> dict[SeriesKey, Decimal]:
+    """``on_hand`` at the close of ``cut``: the sum of the movements dated ``≤ cut`` (`DT-038`, `DT-080` point 5)."""
+    check_readable(cut)
+    totals: dict[SeriesKey, Decimal] = defaultdict(Decimal)
+    for row in _open_csv(Path(directory) / "inventory_movements.csv"):
+        day = _utc_date(row["occurred_at"])
+        if day > LAST_READABLE_DATE:
+            continue  # holdout: discarded on parse, never kept
+        if day <= cut:
+            totals[(int(row["product_id"]), int(row["location_id"]))] += Decimal(row["quantity"])
+    return dict(sorted(totals.items()))
+
+
+def open_lines_at(directory: Path | str, cut: _dt.date) -> tuple[ExogenousLine, ...]:
+    """Lines issued ``≤ cut``, not closed by ``cut`` and with receipts ``≤ cut`` below the ordered quantity.
+
+    The header ``status`` is a snapshot of the dataset end and is not read; ``closed_at`` (receipt completion
+    or cancellation) is compared with ``cut``. Rows after the readable limit are discarded on parse.
+    """
+    check_readable(cut)
+    base = Path(directory)
+    headers = {}
+    for row in _open_csv(base / "purchase_orders.csv"):
+        issued = _utc_date(row["issued_at"])
+        if issued > cut:
+            continue  # real orders issued after the first cut are discarded (OD-S1)
+        closed = _utc_date(row["closed_at"]) if row["closed_at"] else None
+        if closed is not None and closed <= cut:
+            continue
+        headers[int(row["id"])] = (int(row["supplier_id"]), int(row["location_id"]), issued, _utc_date(row["expected_at"]))
+    receipts: dict[int, list[tuple[_dt.date, Decimal]]] = defaultdict(list)
+    for row in _open_csv(base / "purchase_order_receipts.csv"):
+        day = _utc_date(row["received_at"])
+        if day > LAST_READABLE_DATE:
+            continue  # holdout: discarded on parse, never kept
+        receipts[int(row["purchase_order_item_id"])].append((day, Decimal(row["quantity_received"])))
+    lines = []
+    for row in _open_csv(base / "purchase_order_items.csv"):
+        order = int(row["purchase_order_id"])
+        if order not in headers:
+            continue
+        supplier, location, issued, header_expected = headers[order]
+        item = int(row["id"])
+        ordered = Decimal(row["quantity_ordered"])
+        got = sum((q for d, q in receipts.get(item, []) if d <= cut), Decimal(0))
+        if got >= ordered:
+            continue
+        after = tuple(sorted((d, q) for d, q in receipts.get(item, []) if d > cut))
+        lines.append(
+            ExogenousLine(
+                purchase_order_id=order,
+                item_id=item,
+                product_id=int(row["product_id"]),
+                location_id=location,
+                supplier_id=supplier,
+                issued_on=issued,
+                expected_on=_utc_date(row["expected_at"]) if row["expected_at"] else header_expected,
+                quantity_ordered=ordered,
+                received_at_cut=got,
+                receipts_after=after,
+            )
+        )
+    lines.sort(key=lambda line: (line.purchase_order_id, line.item_id))
+    return tuple(lines)
+
+
+def preferred_unit_costs(directory: Path | str) -> dict[int, Decimal]:
+    """``unit_cost`` of the active and preferred relation of each product (inventory value, `DT-080` point 9)."""
+    costs = {}
+    for row in _open_csv(Path(directory) / "product_suppliers.csv"):
+        if row["is_active"] == "true" and row["is_preferred"] == "true" and row.get("unit_cost"):
+            costs[int(row["product_id"])] = Decimal(row["unit_cost"])
+    return dict(sorted(costs.items()))

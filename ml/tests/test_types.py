@@ -78,9 +78,12 @@ class NoFloatAcrossTheBoundaryTest(unittest.TestCase):
 
 class DependencyRulesTest(unittest.TestCase):
     ALLOWED_APP = ("app.forecasting", "app.supply_engine")
-    #: The only allowed import of app.runs: the pure U4 adapter, in the parity test of the lead-time rule
-    #: (docs/13 §14). The ml package itself never imports app.runs (docs/03 §16.2).
-    RUNS_EXCEPTION = ("tests/test_data.py", "app.runs.recommendation_inputs")
+    #: The only allowed imports of app.runs: the pure U4 adapter, in the parity tests of the lead-time rule (F5a)
+    #: and of the engine inputs (F5b) (docs/13 §14). The ml package itself never imports app.runs (docs/03 §16.2).
+    RUNS_EXCEPTIONS = (
+        ("tests/test_data.py", "app.runs.recommendation_inputs"),
+        ("tests/test_sim_parity.py", "app.runs.recommendation_inputs"),
+    )
 
     def _imports(self, source: Path) -> list[str]:
         names = []
@@ -98,12 +101,12 @@ class DependencyRulesTest(unittest.TestCase):
             for name in self._imports(source):
                 if name == "app.runs" or name.startswith("app.runs."):
                     found.append((relative, name))
-        self.assertEqual(found, [self.RUNS_EXCEPTION])
+        self.assertEqual(found, list(self.RUNS_EXCEPTIONS))
 
     def test_ml_imports_only_stdlib_and_the_two_libraries(self) -> None:
         stdlib = set(sys.stdlib_module_names)
         for source in sorted(ML_DIR.rglob("*.py")):
-            if source.relative_to(ML_DIR).as_posix() == self.RUNS_EXCEPTION[0]:
+            if source.relative_to(ML_DIR).as_posix() in {path for path, _ in self.RUNS_EXCEPTIONS}:
                 continue
             tree = ast.parse(source.read_text(encoding="utf-8"))
             for node in ast.walk(tree):

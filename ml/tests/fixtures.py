@@ -8,7 +8,10 @@ Products (one location):
 * 4 — inactive, valid until 2024-06-30 (discontinued; the snapshot rule excludes it everywhere).
 
 Rows after the holdout limit (2025-09-24) exist on purpose: the loader must discard them.
-``demand.csv`` exists with content that cannot be parsed: reading it would fail loudly.
+By default ``demand.csv`` exists with content that cannot be parsed: reading it would fail loudly (F5a never
+reads it). F5b fixtures pass ``latent`` to write a valid latent demand; rows after the limit carry values that
+cannot be parsed, so only a loader that discards them on parse works. ``inventory_movements.csv`` holds an
+opening balance, the consumption issues and the receipts (plus an unparsable row after the limit).
 """
 
 from __future__ import annotations
@@ -21,6 +24,8 @@ from collections.abc import Callable
 from pathlib import Path
 
 START = _dt.date(2023, 1, 1)
+HOLDOUT_LIMIT = _dt.date(2025, 9, 24)
+FIRST_SIM_CUT = _dt.date(2024, 3, 27)
 END = _dt.date(2025, 12, 31)
 ONE_DAY = _dt.timedelta(days=1)
 
@@ -71,12 +76,25 @@ def write_dataset(
     quantity: Callable[[int, _dt.date], int] = default_quantity,
     stockout: Callable[[int, _dt.date], bool] = default_stockout,
     orders: list | None = None,
+    latent: Callable[[int, _dt.date], int] | None = None,
+    opening: int = 20_000,
+    on_hand_at_first_cut: int | None = None,
 ) -> Path:
     directory.mkdir(parents=True, exist_ok=True)
     (directory / "manifest.json").write_text(
         json.dumps({"dataset_version": "ds-fixture", "data_origin": "SYNTHETIC"}), encoding="utf-8"
     )
-    (directory / "demand.csv").write_text("NOT A CSV THAT F5a MAY READ\x00", encoding="utf-8")
+    if latent is None:
+        (directory / "demand.csv").write_text("NOT A CSV THAT F5a MAY READ\x00", encoding="utf-8")
+    else:
+        demand_rows = []
+        for p, (_active, first, last) in PRODUCTS.items():
+            day = first
+            while day <= (last or END):
+                value = latent(p, day) if day <= HOLDOUT_LIMIT else "UNREADABLE-AFTER-THE-LIMIT"
+                demand_rows.append([len(demand_rows) + 1, p, 1, day.isoformat(), value, "SYNTHETIC"])
+                day += ONE_DAY
+        _write(directory / "demand.csv", ["id", "product_id", "location_id", "occurred_on", "quantity", "data_origin"], demand_rows)
     _write(directory / "locations.csv", ["id", "code", "name", "type", "is_active", "data_origin"],
            [[1, "LOC-001", "L1", "MAIN_WAREHOUSE", "true", "SYNTHETIC"]])
     _write(
@@ -105,12 +123,19 @@ def write_dataset(
          [4, 4, 2, 7, 0, 1, 1, "false", "false", "SYNTHETIC"]],
     )
     orders = DEFAULT_ORDERS if orders is None else orders
-    _write(directory / "purchase_orders.csv", ["id", "supplier_id", "location_id", "status", "issued_at", "data_origin"],
-           [[o, s, 1, "RECEIVED", f"{issued}T00:00:00Z", "SYNTHETIC"] for o, s, issued, _r, _q, _p in orders])
+
+    def closed_at(recs: list, ordered: int) -> str:
+        return f"{max(d for d, _ in recs)}T00:00:00Z" if sum(q for _, q in recs) >= ordered else ""
+
+    _write(directory / "purchase_orders.csv",
+           ["id", "supplier_id", "location_id", "status", "issued_at", "expected_at", "closed_at", "data_origin"],
+           [[o, s, 1, "RECEIVED", f"{issued}T00:00:00Z",
+             f"{(_dt.date.fromisoformat(issued) + 10 * ONE_DAY).isoformat()}T00:00:00Z", closed_at(r, q), "SYNTHETIC"]
+            for o, s, issued, r, q, _p in orders])
     # The snapshot column quantity_received is deliberately wrong: F5a must not read it.
     _write(directory / "purchase_order_items.csv",
-           ["id", "purchase_order_id", "product_id", "quantity_ordered", "quantity_received", "data_origin"],
-           [[o, o, p, q, 999999, "SYNTHETIC"] for o, _s, _i, _r, q, p in orders])
+           ["id", "purchase_order_id", "product_id", "quantity_ordered", "quantity_received", "expected_at", "data_origin"],
+           [[o, o, p, q, 999999, "", "SYNTHETIC"] for o, _s, _i, _r, q, p in orders])
     receipts = []
     rid = 1
     for o, _s, _i, recs, _q, _p in orders:
@@ -119,6 +144,22 @@ def write_dataset(
             rid += 1
     _write(directory / "purchase_order_receipts.csv",
            ["id", "purchase_order_item_id", "received_at", "quantity_received", "quality_rejected", "data_origin"], receipts)
+    movements = []
+    for p, (_active, first, last) in PRODUCTS.items():
+        balance = opening
+        if on_hand_at_first_cut is not None:  # opening chosen so that on_hand at the first F5b cut is the target
+            used = sum(int(r[4]) for r in rows if r[1] == p and r[3] <= FIRST_SIM_CUT.isoformat())
+            got = sum(q for _o, _s, _i, recs, _q, pp in orders for d, q in recs if pp == p and d <= FIRST_SIM_CUT.isoformat())
+            balance = used - got + on_hand_at_first_cut
+        movements.append([len(movements) + 1, p, 1, "ADJUSTMENT", balance, f"{first.isoformat()}T00:00:00Z"])
+    for row in rows:
+        movements.append([len(movements) + 1, row[1], 1, "ISSUE", -int(row[4]), f"{row[3]}T18:00:00Z"])
+    for o, _s, _i, recs, _q, p in orders:
+        for day, qty in recs:
+            movements.append([len(movements) + 1, p, 1, "RECEIPT", qty, f"{day}T06:00:00Z"])
+    movements.append([len(movements) + 1, 1, 1, "ADJUSTMENT", "UNREADABLE-AFTER-THE-LIMIT", "2025-11-01T00:00:00Z"])
+    _write(directory / "inventory_movements.csv",
+           ["id", "product_id", "location_id", "movement_type", "quantity", "occurred_at"], movements)
     return directory
 
 
