@@ -10,14 +10,14 @@
 | Campo | Valor |
 |---|---|
 | Fecha | 2026-10-06 |
-| Comando | `PYTHONPATH=backend python -m ml candidates --data data/synthetic/output --out ml/out --report docs/reports/fase5-f5c-candidatos-sintetico.md --generated-on 2026-10-06 --workers 2 --cache-dir ml/out/f5c-cache --time-budget 140` |
+| Comando | `PYTHONPATH=backend python -m ml candidates --data data/synthetic/output --out ml/out --report docs/reports/fase5-f5c-candidatos-sintetico.md --generated-on 2026-10-06 --workers 2 --reuse-cache ml/out/f5c-cache/17e2ff08bfbc635f` |
 | Dataset | `ds-6c8ad65b4999` (SYNTHETIC) |
 | Código | `ml` 0.2.0; candidatos 0.1.0-provisional |
 | Motor U1 | 0.1.0; versiones vistas en las decisiones: 0.1.0 |
-| Commit | `f23ddb61f4bb8ce435241024bd7451cc0d2d812c` (cambios sin commit en archivos versionados: False) |
+| Commit | `cd3630da845aa6ce2ffaace297a67cd92bd1f57b` (cambios sin commit en archivos versionados: False) |
 | Python | 3.11.16 |
 | Aleatoriedad | none (no randomness) |
-| `results_sha256` | `df9f8753679b10b2096c39ae86bf1c576204d5c67f232b2daecb506f86114751` |
+| `results_sha256` | `1ce5ea29580f8c6fdb2b1f029cef0292f73b55385c25d19d988bb696c03fb54d` |
 
 ## 2. Criterios y valores provisionales
 
@@ -245,9 +245,29 @@ Spearman entre modelos por corte (métrica agregada frente a unidades faltantes)
 | sin Holt-Winters | L + R | RMSSE | 0.645 | 0.095 | 0.994 | 17 |
 | sin Holt-Winters | L + R | WAPE | 0.588 | -0.095 | 0.929 | 17 |
 
-## 7. Criterios por candidato (cumple / no cumple, sin recomendación)
+## 7. Criterios por modelo (cumple / no cumple, sin recomendación)
 
-Automático, frente a la media móvil de 13 semanas. «Informativo»: periodo sin calentamiento, no decide.
+Automático, frente a la media móvil de 13 semanas con la estrategia (a). Incluye SES, el candidato más fuerte de `DT-089`. «Informativo»: periodo sin calentamiento, no decide.
+
+**Cumplen todos los criterios que deciden:** SES (provisional). Es un hecho del cálculo, no una recomendación: sin G2 ni G3 no se promueve nada (`DT-084`).
+
+### SES (provisional)
+
+| Criterio | Valor | Umbral | Resultado |
+|---|---|---|---|
+| N1: mejora agregada de MASE en L + R | candidate: 0.669; comparable_cuts: 17; official_baseline: 0.800 | candidato < baseline oficial | CUMPLE |
+| N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5) | comparable_cuts: 17; improved: 17; needed: 12 | ≥ 12 de 17 | CUMPLE |
+| N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE | intermitente: -0.059; suave: -0.169 | cambio relativo ≤ 5% en segmentos que bloquean | CUMPLE |
+| Sesgo relativo medio en L + R dentro de ±0,10 | candidate: -0.003; official_baseline: 0.002 | valor absoluto ≤ 0.1 | CUMPLE |
+| Sesgo por segmento de ≥ 10 productos no peor en más de 0,05 | intermitente: -0.010; suave: 0.001 | aumento del valor absoluto del sesgo ≤ 0.05 | CUMPLE |
+| N2 (FULL): unidades faltantes no peores en más de un 2 % | candidate: 3,860.000; official_baseline: 3,882.000; relative: -0.006 | ≤ 3,959.6 | CUMPLE |
+| N2 (FULL): fill rate no peor en más de 0,2 puntos | candidate: 0.994; official_baseline: 0.994 | ≥ 0.9923 | CUMPLE |
+| N2 (FULL): inventario medio como máximo +5 % | candidate: 17,892.927; official_baseline: 18,062.866; relative: 0.991 | ≤ 1.05 × baseline | CUMPLE |
+| N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 % (informativo) | candidate: 1,180.000; official_baseline: 1,166.000; relative: 0.012 | ≤ 1,189.3 | CUMPLE |
+| N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos (informativo) | candidate: 0.998; official_baseline: 0.998 | ≥ 0.9961 | CUMPLE |
+| N2 (NO_WARMUP): inventario medio como máximo +5 % (informativo) | candidate: 18,097.982; official_baseline: 18,280.539; relative: 0.990 | ≤ 1.05 × baseline | CUMPLE |
+
+Veredicto: cumple todos los criterios que deciden (sin recomendación ni promoción).
 
 ### Holt
 
@@ -265,6 +285,8 @@ Automático, frente a la media móvil de 13 semanas. «Informativo»: periodo si
 | N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos (informativo) | candidate: 0.995; official_baseline: 0.998 | ≥ 0.9961 | NO CUMPLE |
 | N2 (NO_WARMUP): inventario medio como máximo +5 % (informativo) | candidate: 18,895.010; official_baseline: 18,280.539; relative: 1.034 | ≤ 1.05 × baseline | CUMPLE |
 
+Veredicto: no cumple: N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE; Sesgo por segmento de ≥ 10 productos no peor en más de 0,05; N2 (FULL): unidades faltantes no peores en más de un 2 %; N2 (FULL): fill rate no peor en más de 0,2 puntos.
+
 ### Holt-Winters
 
 | Criterio | Valor | Umbral | Resultado |
@@ -280,6 +302,8 @@ Automático, frente a la media móvil de 13 semanas. «Informativo»: periodo si
 | N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 % (informativo) | candidate: 1,502.000; official_baseline: 1,166.000; relative: 0.288 | ≤ 1,189.3 | NO CUMPLE |
 | N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos (informativo) | candidate: 0.998; official_baseline: 0.998 | ≥ 0.9961 | CUMPLE |
 | N2 (NO_WARMUP): inventario medio como máximo +5 % (informativo) | candidate: 18,518.100; official_baseline: 18,280.539; relative: 1.013 | ≤ 1.05 × baseline | CUMPLE |
+
+Veredicto: no cumple: N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE; N2 (FULL): unidades faltantes no peores en más de un 2 %.
 
 ### Croston
 
@@ -297,6 +321,8 @@ Automático, frente a la media móvil de 13 semanas. «Informativo»: periodo si
 | N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos (informativo) | candidate: 0.998; official_baseline: 0.998 | ≥ 0.9961 | CUMPLE |
 | N2 (NO_WARMUP): inventario medio como máximo +5 % (informativo) | candidate: 17,972.396; official_baseline: 18,280.539; relative: 0.983 | ≤ 1.05 × baseline | CUMPLE |
 
+Veredicto: no cumple: N2 (FULL): unidades faltantes no peores en más de un 2 %.
+
 ### SBA
 
 | Criterio | Valor | Umbral | Resultado |
@@ -312,6 +338,8 @@ Automático, frente a la media móvil de 13 semanas. «Informativo»: periodo si
 | N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 % (informativo) | candidate: 1,980.000; official_baseline: 1,166.000; relative: 0.698 | ≤ 1,189.3 | NO CUMPLE |
 | N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos (informativo) | candidate: 0.997; official_baseline: 0.998 | ≥ 0.9961 | CUMPLE |
 | N2 (NO_WARMUP): inventario medio como máximo +5 % (informativo) | candidate: 15,334.820; official_baseline: 18,280.539; relative: 0.839 | ≤ 1.05 × baseline | CUMPLE |
+
+Veredicto: no cumple: N1: mejora agregada de MASE en L + R; N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5); N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE; N2 (FULL): unidades faltantes no peores en más de un 2 %.
 
 ### TSB
 
@@ -329,7 +357,29 @@ Automático, frente a la media móvil de 13 semanas. «Informativo»: periodo si
 | N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos (informativo) | candidate: 0.998; official_baseline: 0.998 | ≥ 0.9961 | CUMPLE |
 | N2 (NO_WARMUP): inventario medio como máximo +5 % (informativo) | candidate: 17,973.273; official_baseline: 18,280.539; relative: 0.983 | ≤ 1.05 × baseline | CUMPLE |
 
-## 8. Estudio de `DT-011` (desabasto)
+Veredicto: no cumple: N2 (FULL): unidades faltantes no peores en más de un 2 %.
+
+## 8. Criterios por estrategia de `DT-011`
+
+Los mismos criterios para cada modelo estudiado bajo cada estrategia, con la media móvil de 13 semanas **bajo la misma estrategia** como referencia. Nivel 1 del estudio de `DT-011` (consumo observado, sin las series de desabasto extremo); Nivel 2 de las ramas «(b)» y «(c)» de §5. C = cumple, **N** = no cumple, NC = no concluyente, NE = no evaluado. Sin recomendación.
+
+> **Posible sesgo de selección:** Holt-Winters entró al estudio por su Nivel 1 medido en solo 7 cortes comparables (semanas 104 a 128), frente a 17 de los demás.
+
+| Estrategia | Modelo | MASE `L + R` (modelo / media móvil) | Unidades faltantes (modelo / media móvil) | N1 agregado | N1 cortes | N1 segmentos | Sesgo | Sesgo por segmento | N2 faltantes | N2 *fill rate* | N2 inventario | Cumple todo |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| (a) | SES (provisional) | 0.669 / 0.800 | 3,860 / 3,882 | C | C | C | C | C | C | C | C | sí |
+| (a) | Holt-Winters | 0.643 / 0.787 | 4,218 / 3,882 | C | C | **N** | C | C | **N** | C | C | no |
+| (a) | TSB | 0.687 / 0.800 | 4,170 / 3,882 | C | C | C | C | C | **N** | C | C | no |
+| (b) | SES (provisional) | 0.604 / 0.771 | 3,187 / 3,314 | C | C | C | C | C | C | C | C | sí |
+| (b) | Holt-Winters | 0.587 / 0.758 | 3,493 / 3,314 | C | C | **N** | C | C | **N** | C | C | no |
+| (b) | TSB | 0.642 / 0.771 | 3,168 / 3,314 | C | C | C | C | C | C | C | C | sí |
+| (c) | SES (provisional) | 0.604 / 0.774 | 3,153 / 3,306 | C | C | C | C | C | C | C | C | sí |
+| (c) | Holt-Winters | 0.555 / 0.754 | 3,511 / 3,306 | C | C | **N** | C | **N** | **N** | C | C | no |
+| (c) | TSB | 0.645 / 0.774 | 3,173 / 3,306 | C | C | C | C | C | C | C | C | sí |
+
+Cumplen todos los criterios que deciden, por estrategia: (a) SES (provisional); (b) SES (provisional), TSB; (c) SES (provisional), TSB.
+
+## 9. Estudio de `DT-011` (desabasto)
 
 Estrategias de entrenamiento: (a) consumo tal cual; (b) excluir días con desabasto; (c) imputar días con desabasto. La verdad nunca es un valor imputado. Conjunto común de las tres estrategias de cada modelo; series con más del 50 % de días con desabasto aparte: 5 series (85 serie-cortes). **La comparación contra la demanda latente solo es posible con datos `SYNTHETIC`.**
 
@@ -436,7 +486,37 @@ Sustituciones en el estudio: Holt-Winters: 71, Holt-Winters (b): 26, Holt-Winter
 
 Nivel 2 de las estrategias: filas «(b)» y «(c)» de §5 (población completa).
 
-## 9. US-055: cobertura de los intervalos
+**Conclusión provisional del estudio** (revisión del responsable, 2026-10-06; solo con datos `SYNTHETIC`): las estrategias (b) y (c) reducen las unidades faltantes entre un 15 % y un 24 % en los modelos estudiados, con un inventario medio entre un 1,7 % y un 2,1 % mayor que el de la media móvil 13 con (a). Adoptar una en producción exige una unidad propia que cambie U3 y una DT nueva.
+
+**PROPUESTA del desarrollador** (pendiente de decisión del responsable): preferir (b). La diferencia con (c) está dentro del ruido, (b) no necesita un estimador con parámetros propios y la API ya expone `days_observed` y `stockout_days` por periodo.
+
+## 10. Sensibilidades
+
+### Cadencia de reoptimización
+
+Los candidatos reoptimizan cada 4 decisiones (`DT-093` punto 9). Aquí, Holt, Croston y TSB reoptimizan en cada decisión semanal, con la media móvil 13 en la misma simulación. Se calcula en el mismo comando de §1 (etapa «cadence»); huella del detalle: `28ce7c4f122519303398f7c5d36c4e3dd0a07c7ac7e4b2230106f40522fda9a6`. Media móvil idéntica a la de §5: sí.
+
+| Rama | Unidades faltantes | Relativo a media móvil | *Fill rate* | Inventario relativo | N2 faltantes | N2 *fill rate* | N2 inventario |
+|---|---|---|---|---|---|---|---|
+| media móvil 13 | 3,882 | +0.0% | 0.9943 | 1.000 | — | — | — |
+| Croston | 4,025 | +3.7% | 0.9941 | 0.985 | NO CUMPLE | CUMPLE | CUMPLE |
+| Holt | 5,658 | +45.7% | 0.9918 | 1.033 | NO CUMPLE | NO CUMPLE | CUMPLE |
+| TSB | 3,973 | +2.3% | 0.9942 | 0.985 | NO CUMPLE | CUMPLE | CUMPLE |
+
+Con reoptimización semanal cumplen los criterios de Nivel 2: ninguno.
+
+### Tamaño mínimo de segmento
+
+El segmento intermitente tiene en promedio 10 series por corte, justo en el umbral de `DT-091`. Cambios respecto al umbral de 10, sobre las tablas de §7 y §8:
+
+| Umbral | Resultados que cambian | Veredictos que cambian |
+|---|---|---|
+| 11 | 7 de 165 | ninguno |
+| 9 | 0 de 165 | ninguno |
+
+Con 11: Holt-Winters (§8, (a)), «N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE»: NO CUMPLE → CUMPLE; Holt (§7), «N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE»: NO CUMPLE → CUMPLE; Holt (§7), «Sesgo por segmento de ≥ 10 productos no peor en más de 0,05»: NO CUMPLE → CUMPLE; Holt-Winters (§7), «N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE»: NO CUMPLE → CUMPLE; Holt-Winters (§8, (b)), «N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE»: NO CUMPLE → CUMPLE; Holt-Winters (§8, (c)), «N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE»: NO CUMPLE → CUMPLE; Holt-Winters (§8, (c)), «Sesgo por segmento de ≥ 10 productos no peor en más de 0,05»: NO CUMPLE → CUMPLE.
+
+## 11. US-055: cobertura de los intervalos
 
 Cobertura semanal (nominal 0,80) contra el consumo observado. Calibrado si la cobertura en los cortes tardíos está entre 0,75 y 0,85 en el horizonte (`DT-093` punto 6). Solo decide el rótulo de la banda.
 
@@ -452,9 +532,9 @@ Cobertura semanal (nominal 0,80) contra el consumo observado. Calibrado si la co
 | SBA | 14 de 14 | 14 de 14 | 0.810 / 0.765 | 0.826 / 0.794 | 0.832 / 0.835 |
 | TSB | 14 de 14 | 14 de 14 | 0.815 / 0.775 | 0.832 / 0.794 | 0.832 / 0.824 |
 
-**Rótulo recomendado para la banda de la Fase 7** (media móvil 13, la que sirve U3): **«nominal 0,80; cobertura comprobada solo con datos SYNTHETIC»**. El intervalo actual de U3 queda en banda en 14 de 14 horizontes con todas las semanas y en 13 de 14 sin las semanas con desabasto; la variante calibrada, en 14 de 14. No hace falta calibrarlo con estos datos. Con datos REAL la cobertura no está comprobada y la banda vuelve a «nominal 0,80, no validada» hasta revalidarla. Cambiar el texto es un ajuste de F7d, fuera de F5c: la Fase 7 no se modifica.
+**Rótulo recomendado para la banda de la Fase 7** (media móvil 13, la que sirve U3; texto del responsable): **«Intervalo nominal 0,80. Cobertura observada entre 0,75 y 0,85 en pruebas con datos sintéticos; no validada con datos reales.»** El intervalo actual de U3 queda en banda en 14 de 14 horizontes con todas las semanas y en 13 de 14 sin las semanas con desabasto; la variante calibrada, en 14 de 14. No hace falta calibrarlo con estos datos. Es un ajuste posterior de F7d que se autoriza aparte: la Fase 7 no se modifica.
 
-## 10. Paridad con F5a y F5b
+## 12. Paridad con F5a y F5b
 
 Huellas de los archivos de detalle de F5a y F5b recalculados desde F5c (sus cuatro modelos):
 
@@ -466,7 +546,7 @@ Huellas de los archivos de detalle de F5a y F5b recalculados desde F5c (sus cuat
 | `f5b-orders.csv` | `823c72d74d034a0a…` | `823c72d74d034a0a…` | True |
 | `f5b-windows.csv` | `895488760c0745b9…` | `895488760c0745b9…` | True |
 
-## 11. Salidas
+## 13. Salidas
 
 Junto a este informe se versiona un JSON resumido (mismo nombre, `.json`). El detalle se regenera de forma determinista con el comando de §1 en `ml/out/`, ignorado por Git. Huellas:
 

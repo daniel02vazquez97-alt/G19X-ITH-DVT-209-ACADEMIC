@@ -152,12 +152,12 @@
    "baseline.seasonal_naive": "1.0.0"
   },
   "candidates_version": "0.1.0-provisional",
-  "command": "PYTHONPATH=backend python -m ml candidates --data data/synthetic/output --out ml/out --report docs/reports/fase5-f5c-candidatos-sintetico.md --generated-on 2026-10-06 --workers 2 --cache-dir ml/out/f5c-cache --time-budget 140",
+  "command": "PYTHONPATH=backend python -m ml candidates --data data/synthetic/output --out ml/out --report docs/reports/fase5-f5c-candidatos-sintetico.md --generated-on 2026-10-06 --workers 2 --reuse-cache ml/out/f5c-cache/17e2ff08bfbc635f",
   "data_origin": "SYNTHETIC",
   "dataset_version": "ds-6c8ad65b4999",
   "engine_version_u1": "0.1.0",
   "generated_on": "2026-10-06",
-  "git_commit": "f23ddb61f4bb8ce435241024bd7451cc0d2d812c",
+  "git_commit": "cd3630da845aa6ce2ffaace297a67cd92bd1f57b",
   "git_tracked_changes": false,
   "ml_version": "0.2.0",
   "python_version": "3.11.16",
@@ -168,293 +168,181 @@
   }
  },
  "results": {
-  "criteria": {
-   "ml.croston": [
-    {
-     "criterion": "N1: mejora agregada de MASE en L + R",
-     "informative": false,
-     "status": "CUMPLE"
+  "cadence_sensitivity": {
+   "aggregates": {
+    "FULL": {
+     "baseline.moving_average": ["3882", 255, 0.994346, 18062.8663],
+     "ml.croston": ["4025", 260, 0.994138, 17797.40293],
+     "ml.holt": ["5658", 349, 0.991759, 18662.675824],
+     "ml.tsb": ["3973", 250, 0.994213, 17792.049451]
     },
-    {
-     "criterion": "N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)",
-     "informative": false,
-     "status": "CUMPLE"
-    },
-    {
-     "criterion": "N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE",
-     "informative": false,
-     "status": "CUMPLE"
-    },
-    {
-     "criterion": "Sesgo relativo medio en L + R dentro de ±0,10",
-     "informative": false,
-     "status": "CUMPLE"
-    },
-    {
-     "criterion": "Sesgo por segmento de ≥ 10 productos no peor en más de 0,05",
-     "informative": false,
-     "status": "CUMPLE"
-    },
-    {
-     "criterion": "N2 (FULL): unidades faltantes no peores en más de un 2 %",
-     "informative": false,
-     "status": "NO CUMPLE"
-    },
-    {
-     "criterion": "N2 (FULL): fill rate no peor en más de 0,2 puntos",
-     "informative": false,
-     "status": "CUMPLE"
-    },
-    {
-     "criterion": "N2 (FULL): inventario medio como máximo +5 %",
-     "informative": false,
-     "status": "CUMPLE"
-    },
-    {
-     "criterion": "N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %",
-     "informative": true,
-     "status": "NO CUMPLE"
-    },
-    {
-     "criterion": "N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos",
-     "informative": true,
-     "status": "CUMPLE"
-    },
-    {
-     "criterion": "N2 (NO_WARMUP): inventario medio como máximo +5 %",
-     "informative": true,
-     "status": "CUMPLE"
+    "NO_WARMUP": {
+     "baseline.moving_average": ["1166", 87, 0.998105, 18280.538776],
+     "ml.croston": ["1345", 94, 0.997814, 17991.989796],
+     "ml.holt": ["3083", 185, 0.994989, 18898.083673],
+     "ml.tsb": ["1293", 84, 0.997898, 17995.62449]
     }
-   ],
-   "ml.holt": [
-    {
-     "criterion": "N1: mejora agregada de MASE en L + R",
-     "informative": false,
-     "status": "CUMPLE"
-    },
-    {
-     "criterion": "N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)",
-     "informative": false,
-     "status": "CUMPLE"
-    },
-    {
-     "criterion": "N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE",
-     "informative": false,
-     "status": "NO CUMPLE"
-    },
-    {
-     "criterion": "Sesgo relativo medio en L + R dentro de ±0,10",
-     "informative": false,
-     "status": "CUMPLE"
-    },
-    {
-     "criterion": "Sesgo por segmento de ≥ 10 productos no peor en más de 0,05",
-     "informative": false,
-     "status": "NO CUMPLE"
-    },
-    {
-     "criterion": "N2 (FULL): unidades faltantes no peores en más de un 2 %",
-     "informative": false,
-     "status": "NO CUMPLE"
-    },
-    {
-     "criterion": "N2 (FULL): fill rate no peor en más de 0,2 puntos",
-     "informative": false,
-     "status": "NO CUMPLE"
-    },
-    {
-     "criterion": "N2 (FULL): inventario medio como máximo +5 %",
-     "informative": false,
-     "status": "CUMPLE"
-    },
-    {
-     "criterion": "N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %",
-     "informative": true,
-     "status": "NO CUMPLE"
-    },
-    {
-     "criterion": "N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos",
-     "informative": true,
-     "status": "NO CUMPLE"
-    },
-    {
-     "criterion": "N2 (NO_WARMUP): inventario medio como máximo +5 %",
-     "informative": true,
-     "status": "CUMPLE"
-    }
-   ],
-   "ml.holt_winters": [
-    {
-     "criterion": "N1: mejora agregada de MASE en L + R",
-     "informative": false,
-     "status": "CUMPLE"
-    },
-    {
-     "criterion": "N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)",
-     "informative": false,
-     "status": "CUMPLE"
-    },
-    {
-     "criterion": "N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE",
-     "informative": false,
-     "status": "NO CUMPLE"
-    },
-    {
-     "criterion": "Sesgo relativo medio en L + R dentro de ±0,10",
-     "informative": false,
-     "status": "CUMPLE"
-    },
-    {
-     "criterion": "Sesgo por segmento de ≥ 10 productos no peor en más de 0,05",
-     "informative": false,
-     "status": "CUMPLE"
-    },
-    {
-     "criterion": "N2 (FULL): unidades faltantes no peores en más de un 2 %",
-     "informative": false,
-     "status": "NO CUMPLE"
-    },
-    {
-     "criterion": "N2 (FULL): fill rate no peor en más de 0,2 puntos",
-     "informative": false,
-     "status": "CUMPLE"
-    },
-    {
-     "criterion": "N2 (FULL): inventario medio como máximo +5 %",
-     "informative": false,
-     "status": "CUMPLE"
-    },
-    {
-     "criterion": "N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %",
-     "informative": true,
-     "status": "NO CUMPLE"
-    },
-    {
-     "criterion": "N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos",
-     "informative": true,
-     "status": "CUMPLE"
-    },
-    {
-     "criterion": "N2 (NO_WARMUP): inventario medio como máximo +5 %",
-     "informative": true,
-     "status": "CUMPLE"
-    }
-   ],
-   "ml.sba": [
-    {
-     "criterion": "N1: mejora agregada de MASE en L + R",
-     "informative": false,
-     "status": "NO CUMPLE"
-    },
-    {
-     "criterion": "N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)",
-     "informative": false,
-     "status": "NO CUMPLE"
-    },
-    {
-     "criterion": "N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE",
-     "informative": false,
-     "status": "NO CUMPLE"
-    },
-    {
-     "criterion": "Sesgo relativo medio en L + R dentro de ±0,10",
-     "informative": false,
-     "status": "CUMPLE"
-    },
-    {
-     "criterion": "Sesgo por segmento de ≥ 10 productos no peor en más de 0,05",
-     "informative": false,
-     "status": "CUMPLE"
-    },
-    {
-     "criterion": "N2 (FULL): unidades faltantes no peores en más de un 2 %",
-     "informative": false,
-     "status": "NO CUMPLE"
-    },
-    {
-     "criterion": "N2 (FULL): fill rate no peor en más de 0,2 puntos",
-     "informative": false,
-     "status": "CUMPLE"
-    },
-    {
-     "criterion": "N2 (FULL): inventario medio como máximo +5 %",
-     "informative": false,
-     "status": "CUMPLE"
-    },
-    {
-     "criterion": "N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %",
-     "informative": true,
-     "status": "NO CUMPLE"
-    },
-    {
-     "criterion": "N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos",
-     "informative": true,
-     "status": "CUMPLE"
-    },
-    {
-     "criterion": "N2 (NO_WARMUP): inventario medio como máximo +5 %",
-     "informative": true,
-     "status": "CUMPLE"
-    }
-   ],
-   "ml.tsb": [
-    {
-     "criterion": "N1: mejora agregada de MASE en L + R",
-     "informative": false,
-     "status": "CUMPLE"
-    },
-    {
-     "criterion": "N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)",
-     "informative": false,
-     "status": "CUMPLE"
-    },
-    {
-     "criterion": "N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE",
-     "informative": false,
-     "status": "CUMPLE"
-    },
-    {
-     "criterion": "Sesgo relativo medio en L + R dentro de ±0,10",
-     "informative": false,
-     "status": "CUMPLE"
-    },
-    {
-     "criterion": "Sesgo por segmento de ≥ 10 productos no peor en más de 0,05",
-     "informative": false,
-     "status": "CUMPLE"
-    },
-    {
-     "criterion": "N2 (FULL): unidades faltantes no peores en más de un 2 %",
-     "informative": false,
-     "status": "NO CUMPLE"
-    },
-    {
-     "criterion": "N2 (FULL): fill rate no peor en más de 0,2 puntos",
-     "informative": false,
-     "status": "CUMPLE"
-    },
-    {
-     "criterion": "N2 (FULL): inventario medio como máximo +5 %",
-     "informative": false,
-     "status": "CUMPLE"
-    },
-    {
-     "criterion": "N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %",
-     "informative": true,
-     "status": "NO CUMPLE"
-    },
-    {
-     "criterion": "N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos",
-     "informative": true,
-     "status": "CUMPLE"
-    },
-    {
-     "criterion": "N2 (NO_WARMUP): inventario medio como máximo +5 %",
-     "informative": true,
-     "status": "CUMPLE"
-    }
-   ]
+   },
+   "baseline_identical_to_main_run": true,
+   "criteria": {
+    "ml.croston": [
+     ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", false],
+     ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+     ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+     ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", true],
+     ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+     ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+    ],
+    "ml.holt": [
+     ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", false],
+     ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "NO CUMPLE", false],
+     ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+     ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", true],
+     ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "NO CUMPLE", true],
+     ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+    ],
+    "ml.tsb": [
+     ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", false],
+     ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+     ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+     ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", true],
+     ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+     ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+    ]
+   },
+   "fields": ["units_short", "stockout_days", "fill_rate", "avg_inventory"],
+   "refit_every_decisions": 1,
+   "sha256": "28ce7c4f122519303398f7c5d36c4e3dd0a07c7ac7e4b2230106f40522fda9a6",
+   "substitutions": {
+    "baseline.moving_average": 0,
+    "ml.croston": 0,
+    "ml.holt": 215,
+    "ml.tsb": 0
+   }
   },
+  "criteria": {
+   "ml.croston": {
+    "statuses": [
+     ["N1: mejora agregada de MASE en L + R", "CUMPLE", false],
+     ["N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "CUMPLE", false],
+     ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "CUMPLE", false],
+     ["Sesgo relativo medio en L + R dentro de ±0,10", "CUMPLE", false],
+     ["Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "CUMPLE", false],
+     ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", false],
+     ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+     ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+     ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", true],
+     ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+     ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+    ],
+    "verdict": {
+     "failing": ["N2 (FULL): unidades faltantes no peores en más de un 2 %"],
+     "meets_all": false,
+     "not_conclusive_or_not_evaluated": []
+    }
+   },
+   "ml.holt": {
+    "statuses": [
+     ["N1: mejora agregada de MASE en L + R", "CUMPLE", false],
+     ["N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "CUMPLE", false],
+     ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "NO CUMPLE", false],
+     ["Sesgo relativo medio en L + R dentro de ±0,10", "CUMPLE", false],
+     ["Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "NO CUMPLE", false],
+     ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", false],
+     ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "NO CUMPLE", false],
+     ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+     ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", true],
+     ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "NO CUMPLE", true],
+     ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+    ],
+    "verdict": {
+     "failing": ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "N2 (FULL): unidades faltantes no peores en más de un 2 %", "N2 (FULL): fill rate no peor en más de 0,2 puntos"],
+     "meets_all": false,
+     "not_conclusive_or_not_evaluated": []
+    }
+   },
+   "ml.holt_winters": {
+    "statuses": [
+     ["N1: mejora agregada de MASE en L + R", "CUMPLE", false],
+     ["N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "CUMPLE", false],
+     ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "NO CUMPLE", false],
+     ["Sesgo relativo medio en L + R dentro de ±0,10", "CUMPLE", false],
+     ["Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "CUMPLE", false],
+     ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", false],
+     ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+     ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+     ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", true],
+     ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+     ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+    ],
+    "verdict": {
+     "failing": ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "N2 (FULL): unidades faltantes no peores en más de un 2 %"],
+     "meets_all": false,
+     "not_conclusive_or_not_evaluated": []
+    }
+   },
+   "ml.sba": {
+    "statuses": [
+     ["N1: mejora agregada de MASE en L + R", "NO CUMPLE", false],
+     ["N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "NO CUMPLE", false],
+     ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "NO CUMPLE", false],
+     ["Sesgo relativo medio en L + R dentro de ±0,10", "CUMPLE", false],
+     ["Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "CUMPLE", false],
+     ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", false],
+     ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+     ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+     ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", true],
+     ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+     ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+    ],
+    "verdict": {
+     "failing": ["N1: mejora agregada de MASE en L + R", "N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "N2 (FULL): unidades faltantes no peores en más de un 2 %"],
+     "meets_all": false,
+     "not_conclusive_or_not_evaluated": []
+    }
+   },
+   "ml.ses": {
+    "statuses": [
+     ["N1: mejora agregada de MASE en L + R", "CUMPLE", false],
+     ["N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "CUMPLE", false],
+     ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "CUMPLE", false],
+     ["Sesgo relativo medio en L + R dentro de ±0,10", "CUMPLE", false],
+     ["Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "CUMPLE", false],
+     ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "CUMPLE", false],
+     ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+     ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+     ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "CUMPLE", true],
+     ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+     ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+    ],
+    "verdict": {
+     "failing": [],
+     "meets_all": true,
+     "not_conclusive_or_not_evaluated": []
+    }
+   },
+   "ml.tsb": {
+    "statuses": [
+     ["N1: mejora agregada de MASE en L + R", "CUMPLE", false],
+     ["N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "CUMPLE", false],
+     ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "CUMPLE", false],
+     ["Sesgo relativo medio en L + R dentro de ±0,10", "CUMPLE", false],
+     ["Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "CUMPLE", false],
+     ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", false],
+     ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+     ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+     ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", true],
+     ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+     ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+    ],
+    "verdict": {
+     "failing": ["N2 (FULL): unidades faltantes no peores en más de un 2 %"],
+     "meets_all": false,
+     "not_conclusive_or_not_evaluated": []
+    }
+   }
+  },
+  "criteria_meeting_all": ["ml.ses"],
   "eligibility_totals": {
    "ml.croston": {
     "NOT_ELIGIBLE": 0,
@@ -869,6 +757,219 @@
    "f5b-decisions.csv": true,
    "f5b-orders.csv": true,
    "f5b-windows.csv": true
+  },
+  "segment_sensitivity": {
+   "11": {
+    "compared": 165,
+    "status_changes": [
+     ["a", "ml.holt_winters", "N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "NO CUMPLE", "CUMPLE"],
+     ["a*", "ml.holt", "N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "NO CUMPLE", "CUMPLE"],
+     ["a*", "ml.holt", "Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "NO CUMPLE", "CUMPLE"],
+     ["a*", "ml.holt_winters", "N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "NO CUMPLE", "CUMPLE"],
+     ["b", "ml.holt_winters", "N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "NO CUMPLE", "CUMPLE"],
+     ["c", "ml.holt_winters", "N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "NO CUMPLE", "CUMPLE"],
+     ["c", "ml.holt_winters", "Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "NO CUMPLE", "CUMPLE"]
+    ],
+    "verdict_changes": []
+   },
+   "9": {
+    "compared": 165,
+    "status_changes": [],
+    "verdict_changes": []
+   }
+  },
+  "strategy_criteria": {
+   "a": {
+    "ml.holt_winters": {
+     "statuses": [
+      ["N1: mejora agregada de MASE en L + R", "CUMPLE", false],
+      ["N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "CUMPLE", false],
+      ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "NO CUMPLE", false],
+      ["Sesgo relativo medio en L + R dentro de ±0,10", "CUMPLE", false],
+      ["Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "CUMPLE", false],
+      ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", false],
+      ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+      ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+      ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", true],
+      ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+      ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+     ],
+     "verdict": {
+      "failing": ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "N2 (FULL): unidades faltantes no peores en más de un 2 %"],
+      "meets_all": false,
+      "not_conclusive_or_not_evaluated": []
+     }
+    },
+    "ml.ses": {
+     "statuses": [
+      ["N1: mejora agregada de MASE en L + R", "CUMPLE", false],
+      ["N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "CUMPLE", false],
+      ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "CUMPLE", false],
+      ["Sesgo relativo medio en L + R dentro de ±0,10", "CUMPLE", false],
+      ["Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "CUMPLE", false],
+      ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "CUMPLE", false],
+      ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+      ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+      ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "CUMPLE", true],
+      ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+      ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+     ],
+     "verdict": {
+      "failing": [],
+      "meets_all": true,
+      "not_conclusive_or_not_evaluated": []
+     }
+    },
+    "ml.tsb": {
+     "statuses": [
+      ["N1: mejora agregada de MASE en L + R", "CUMPLE", false],
+      ["N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "CUMPLE", false],
+      ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "CUMPLE", false],
+      ["Sesgo relativo medio en L + R dentro de ±0,10", "CUMPLE", false],
+      ["Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "CUMPLE", false],
+      ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", false],
+      ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+      ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+      ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", true],
+      ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+      ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+     ],
+     "verdict": {
+      "failing": ["N2 (FULL): unidades faltantes no peores en más de un 2 %"],
+      "meets_all": false,
+      "not_conclusive_or_not_evaluated": []
+     }
+    }
+   },
+   "b": {
+    "ml.holt_winters": {
+     "statuses": [
+      ["N1: mejora agregada de MASE en L + R", "CUMPLE", false],
+      ["N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "CUMPLE", false],
+      ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "NO CUMPLE", false],
+      ["Sesgo relativo medio en L + R dentro de ±0,10", "CUMPLE", false],
+      ["Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "CUMPLE", false],
+      ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", false],
+      ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+      ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+      ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", true],
+      ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+      ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+     ],
+     "verdict": {
+      "failing": ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "N2 (FULL): unidades faltantes no peores en más de un 2 %"],
+      "meets_all": false,
+      "not_conclusive_or_not_evaluated": []
+     }
+    },
+    "ml.ses": {
+     "statuses": [
+      ["N1: mejora agregada de MASE en L + R", "CUMPLE", false],
+      ["N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "CUMPLE", false],
+      ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "CUMPLE", false],
+      ["Sesgo relativo medio en L + R dentro de ±0,10", "CUMPLE", false],
+      ["Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "CUMPLE", false],
+      ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "CUMPLE", false],
+      ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+      ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+      ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "CUMPLE", true],
+      ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+      ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+     ],
+     "verdict": {
+      "failing": [],
+      "meets_all": true,
+      "not_conclusive_or_not_evaluated": []
+     }
+    },
+    "ml.tsb": {
+     "statuses": [
+      ["N1: mejora agregada de MASE en L + R", "CUMPLE", false],
+      ["N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "CUMPLE", false],
+      ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "CUMPLE", false],
+      ["Sesgo relativo medio en L + R dentro de ±0,10", "CUMPLE", false],
+      ["Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "CUMPLE", false],
+      ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "CUMPLE", false],
+      ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+      ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+      ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "CUMPLE", true],
+      ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+      ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+     ],
+     "verdict": {
+      "failing": [],
+      "meets_all": true,
+      "not_conclusive_or_not_evaluated": []
+     }
+    }
+   },
+   "c": {
+    "ml.holt_winters": {
+     "statuses": [
+      ["N1: mejora agregada de MASE en L + R", "CUMPLE", false],
+      ["N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "CUMPLE", false],
+      ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "NO CUMPLE", false],
+      ["Sesgo relativo medio en L + R dentro de ±0,10", "CUMPLE", false],
+      ["Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "NO CUMPLE", false],
+      ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", false],
+      ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+      ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+      ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", true],
+      ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+      ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+     ],
+     "verdict": {
+      "failing": ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "N2 (FULL): unidades faltantes no peores en más de un 2 %"],
+      "meets_all": false,
+      "not_conclusive_or_not_evaluated": []
+     }
+    },
+    "ml.ses": {
+     "statuses": [
+      ["N1: mejora agregada de MASE en L + R", "CUMPLE", false],
+      ["N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "CUMPLE", false],
+      ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "CUMPLE", false],
+      ["Sesgo relativo medio en L + R dentro de ±0,10", "CUMPLE", false],
+      ["Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "CUMPLE", false],
+      ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "CUMPLE", false],
+      ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+      ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+      ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "CUMPLE", true],
+      ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+      ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+     ],
+     "verdict": {
+      "failing": [],
+      "meets_all": true,
+      "not_conclusive_or_not_evaluated": []
+     }
+    },
+    "ml.tsb": {
+     "statuses": [
+      ["N1: mejora agregada de MASE en L + R", "CUMPLE", false],
+      ["N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "CUMPLE", false],
+      ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "CUMPLE", false],
+      ["Sesgo relativo medio en L + R dentro de ±0,10", "CUMPLE", false],
+      ["Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "CUMPLE", false],
+      ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "CUMPLE", false],
+      ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+      ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+      ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "CUMPLE", true],
+      ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+      ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+     ],
+     "verdict": {
+      "failing": [],
+      "meets_all": true,
+      "not_conclusive_or_not_evaluated": []
+     }
+    }
+   }
+  },
+  "strategy_meeting_all": {
+   "a": ["ml.ses"],
+   "b": ["ml.ses", "ml.tsb"],
+   "c": ["ml.ses", "ml.tsb"]
   },
   "study": {
    "extreme_series": [
@@ -1482,6 +1583,6 @@
    "late_cuts": ["2024-11-06", "2024-12-04", "2025-01-01", "2025-01-29", "2025-02-26", "2025-03-26", "2025-04-23", "2025-05-21", "2025-06-18"]
   }
  },
- "results_sha256": "df9f8753679b10b2096c39ae86bf1c576204d5c67f232b2daecb506f86114751",
+ "results_sha256": "1ce5ea29580f8c6fdb2b1f029cef0292f73b55385c25d19d988bb696c03fb54d",
  "unit": "F5c (DT-092)"
 }
