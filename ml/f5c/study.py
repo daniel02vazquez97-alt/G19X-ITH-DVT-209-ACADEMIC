@@ -97,4 +97,3 @@ def studied_models(top_candidates: Sequence[str]) -> tuple[str, ...]:
     """Official baseline, SES and the chosen candidates, in a fixed order."""
     chosen = tuple(c for c in CANDIDATE_NAMES if c in set(top_candidates))
     return (OFFICIAL_BASELINE, SES_NAME) + chosen
-
