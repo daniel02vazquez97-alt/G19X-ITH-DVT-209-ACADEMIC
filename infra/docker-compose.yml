@@ -1,7 +1,8 @@
-# PostgreSQL local para desarrollo e integración de U2 (`DT-055`).
+# Entorno local con Docker: PostgreSQL de desarrollo (U2, `DT-055`) y, con el perfil `app`, el sistema
+# completo (U7, `DT-095`). Todo se publica solo en 127.0.0.1 y PostgreSQL usa autenticación `trust`:
+# no hay contraseña ni credencial que guardar (CLAUDE.md §9). No es una configuración de producción.
 #
-# Solo en 127.0.0.1 y con autenticación `trust`: no hay contraseña que guardar (CLAUDE.md §9). No es
-# una configuración de producción. Uso, desde la raíz del repositorio:
+# Solo PostgreSQL (desarrollo de U2 y pruebas de integración), como hasta ahora, desde la raíz:
 #
 #     docker compose -f infra/docker-compose.yml up -d
 #     export DATABASE_URL=postgresql://postgres@127.0.0.1:5432/inventory
@@ -10,10 +11,22 @@
 # Pruebas de integración (crean y borran bases temporales u2_test_*):
 #     U2_TEST_ADMIN_DSN=postgresql://postgres@127.0.0.1:5432/postgres \
 #         python -m unittest discover -s tests/db -t tests/db
+#
+# Sistema completo (U7), un solo comando desde la raíz; no necesita Python, Node ni credenciales de Azure:
+#
+#     docker compose -f infra/docker-compose.yml --profile app up --build -d
+#
+#   dataset   genera el dataset sintético 0.4.0 en el volumen `dataset` si aún no está (una sola vez)
+#   init      migraciones → ingesta → forecast → recomendaciones al corte RUN_AS_OF (idempotente)
+#   api       API V1 en http://127.0.0.1:8000 (APP_ENV=local; identidades ficticias de .env.example)
+#   frontend  interfaz en http://127.0.0.1:8080, con /api reenviado a `api` en el mismo origen
+#
+# Comprobación: python infra/docker/smoke.py · Parar: docker compose -f infra/docker-compose.yml --profile app down
+# (añadir -v borra también la base y el dataset). Detalle: docs/12 §3.4.
 
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:16.15-alpine3.24
     environment:
       POSTGRES_DB: inventory
       POSTGRES_HOST_AUTH_METHOD: trust
@@ -27,5 +40,82 @@ services:
       timeout: 3s
       retries: 10
 
+  dataset:
+    profiles: ["app"]
+    build:
+      context: ..
+      dockerfile: infra/docker/dataset.Dockerfile
+      args:
+        VCS_REF: ${VCS_REF:-unknown}
+    image: inventory/dataset:local
+    volumes:
+      - dataset:/data
+
+  init:
+    profiles: ["app"]
+    build:
+      context: ..
+      dockerfile: infra/docker/backend.Dockerfile
+      args:
+        VCS_REF: ${VCS_REF:-unknown}
+    image: inventory/backend:local
+    environment:
+      DATABASE_URL: postgresql://postgres@postgres:5432/inventory
+      # Último día de la carga de ds-6c8ad65b4999: el único corte que acepta V1 (`DT-058`).
+      RUN_AS_OF: "2025-12-31"
+    command:
+      - sh
+      - -c
+      - >-
+        python -m app.db migrate &&
+        python -m app.ingestion /data/output &&
+        python -m app.runs forecast --as-of "$$RUN_AS_OF" &&
+        python -m app.runs recommend --as-of "$$RUN_AS_OF"
+    volumes:
+      - dataset:/data:ro
+    healthcheck:
+      disable: true
+    depends_on:
+      postgres:
+        condition: service_healthy
+      dataset:
+        condition: service_completed_successfully
+
+  api:
+    profiles: ["app"]
+    build:
+      context: ..
+      dockerfile: infra/docker/backend.Dockerfile
+      args:
+        VCS_REF: ${VCS_REF:-unknown}
+    image: inventory/backend:local
+    # Identidades de desarrollo ficticias y LOG_LEVEL (`DT-065`). Para cambiarlas, un archivo local
+    # infra/docker-compose.override.yml (ignorado por Git) pasado con un segundo -f; nunca este archivo.
+    env_file:
+      - ../.env.example
+    environment:
+      APP_ENV: local
+      DATABASE_URL: postgresql://postgres@postgres:5432/inventory
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      init:
+        condition: service_completed_successfully
+
+  frontend:
+    profiles: ["app"]
+    build:
+      context: ..
+      dockerfile: infra/docker/frontend.Dockerfile
+      args:
+        VCS_REF: ${VCS_REF:-unknown}
+    image: inventory/frontend:local
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      api:
+        condition: service_healthy
+
 volumes:
   pgdata:
+  dataset:

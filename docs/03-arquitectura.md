@@ -496,6 +496,7 @@ Cada puerto vive en el paquete que lo usa. Cada carpeta se crea con la unidad qu
 |---|---|---|
 | Carga del dataset | Comando de línea (`python -m app.ingestion …`) | Acción de administración; no requiere API |
 | Forecast y recomendaciones | Comandos batch con `as_of_date` explícito: `python -m app.runs forecast --as-of AAAA-MM-DD` (U3) y `python -m app.runs recommend --as-of AAAA-MM-DD` (U4, implementada). `recommend` es un subcomando explícito que **no** ejecuta el forecast implícitamente: consume la ejecución de forecast con el mismo corte (`DT-058`, `DT-061`) | RNF-005: independiente de la API. Sin colas ni orquestadores (`DT-005`) |
+| Sistema completo en contenedores | `docker compose -f infra/docker-compose.yml --profile app up --build -d` (U7, `DT-095`, pendiente de revisión): dataset → `init` (migraciones, ingesta, forecast y recomendaciones) → API → interfaz, con los mismos comandos de esta tabla (`docs/12` §3.4) | Fase 12: un comando, sin credenciales (RNF-006) |
 | Consulta | API de solo lectura: `python -m app.api` (U5, implementada; uvicorn en `127.0.0.1`, solo con `APP_ENV=local` hasta la Fase 8, `DT-065`). La explicación por plantilla es una lectura más: `GET /api/v1/recommendations/{recommendation_id}/explanation` (U6, implementada el 2026-10-04; `DT-068`) | La lectura nunca recalcula (§5.2) |
 
 ### 16.8 Qué se ejecuta y se prueba en local

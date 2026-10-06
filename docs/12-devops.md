@@ -1,6 +1,6 @@
 # 12 — Estrategia DevOps
 
-**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-10-03) — §5: correspondencia entre los entornos y `APP_ENV` para la API de U5 (`DT-065`) · **Versión 1.3** (2026-10-05) — §2.2: excepción de merge commit para la integración inicial de U1–U6; §3.1: imagen `frontend` en el mismo origen que `/api` (`DT-070`) · **Versión 1.4** (2026-10-05) — §2.2: merge commit para las unidades de la Fase 5 (`DT-085`)
+**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-10-03) — §5: correspondencia entre los entornos y `APP_ENV` para la API de U5 (`DT-065`) · **Versión 1.3** (2026-10-05) — §2.2: excepción de merge commit para la integración inicial de U1–U6; §3.1: imagen `frontend` en el mismo origen que `/api` (`DT-070`) · **Versión 1.4** (2026-10-05) — §2.2: merge commit para las unidades de la Fase 5 (`DT-085`) · **Versión 1.5** (2026-10-06) — §3.4: U7 implementada, pendiente de revisión (`DT-095`): imágenes, `docker compose` del sistema completo y verificación; el resto de este documento sigue siendo diseño
 
 > No se crean workflows, imágenes ni recursos en esta etapa.
 
@@ -81,6 +81,61 @@ Ramas cortas: de horas a pocos días. Una rama de dos semanas genera conflictos 
 
 `docker compose` levanta backend, frontend y PostgreSQL con datos sintéticos. Requisito operativo:
 **un desarrollador nuevo debe poder levantar el sistema sin credenciales de Azure** (RNF-006).
+
+### 3.4 Implementación de U7 (`DT-095`, 2026-10-06, pendiente de revisión)
+
+**Requisitos:** Docker con Compose v2. No hacen falta Python, Node ni credenciales de ningún tipo.
+
+**Arranque**, un solo comando desde la raíz del repositorio:
+
+```
+docker compose -f infra/docker-compose.yml --profile app up --build -d
+python infra/docker/smoke.py        # opcional: recorrido frontend → API → PostgreSQL
+```
+
+La interfaz queda en `http://127.0.0.1:8080`. Para entrar se pega uno de los tokens `dev-…` ficticios de
+`.env.example`. La API (y su `/docs`) queda en `http://127.0.0.1:8000`. Para parar:
+`docker compose -f infra/docker-compose.yml --profile app down`; con `-v` se borran también la base y el dataset.
+Sin `--profile app`, el mismo archivo sigue levantando **solo PostgreSQL**, como en U2.
+
+| Servicio | Imagen | Qué hace | Termina en |
+|---|---|---|---|
+| `postgres` | `postgres:16.15-alpine3.24` | PostgreSQL 16, `trust`, `127.0.0.1:5432`, volumen `pgdata` | `healthy` (`pg_isready`) |
+| `dataset` | `infra/docker/dataset.Dockerfile` | Publica `ds-6c8ad65b4999` en el volumen `dataset` con el generador 0.4.0 sin modificar (unos 30 s); si ya está, lo reutiliza | Salida 0 |
+| `init` | `infra/docker/backend.Dockerfile` | `migrate` → `ingestion` → `forecast` → `recommend` con `RUN_AS_OF=2025-12-31` (`DT-058`); idempotente | Salida 0 |
+| `api` | `infra/docker/backend.Dockerfile` | API V1 con `APP_ENV=local` y las identidades ficticias de `.env.example` (`DT-065`), en `127.0.0.1:8000` | `healthy` (`/health`) |
+| `frontend` | `infra/docker/frontend.Dockerfile` | Build de React servido por nginx; `/api/` reenviado a `api` en el mismo origen (`DT-070` punto 23), en `127.0.0.1:8080` | `healthy` |
+
+**Reglas de §3.2 aplicadas:**
+
+- multi-stage en `backend` y `frontend`;
+- versiones exactas en las bases;
+- usuario sin privilegios en todas las imágenes finales;
+- ningún secreto en Dockerfiles ni capas;
+- dependencias antes que el código;
+- `.dockerignore` como lista de permitidos;
+- `HEALTHCHECK`;
+- etiquetas OCI con versión y `VCS_REF`.
+
+**Excepción declarada:** las bases están fijadas por versión exacta, pero aún **sin digest** (regla 2). El digest se
+resolverá contra el registro en la primera construcción con acceso a él.
+
+**Verificación:**
+
+- `infra/tests/test_container_config.py`, que se ejecuta con
+  `python -m unittest discover -s infra/tests -t infra/tests`;
+- `infra/docker/smoke.py`;
+- la ejecución completa descrita en `DT-095`, hecha con imágenes base sustitutas de la misma versión porque el
+  entorno del agente no alcanza ningún registro.
+
+Sigue pendiente la construcción con las imágenes oficiales.
+
+**Lo que U7 no hace:**
+
+- no publica imágenes ni crea registro (U12);
+- no ejecuta las suites en contenedores (U8);
+- no crea `staging` ni `prod`;
+- no toca Azure.
 
 ## 4. GitHub Actions
 

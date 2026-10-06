@@ -377,10 +377,13 @@ predicción sigue siendo nominal 0,80, no validada. *(2026-10-06: **autorizadas 
 **F5d, G2 y G3 siguen sin autorizar.**)* *(2026-10-06: F5c implementada en `ml/candidates.py` y `ml/f5c/`, revisada
 e integrada en `main` (PR #11, merge commit `6a1d777`); resultados `SYNTHETIC` en `docs/05` §20.7. No promueve ningún
 modelo: SES sigue siendo el candidato fuerte, sin promover; la estrategia (b) de `DT-011` sigue pendiente de decisión.)*
+*(2026-10-06: `DT-094` fija el alcance de cierre de la Etapa 2: el stack completo por unidades U7 a U16, cada una con su
+propia autorización. **U7 (Docker) autorizada** e implementada, pendiente de revisión (`DT-095`). «No configurar
+servicios reales de Azure» y «No crear credenciales» siguen vigentes hasta la autorización de U10.)*
 Restricciones vigentes, que se levantan solo por instrucción explícita:
 
-- **No escribir código de aplicación** hasta que el responsable autorice la primera unidad de
-  `DT-047`. Cada unidad (U1, U2, …) requiere su propia autorización.
+- **No escribir código de aplicación fuera de una unidad autorizada.** Cada unidad (U1 a U6 de `DT-047`,
+  U7 a U16 de `DT-094`, …) requiere su propia autorización.
 - El generador (`data/synthetic/`) y el dataset 0.4.0 son **upstream terminado**: no se modifican, y
   el código del sistema consume su contrato, no su código.
 - No configurar servicios reales de Azure. No crear credenciales. No hacer commits automáticamente.
