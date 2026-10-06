@@ -185,12 +185,16 @@ def run_backtest(ds: Dataset, config: F5aConfig, cuts: Sequence[_dt.date] | None
 # --- Summaries --------------------------------------------------------------------------------------
 
 
-def common_keys(observations: Sequence[Observation]) -> set[tuple[str, int, int, str]]:
-    """(cut, product, location, horizon) where every model has an observation: the comparison set."""
-    models: dict[tuple[str, int, int, str], set[str]] = defaultdict(set)
+def common_keys(
+    observations: Sequence[Observation], models: Sequence[str] = MODEL_NAMES
+) -> set[tuple[str, int, int, str]]:
+    """(cut, product, location, horizon) where every model of ``models`` has an observation: the comparison set."""
+    present_by_key: dict[tuple[str, int, int, str], set[str]] = defaultdict(set)
+    wanted = set(models)
     for o in observations:
-        models[(o.as_of, o.product_id, o.location_id, o.horizon)].add(o.model)
-    return {k for k, present in models.items() if present == set(MODEL_NAMES)}
+        if o.model in wanted:
+            present_by_key[(o.as_of, o.product_id, o.location_id, o.horizon)].add(o.model)
+    return {k for k, present in present_by_key.items() if present == wanted}
 
 
 def comparison_tables(result: BacktestResult, config: F5aConfig) -> dict:

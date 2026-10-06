@@ -154,6 +154,8 @@ class Decision:
     reasons: tuple[str, ...]
     engine_version: str
     forecast_available: bool
+    #: F5c: why the official baseline replaced the branch model at this decision (``None`` otherwise).
+    substitution: str | None = None
 
 
 @dataclass
@@ -214,6 +216,16 @@ def _exogenous_arrivals(lines: Sequence[ExogenousLine], config: SimConfig) -> di
 Forecaster = Callable[[str, WeeklyHistory, F5aConfig], "tuple[Decimal, ...] | None"]
 
 
+def _method_used(branch: str, substitution: str | None) -> MethodUsed:
+    """Informative only: U1 does not read it (`docs/05` §19.3). F5b branches keep the F5b values."""
+    model = branch.split("@", 1)[0]
+    if substitution is not None or model.startswith("baseline."):
+        return MethodUsed.BASELINE
+    if model in ("ml.croston", "ml.sba", "ml.tsb"):
+        return MethodUsed.INTERMITTENT_METHOD
+    return MethodUsed.MODEL
+
+
 def simulate_product(
     inputs: SimulationInputs,
     key: SeriesKey,
@@ -231,6 +243,7 @@ def simulate_product(
         raise ValueError(f"{key}: no observed history up to the first cut")
     history_start = observed[0].day
     observed_qty = [row.quantity for row in observed]
+    observed_flags = [row.stockout for row in observed]
     base_weeks = WeeklyHistory(observed_qty)
     lines = tuple(line for line in inputs.open_lines if (line.product_id, line.location_id) == key)
     arrivals = _exogenous_arrivals(lines, config)
@@ -245,17 +258,24 @@ def simulate_product(
         trace = BranchTrace()
         on_hand = initial
         history = list(observed_qty)
+        flags = list(observed_flags)
         weeks = WeeklyHistory([])
         weeks.weeks, weeks.floats = list(base_weeks.weeks), list(base_weeks.floats)
+        # F5c strategy branches (DT-081) read the daily history, its stockout flags (simulated lost sales count)
+        # and the offset of the anchored weeks; F5b forecasters ignore them.
+        weeks.daily, weeks.flags, weeks.offset = history, flags, len(observed_qty) % 7
         exo_pending = [line.pending_at_cut for line in lines]
         orders: list[SimulatedOrder] = []
         points: tuple[Decimal, ...] | None = None
         decisions_done = 0
 
+        substitution: str | None = None
+
         def decide(day: _dt.date) -> None:
-            nonlocal points, decisions_done, on_hand
+            nonlocal points, decisions_done, on_hand, substitution
             if decisions_done % config.retrain_every_weeks == 0:
-                points = forecaster(branch, weeks, config.f5a)
+                produced = forecaster(branch, weeks, config.f5a)
+                points, substitution = getattr(produced, "points", produced), getattr(produced, "substitution", None)
             decisions_done += 1
             open_lines = [
                 LineState(line.purchase_order_id, line.item_id, line.supplier_id, line.expected_on, exo_pending[i])
@@ -278,7 +298,7 @@ def simulate_product(
                 forecast_points=points,
                 forecast_id=decisions_done,
                 model_version=branch_index + 1,
-                method_used=MethodUsed.MODEL if branch == SES_NAME else MethodUsed.BASELINE,
+                method_used=MethodUsed.MODEL if branch == SES_NAME else _method_used(branch, substitution),
                 policy=config.policy,
             )
             if keep_inputs:
@@ -291,6 +311,7 @@ def simulate_product(
                     tuple(str(r.value) for r in result.reasons),
                     result.engine_version,
                     points is not None,
+                    substitution,
                 )
             )
             if result.outcome is Outcome.RECOMMEND:
@@ -330,6 +351,7 @@ def simulate_product(
             trace.end_on_hand.append(out.end_on_hand)
             if product.valid_to is None or day <= product.valid_to:
                 history.append(out.consumption)
+                flags.append(out.lost > 0)
             if day in decision_days:
                 if product.valid_to is None or day <= product.valid_to:
                     weeks.append_week(history[-7:])

@@ -73,3 +73,26 @@ def classify(feats: SegmentFeatures, in_population: bool, config: F5aConfig) -> 
     if erratic:
         return ERRATIC
     return SMOOTH
+
+
+def lag_autocorrelation(weekly: Sequence[float], lag: int) -> float | None:
+    """Sample autocorrelation at ``lag`` (``Σ (y_t − ȳ)(y_{t+lag} − ȳ) / Σ (y_t − ȳ)²``); ``None`` if undefined."""
+    n = len(weekly)
+    if n <= lag:
+        return None
+    mean = math.fsum(weekly) / n
+    deviations = [w - mean for w in weekly]
+    denominator = math.fsum(d * d for d in deviations)
+    if denominator == 0:
+        return None
+    return math.fsum(deviations[t] * deviations[t + lag] for t in range(n - lag)) / denominator
+
+
+def seasonality(weekly: Sequence[float], min_weeks: int = 104, lag: int = 52, z: float = 1.96) -> tuple[float | None, bool]:
+    """F5c criterion (`DT-093` point 7): seasonal if ``n ≥ min_weeks`` and the autocorrelation at ``lag`` exceeds
+    ``z / √n``, with ``n`` the training weeks. Returns the autocorrelation (``None`` when undefined or too short)."""
+    n = len(weekly)
+    if n < min_weeks:
+        return None, False
+    acf = lag_autocorrelation(weekly, lag)
+    return acf, acf is not None and acf > z / math.sqrt(n)
