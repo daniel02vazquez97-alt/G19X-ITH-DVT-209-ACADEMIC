@@ -1,6 +1,6 @@
 # 15 — Decisiones técnicas (ADR)
 
-**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-18) — `DT-024` a `DT-030`, preparación del Componente 2 · **Versión 1.3** (2026-09-19) — `DT-031`, reglas mínimas de V1 · **Versión 1.4** (2026-09-21) — cierre de las reglas V1: `DT-031` pasa a `ACEPTADA` con trece reglas · **Versión 1.5** (2026-09-21) — `DT-032` y `DT-033`, decisiones que el Componente 2 tenía que tomar al implementarse · **Versión 1.6** (2026-09-21) — tabla canónica de identificadores de componente en `DT-030` · **Versión 1.7** (2026-09-23) — `DT-034` y `DT-035`, demanda latente persistente y sus políticas de generación · **Versión 1.8** (2026-09-24) — `DT-036` y `DT-037`, políticas sintéticas de inventario y comportamiento de proveedores; **enmienda de `DT-027`** (restricción 3) y cierre del pendiente de `data_origin` de `DT-026` · **Versión 1.9** (2026-09-24) — `DT-038` y `DT-039`, contratos de salida de los Componentes 4 y 5, tras la auditoría pre-implementación; cierre de los pendientes de `DT-034` (recorte de la demanda y contrato de `consumption.csv`) y correcciones a `DT-036` y `DT-037` · **Versión 1.10** (2026-09-26) — cierre de D-01: `DT-040` (publicación atómica del dataset, W1), regla general de incremento de `generator_version` en `DT-033`, y actualizaciones de `DT-036`, `DT-038` y `DT-039` (A2, B2, `expected_at`, autoría de los identificadores) · **Versión 1.11** (2026-09-26) — implementación del Componente 4: enmienda de `DT-037` §3 (D-C4-1, reparto de la entrega partida) y actualización de `DT-038` (D-C4-2 precondiciones, D-C4-3 lead time y disparo diario, flujos pseudoaleatorios, `metrics` pendiente) · **Versión 1.12** (2026-09-27) — cierre de D-01, opción A: elegibilidad de las órdenes `CANCELLED` sintéticas respecto de `valid_to` (`DT-039` §5.2) · **Versión 1.13** (2026-09-28) — implementación del Componente 5 (`DT-039` §13), sin cambios en ninguna regla · **Versión 1.14** (2026-09-28) — implementación del Componente 6 (`DT-037` §6, decisiones A1 y A2) y corrección de texto en `DT-040` §3 · **Versión 1.15** (2026-09-29) — implementación de W1 (`DT-040` §9, detalles pendientes resueltos) y `generator_version` 0.3.0 · **Versión 1.16** (2026-09-29) — `DT-041`, contrato e implementación del Componente 7 (sin integrar en W1); notas de redacción en `DT-030` y `DT-031` (`V1-07`, `V1-08`) · **Versión 1.17** (2026-09-29) — `DT-042`, validador del dataset e informe de calidad; integración de C7 y C8 en W1 (`DT-040`); `generator_version` 0.4.0 (`DT-033`); formas de `scenario_assignment` y `quality_report` (`DT-025`); `metrics` de `DT-038` §12 cerrado · **Versión 1.18** (2026-09-30) — Etapa 2, arquitectura y fundación: `DT-043` a `DT-047` (todas `PROPUESTA`) y pendientes `DT-P13` a `DT-P21` · **Versión 1.19** (2026-09-30) — autorización de U1: `DT-043` y `DT-045` `ACEPTADA`, `DT-047` `ACEPTADA` en cuanto a U1; `DT-P15` y `DT-P20` cerradas; `DT-P14` abierta en parte y **bloquea U1** · **Versión 1.20** (2026-10-01) — `DT-P14` **cerrada** con el estimador poblacional, `INSUFFICIENT_HISTORY` para `n = 0` y la evaluación exacta B3 (`docs/06` §16.6); ninguna fórmula V1 cambia · **Versión 1.21** (2026-10-01) — cierre del contrato de U1: `DT-048` a `DT-052` `ACEPTADA` (aclaraciones A-1 en `DT-050` y A-2 en `DT-051`), y pendiente `DT-P22`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.22** (2026-10-01) — `DT-P22` `ACEPTADA` (opción (a)): `PRODUCT_OUT_OF_VALIDITY` cubre también la vigencia que termina dentro del horizonte; cierre de `DT-049`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.23** (2026-10-01) — `DT-053` (frontera de la salida parcial) y `DT-054` (sin monotonía global de `S` frente a `L` en V1), tras el audit de pre-codificación de U1; ninguna fórmula cambia · **Versión 1.24** (2026-10-01) — `DT-044` `ACEPTADA` (cantidades en `numeric`; `quantity_on_hand ≥ 0` compatible con `BR-X09`/`V1-13`); `DT-047` aceptada para U2; `DT-055` (entorno técnico de U2) · **Versión 1.25** (2026-10-02) — U3 autorizada para implementación: `DT-P17` cerrada por `DT-056` (baselines V1); `DT-046` `ACEPTADA`; `DT-057` (persistencia y ejecución del forecast); `DT-047` aceptada para U3; pendiente nueva `DT-P23` · **Versión 1.26** (2026-10-03) — cierre documental de U4 y autorización para implementación (no implementada): `DT-058` a `DT-063` `ACEPTADA`; `DT-P18` cerrada por `DT-059` y `DT-P21` por `DT-058`; `DT-047` aceptada para U4; nota en `DT-P16`, que sigue abierta · **Versión 1.27** (2026-10-03) — U4 implementada y validada: registro de la implementación en `DT-047` y en `DT-058` a `DT-063`; ninguna decisión cambia · **Versión 1.28** (2026-10-03) — U5 autorizada para implementación (no implementada): `DT-064` (dependencias), `DT-065` (autenticación local), `DT-066` (contrato de lectura) y `DT-067` (historia, desviación poblacional) `ACEPTADA`; `DT-047` aceptada para U5 · **Versión 1.29** (2026-10-03) — U5 implementada y validada: registro de la implementación en `DT-047` y en `DT-064` a `DT-067`; ninguna decisión cambia · **Versión 1.30** (2026-10-04) — U6 autorizada para implementación (no implementada): `DT-068` (entrega y contrato de la explicación) y `DT-069` (presentación, verificación y degradación de cifras) `ACEPTADA`; `DT-047` aceptada para U6 · **Versión 1.31** (2026-10-04) — U6 implementada y validada: registro de la implementación en `DT-047`, `DT-068` y `DT-069`; ninguna decisión cambia · **Versión 1.32** (2026-10-05) — Fase 7 autorizada para implementación (no implementada): `DT-070` (alcance, stack y versiones, autenticación local, contrato con la API, formato regional, proxy, partición F7a–F7d e integración con `main`) `ACEPTADA`; separada de `DT-047` · **Versión 1.33** (2026-10-05) — Fase 7 implementada: estado e implementación de `DT-070` · **Versión 1.34** (2026-10-05) — Fase 5, cierre documental (no autorizada): `DT-071` a `DT-085` (partición y puertas, `ml/`, dependencias, enmienda acotada de D-12, backtesting, Nivel 1, segmentación `PROPUESTA`, regla de `DT-021`, criterios `PROPUESTA`, simulador de Nivel 2 con decisiones `OPEN`, estudios de `DT-011` y `DT-010`, intervalos, promoción y Git); notas en `DT-010`, `DT-011`, `DT-021`, `DT-056`, `DT-P03`, `DT-P04` y `DT-P23`; `DT-086` autoriza F5a por separado; propuestas del responsable para OD-S1 a OD-S4, criterio serie-corte en `DT-078`, aclaración del Nivel 1 con días imputados y bloqueo de U1 para `DT-010` (`DT-083`) · **Versión 1.35** (2026-10-05) — `DT-087` `ACEPTADA` (población por corte a la fecha, enmienda de interpretación de `DT-075` punto 6); notas en `DT-075` y `DT-079` tras la revisión de F5a · **Versión 1.36** (2026-10-05) — notas en `DT-073` (JSON versionado como resumen) y `DT-077` (el «19 intermitentes» era un artefacto de `valid_to`) · **Versión 1.37** (2026-10-05) — `DT-088` autoriza F5b; OD-S1 a OD-S4 `ACEPTADA` en `DT-080` con sus refinamientos · **Versión 1.38** (2026-10-05) — `DT-080`: decisiones del responsable al cerrar F5b; nota en `DT-078` (las candidatas ordenan igual por serie-corte) · **Versión 1.39** (2026-10-05) — G1: `DT-089` (baseline oficial), `DT-090` (MASE) y `DT-091` (valores de aceptación), `ACEPTADA` y provisionales (`SYNTHETIC`); notas en `DT-010`, `DT-011`, `DT-021` (cerrada por `DT-090`), `DT-077`, `DT-079`, `DT-081`, `DT-P03` y `DT-P04` · **Versión 1.40** (2026-10-06) — `DT-092` autoriza F5c; `DT-093`, criterios complementarios de G1 (horizonte L + R, cortes comparables, tolerancias, banda de sesgo, cobertura, segmentación y estacionalidad, estimadores de `DT-081`, ajuste de modelos, Holt-Winters con 104 semanas y sustitución en el simulador); notas en `DT-071`, `DT-077` a `DT-082`, `DT-090` y `DT-091` · **Versión 1.41** (2026-10-06) — `DT-092`: registro de la implementación de F5c (pendiente de revisión); ninguna decisión cambia · **Versión 1.42** (2026-10-06) — revisión de F5c: `DT-093` puntos 12 a 14 (interpretaciones aceptadas, sensibilidad de cadencia, tabla de criterios con SES y por estrategia); nota en `DT-081` (conclusión provisional y propuesta de (b)) · **Versión 1.43** (2026-10-06) — `DT-094` (alcance de cierre de la Etapa 2: stack completo por unidades U7 a U16, Azure for Students, Bicep, corpus sintético) y `DT-095` (U7, Docker: autorizada; implementación pendiente de revisión) · **Versión 1.44** (2026-10-06) — `DT-096` (U8, CI con GitHub Actions: autorizada; implementación pendiente de revisión) y digests de las imágenes base en `DT-095`, pendientes de verificación externa · **Versión 1.45** (2026-10-06) — `DT-097` (U9, capa analítica de solo lectura y migración `0004`: autorizada; implementación pendiente de revisión)
+**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-18) — `DT-024` a `DT-030`, preparación del Componente 2 · **Versión 1.3** (2026-09-19) — `DT-031`, reglas mínimas de V1 · **Versión 1.4** (2026-09-21) — cierre de las reglas V1: `DT-031` pasa a `ACEPTADA` con trece reglas · **Versión 1.5** (2026-09-21) — `DT-032` y `DT-033`, decisiones que el Componente 2 tenía que tomar al implementarse · **Versión 1.6** (2026-09-21) — tabla canónica de identificadores de componente en `DT-030` · **Versión 1.7** (2026-09-23) — `DT-034` y `DT-035`, demanda latente persistente y sus políticas de generación · **Versión 1.8** (2026-09-24) — `DT-036` y `DT-037`, políticas sintéticas de inventario y comportamiento de proveedores; **enmienda de `DT-027`** (restricción 3) y cierre del pendiente de `data_origin` de `DT-026` · **Versión 1.9** (2026-09-24) — `DT-038` y `DT-039`, contratos de salida de los Componentes 4 y 5, tras la auditoría pre-implementación; cierre de los pendientes de `DT-034` (recorte de la demanda y contrato de `consumption.csv`) y correcciones a `DT-036` y `DT-037` · **Versión 1.10** (2026-09-26) — cierre de D-01: `DT-040` (publicación atómica del dataset, W1), regla general de incremento de `generator_version` en `DT-033`, y actualizaciones de `DT-036`, `DT-038` y `DT-039` (A2, B2, `expected_at`, autoría de los identificadores) · **Versión 1.11** (2026-09-26) — implementación del Componente 4: enmienda de `DT-037` §3 (D-C4-1, reparto de la entrega partida) y actualización de `DT-038` (D-C4-2 precondiciones, D-C4-3 lead time y disparo diario, flujos pseudoaleatorios, `metrics` pendiente) · **Versión 1.12** (2026-09-27) — cierre de D-01, opción A: elegibilidad de las órdenes `CANCELLED` sintéticas respecto de `valid_to` (`DT-039` §5.2) · **Versión 1.13** (2026-09-28) — implementación del Componente 5 (`DT-039` §13), sin cambios en ninguna regla · **Versión 1.14** (2026-09-28) — implementación del Componente 6 (`DT-037` §6, decisiones A1 y A2) y corrección de texto en `DT-040` §3 · **Versión 1.15** (2026-09-29) — implementación de W1 (`DT-040` §9, detalles pendientes resueltos) y `generator_version` 0.3.0 · **Versión 1.16** (2026-09-29) — `DT-041`, contrato e implementación del Componente 7 (sin integrar en W1); notas de redacción en `DT-030` y `DT-031` (`V1-07`, `V1-08`) · **Versión 1.17** (2026-09-29) — `DT-042`, validador del dataset e informe de calidad; integración de C7 y C8 en W1 (`DT-040`); `generator_version` 0.4.0 (`DT-033`); formas de `scenario_assignment` y `quality_report` (`DT-025`); `metrics` de `DT-038` §12 cerrado · **Versión 1.18** (2026-09-30) — Etapa 2, arquitectura y fundación: `DT-043` a `DT-047` (todas `PROPUESTA`) y pendientes `DT-P13` a `DT-P21` · **Versión 1.19** (2026-09-30) — autorización de U1: `DT-043` y `DT-045` `ACEPTADA`, `DT-047` `ACEPTADA` en cuanto a U1; `DT-P15` y `DT-P20` cerradas; `DT-P14` abierta en parte y **bloquea U1** · **Versión 1.20** (2026-10-01) — `DT-P14` **cerrada** con el estimador poblacional, `INSUFFICIENT_HISTORY` para `n = 0` y la evaluación exacta B3 (`docs/06` §16.6); ninguna fórmula V1 cambia · **Versión 1.21** (2026-10-01) — cierre del contrato de U1: `DT-048` a `DT-052` `ACEPTADA` (aclaraciones A-1 en `DT-050` y A-2 en `DT-051`), y pendiente `DT-P22`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.22** (2026-10-01) — `DT-P22` `ACEPTADA` (opción (a)): `PRODUCT_OUT_OF_VALIDITY` cubre también la vigencia que termina dentro del horizonte; cierre de `DT-049`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.23** (2026-10-01) — `DT-053` (frontera de la salida parcial) y `DT-054` (sin monotonía global de `S` frente a `L` en V1), tras el audit de pre-codificación de U1; ninguna fórmula cambia · **Versión 1.24** (2026-10-01) — `DT-044` `ACEPTADA` (cantidades en `numeric`; `quantity_on_hand ≥ 0` compatible con `BR-X09`/`V1-13`); `DT-047` aceptada para U2; `DT-055` (entorno técnico de U2) · **Versión 1.25** (2026-10-02) — U3 autorizada para implementación: `DT-P17` cerrada por `DT-056` (baselines V1); `DT-046` `ACEPTADA`; `DT-057` (persistencia y ejecución del forecast); `DT-047` aceptada para U3; pendiente nueva `DT-P23` · **Versión 1.26** (2026-10-03) — cierre documental de U4 y autorización para implementación (no implementada): `DT-058` a `DT-063` `ACEPTADA`; `DT-P18` cerrada por `DT-059` y `DT-P21` por `DT-058`; `DT-047` aceptada para U4; nota en `DT-P16`, que sigue abierta · **Versión 1.27** (2026-10-03) — U4 implementada y validada: registro de la implementación en `DT-047` y en `DT-058` a `DT-063`; ninguna decisión cambia · **Versión 1.28** (2026-10-03) — U5 autorizada para implementación (no implementada): `DT-064` (dependencias), `DT-065` (autenticación local), `DT-066` (contrato de lectura) y `DT-067` (historia, desviación poblacional) `ACEPTADA`; `DT-047` aceptada para U5 · **Versión 1.29** (2026-10-03) — U5 implementada y validada: registro de la implementación en `DT-047` y en `DT-064` a `DT-067`; ninguna decisión cambia · **Versión 1.30** (2026-10-04) — U6 autorizada para implementación (no implementada): `DT-068` (entrega y contrato de la explicación) y `DT-069` (presentación, verificación y degradación de cifras) `ACEPTADA`; `DT-047` aceptada para U6 · **Versión 1.31** (2026-10-04) — U6 implementada y validada: registro de la implementación en `DT-047`, `DT-068` y `DT-069`; ninguna decisión cambia · **Versión 1.32** (2026-10-05) — Fase 7 autorizada para implementación (no implementada): `DT-070` (alcance, stack y versiones, autenticación local, contrato con la API, formato regional, proxy, partición F7a–F7d e integración con `main`) `ACEPTADA`; separada de `DT-047` · **Versión 1.33** (2026-10-05) — Fase 7 implementada: estado e implementación de `DT-070` · **Versión 1.34** (2026-10-05) — Fase 5, cierre documental (no autorizada): `DT-071` a `DT-085` (partición y puertas, `ml/`, dependencias, enmienda acotada de D-12, backtesting, Nivel 1, segmentación `PROPUESTA`, regla de `DT-021`, criterios `PROPUESTA`, simulador de Nivel 2 con decisiones `OPEN`, estudios de `DT-011` y `DT-010`, intervalos, promoción y Git); notas en `DT-010`, `DT-011`, `DT-021`, `DT-056`, `DT-P03`, `DT-P04` y `DT-P23`; `DT-086` autoriza F5a por separado; propuestas del responsable para OD-S1 a OD-S4, criterio serie-corte en `DT-078`, aclaración del Nivel 1 con días imputados y bloqueo de U1 para `DT-010` (`DT-083`) · **Versión 1.35** (2026-10-05) — `DT-087` `ACEPTADA` (población por corte a la fecha, enmienda de interpretación de `DT-075` punto 6); notas en `DT-075` y `DT-079` tras la revisión de F5a · **Versión 1.36** (2026-10-05) — notas en `DT-073` (JSON versionado como resumen) y `DT-077` (el «19 intermitentes» era un artefacto de `valid_to`) · **Versión 1.37** (2026-10-05) — `DT-088` autoriza F5b; OD-S1 a OD-S4 `ACEPTADA` en `DT-080` con sus refinamientos · **Versión 1.38** (2026-10-05) — `DT-080`: decisiones del responsable al cerrar F5b; nota en `DT-078` (las candidatas ordenan igual por serie-corte) · **Versión 1.39** (2026-10-05) — G1: `DT-089` (baseline oficial), `DT-090` (MASE) y `DT-091` (valores de aceptación), `ACEPTADA` y provisionales (`SYNTHETIC`); notas en `DT-010`, `DT-011`, `DT-021` (cerrada por `DT-090`), `DT-077`, `DT-079`, `DT-081`, `DT-P03` y `DT-P04` · **Versión 1.40** (2026-10-06) — `DT-092` autoriza F5c; `DT-093`, criterios complementarios de G1 (horizonte L + R, cortes comparables, tolerancias, banda de sesgo, cobertura, segmentación y estacionalidad, estimadores de `DT-081`, ajuste de modelos, Holt-Winters con 104 semanas y sustitución en el simulador); notas en `DT-071`, `DT-077` a `DT-082`, `DT-090` y `DT-091` · **Versión 1.41** (2026-10-06) — `DT-092`: registro de la implementación de F5c (pendiente de revisión); ninguna decisión cambia · **Versión 1.42** (2026-10-06) — revisión de F5c: `DT-093` puntos 12 a 14 (interpretaciones aceptadas, sensibilidad de cadencia, tabla de criterios con SES y por estrategia); nota en `DT-081` (conclusión provisional y propuesta de (b)) · **Versión 1.43** (2026-10-06) — `DT-094` (alcance de cierre de la Etapa 2: stack completo por unidades U7 a U16, Azure for Students, Bicep, corpus sintético) y `DT-095` (U7, Docker: autorizada; implementación pendiente de revisión) · **Versión 1.44** (2026-10-06) — `DT-096` (U8, CI con GitHub Actions: autorizada; implementación pendiente de revisión) y digests de las imágenes base en `DT-095`, pendientes de verificación externa · **Versión 1.45** (2026-10-06) — `DT-097` (U9, capa analítica de solo lectura y migración `0004`: autorizada; implementación pendiente de revisión) · **Versión 1.46** (2026-10-06) — `DT-098` (U10, base de Azure de `dev`: autorizada; implementación pendiente de revisión y despliegue pendiente del responsable); nota en `DT-022`
 
 Registro de decisiones arquitectónicas. Formato: ID, decisión, contexto, alternativas, razón,
 consecuencias, estado.
@@ -475,6 +475,9 @@ consecuencias, estado.
   el producto concreto es sustituible. Ningún documento debe presentar Key Vault como decidido.
 
 - **Estado:** `PROPUESTA` — se confirma junto con `DT-P01` en las Fases 12–13.
+- *Nota del 2026-10-06 (U10, `DT-094`, `DT-098`):* el responsable autorizó crear **Azure Key Vault** como almacén
+  del entorno `dev` («Key Vault según `DT-022`»), así que el producto queda elegido para `dev`. Qué secretos se
+  guardan, quién los lee y su rotación siguen abiertos hasta U12, junto con `DT-P01`.
 
 ## DT-023 — Clasificación en tres niveles de las situaciones de §25 del dataset
 
@@ -3737,6 +3740,115 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
   mutaciones de la migración (un `GRANT` sobre `public` y un lead time desplazado) hacen fallar sus pruebas.
 - **Estado:** autorización `ACEPTADA` (2026-10-06, decisión del responsable con el prompt «U9: Vistas analíticas
   PostgreSQL + rol de solo lectura»); implementación pendiente de revisión.
+
+## DT-098 — U10: base de Azure del entorno `dev` (Bicep, Key Vault, OIDC y control de gasto)
+
+- **Decisión:** **U10 autorizada** (bloque B de `DT-094`). Para U10, y solo dentro de su alcance, se levantan:
+  - «No configurar servicios reales de Azure»;
+  - «No crear credenciales», en un único sentido: el responsable aprovisiona con su propia sesión. El agente no
+    recibe, guarda, copia ni registra ninguna credencial.
+
+  No se autorizan U11–U16, PostgreSQL gestionado, registro de contenedores, cómputo, `staging` ni producción.
+- **Contrato** (`PROPUESTA` del desarrollador, pendiente de revisión; `infra/azure/README.md`):
+  1. **Bicep** en `infra/azure/`:
+     - `main.bicep`, con ámbito de suscripción;
+     - `modules/base.bicep` y `modules/budget.bicep`;
+     - `parameters/dev.bicepparam`, sin secretos ni datos personales. El correo del presupuesto, si llega a
+       usarse, entra por la línea de comandos.
+  2. **Recursos:**
+     - grupo `rg-mpa-dev`;
+     - Key Vault Standard `kv-mpa-dev-<uniqueString>`;
+     - identidad administrada asignada por el usuario `id-mpa-dev-github`;
+     - una credencial federada `github-dev`;
+     - el rol Reader sobre el grupo;
+     - presupuesto opcional `budget-mpa-dev`.
+
+     Seis etiquetas en cada recurso: `project`, `environment`, `owner` (un rol, nunca una persona), `purpose`,
+     `managedBy` y `costControl`. Prefijo `mpa` = Motor Predictivo de Abastecimiento.
+  3. **Key Vault** (`DT-022`):
+     - RBAC, sin políticas de acceso;
+     - vacío;
+     - sin acceso de red público mientras no haya consumidores (`Disabled`, `Deny`, sin *bypass*);
+     - sin acceso desde plantillas, máquinas ni cifrado de disco;
+     - borrado temporal de 7 días y sin protección de purga, para que el desmontaje de `dev` pueda purgarlo.
+       Producción deberá activarla: es irreversible.
+
+     Ninguna asignación de rol de datos en U10; cada unidad concede la suya.
+  4. **OIDC con identidad administrada**, no con registro de aplicación (Microsoft Learn admite ambas). Así no hace
+     falta permiso para crear aplicaciones en Entra ID, ni existe ningún *client secret* ni certificado.
+     - **Credencial:** emisor `https://token.actions.githubusercontent.com`, audiencia `api://AzureADTokenExchange`,
+       sujeto `repo:daniel02vazquez97-alt/Motor-Predictivo-de-Abastecimiento-de-Inventarios:environment:dev`.
+       Solo el entorno `dev` de GitHub puede usarla: ni ramas, ni PR, ni `staging` ni producción.
+     - **Rol:** únicamente **Reader sobre `rg-mpa-dev`**, lo justo para comprobar el inicio de sesión. Los permisos
+       de despliegue los decide U12, nunca Owner.
+     - **U8:** el workflow no cambia. U12 añadirá `id-token: write` al job de despliegue y los tres identificadores
+       (cliente, tenant y suscripción), que no son credenciales. Microsoft Learn recomienda guardarlos como secretos
+       de GitHub; la decisión es de U12.
+  5. **Región: `westus3` (West US 3)**, condicionada a la directiva de la suscripción (punto 7):
+     - **Mexico Central se descarta.** No figura en ninguna tabla de disponibilidad de modelos de Azure OpenAI
+       (U13), y en AI Search (U15) no ofrece *semantic ranker*, enriquecimiento con IA ni recuperación agéntica. Sí
+       tiene PostgreSQL flexible.
+     - **West US 3 tiene todo el stack:** Azure OpenAI Standard regional (gpt-4o-mini, gpt-4.1-mini), AI Search con
+       *semantic ranker*, Azure ML (disponible de forma general) y PostgreSQL flexible. Es la región con todo el
+       stack más próxima a Sonora (Arizona).
+     - **Orden de respaldo:** `southcentralus`, `eastus`, `northcentralus`, `westus`. Se excluye `eastus2`, donde
+       AI Search no admite servicios nuevos por demanda.
+  6. **Validación local:** Bicep CLI 0.48.1, `build`, `lint` y `build-params` sin avisos. `infra/tests/test_azure_config.py`
+     tiene 7 pruebas estáticas, que el job `docker` de U8 ejecuta:
+     - solo recursos de U10;
+     - solo `dev`;
+     - presupuesto desactivado por defecto;
+     - etiquetas;
+     - ningún secreto ni correo;
+     - Key Vault con RBAC, privado y purgable;
+     - OIDC limitado a `dev`;
+     - solo el rol Reader.
+- **Limitación de la suscripción (tipo A): el presupuesto no se puede automatizar.**
+  - Microsoft Learn («Understand Cost Management data») incluye Azure for Students (MS-AZR-0170P) entre las ofertas
+    que Cost Management **no admite**. Por eso `deployBudget = false`.
+  - El módulo queda listo, sin rodeos, por si la oferta cambia. El README explica cómo confirmar el rechazo con
+    what-if.
+  - **El control queda manual:** el saldo y el consumo se ven en el portal de Microsoft Azure Sponsorships (*Balance*,
+    *Usage*), semanalmente y antes y después de cada unidad con recursos.
+  - **Los 50 USD son un umbral de planificación:** nada se detiene solo.
+  - **A los 100 USD de crédito, o a los 12 meses:** Azure deshabilita la suscripción y sus servicios, salvo que se
+    pase a pago por uso.
+- **Costos de U10:** ningún recurso tiene costo fijo ni continuo.
+  - Grupo, identidad, credencial y rol: sin costo («Managed identities can be used at no extra cost»).
+  - Key Vault Standard: solo cobra operaciones, y sin consumidores no hay.
+  - Nada de U10 puede generar consumo inesperado ni hay que apagar nada.
+- **Desmontaje:** `az group delete` del grupo, y después `az keyvault purge` del vault en borrado temporal, sin tocar
+  nada fuera del grupo (README).
+- **Pendiente del responsable:**
+  1. lista de regiones permitidas por la directiva «Allowed resource deployment regions» de su suscripción;
+  2. registro de los proveedores `Microsoft.KeyVault` y `Microsoft.ManagedIdentity`;
+  3. `validate` y `what-if`, que deben dar exactamente cinco creaciones;
+  4. despliegue y verificación del README;
+  5. los identificadores y la fecha resultantes, que se anotan en esta DT. El agente no tiene acceso a Azure.
+
+  Microsoft Learn se consultó desde el agente con la herramienta de lectura web, aunque los shells no alcanzan
+  `learn.microsoft.com`.
+- **Riesgo anotado para U13:** en Microsoft Q&A hay casos de suscripciones Azure for Students que no pueden crear
+  recursos de Microsoft Foundry en ninguna región. Se comprobará al abrir U13.
+- **Referencias** (Microsoft Learn y Azure, consultadas el 2026-10-06):
+  - plantillas `Microsoft.Consumption/budgets` (2026-06-01), `Microsoft.KeyVault/vaults` (2024-11-01) y
+    `Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials` (2024-11-30);
+  - «Understand Cost Management data»;
+  - «Azure spending limit»;
+  - «Reactivate a disabled Azure for Students subscription»;
+  - «Configure a user-assigned managed identity to trust an external identity provider»;
+  - «Use GitHub Actions to connect to Azure» (OIDC);
+  - «Azure built-in roles» (Reader `acdd72a7-3385-48ef-bd42-f606fba81ae7`);
+  - «Managed identities for Azure resources»;
+  - «Azure AI Search region support»;
+  - Azure Database for PostgreSQL flexible server, regiones;
+  - «Region availability for Foundry Models sold by Azure»;
+  - Microsoft Q&A sobre las regiones de Azure for Students;
+  - anuncio de Azure ML en West US 3;
+  - precios de Key Vault.
+- **Estado:** autorización `ACEPTADA` (2026-10-06, decisión del responsable con el prompt «U10: Base de Azure,
+  Bicep, presupuesto y federación OIDC»); implementación pendiente de revisión; **despliegue real pendiente del
+  responsable**.
 
 ## Decisiones deliberadamente NO tomadas
 

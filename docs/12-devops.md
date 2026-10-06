@@ -1,6 +1,6 @@
 # 12 — Estrategia DevOps
 
-**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-10-03) — §5: correspondencia entre los entornos y `APP_ENV` para la API de U5 (`DT-065`) · **Versión 1.3** (2026-10-05) — §2.2: excepción de merge commit para la integración inicial de U1–U6; §3.1: imagen `frontend` en el mismo origen que `/api` (`DT-070`) · **Versión 1.4** (2026-10-05) — §2.2: merge commit para las unidades de la Fase 5 (`DT-085`) · **Versión 1.5** (2026-10-06) — §3.4: U7 implementada, pendiente de revisión (`DT-095`): imágenes, `docker compose` del sistema completo y verificación; el resto de este documento sigue siendo diseño · **Versión 1.6** (2026-10-06) — §4.5: U8 implementada, pendiente de revisión (`DT-096`); §3.4: bases de U7 fijadas por digest, pendiente de verificación externa
+**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-10-03) — §5: correspondencia entre los entornos y `APP_ENV` para la API de U5 (`DT-065`) · **Versión 1.3** (2026-10-05) — §2.2: excepción de merge commit para la integración inicial de U1–U6; §3.1: imagen `frontend` en el mismo origen que `/api` (`DT-070`) · **Versión 1.4** (2026-10-05) — §2.2: merge commit para las unidades de la Fase 5 (`DT-085`) · **Versión 1.5** (2026-10-06) — §3.4: U7 implementada, pendiente de revisión (`DT-095`): imágenes, `docker compose` del sistema completo y verificación; el resto de este documento sigue siendo diseño · **Versión 1.6** (2026-10-06) — §4.5: U8 implementada, pendiente de revisión (`DT-096`); §3.4: bases de U7 fijadas por digest, pendiente de verificación externa · **Versión 1.7** (2026-10-06) — §4.3: identidad administrada con credencial federada OIDC de U10 (`DT-098`)
 
 > No se crean workflows, imágenes ni recursos en esta etapa.
 
@@ -175,6 +175,14 @@ emitido por GitHub y lo intercambia por credenciales de Azure, sin almacenar sec
 Es el método documentado tanto por GitHub como por Microsoft y es el que se adoptará. Requiere el
 permiso `id-token: write` en el workflow y una credencial federada configurada en la aplicación de
 Entra ID, con ámbito restringido al repositorio, la rama o el entorno concretos.
+
+*Nota del 2026-10-06 (U10, `DT-098`):*
+- La credencial federada se crea sobre una **identidad administrada asignada por el usuario**, `id-mpa-dev-github`,
+  y no sobre un registro de aplicación. Microsoft Learn admite ambas.
+- El sujeto limita el uso al entorno `dev` de GitHub.
+- El único rol es Reader sobre `rg-mpa-dev`; los permisos de despliegue llegan con U12.
+- El workflow de U8 no cambia.
+- La infraestructura está en `infra/azure/`.
 
 ### 4.4 Buenas prácticas del pipeline
 

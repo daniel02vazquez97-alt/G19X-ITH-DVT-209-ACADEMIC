@@ -216,8 +216,9 @@ Detalle en `docs/13-testing.md`.
 
 ## 13. Reglas para Git
 
-1. **El agente no hace commit ni push automáticamente.** Prepara los cambios y los reporta;
-   el commit lo autoriza el responsable.
+1. **El agente hace los commits necesarios en ramas de trabajo; el push, los PR y los merges los hace el
+   responsable** (instrucción del responsable, 2026-10-06; antes, el agente no hacía commits).
+   Nunca hace push.
 2. Nunca trabajar directamente sobre `main`. Rama por unidad de trabajo:
    `feature/`, `fix/`, `docs/`, `chore/`, `exp/`.
 3. Mensajes de commit en formato *Conventional Commits*: `feat:`, `fix:`, `docs:`, `test:`,
@@ -385,13 +386,17 @@ sin linter de Python (ni Ruff ni Black), frontend con ESLint, Prettier y `tsc`, 
 *(2026-10-06: **U9 autorizada** e implementada, pendiente de revisión (`DT-097`): migración `0004`, esquema `analytics`
 y rol `analytics_reader`; sin Power BI. Las vistas dependen de tablas operativas: una migración que las altere debe
 recrearlas.)*
+*(2026-10-06: **U10 autorizada**, `DT-098`: Bicep de la base de Azure de `dev` en `infra/azure/`; el despliegue lo
+ejecuta el responsable con su sesión. U11–U16 siguen sin autorizar.)*
 Restricciones vigentes, que se levantan solo por instrucción explícita:
 
 - **No escribir código de aplicación fuera de una unidad autorizada.** Cada unidad (U1 a U6 de `DT-047`,
   U7 a U16 de `DT-094`, …) requiere su propia autorización.
 - El generador (`data/synthetic/`) y el dataset 0.4.0 son **upstream terminado**: no se modifican, y
   el código del sistema consume su contrato, no su código.
-- No configurar servicios reales de Azure. No crear credenciales. No hacer commits automáticamente.
+- No configurar servicios reales de Azure. No crear credenciales. *(2026-10-06: U10 lo levanta solo para su base
+  de `dev` y solo con la sesión del responsable (`DT-098`); el agente nunca recibe credenciales. Los commits los
+  hace el agente en ramas de trabajo (§13); el push y los PR, el responsable.)*
 - No instalar dependencias sin autorización: cada unidad declara las suyas (`DT-043`).
 - Las reglas V1 (`DT-031`) y los criterios `SYNTHETIC_COVERAGE_CRITERION` (`DT-041`) **no son
   políticas de negocio**; toda recomendación calculada con ellas se marca como provisional.
