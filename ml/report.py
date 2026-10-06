@@ -4,8 +4,10 @@
   agreement of `DT-078`; no Level 2 is computed here);
 * ``f5a-series-cuts.csv`` — training-side description of every series-cut (segment, scale, ``L``);
 * ``f5a-summary.json`` — run metadata, provisional configuration, per-cut summaries and the
-  comparison tables;
-* the Markdown report, labelled SYNTHETIC, without promotion conclusions or metric choice.
+  comparison tables (not versioned: regenerated in ``ml/out/``);
+* the Markdown report, labelled SYNTHETIC, without promotion conclusions or metric choice, and its
+  compact JSON (`compact_summary`): metadata, configuration, fingerprint and aggregates across cuts,
+  without per-cut tables. Both are versioned in ``docs/reports/`` (`DT-073`).
 
 ``results_sha256`` covers the two CSVs and the tables (not the run metadata), so two runs on the
 same data and code give the same hash.
@@ -19,6 +21,7 @@ import hashlib
 import io
 import json
 import platform
+import re
 import subprocess
 from pathlib import Path
 
@@ -336,7 +339,9 @@ def render_markdown(summary: dict) -> str:
         "",
         f"`{OBSERVATIONS_FILE}` contiene, por modelo × corte × serie × horizonte, el error y su versión escalada "
         "(MASE/RMSSE de la serie-corte) y la marca de conjunto común; con ello se calculan después el acuerdo "
-        "serie-corte y el Spearman entre modelos cuando F5b aporte el indicador de Nivel 2. Los datos detallados "
+        "serie-corte y el Spearman entre modelos cuando F5b aporte el indicador de Nivel 2. Junto a este informe se "
+        "versiona un JSON resumido (mismo nombre, extensión `.json`): metadatos, configuración, huella y agregados entre "
+        "cortes por modelo × segmento × horizonte × vista, sin tablas por corte (`DT-073`). Los datos detallados "
         f"(`{OBSERVATIONS_FILE}`, `{SERIES_CUTS_FILE}` y `{SUMMARY_FILE}`, con las métricas por corte) no se versionan: "
         "se regeneran de forma determinista con el comando de §1 en el directorio de salida (`ml/out/`, ignorado por "
         "Git). Huellas de los CSV:",
@@ -348,7 +353,8 @@ def render_markdown(summary: dict) -> str:
     return "\n".join(lines)
 
 
-_RULE_LABELS = {"AS_OF_VALIDITY": "vigencia al corte (DT-087)", "U3_SNAPSHOT": "literal de U3"}
+_RULE_LABELS = {"AS_OF_VALIDITY": "vigencia al corte (`DT-087`)", "U3_SNAPSHOT": "literal de U3"}
+_RULE_SHORT = {"AS_OF_VALIDITY": "vigencia", "U3_SNAPSHOT": "U3 literal"}
 
 
 def _runs(values: list[tuple[str, object]]) -> str:
@@ -370,7 +376,7 @@ def _population_notes(summary: dict) -> list[str]:
         "",
         "### 4.1 Población, descontinuados y series fuera de L + R",
         "",
-        f"- Población por corte con la regla {_RULE_LABELS.get(rule, rule)}: "
+        f"- Población por corte con la regla de {_RULE_LABELS.get(rule, rule)}: "
         + _runs([(c["as_of"], c["population"]) for c in cuts])
         + f", de {cuts[0]['candidates']} candidatas.",
         "- Fuera de la población (`INACTIVE_OR_OUT_OF_VALIDITY`; en el desglose por segmento figuran como "
@@ -413,19 +419,20 @@ def _comparison_section(summary: dict) -> list[str]:
         return []
     a, b = comp["rules"]
     la, lb = _RULE_LABELS.get(a, a), _RULE_LABELS.get(b, b)
+    sa, sb = _RULE_SHORT.get(a, a), _RULE_SHORT.get(b, b)
     lines = [
         "## 6. Comparación de reglas de población (efecto del sesgo de supervivencia)",
         "",
         f"Misma ejecución con las dos reglas: **{la}** (la de este informe) y **{lb}**. Diferencias descriptivas, "
         "`SYNTHETIC`; sin conclusiones de promoción ni elección de métrica.",
         "",
-        f"Población por corte — {la}: "
+        f"Población por corte — {sa}: "
         + _runs([(cut, v[a]) for cut, v in sorted(comp["population_by_cut"].items())])
-        + f"; {lb}: "
+        + f"; {sb}: "
         + _runs([(cut, v[b]) for cut, v in sorted(comp["population_by_cut"].items())])
         + ".",
         "",
-        f"| Horizonte | Vista | Segmento | n ({la}) | n ({lb}) |",
+        f"| Horizonte | Vista | Segmento | n {sa} | n {sb} |",
         "|---|---|---|---|---|",
     ]
     for horizon in HORIZONS:
@@ -440,7 +447,7 @@ def _comparison_section(summary: dict) -> list[str]:
                     )
     lines += [
         "",
-        f"Media entre cortes, todos los segmentos (celda: {la} / {lb}):",
+        f"Media entre cortes, todos los segmentos (celda: {sa} / {sb}):",
         "",
         "| Horizonte | Vista | Modelo | " + " | ".join(_METRIC_LABELS[m] for m in _COMPARED_METRICS) + " |",
         "|---|---|---|" + "---|" * len(_COMPARED_METRICS),
@@ -458,3 +465,69 @@ def _comparison_section(summary: dict) -> list[str]:
                 lines.append(f"| {_HORIZON_LABELS[horizon]} | {_VIEW_LABELS[view]} | {MODEL_LABELS[model]} | " + " | ".join(cells) + " |")
     lines.append("")
     return lines
+
+
+# --- Versioned compact JSON (DT-073) --------------------------------------------------------------
+
+#: Decimals kept in the compact JSON (a rounding of reported aggregates; the fingerprint is computed on
+#: the full results, so rounding here never changes ``results_sha256``).
+COMPACT_DECIMALS = 6
+#: Size budget of the versioned compact JSON, checked by the tests.
+COMPACT_MAX_BYTES = 100_000
+#: Order of the per-metric statistics in the compact JSON (lists keep the file small).
+STATS_ORDER = ("mean", "sd", "min", "max", "n_cuts")
+
+
+def _round(value: object) -> object:
+    if isinstance(value, float):
+        return round(value, COMPACT_DECIMALS)
+    if isinstance(value, dict):
+        return {k: _round(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_round(v) for v in value]
+    return value
+
+
+def compact_summary(summary: dict) -> dict:
+    """The versioned summary: metadata, configuration, fingerprint and aggregates across cuts.
+
+    Aggregates are per horizon × view × segment × model: ``n`` observations and, for every metric, the
+    list ``[mean, sd, min, max, n_cuts]`` across cuts (``STATS_ORDER``). No per-cut table is included; those
+    are regenerated deterministically in ``ml/out/``.
+    """
+    aggregates: dict = {}
+    for horizon, views in summary["tables"].items():
+        for view, segments in views.items():
+            for segment, models in segments.items():
+                for model, entry in models.items():
+                    aggregates.setdefault(horizon, {}).setdefault(view, {}).setdefault(segment, {})[model] = {
+                        "n": entry["n_observations"],
+                        "metrics": {m: [s[k] for k in STATS_ORDER] for m, s in entry["across_cuts"].items()},
+                    }
+    comparison = summary.get("population_comparison") or {}
+    return _round(
+        {
+            "label": summary["label"],
+            "unit": summary["unit"],
+            "metadata": summary["metadata"],
+            "protocol": summary["protocol"],
+            "config": summary["config"],
+            "results_sha256": summary["results_sha256"],
+            "files": summary["files"],
+            "aggregates_stats_order": list(STATS_ORDER),
+            "aggregates": aggregates,
+            "population_comparison": {k: v for k, v in comparison.items() if k != "population_by_cut"},
+            "discontinued": summary.get("discontinued"),
+            "rounding": f"aggregates rounded to {COMPACT_DECIMALS} decimals; results_sha256 covers the full results",
+        }
+    )
+
+
+_FLAT_LIST = re.compile(r"\[\n\s*([^\[\]{}]*?)\n\s*\]")
+
+
+def compact_json_text(summary: dict) -> str:
+    """Indented JSON with innermost lists kept on one line (small, readable diffs, deterministic)."""
+    text = json.dumps(compact_summary(summary), indent=1, sort_keys=True, ensure_ascii=False)
+    text = _FLAT_LIST.sub(lambda m: "[" + re.sub(r",\n\s*", ", ", m.group(1)) + "]", text)
+    return text + "\n"

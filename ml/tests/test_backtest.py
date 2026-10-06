@@ -10,11 +10,21 @@ import unittest
 from pathlib import Path
 
 from ml.__main__ import main
-from ml.backtest import H1, LR, comparison_tables, common_keys, cut_summaries, run_backtest
+from ml.backtest import H1, HORIZONS, LR, VIEWS, comparison_tables, common_keys, cut_summaries, run_backtest
+from ml.metrics import METRICS
+from ml.segmentation import SEGMENTS
 from ml.config import POPULATION_AS_OF_VALIDITY, POPULATION_U3_SNAPSHOT, F5aConfig
 from ml.data import load_dataset
 from ml.models import MODEL_NAMES
-from ml.report import OBSERVATIONS_FILE, SERIES_CUTS_FILE, SUMMARY_FILE, build_summary, render_markdown
+from ml.report import (
+    COMPACT_MAX_BYTES,
+    OBSERVATIONS_FILE,
+    SERIES_CUTS_FILE,
+    SUMMARY_FILE,
+    build_summary,
+    compact_json_text,
+    render_markdown,
+)
 from ml.tests.fixtures import TempDataset
 
 EARLY = _dt.date(2024, 3, 27)  # product 3 has 43 weeks: seasonal naïve (63) not eligible; product 4 still valid
@@ -84,9 +94,12 @@ class ReproducibilityTest(unittest.TestCase):
             self.assertEqual(main(["backtest", "--data", str(path), "--out", str(out), "--report", str(report), *fixed]), 0)
             first = {n: (out / n).read_bytes() for n in (OBSERVATIONS_FILE, SERIES_CUTS_FILE)}
             summary = json.loads((out / SUMMARY_FILE).read_text(encoding="utf-8"))
-            self.assertEqual(main(["backtest", "--data", str(path), "--out", str(out), *fixed]), 0)
+            compact = report.with_suffix(".json")
+            first_compact = compact.read_bytes()
+            self.assertEqual(main(["backtest", "--data", str(path), "--out", str(out), "--report", str(report), *fixed]), 0)
             second = {n: (out / n).read_bytes() for n in (OBSERVATIONS_FILE, SERIES_CUTS_FILE)}
             self.assertEqual(first, second)
+            self.assertEqual(compact.read_bytes(), first_compact)  # deterministic
             self.assertEqual(summary["label"], "SYNTHETIC")
             self.assertEqual(len(summary["protocol"]["cuts"]), 17)
             self.assertEqual(summary["metadata"]["generated_on"], "2026-10-05")
@@ -95,12 +108,47 @@ class ReproducibilityTest(unittest.TestCase):
             text = report.read_text(encoding="utf-8")
             self.assertIn("SYNTHETIC", text)
             self.assertIn("PROPUESTA", text)
-            self.assertFalse(report.with_suffix(".json").exists())  # detailed data stays in --out (not versioned)
+            self.assertLess(len(first_compact), COMPACT_MAX_BYTES)
+            compact_data = json.loads(first_compact)
+            self.assertNotIn("cuts", compact_data)  # no per-cut tables in the versioned JSON
+            self.assertNotIn("population_by_cut", compact_data["population_comparison"])
+            self.assertEqual(compact_data["results_sha256"], summary["results_sha256"])
+            for key in ("dataset_version", "engine_version_u1", "git_commit", "python_version", "seeds", "command", "generated_on"):
+                self.assertIn(key, compact_data["metadata"])
+            self.assertEqual(compact_data["config"]["population_rule"], "AS_OF_VALIDITY")
+            self.assertEqual(compact_data["aggregates_stats_order"], ["mean", "sd", "min", "max", "n_cuts"])
+            self.assertEqual(len(compact_data["aggregates"]["H1"]["ALL_WEEKS"]["ALL"]["ml.ses"]["metrics"]["mase"]), 5)
             self.assertEqual(render_markdown(summary), text)
             self.assertIn("## 6. Comparación de reglas de población", text)
             self.assertIn("--generated-on 2026-10-05", summary["metadata"]["command"])
             self.assertEqual(summary["population_comparison"]["rules"], ["AS_OF_VALIDITY", "U3_SNAPSHOT"])
             self.assertEqual([d["product_id"] for d in summary["discontinued"]], [4])
+
+
+class CompactJsonSizeTest(unittest.TestCase):
+    def test_worst_case_catalogue_stays_under_the_budget(self) -> None:
+        """Every horizon × view × segment × model filled: the versioned JSON stays under 100 KB."""
+        stats = {"mean": 0.123456789012, "sd": 0.0123456789, "min": 0.0012345678, "max": 1.23456789, "n_cuts": 17}
+        entry = {"n_observations": 1700, "across_cuts": {m: dict(stats) for m in METRICS}, "per_cut": {"x": {}}}
+        tables = {
+            h: {v: {s: {m: entry for m in MODEL_NAMES} for s in ("ALL",) + SEGMENTS} for v in VIEWS} for h in HORIZONS
+        }
+        summary = {
+            "label": "SYNTHETIC",
+            "unit": "F5a (DT-086)",
+            "metadata": {"command": "x" * 300},
+            "protocol": {},
+            "config": F5aConfig().describe(),
+            "results_sha256": "0" * 64,
+            "files": {},
+            "tables": tables,
+            "population_comparison": None,
+            "discontinued": [],
+        }
+        first, second = compact_json_text(summary), compact_json_text(summary)
+        self.assertEqual(first, second)
+        self.assertLess(len(first.encode("utf-8")), COMPACT_MAX_BYTES)
+        self.assertNotIn("per_cut", first)
 
 
 if __name__ == "__main__":
