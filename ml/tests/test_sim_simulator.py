@@ -14,7 +14,7 @@ from unittest import mock
 from ml.__main__ import main
 from ml.simulation import simulator
 from ml.simulation.report import build_results, build_summary, detail_csvs
-from ml.simulation.run import run_f5b
+from ml.simulation.run import IncompleteRun, run_f5b
 from ml.simulation.simulator import (
     NO_ACTIVE_PREFERRED_SUPPLIER,
     SimConfig,
@@ -111,6 +111,21 @@ class FixtureSimulationTest(unittest.TestCase):
         first = fingerprint(1)
         self.assertEqual(first, fingerprint(1))
         self.assertEqual(first, fingerprint(2))
+
+    def test_resumable_cache_gives_the_same_result(self) -> None:
+        def fingerprint(inputs, result, level1) -> str:
+            results = build_results(inputs, result, level1)
+            return build_summary(SHORT, results, detail_csvs(result, results), {"fixed": True})["results_sha256"]
+
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(IncompleteRun):
+                run_f5b(self.path, SHORT, cache_dir=Path(tmp), time_budget=0)
+            resumed = run_f5b(self.path, SHORT, cache_dir=Path(tmp))
+            again = run_f5b(self.path, SHORT, cache_dir=Path(tmp))  # everything from the cache
+            cache = next(Path(tmp).iterdir())
+            self.assertEqual(len(list(cache.glob("product-*.pkl"))), 3)
+        self.assertEqual(fingerprint(*resumed), fingerprint(*run_f5b(self.path, SHORT)))
+        self.assertEqual(fingerprint(*again), fingerprint(*resumed))
 
 
 class SensitivityTest(unittest.TestCase):

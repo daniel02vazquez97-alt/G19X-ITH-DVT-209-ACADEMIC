@@ -64,6 +64,8 @@ def main(argv: list[str] | None = None) -> int:
     sim.add_argument(
         "--period-end", type=_dt.date.fromisoformat, default=None, help="end of the simulated period (default and maximum: 2025-09-24)"
     )
+    sim.add_argument("--cache-dir", type=Path, help="resumable cache of finished products (e.g. ml/out/f5b-cache)")
+    sim.add_argument("--time-budget", type=float, help="seconds; stop cleanly and resume on the next call (needs --cache-dir)")
     sim.add_argument("--products", type=lambda s: [int(x) for x in s.split(",")], help="restrict to these product ids")
     raw = sys.argv[1:] if argv is None else argv
     args = parser.parse_args(raw)
@@ -75,14 +77,21 @@ def main(argv: list[str] | None = None) -> int:
 
 def _simulate(args: argparse.Namespace, command: str) -> int:
     from .simulation import report as sim_report
-    from .simulation.run import run_f5b
+    from .simulation.run import IncompleteRun, run_f5b
     from .simulation.simulator import SimConfig
 
     started = time.monotonic()
     config = SimConfig(open_lines_rule=args.open_lines)
     if args.period_end is not None:
         config = SimConfig(open_lines_rule=args.open_lines, period_end=args.period_end)
-    inputs, result, level1 = run_f5b(args.data, config, workers=args.workers, products=args.products)
+    try:
+        inputs, result, level1 = run_f5b(
+            args.data, config, workers=args.workers, products=args.products, cache_dir=args.cache_dir,
+            time_budget=args.time_budget,
+        )
+    except IncompleteRun as exc:
+        print(f"F5b simulate: incomplete ({exc}) after {time.monotonic() - started:.1f}s")
+        return 3
     metadata = run_metadata(
         inputs.dataset.dataset_version, inputs.dataset.data_origin, args.generated_on or _dt.date.today(), command
     )
