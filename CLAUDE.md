@@ -110,8 +110,10 @@ ADR, pero sí deben quedar registradas en el archivo de dependencias correspondi
 8. **Trazabilidad.** Toda recomendación generada debe poder explicarse a partir de sus insumos
    (versión de modelo, forecast usado, parámetros de política, inventario en el momento del cálculo).
 9. Código y comentarios en **inglés**; documentación de proyecto y de negocio en **español**.
-10. Formato: `black` + `ruff` (Python), `eslint` + `prettier` (JS/TS). Tipado obligatorio en
-    firmas públicas de Python y en componentes React.
+10. Objetivo: black + ruff (Python) y eslint + prettier (JS/TS). Situación actual: en Python no se instalan
+    ni se ejecutan, por instrucción del responsable, hasta la DT de la Fase 13. Mientras tanto: compileall,
+    pruebas AST de dependencias y la suite de pruebas. El tipado sigue siendo obligatorio en firmas públicas,
+    sin verificador automático.
 
 ## 7. Comportamiento esperado ante información desconocida
 
