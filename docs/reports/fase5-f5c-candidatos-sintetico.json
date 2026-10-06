@@ -1,0 +1,1588 @@
+{
+ "config": {
+  "f5c": {
+   "candidates": {
+    "croston_sba": {
+     "alpha": ["0.05", "0.10", "0.20", "0.30"],
+     "sba_factor": "1 − α/2"
+    },
+    "holt": {
+     "alpha": ["0.10", "0.20", "0.30", "0.40", "0.50", "0.60", "0.70", "0.80", "0.90"],
+     "beta": ["0.01", "0.05", "0.10", "0.20", "0.30"],
+     "init": "level=Y2, trend=Y2−Y1"
+    },
+    "holt_winters": {
+     "alpha": ["0.10", "0.20", "0.30", "0.50"],
+     "beta": ["0.01", "0.05", "0.10"],
+     "gamma": ["0.05", "0.10", "0.20", "0.30"],
+     "init": "two first seasons (trend, level, centred indices)",
+     "period": 52
+    },
+    "hw_min_history_weeks": 104,
+    "interval": "nearest-rank 10/90 of DT-056 on in-sample errors per horizon (fitted parameters)",
+    "label": "PROPUESTA (provisional)",
+    "min_history_weeks": 25,
+    "selection": "minimum one-step SSE inside the training window; ties → first (smallest) grid combination",
+    "tsb": {
+     "alpha": ["0.05", "0.10", "0.20", "0.30"],
+     "beta": ["0.05", "0.10", "0.20", "0.30"],
+     "init": "p = 1 / index of first demand"
+    }
+   },
+   "criteria": {
+    "bias": "absolute relative bias at L+R ≤ 0.1; segments ≥ 10 products not worse than 0.05",
+    "coverage": "nominal 0.8; calibrated if within [0.75, 0.85] per horizon on the late cuts (label of the band only)",
+    "cuts": "aggregate and ≥ ⌈2/3⌉ of the comparable cuts, minimum 5; fewer → not conclusive",
+    "level2": "units short ≤ +2%, fill rate ≥ −0.002, average inventory ≤ +5%",
+    "primary": "MASE at LR; h = 1 secondary (DT-093 point 1)",
+    "segments": "no segment with ≥ 10 products worse than 5%",
+    "status": "ACEPTADA (DT-091, DT-093), provisional, SYNTHETIC"
+   },
+   "dt011": {
+    "exclude": "observed days × 7 / days_observed; weeks without observed days omitted",
+    "extreme": "series with more than 50% stockout days reported apart",
+    "impute": "mean of the non-stockout days of the previous 56 days; none → as is",
+    "models": "official baseline, SES and the 2 best candidates by Level 1 (lowest MASE at L+R relative to the official baseline on their pairwise comparable set)",
+    "status": "ACEPTADA (DT-093 point 8)"
+   },
+   "label": "PROPUESTA (provisional) where not ACEPTADA",
+   "official_baseline": "baseline.moving_average (DT-089)",
+   "segmentation": {
+    "adi_threshold": 1.32,
+    "cv2_threshold": 0.49,
+    "seasonality": "n ≥ 104 training weeks and ACF(lag 52) > 1.96/√n",
+    "status": "ACEPTADA (DT-093 point 7)"
+   },
+   "simulator": {
+    "baselines_and_ses": "as in F5b (forecast recomputed at every decision)",
+    "candidates_refit_every_decisions": 4,
+    "status": "ACEPTADA (DT-093 points 9 and 11)",
+    "substitution": "official baseline points when the candidate is not eligible or invalid; counted"
+   },
+   "us055": {
+    "calibration": "per model and horizon, factor k of the grid that brings the coverage of [p − k(p − lower), p + k(upper − p)] (lower ≥ 0) closest to the nominal level on the cuts whose evaluation ends on or before the measured cut; ties → smaller k",
+    "late_cuts": "cuts from index 8 (0-based) on",
+    "status": "PROPUESTA (provisional)",
+    "widening_grid": [0.5, 3.0, 51]
+   }
+  },
+  "simulation": {
+   "branches": ["baseline.naive", "baseline.seasonal_naive", "baseline.moving_average", "ml.ses", "ml.holt", "ml.holt_winters", "ml.croston", "ml.sba", "ml.tsb", "baseline.moving_average@b", "baseline.moving_average@c", "ml.ses@b", "ml.ses@c", "ml.holt_winters@b", "ml.holt_winters@c", "ml.tsb@b", "ml.tsb@c"],
+   "f5a_models": {
+    "label": "PROPUESTA (provisional)",
+    "level1": {
+     "lr_scale_policy": "WEEKLY_SCALE_PRORATED",
+     "zero_scale_policy": "EXCLUDE_AND_COUNT"
+    },
+    "population_rule": "AS_OF_VALIDITY",
+    "population_rule_source": "DT-087 (ACEPTADA)",
+    "segmentation": {
+     "adi_threshold": 1.32,
+     "cv2_threshold": 0.49,
+     "seasonality": "OPEN (no criterion, DT-077)",
+     "short_history_weeks": 25
+    },
+    "ses": {
+     "alpha_grid": ["0.05", "0.10", "0.15", "0.20", "0.25", "0.30", "0.35", "0.40", "0.45", "0.50", "0.55", "0.60", "0.65", "0.70", "0.75", "0.80", "0.85", "0.90", "0.95"],
+     "initial_level": "FIRST_OBSERVATION",
+     "interval": "nearest-rank 10/90 of DT-056 on SES errors per horizon (fixed alpha)",
+     "min_history_weeks": 25,
+     "selection": "minimum one-step SSE inside the training window; ties → smallest alpha"
+    },
+    "u1_policy": {
+     "lt_max": 90,
+     "n": 12,
+     "n_min": 3,
+     "policy_set": "V1_PROVISIONAL",
+     "r": 7,
+     "z": "33/20"
+    }
+   },
+   "first_cut": "2024-03-27",
+   "label": "PROPUESTA (provisional) where marked",
+   "lead_time_observations": "real lines issued up to the first cut; U1 keeps those completed by each decision",
+   "open_lines_rule": {
+    "status": "DT-080 point 7 by default; ACTUAL_RECEIPTS pending the responsable (OD-S1)",
+    "value": "EXPECTED_ON"
+   },
+   "period_end": "2025-09-24",
+   "population": "validity on the first cut (DT-087) and an active preferred supplier (L + R)",
+   "retrain_every_weeks": {
+    "status": "provisional",
+    "value": 1
+   },
+   "review_days": 7,
+   "u1": {
+    "engine_version": "0.1.0",
+    "policy": {
+     "lt_max": "90",
+     "n": "12",
+     "n_min": "3",
+     "policy_set": "V1_PROVISIONAL",
+     "r": "7",
+     "z": "33/20"
+    }
+   },
+   "warmup_weeks": {
+    "status": "provisional",
+    "value": 8
+   }
+  }
+ },
+ "field_orders": {
+  "agreement": ["pairs_compared", "pairs_tied", "agreement", "agreement_with_inventory"],
+  "coverage": ["current_all_cuts", "current_late_cuts", "calibrated_late_cuts", "n_late", "mean_factor"],
+  "level1": ["cuts", "mean_series", "mase", "rmsse", "wape", "bias_rel", "coverage", "ref_mase", "ref_rmsse", "ref_wape", "ref_bias_rel"],
+  "level2": ["n_series", "units_short", "stockout_days", "fill_rate", "cycle_service_level", "avg_inventory", "relative_inventory", "orders"],
+  "spearman": ["mean", "min", "max", "n_cuts"],
+  "study": ["cuts", "n", "mase", "rmsse", "wape", "bias_rel"]
+ },
+ "files": {
+  "f5c-decisions.csv": "f023e0e135ab16319e2ee2b8afa2bcdbde8be7386b1289f73219239778d0a606",
+  "f5c-observations.csv": "0aa19b6f4cbde8e292542458d58d6bf746e7f59caaf2cdb2b88f41332ccb06b1",
+  "f5c-orders.csv": "4147143598636330fed06a756945264ce54b43ce8e04aac045c97c4a0233893e",
+  "f5c-study.csv": "507fab15f550634c77b61669df33dd1ef0a5471ea265b5e7305dadcc1e79488c",
+  "f5c-windows.csv": "70105e2511edcec90fda7c39e74e6f6ad1460a1873d0145665a96034807989d0"
+ },
+ "label": "SYNTHETIC",
+ "metadata": {
+  "baselines_u3": {
+   "baseline.moving_average": "1.0.0",
+   "baseline.naive": "1.0.0",
+   "baseline.seasonal_naive": "1.0.0"
+  },
+  "candidates_version": "0.1.0-provisional",
+  "command": "PYTHONPATH=backend python -m ml candidates --data data/synthetic/output --out ml/out --report docs/reports/fase5-f5c-candidatos-sintetico.md --generated-on 2026-10-06 --workers 2 --reuse-cache ml/out/f5c-cache/17e2ff08bfbc635f",
+  "data_origin": "SYNTHETIC",
+  "dataset_version": "ds-6c8ad65b4999",
+  "engine_version_u1": "0.1.0",
+  "generated_on": "2026-10-06",
+  "git_commit": "cd3630da845aa6ce2ffaace297a67cd92bd1f57b",
+  "git_tracked_changes": false,
+  "ml_version": "0.2.0",
+  "python_version": "3.11.16",
+  "seeds": "none (no randomness)",
+  "ses": {
+   "name": "ml.ses",
+   "version": "0.1.0-provisional"
+  }
+ },
+ "results": {
+  "cadence_sensitivity": {
+   "aggregates": {
+    "FULL": {
+     "baseline.moving_average": ["3882", 255, 0.994346, 18062.8663],
+     "ml.croston": ["4025", 260, 0.994138, 17797.40293],
+     "ml.holt": ["5658", 349, 0.991759, 18662.675824],
+     "ml.tsb": ["3973", 250, 0.994213, 17792.049451]
+    },
+    "NO_WARMUP": {
+     "baseline.moving_average": ["1166", 87, 0.998105, 18280.538776],
+     "ml.croston": ["1345", 94, 0.997814, 17991.989796],
+     "ml.holt": ["3083", 185, 0.994989, 18898.083673],
+     "ml.tsb": ["1293", 84, 0.997898, 17995.62449]
+    }
+   },
+   "baseline_identical_to_main_run": true,
+   "criteria": {
+    "ml.croston": [
+     ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", false],
+     ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+     ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+     ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", true],
+     ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+     ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+    ],
+    "ml.holt": [
+     ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", false],
+     ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "NO CUMPLE", false],
+     ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+     ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", true],
+     ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "NO CUMPLE", true],
+     ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+    ],
+    "ml.tsb": [
+     ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", false],
+     ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+     ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+     ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", true],
+     ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+     ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+    ]
+   },
+   "fields": ["units_short", "stockout_days", "fill_rate", "avg_inventory"],
+   "refit_every_decisions": 1,
+   "sha256": "28ce7c4f122519303398f7c5d36c4e3dd0a07c7ac7e4b2230106f40522fda9a6",
+   "substitutions": {
+    "baseline.moving_average": 0,
+    "ml.croston": 0,
+    "ml.holt": 215,
+    "ml.tsb": 0
+   }
+  },
+  "criteria": {
+   "ml.croston": {
+    "statuses": [
+     ["N1: mejora agregada de MASE en L + R", "CUMPLE", false],
+     ["N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "CUMPLE", false],
+     ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "CUMPLE", false],
+     ["Sesgo relativo medio en L + R dentro de ±0,10", "CUMPLE", false],
+     ["Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "CUMPLE", false],
+     ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", false],
+     ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+     ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+     ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", true],
+     ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+     ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+    ],
+    "verdict": {
+     "failing": ["N2 (FULL): unidades faltantes no peores en más de un 2 %"],
+     "meets_all": false,
+     "not_conclusive_or_not_evaluated": []
+    }
+   },
+   "ml.holt": {
+    "statuses": [
+     ["N1: mejora agregada de MASE en L + R", "CUMPLE", false],
+     ["N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "CUMPLE", false],
+     ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "NO CUMPLE", false],
+     ["Sesgo relativo medio en L + R dentro de ±0,10", "CUMPLE", false],
+     ["Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "NO CUMPLE", false],
+     ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", false],
+     ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "NO CUMPLE", false],
+     ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+     ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", true],
+     ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "NO CUMPLE", true],
+     ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+    ],
+    "verdict": {
+     "failing": ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "N2 (FULL): unidades faltantes no peores en más de un 2 %", "N2 (FULL): fill rate no peor en más de 0,2 puntos"],
+     "meets_all": false,
+     "not_conclusive_or_not_evaluated": []
+    }
+   },
+   "ml.holt_winters": {
+    "statuses": [
+     ["N1: mejora agregada de MASE en L + R", "CUMPLE", false],
+     ["N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "CUMPLE", false],
+     ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "NO CUMPLE", false],
+     ["Sesgo relativo medio en L + R dentro de ±0,10", "CUMPLE", false],
+     ["Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "CUMPLE", false],
+     ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", false],
+     ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+     ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+     ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", true],
+     ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+     ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+    ],
+    "verdict": {
+     "failing": ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "N2 (FULL): unidades faltantes no peores en más de un 2 %"],
+     "meets_all": false,
+     "not_conclusive_or_not_evaluated": []
+    }
+   },
+   "ml.sba": {
+    "statuses": [
+     ["N1: mejora agregada de MASE en L + R", "NO CUMPLE", false],
+     ["N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "NO CUMPLE", false],
+     ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "NO CUMPLE", false],
+     ["Sesgo relativo medio en L + R dentro de ±0,10", "CUMPLE", false],
+     ["Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "CUMPLE", false],
+     ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", false],
+     ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+     ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+     ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", true],
+     ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+     ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+    ],
+    "verdict": {
+     "failing": ["N1: mejora agregada de MASE en L + R", "N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "N2 (FULL): unidades faltantes no peores en más de un 2 %"],
+     "meets_all": false,
+     "not_conclusive_or_not_evaluated": []
+    }
+   },
+   "ml.ses": {
+    "statuses": [
+     ["N1: mejora agregada de MASE en L + R", "CUMPLE", false],
+     ["N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "CUMPLE", false],
+     ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "CUMPLE", false],
+     ["Sesgo relativo medio en L + R dentro de ±0,10", "CUMPLE", false],
+     ["Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "CUMPLE", false],
+     ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "CUMPLE", false],
+     ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+     ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+     ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "CUMPLE", true],
+     ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+     ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+    ],
+    "verdict": {
+     "failing": [],
+     "meets_all": true,
+     "not_conclusive_or_not_evaluated": []
+    }
+   },
+   "ml.tsb": {
+    "statuses": [
+     ["N1: mejora agregada de MASE en L + R", "CUMPLE", false],
+     ["N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "CUMPLE", false],
+     ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "CUMPLE", false],
+     ["Sesgo relativo medio en L + R dentro de ±0,10", "CUMPLE", false],
+     ["Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "CUMPLE", false],
+     ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", false],
+     ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+     ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+     ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", true],
+     ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+     ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+    ],
+    "verdict": {
+     "failing": ["N2 (FULL): unidades faltantes no peores en más de un 2 %"],
+     "meets_all": false,
+     "not_conclusive_or_not_evaluated": []
+    }
+   }
+  },
+  "criteria_meeting_all": ["ml.ses"],
+  "eligibility_totals": {
+   "ml.croston": {
+    "NOT_ELIGIBLE": 0,
+    "OK": 1685,
+    "SUBSTITUTED": 0
+   },
+   "ml.holt": {
+    "NOT_ELIGIBLE": 0,
+    "OK": 1607,
+    "SUBSTITUTED": 78
+   },
+   "ml.holt_winters": {
+    "NOT_ELIGIBLE": 1000,
+    "OK": 614,
+    "SUBSTITUTED": 71
+   },
+   "ml.sba": {
+    "NOT_ELIGIBLE": 0,
+    "OK": 1685,
+    "SUBSTITUTED": 0
+   },
+   "ml.tsb": {
+    "NOT_ELIGIBLE": 0,
+    "OK": 1685,
+    "SUBSTITUTED": 0
+   }
+  },
+  "level1_pairwise_with_official_baseline": {
+   "baseline.moving_average": {
+    "H1": {
+     "ALL_WEEKS": {
+      "ALL": [17, 99.117647, 0.983463, 0.554544, 0.134679, -0.009635, 0.831176, 0.983463, 0.554544, 0.134679, -0.009635]
+     },
+     "NO_STOCKOUT": {
+      "ALL": [17, 82.058824, 0.821764, 0.49058, 0.106558, -0.042707, 0.8528, 0.821764, 0.49058, 0.106558, -0.042707]
+     }
+    },
+    "LR": {
+     "ALL_WEEKS": {
+      "ALL": [17, 93.705882, 0.800253, 0.445518, 0.109175, 0.002105, null, 0.800253, 0.445518, 0.109175, 0.002105],
+      "INTERMITTENT": [17, 10.0, 0.350409, 0.270326, 0.389643, 0.009784, null, 0.350409, 0.270326, 0.389643, 0.009784],
+      "SMOOTH": [17, 83.705882, 0.85397, 0.466449, 0.104985, 0.002164, null, 0.85397, 0.466449, 0.104985, 0.002164]
+     },
+     "NO_STOCKOUT": {
+      "ALL": [17, 53.823529, 0.728038, 0.41158, 0.091493, 0.00652, null, 0.728038, 0.41158, 0.091493, 0.00652]
+     }
+    }
+   },
+   "baseline.naive": {
+    "H1": {
+     "ALL_WEEKS": {
+      "ALL": [17, 99.117647, 0.98071, 0.56272, 0.131755, -0.010802, 0.841331, 0.983463, 0.554544, 0.134679, -0.009635]
+     },
+     "NO_STOCKOUT": {
+      "ALL": [17, 82.058824, 0.782586, 0.472456, 0.092074, -0.040048, 0.883014, 0.821764, 0.49058, 0.106558, -0.042707]
+     }
+    },
+    "LR": {
+     "ALL_WEEKS": {
+      "ALL": [17, 93.705882, 0.950816, 0.540145, 0.133987, 0.001729, null, 0.800253, 0.445518, 0.109175, 0.002105],
+      "INTERMITTENT": [17, 10.0, 0.821236, 0.632811, 0.90954, 0.009092, null, 0.350409, 0.270326, 0.389643, 0.009784],
+      "SMOOTH": [17, 83.705882, 0.965993, 0.528886, 0.122448, 0.001809, null, 0.85397, 0.466449, 0.104985, 0.002164]
+     },
+     "NO_STOCKOUT": {
+      "ALL": [17, 53.823529, 0.760566, 0.439898, 0.086129, -0.0173, null, 0.728038, 0.41158, 0.091493, 0.00652]
+     }
+    }
+   },
+   "baseline.seasonal_naive": {
+    "H1": {
+     "ALL_WEEKS": {
+      "ALL": [17, 99.117647, 1.687798, 0.98719, 0.199348, 0.000504, 0.836192, 0.983463, 0.554544, 0.134679, -0.009635]
+     },
+     "NO_STOCKOUT": {
+      "ALL": [17, 82.058824, 1.622696, 0.983328, 0.172476, -0.033282, 0.864471, 0.821764, 0.49058, 0.106558, -0.042707]
+     }
+    },
+    "LR": {
+     "ALL_WEEKS": {
+      "ALL": [17, 93.705882, 1.292089, 0.757688, 0.140069, 0.013493, null, 0.800253, 0.445518, 0.109175, 0.002105],
+      "INTERMITTENT": [17, 10.0, 0.393761, 0.303203, 0.408785, -0.008627, null, 0.350409, 0.270326, 0.389643, 0.009784],
+      "SMOOTH": [17, 83.705882, 1.399435, 0.811962, 0.136096, 0.013916, null, 0.85397, 0.466449, 0.104985, 0.002164]
+     },
+     "NO_STOCKOUT": {
+      "ALL": [17, 53.823529, 1.472531, 0.879565, 0.144892, 0.020062, null, 0.728038, 0.41158, 0.091493, 0.00652]
+     }
+    }
+   },
+   "ml.croston": {
+    "H1": {
+     "ALL_WEEKS": {
+      "ALL": [17, 99.117647, 4.989136, 1.027194, 0.269756, 0.135396, 0.81517, 0.983463, 0.554544, 0.134679, -0.009635]
+     },
+     "NO_STOCKOUT": {
+      "ALL": [17, 82.058824, 0.72937, 0.431143, 0.093212, -0.050455, 0.83906, 0.821764, 0.49058, 0.106558, -0.042707]
+     }
+    },
+    "LR": {
+     "ALL_WEEKS": {
+      "ALL": [17, 93.705882, 0.688153, 0.374076, 0.089883, -0.001539, null, 0.800253, 0.445518, 0.109175, 0.002105],
+      "INTERMITTENT": [17, 10.0, 0.322638, 0.248938, 0.351396, 0.011124, null, 0.350409, 0.270326, 0.389643, 0.009784],
+      "SMOOTH": [17, 83.705882, 0.73178, 0.389029, 0.085987, -0.001573, null, 0.85397, 0.466449, 0.104985, 0.002164]
+     },
+     "NO_STOCKOUT": {
+      "ALL": [17, 53.823529, 0.621655, 0.340254, 0.072864, -0.006018, null, 0.728038, 0.41158, 0.091493, 0.00652]
+     }
+    }
+   },
+   "ml.holt": {
+    "H1": {
+     "ALL_WEEKS": {
+      "ALL": [17, 99.117647, 0.910734, 0.511226, 0.116059, -0.002638, 0.813901, 0.983463, 0.554544, 0.134679, -0.009635]
+     },
+     "NO_STOCKOUT": {
+      "ALL": [17, 82.058824, 0.709675, 0.422747, 0.082049, -0.045723, 0.842826, 0.821764, 0.49058, 0.106558, -0.042707]
+     }
+    },
+    "LR": {
+     "ALL_WEEKS": {
+      "ALL": [17, 93.705882, 0.753244, 0.422799, 0.096362, 0.011741, null, 0.800253, 0.445518, 0.109175, 0.002105],
+      "INTERMITTENT": [17, 10.0, 0.510709, 0.39372, 0.552963, 0.210747, null, 0.350409, 0.270326, 0.389643, 0.009784],
+      "SMOOTH": [17, 83.705882, 0.782104, 0.426217, 0.089599, 0.008965, null, 0.85397, 0.466449, 0.104985, 0.002164]
+     },
+     "NO_STOCKOUT": {
+      "ALL": [17, 53.823529, 0.650884, 0.365591, 0.068856, -0.019036, null, 0.728038, 0.41158, 0.091493, 0.00652]
+     }
+    }
+   },
+   "ml.holt_winters": {
+    "H1": {
+     "ALL_WEEKS": {
+      "ALL": [7, 97.857143, 1.087803, 0.601314, 0.140672, 0.001172, 0.669323, 0.895097, 0.524805, 0.14326, -0.001351]
+     },
+     "NO_STOCKOUT": {
+      "ALL": [7, 80.857143, 0.947443, 0.528571, 0.098868, -0.048712, 0.686825, 0.751656, 0.455906, 0.105691, -0.042112]
+     }
+    },
+    "LR": {
+     "ALL_WEEKS": {
+      "ALL": [7, 91.857143, 0.643061, 0.338391, 0.074077, -0.001299, null, 0.786805, 0.444246, 0.113745, -0.000526],
+      "INTERMITTENT": [7, 10.0, 0.376855, 0.290374, 0.397878, 0.068768, null, 0.338232, 0.26035, 0.355295, -0.020626],
+      "SMOOTH": [7, 81.857143, 0.67541, 0.344161, 0.069022, -0.002279, null, 0.841506, 0.466658, 0.109936, -0.000126]
+     },
+     "NO_STOCKOUT": {
+      "ALL": [7, 51.714286, 0.582277, 0.297217, 0.048218, -0.015698, null, 0.621559, 0.357125, 0.090627, 0.006864]
+     }
+    }
+   },
+   "ml.sba": {
+    "H1": {
+     "ALL_WEEKS": {
+      "ALL": [17, 99.117647, 4.616964, 1.056908, 0.270863, 0.063344, 0.810526, 0.983463, 0.554544, 0.134679, -0.009635]
+     },
+     "NO_STOCKOUT": {
+      "ALL": [17, 82.058824, 1.052552, 0.576368, 0.121302, -0.095883, 0.832116, 0.821764, 0.49058, 0.106558, -0.042707]
+     }
+    },
+    "LR": {
+     "ALL_WEEKS": {
+      "ALL": [17, 93.705882, 0.902863, 0.473117, 0.104695, -0.051854, null, 0.800253, 0.445518, 0.109175, 0.002105],
+      "INTERMITTENT": [17, 10.0, 0.327987, 0.25299, 0.355509, -0.025314, null, 0.350409, 0.270326, 0.389643, 0.009784],
+      "SMOOTH": [17, 83.705882, 0.971589, 0.499449, 0.100948, -0.052111, null, 0.85397, 0.466449, 0.104985, 0.002164]
+     },
+     "NO_STOCKOUT": {
+      "ALL": [17, 53.823529, 0.947954, 0.470341, 0.086966, -0.050867, null, 0.728038, 0.41158, 0.091493, 0.00652]
+     }
+    }
+   },
+   "ml.ses": {
+    "H1": {
+     "ALL_WEEKS": {
+      "ALL": [17, 99.117647, 0.886172, 0.492404, 0.119341, -0.014388, 0.814056, 0.983463, 0.554544, 0.134679, -0.009635]
+     },
+     "NO_STOCKOUT": {
+      "ALL": [17, 82.058824, 0.704737, 0.415666, 0.090397, -0.051902, 0.839658, 0.821764, 0.49058, 0.106558, -0.042707]
+     }
+    },
+    "LR": {
+     "ALL_WEEKS": {
+      "ALL": [17, 93.705882, 0.669279, 0.362512, 0.086989, -0.002807, null, 0.800253, 0.445518, 0.109175, 0.002105],
+      "INTERMITTENT": [17, 10.0, 0.329676, 0.25418, 0.356874, -0.000125, null, 0.350409, 0.270326, 0.389643, 0.009784],
+      "SMOOTH": [17, 83.705882, 0.709782, 0.375438, 0.082953, -0.002693, null, 0.85397, 0.466449, 0.104985, 0.002164]
+     },
+     "NO_STOCKOUT": {
+      "ALL": [17, 53.823529, 0.59998, 0.326646, 0.069192, -0.008816, null, 0.728038, 0.41158, 0.091493, 0.00652]
+     }
+    }
+   },
+   "ml.tsb": {
+    "H1": {
+     "ALL_WEEKS": {
+      "ALL": [17, 99.117647, 0.901932, 0.502517, 0.121447, -0.014367, 0.815201, 0.983463, 0.554544, 0.134679, -0.009635]
+     },
+     "NO_STOCKOUT": {
+      "ALL": [17, 82.058824, 0.727644, 0.430178, 0.093293, -0.051315, 0.838884, 0.821764, 0.49058, 0.106558, -0.042707]
+     }
+    },
+    "LR": {
+     "ALL_WEEKS": {
+      "ALL": [17, 93.705882, 0.686689, 0.373353, 0.089663, -0.002766, null, 0.800253, 0.445518, 0.109175, 0.002105],
+      "INTERMITTENT": [17, 10.0, 0.325097, 0.250641, 0.351701, 0.002717, null, 0.350409, 0.270326, 0.389643, 0.009784],
+      "SMOOTH": [17, 83.705882, 0.729839, 0.388009, 0.085751, -0.002683, null, 0.85397, 0.466449, 0.104985, 0.002164]
+     },
+     "NO_STOCKOUT": {
+      "ALL": [17, 53.823529, 0.618972, 0.338974, 0.073153, -0.007014, null, 0.728038, 0.41158, 0.091493, 0.00652]
+     }
+    }
+   }
+  },
+  "level2": {
+   "aggregates": {
+    "FULL": {
+     "first": "2024-03-28",
+     "last": "2025-09-24",
+     "segments": {
+      "ALL": {
+       "baseline.moving_average": [95, "3882", 255, 0.994346, 0.984076, 18062.8663, 1.0, 4714],
+       "baseline.moving_average@b": [95, "3314", 228, 0.995173, 0.98583, 18432.155678, 1.020445, 4712],
+       "baseline.moving_average@c": [95, "3306", 231, 0.995185, 0.985695, 18440.630037, 1.020914, 4717],
+       "baseline.naive": [95, "5137", 336, 0.992518, 0.981107, 19236.721612, 1.064987, 4372],
+       "baseline.seasonal_naive": [95, "11953", 755, 0.982591, 0.943725, 17056.395604, 0.94428, 4689],
+       "ml.croston": [95, "4271", 265, 0.993779, 0.983536, 17776.043956, 0.984121, 4723],
+       "ml.holt": [95, "5490", 344, 0.992004, 0.979757, 18658.97619, 1.033002, 4529],
+       "ml.holt_winters": [95, "4218", 259, 0.993857, 0.983671, 18276.062271, 1.011803, 4698],
+       "ml.holt_winters@b": [95, "3493", 236, 0.994913, 0.984885, 18425.492674, 1.020076, 4702],
+       "ml.holt_winters@c": [95, "3511", 239, 0.994886, 0.984885, 18431.869963, 1.020429, 4708],
+       "ml.sba": [95, "4928", 333, 0.992823, 0.976518, 15319.602564, 0.848127, 4733],
+       "ml.ses": [95, "3860", 255, 0.994378, 0.984211, 17892.92674, 0.990592, 4715],
+       "ml.ses@b": [95, "3187", 220, 0.995358, 0.98637, 18370.054945, 1.017007, 4718],
+       "ml.ses@c": [95, "3153", 216, 0.995408, 0.98664, 18376.987179, 1.01739, 4716],
+       "ml.tsb": [95, "4170", 257, 0.993927, 0.984211, 17771.336996, 0.98386, 4713],
+       "ml.tsb@b": [95, "3168", 216, 0.995386, 0.98664, 18404.247253, 1.0189, 4722],
+       "ml.tsb@c": [95, "3173", 215, 0.995379, 0.987045, 18393.93956, 1.018329, 4722]
+      },
+      "INTERMITTENT": {
+       "baseline.moving_average": [10, "605", 56, 0.941754, 0.948718, 735.804029, 1.0, 263],
+       "baseline.naive": [10, "68", 10, 0.993453, 0.989744, 1498.481685, 2.036523, 126],
+       "baseline.seasonal_naive": [10, "789", 69, 0.92404, 0.941026, 692.880952, 0.941665, 256],
+       "ml.croston": [10, "573", 55, 0.944835, 0.944872, 693.159341, 0.942043, 280],
+       "ml.holt": [10, "298", 29, 0.97131, 0.973077, 1045.970696, 1.421534, 167],
+       "ml.holt_winters": [10, "521", 49, 0.949841, 0.955128, 762.910256, 1.036839, 258],
+       "ml.sba": [10, "644", 64, 0.937999, 0.937179, 674.661172, 0.916903, 280],
+       "ml.ses": [10, "496", 52, 0.952248, 0.948718, 719.576923, 0.977946, 269],
+       "ml.tsb": [10, "547", 52, 0.947338, 0.95, 713.514652, 0.969707, 269]
+      },
+      "SMOOTH": {
+       "baseline.moving_average": [85, "3277", 199, 0.995154, 0.988235, 17327.062271, 1.0, 4451],
+       "baseline.naive": [85, "5069", 326, 0.992504, 0.98009, 17738.239927, 1.02373, 4246],
+       "baseline.seasonal_naive": [85, "11164", 686, 0.98349, 0.944042, 16363.514652, 0.944391, 4433],
+       "ml.croston": [85, "3698", 210, 0.994531, 0.988084, 17082.884615, 0.985908, 4443],
+       "ml.holt": [85, "5192", 315, 0.992322, 0.980543, 17613.005495, 1.016503, 4362],
+       "ml.holt_winters": [85, "3697", 210, 0.994533, 0.987029, 17513.152015, 1.01074, 4440],
+       "ml.sba": [85, "4284", 269, 0.993665, 0.981146, 14644.941392, 0.845206, 4453],
+       "ml.ses": [85, "3364", 203, 0.995025, 0.988386, 17173.349817, 0.991129, 4446],
+       "ml.tsb": [85, "3623", 205, 0.994642, 0.988235, 17057.822344, 0.984461, 4444]
+      }
+     }
+    },
+    "NO_WARMUP": {
+     "first": "2024-05-23",
+     "last": "2025-09-24",
+     "segments": {
+      "ALL": {
+       "baseline.moving_average": [95, "1166", 87, 0.998105, 0.990977, 18280.538776, 1.0, 4244],
+       "baseline.moving_average@b": [95, "835", 71, 0.998643, 0.99218, 18574.612245, 1.016087, 4241],
+       "baseline.moving_average@c": [95, "824", 74, 0.998661, 0.99203, 18583.697959, 1.016584, 4243],
+       "baseline.naive": [95, "2540", 168, 0.995872, 0.987669, 19492.74898, 1.066312, 3928],
+       "baseline.seasonal_naive": [95, "8375", 554, 0.986387, 0.94812, 17080.112245, 0.934333, 4226],
+       "ml.croston": [95, "1496", 96, 0.997568, 0.990376, 17972.395918, 0.983144, 4262],
+       "ml.holt": [95, "2931", 181, 0.995236, 0.985865, 18895.010204, 1.033613, 4071],
+       "ml.holt_winters": [95, "1502", 91, 0.997559, 0.990526, 18518.1, 1.012995, 4228],
+       "ml.holt_winters@b": [95, "1014", 79, 0.998352, 0.991128, 18567.187755, 1.015681, 4231],
+       "ml.holt_winters@c": [95, "1029", 82, 0.998327, 0.991128, 18573.936735, 1.01605, 4234],
+       "ml.sba": [95, "1980", 153, 0.996782, 0.983308, 15334.820408, 0.83886, 4269],
+       "ml.ses": [95, "1180", 89, 0.998082, 0.990977, 18097.981633, 0.990014, 4254],
+       "ml.ses@b": [95, "720", 65, 0.99883, 0.992632, 18519.214286, 1.013056, 4243],
+       "ml.ses@c": [95, "698", 61, 0.998865, 0.992932, 18531.904082, 1.01375, 4243],
+       "ml.tsb": [95, "1395", 88, 0.997733, 0.991128, 17973.273469, 0.983192, 4248],
+       "ml.tsb@b": [95, "701", 61, 0.998861, 0.992932, 18546.65102, 1.014557, 4250],
+       "ml.tsb@c": [95, "706", 60, 0.998852, 0.993383, 18537.644898, 1.014064, 4251]
+      },
+      "INTERMITTENT": {
+       "baseline.moving_average": [10, "559", 50, 0.940163, 0.948571, 730.44898, 1.0, 242],
+       "baseline.naive": [10, "42", 6, 0.995504, 0.992857, 1570.828571, 2.150497, 106],
+       "baseline.seasonal_naive": [10, "737", 64, 0.921109, 0.94, 683.285714, 0.935432, 240],
+       "ml.croston": [10, "545", 50, 0.941661, 0.944286, 685.832653, 0.938919, 259],
+       "ml.holt": [10, "272", 25, 0.970884, 0.974286, 1072.038776, 1.467644, 144],
+       "ml.holt_winters": [10, "475", 43, 0.949154, 0.955714, 760.653061, 1.04135, 237],
+       "ml.sba": [10, "616", 59, 0.934061, 0.935714, 665.595918, 0.911215, 260],
+       "ml.ses": [10, "468", 47, 0.949904, 0.948571, 715.053061, 0.978923, 248],
+       "ml.tsb": [10, "519", 47, 0.944444, 0.95, 708.297959, 0.969675, 246]
+      },
+      "SMOOTH": {
+       "baseline.moving_average": [85, "607", 37, 0.998998, 0.995966, 17550.089796, 1.0, 4002],
+       "baseline.naive": [85, "2498", 162, 0.995877, 0.987059, 17921.920408, 1.021187, 3822],
+       "baseline.seasonal_naive": [85, "7638", 490, 0.987394, 0.949076, 16396.826531, 0.934287, 3986],
+       "ml.croston": [85, "951", 46, 0.99843, 0.995798, 17286.563265, 0.984984, 4003],
+       "ml.holt": [85, "2659", 156, 0.995611, 0.987227, 17822.971429, 1.015549, 3927],
+       "ml.holt_winters": [85, "1027", 48, 0.998305, 0.994622, 17757.446939, 1.011815, 3991],
+       "ml.sba": [85, "1364", 94, 0.997749, 0.988908, 14669.22449, 0.835849, 4009],
+       "ml.ses": [85, "712", 42, 0.998825, 0.995966, 17382.928571, 0.990475, 4006],
+       "ml.tsb": [85, "876", 41, 0.998554, 0.995966, 17264.97551, 0.983754, 4002]
+      }
+     }
+    }
+   },
+   "branches": ["baseline.naive", "baseline.seasonal_naive", "baseline.moving_average", "ml.ses", "ml.holt", "ml.holt_winters", "ml.croston", "ml.sba", "ml.tsb", "baseline.moving_average@b", "baseline.moving_average@c", "ml.ses@b", "ml.ses@c", "ml.holt_winters@b", "ml.holt_winters@c", "ml.tsb@b", "ml.tsb@c"],
+   "cross": {
+    "model_level_spearman": {
+     "all_models": {
+      "H1": {
+       "mase": [0.696337, 0.457693, 0.866667, 7],
+       "rmsse": [0.749288, 0.633333, 0.816667, 7],
+       "wape": [0.390843, 0.066667, 0.833333, 7]
+      },
+      "LR": {
+       "mase": [0.744607, 0.616667, 0.866667, 7],
+       "rmsse": [0.701832, 0.533333, 0.816667, 7],
+       "wape": [0.624909, 0.457693, 0.833333, 7]
+      }
+     },
+     "without_holt_winters": {
+      "H1": {
+       "mase": [0.622223, 0.285714, 0.880952, 17],
+       "rmsse": [0.637329, 0.285714, 0.880952, 17],
+       "wape": [0.422153, 0.09759, 0.880952, 17]
+      },
+      "LR": {
+       "mase": [0.650171, 0.190476, 0.99403, 17],
+       "rmsse": [0.644638, 0.095238, 0.99403, 17],
+       "wape": [0.588063, -0.095238, 0.928571, 17]
+      }
+     }
+    },
+    "series_cut_agreement": {
+     "0": {
+      "H1": {
+       "mase": [6591, 43409, 0.573358, 0.136095],
+       "rmsse": [6591, 43409, 0.573358, 0.136095],
+       "wape": [5860, 41432, 0.595051, 0.140102]
+      },
+      "LR": {
+       "mase": [6621, 43127, 0.614258, 0.162362],
+       "rmsse": [6621, 43127, 0.614258, 0.162362],
+       "wape": [6621, 43127, 0.614258, 0.162362]
+      }
+     },
+     "0.05": {
+      "H1": {
+       "mase": [6591, 43409, 0.573358, 0.169777],
+       "rmsse": [6591, 43409, 0.573358, 0.169777],
+       "wape": [5860, 41432, 0.595051, 0.17372]
+      },
+      "LR": {
+       "mase": [6621, 43127, 0.614258, 0.20148],
+       "rmsse": [6621, 43127, 0.614258, 0.20148],
+       "wape": [6621, 43127, 0.614258, 0.20148]
+      }
+     }
+    }
+   },
+   "engine_versions": ["0.1.0"],
+   "excluded": [
+    {
+     "location_id": 1,
+     "product_id": 3,
+     "reason": "NO_ACTIVE_PREFERRED_SUPPLIER"
+    },
+    {
+     "location_id": 1,
+     "product_id": 20,
+     "reason": "NO_ACTIVE_PREFERRED_SUPPLIER"
+    },
+    {
+     "location_id": 1,
+     "product_id": 57,
+     "reason": "NO_ACTIVE_PREFERRED_SUPPLIER"
+    },
+    {
+     "location_id": 1,
+     "product_id": 71,
+     "reason": "NO_ACTIVE_PREFERRED_SUPPLIER"
+    },
+    {
+     "location_id": 1,
+     "product_id": 74,
+     "reason": "NO_ACTIVE_PREFERRED_SUPPLIER"
+    }
+   ],
+   "simulated": 95,
+   "substitutions": {
+    "ml.holt": {
+     "INVALID": 215
+    },
+    "ml.holt_winters": {
+     "INVALID": 93,
+     "NOT_ELIGIBLE": 3800
+    },
+    "ml.holt_winters@b": {
+     "INVALID": 101,
+     "NOT_ELIGIBLE": 3864
+    },
+    "ml.holt_winters@c": {
+     "INVALID": 99,
+     "NOT_ELIGIBLE": 3800
+    }
+   }
+  },
+  "parity": {
+   "f5a-observations.csv": true,
+   "f5a-series-cuts.csv": true,
+   "f5b-decisions.csv": true,
+   "f5b-orders.csv": true,
+   "f5b-windows.csv": true
+  },
+  "segment_sensitivity": {
+   "11": {
+    "compared": 165,
+    "status_changes": [
+     ["a", "ml.holt_winters", "N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "NO CUMPLE", "CUMPLE"],
+     ["a*", "ml.holt", "N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "NO CUMPLE", "CUMPLE"],
+     ["a*", "ml.holt", "Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "NO CUMPLE", "CUMPLE"],
+     ["a*", "ml.holt_winters", "N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "NO CUMPLE", "CUMPLE"],
+     ["b", "ml.holt_winters", "N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "NO CUMPLE", "CUMPLE"],
+     ["c", "ml.holt_winters", "N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "NO CUMPLE", "CUMPLE"],
+     ["c", "ml.holt_winters", "Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "NO CUMPLE", "CUMPLE"]
+    ],
+    "verdict_changes": []
+   },
+   "9": {
+    "compared": 165,
+    "status_changes": [],
+    "verdict_changes": []
+   }
+  },
+  "strategy_criteria": {
+   "a": {
+    "ml.holt_winters": {
+     "statuses": [
+      ["N1: mejora agregada de MASE en L + R", "CUMPLE", false],
+      ["N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "CUMPLE", false],
+      ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "NO CUMPLE", false],
+      ["Sesgo relativo medio en L + R dentro de ±0,10", "CUMPLE", false],
+      ["Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "CUMPLE", false],
+      ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", false],
+      ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+      ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+      ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", true],
+      ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+      ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+     ],
+     "verdict": {
+      "failing": ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "N2 (FULL): unidades faltantes no peores en más de un 2 %"],
+      "meets_all": false,
+      "not_conclusive_or_not_evaluated": []
+     }
+    },
+    "ml.ses": {
+     "statuses": [
+      ["N1: mejora agregada de MASE en L + R", "CUMPLE", false],
+      ["N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "CUMPLE", false],
+      ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "CUMPLE", false],
+      ["Sesgo relativo medio en L + R dentro de ±0,10", "CUMPLE", false],
+      ["Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "CUMPLE", false],
+      ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "CUMPLE", false],
+      ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+      ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+      ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "CUMPLE", true],
+      ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+      ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+     ],
+     "verdict": {
+      "failing": [],
+      "meets_all": true,
+      "not_conclusive_or_not_evaluated": []
+     }
+    },
+    "ml.tsb": {
+     "statuses": [
+      ["N1: mejora agregada de MASE en L + R", "CUMPLE", false],
+      ["N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "CUMPLE", false],
+      ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "CUMPLE", false],
+      ["Sesgo relativo medio en L + R dentro de ±0,10", "CUMPLE", false],
+      ["Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "CUMPLE", false],
+      ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", false],
+      ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+      ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+      ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", true],
+      ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+      ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+     ],
+     "verdict": {
+      "failing": ["N2 (FULL): unidades faltantes no peores en más de un 2 %"],
+      "meets_all": false,
+      "not_conclusive_or_not_evaluated": []
+     }
+    }
+   },
+   "b": {
+    "ml.holt_winters": {
+     "statuses": [
+      ["N1: mejora agregada de MASE en L + R", "CUMPLE", false],
+      ["N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "CUMPLE", false],
+      ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "NO CUMPLE", false],
+      ["Sesgo relativo medio en L + R dentro de ±0,10", "CUMPLE", false],
+      ["Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "CUMPLE", false],
+      ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", false],
+      ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+      ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+      ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", true],
+      ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+      ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+     ],
+     "verdict": {
+      "failing": ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "N2 (FULL): unidades faltantes no peores en más de un 2 %"],
+      "meets_all": false,
+      "not_conclusive_or_not_evaluated": []
+     }
+    },
+    "ml.ses": {
+     "statuses": [
+      ["N1: mejora agregada de MASE en L + R", "CUMPLE", false],
+      ["N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "CUMPLE", false],
+      ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "CUMPLE", false],
+      ["Sesgo relativo medio en L + R dentro de ±0,10", "CUMPLE", false],
+      ["Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "CUMPLE", false],
+      ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "CUMPLE", false],
+      ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+      ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+      ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "CUMPLE", true],
+      ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+      ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+     ],
+     "verdict": {
+      "failing": [],
+      "meets_all": true,
+      "not_conclusive_or_not_evaluated": []
+     }
+    },
+    "ml.tsb": {
+     "statuses": [
+      ["N1: mejora agregada de MASE en L + R", "CUMPLE", false],
+      ["N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "CUMPLE", false],
+      ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "CUMPLE", false],
+      ["Sesgo relativo medio en L + R dentro de ±0,10", "CUMPLE", false],
+      ["Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "CUMPLE", false],
+      ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "CUMPLE", false],
+      ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+      ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+      ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "CUMPLE", true],
+      ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+      ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+     ],
+     "verdict": {
+      "failing": [],
+      "meets_all": true,
+      "not_conclusive_or_not_evaluated": []
+     }
+    }
+   },
+   "c": {
+    "ml.holt_winters": {
+     "statuses": [
+      ["N1: mejora agregada de MASE en L + R", "CUMPLE", false],
+      ["N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "CUMPLE", false],
+      ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "NO CUMPLE", false],
+      ["Sesgo relativo medio en L + R dentro de ±0,10", "CUMPLE", false],
+      ["Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "NO CUMPLE", false],
+      ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", false],
+      ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+      ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+      ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "NO CUMPLE", true],
+      ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+      ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+     ],
+     "verdict": {
+      "failing": ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "N2 (FULL): unidades faltantes no peores en más de un 2 %"],
+      "meets_all": false,
+      "not_conclusive_or_not_evaluated": []
+     }
+    },
+    "ml.ses": {
+     "statuses": [
+      ["N1: mejora agregada de MASE en L + R", "CUMPLE", false],
+      ["N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "CUMPLE", false],
+      ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "CUMPLE", false],
+      ["Sesgo relativo medio en L + R dentro de ±0,10", "CUMPLE", false],
+      ["Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "CUMPLE", false],
+      ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "CUMPLE", false],
+      ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+      ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+      ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "CUMPLE", true],
+      ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+      ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+     ],
+     "verdict": {
+      "failing": [],
+      "meets_all": true,
+      "not_conclusive_or_not_evaluated": []
+     }
+    },
+    "ml.tsb": {
+     "statuses": [
+      ["N1: mejora agregada de MASE en L + R", "CUMPLE", false],
+      ["N1: mejora en ⌈2/3⌉ de los cortes comparables (mínimo 5)", "CUMPLE", false],
+      ["N1: ningún segmento de ≥ 10 productos empeora más de un 5 % en MASE", "CUMPLE", false],
+      ["Sesgo relativo medio en L + R dentro de ±0,10", "CUMPLE", false],
+      ["Sesgo por segmento de ≥ 10 productos no peor en más de 0,05", "CUMPLE", false],
+      ["N2 (FULL): unidades faltantes no peores en más de un 2 %", "CUMPLE", false],
+      ["N2 (FULL): fill rate no peor en más de 0,2 puntos", "CUMPLE", false],
+      ["N2 (FULL): inventario medio como máximo +5 %", "CUMPLE", false],
+      ["N2 (NO_WARMUP): unidades faltantes no peores en más de un 2 %", "CUMPLE", true],
+      ["N2 (NO_WARMUP): fill rate no peor en más de 0,2 puntos", "CUMPLE", true],
+      ["N2 (NO_WARMUP): inventario medio como máximo +5 %", "CUMPLE", true]
+     ],
+     "verdict": {
+      "failing": [],
+      "meets_all": true,
+      "not_conclusive_or_not_evaluated": []
+     }
+    }
+   }
+  },
+  "strategy_meeting_all": {
+   "a": ["ml.ses"],
+   "b": ["ml.ses", "ml.tsb"],
+   "c": ["ml.ses", "ml.tsb"]
+  },
+  "study": {
+   "extreme_series": [
+    {
+     "location_id": 1,
+     "product_id": 3
+    },
+    {
+     "location_id": 1,
+     "product_id": 20
+    },
+    {
+     "location_id": 1,
+     "product_id": 57
+    },
+    {
+     "location_id": 1,
+     "product_id": 71
+    },
+    {
+     "location_id": 1,
+     "product_id": 74
+    }
+   ],
+   "extreme_series_cuts": 85,
+   "metrics": {
+    "LATENT": {
+     "baseline.moving_average": {
+      "H1": {
+       "ALL_WEEKS": {
+        "a": [17, 1600, 0.841956, 0.505772, 0.1167, -0.058648],
+        "b": [17, 1600, 0.663017, 0.411679, 0.085489, -0.000622],
+        "c": [17, 1600, 0.668665, 0.415127, 0.086604, -0.001415]
+       },
+       "NO_STOCKOUT": {
+        "a": [17, 1395, 0.821764, 0.49058, 0.106558, -0.042707],
+        "b": [17, 1395, 0.664031, 0.412388, 0.082278, 0.009094],
+        "c": [17, 1395, 0.668434, 0.415107, 0.083122, 0.008623]
+       }
+      },
+      "LR": {
+       "ALL_WEEKS": {
+        "a": [17, 1593, 0.808609, 0.470989, 0.1168, -0.059223],
+        "b": [17, 1593, 0.621514, 0.372922, 0.08395, -0.000515],
+        "c": [17, 1593, 0.625828, 0.375308, 0.08457, -0.001319]
+       },
+       "NO_STOCKOUT": {
+        "a": [17, 915, 0.728038, 0.41158, 0.091493, 0.00652],
+        "b": [17, 915, 0.620147, 0.370006, 0.082635, 0.039761],
+        "c": [17, 915, 0.620761, 0.370134, 0.08233, 0.039583]
+       }
+      }
+     },
+     "ml.holt_winters": {
+      "H1": {
+       "ALL_WEEKS": {
+        "a": [7, 615, 0.972952, 0.544424, 0.098519, -0.050658],
+        "b": [7, 615, 0.569934, 0.360605, 0.05711, -0.006423],
+        "c": [7, 615, 0.552861, 0.351529, 0.055833, -0.005862]
+       },
+       "NO_STOCKOUT": {
+        "a": [7, 536, 0.966639, 0.537664, 0.093234, -0.044852],
+        "b": [7, 536, 0.576237, 0.367277, 0.056651, -0.004771],
+        "c": [7, 536, 0.558822, 0.35764, 0.055082, -0.004532]
+       }
+      },
+      "LR": {
+       "ALL_WEEKS": {
+        "a": [7, 608, 0.640078, 0.345453, 0.069368, -0.050635],
+        "b": [7, 608, 0.331873, 0.203584, 0.031463, -0.003869],
+        "c": [7, 608, 0.313474, 0.193065, 0.028726, -0.003657]
+       },
+       "NO_STOCKOUT": {
+        "a": [7, 349, 0.582038, 0.297109, 0.045811, -0.012199],
+        "b": [7, 349, 0.352125, 0.218261, 0.031666, 0.002452],
+        "c": [7, 349, 0.332044, 0.207509, 0.029661, 0.004632]
+       }
+      }
+     },
+     "ml.ses": {
+      "H1": {
+       "ALL_WEEKS": {
+        "a": [17, 1600, 0.720057, 0.428566, 0.099097, -0.063165],
+        "b": [17, 1600, 0.469869, 0.293309, 0.05067, -0.002034],
+        "c": [17, 1600, 0.475229, 0.296421, 0.052, -0.00361]
+       },
+       "NO_STOCKOUT": {
+        "a": [17, 1395, 0.704737, 0.415666, 0.090397, -0.051902],
+        "b": [17, 1395, 0.479558, 0.299458, 0.049995, 0.000367],
+        "c": [17, 1395, 0.482379, 0.301127, 0.050611, -0.000121]
+       }
+      },
+      "LR": {
+       "ALL_WEEKS": {
+        "a": [17, 1593, 0.680412, 0.388654, 0.098931, -0.063835],
+        "b": [17, 1593, 0.40462, 0.237278, 0.046986, -0.0025],
+        "c": [17, 1593, 0.412639, 0.241836, 0.048399, -0.003933]
+       },
+       "NO_STOCKOUT": {
+        "a": [17, 915, 0.59998, 0.326646, 0.069192, -0.008816],
+        "b": [17, 915, 0.419065, 0.24229, 0.04515, 0.017702],
+        "c": [17, 915, 0.422234, 0.243995, 0.045139, 0.017909]
+       }
+      }
+     },
+     "ml.tsb": {
+      "H1": {
+       "ALL_WEEKS": {
+        "a": [17, 1600, 0.742338, 0.442502, 0.101826, -0.063142],
+        "b": [17, 1600, 0.521962, 0.325501, 0.06139, -0.00154],
+        "c": [17, 1600, 0.528964, 0.32971, 0.063096, -0.002443]
+       },
+       "NO_STOCKOUT": {
+        "a": [17, 1395, 0.727644, 0.430178, 0.093293, -0.051315],
+        "b": [17, 1395, 0.528793, 0.329649, 0.059688, 0.003729],
+        "c": [17, 1395, 0.533463, 0.332431, 0.060837, 0.003335]
+       }
+      },
+      "LR": {
+       "ALL_WEEKS": {
+        "a": [17, 1593, 0.702407, 0.402461, 0.101837, -0.063805],
+        "b": [17, 1593, 0.468196, 0.277298, 0.05932, -0.001767],
+        "c": [17, 1593, 0.474313, 0.280809, 0.06073, -0.002622]
+       },
+       "NO_STOCKOUT": {
+        "a": [17, 915, 0.618972, 0.338974, 0.073153, -0.007014],
+        "b": [17, 915, 0.474069, 0.277835, 0.057586, 0.026279],
+        "c": [17, 915, 0.475163, 0.278304, 0.057752, 0.026242]
+       }
+      }
+     }
+    },
+    "OBSERVED": {
+     "baseline.moving_average": {
+      "H1": {
+       "ALL_WEEKS": {
+        "a": [17, 1600, 1.035697, 0.583996, 0.134679, -0.009635],
+        "b": [17, 1600, 0.930407, 0.535498, 0.121539, 0.051376],
+        "c": [17, 1600, 0.933601, 0.537456, 0.122205, 0.050547]
+       },
+       "NO_STOCKOUT": {
+        "a": [17, 1395, 0.821764, 0.49058, 0.106558, -0.042707],
+        "b": [17, 1395, 0.664031, 0.412388, 0.082278, 0.009094],
+        "c": [17, 1395, 0.668434, 0.415107, 0.083122, 0.008623]
+       }
+      },
+      "LR": {
+       "ALL_WEEKS": {
+        "a": [17, 1593, 0.800253, 0.445518, 0.109175, 0.002105],
+        "b": [17, 1593, 0.770819, 0.440147, 0.115837, 0.064639],
+        "c": [17, 1593, 0.77358, 0.44154, 0.115858, 0.063779]
+       },
+       "NO_STOCKOUT": {
+        "a": [17, 915, 0.728038, 0.41158, 0.091493, 0.00652],
+        "b": [17, 915, 0.620147, 0.370006, 0.082635, 0.039761],
+        "c": [17, 915, 0.620761, 0.370134, 0.08233, 0.039583]
+       }
+      }
+     },
+     "ml.holt_winters": {
+      "H1": {
+       "ALL_WEEKS": {
+        "a": [7, 615, 1.170496, 0.645921, 0.136777, 0.006178],
+        "b": [7, 615, 0.86246, 0.512605, 0.109055, 0.052643],
+        "c": [7, 615, 0.842753, 0.502151, 0.107437, 0.053197]
+       },
+       "NO_STOCKOUT": {
+        "a": [7, 536, 0.966639, 0.537664, 0.093234, -0.044852],
+        "b": [7, 536, 0.576237, 0.367277, 0.056651, -0.004771],
+        "c": [7, 536, 0.558822, 0.35764, 0.055082, -0.004532]
+       }
+      },
+      "LR": {
+       "ALL_WEEKS": {
+        "a": [7, 608, 0.658136, 0.342996, 0.06657, 0.001766],
+        "b": [7, 608, 0.586557, 0.335323, 0.071715, 0.051197],
+        "c": [7, 608, 0.565089, 0.323457, 0.069767, 0.051449]
+       },
+       "NO_STOCKOUT": {
+        "a": [7, 349, 0.582038, 0.297109, 0.045811, -0.012199],
+        "b": [7, 349, 0.352125, 0.218261, 0.031666, 0.002452],
+        "c": [7, 349, 0.332044, 0.207509, 0.029661, 0.004632]
+       }
+      }
+     },
+     "ml.ses": {
+      "H1": {
+       "ALL_WEEKS": {
+        "a": [17, 1600, 0.933228, 0.518549, 0.119341, -0.014388],
+        "b": [17, 1600, 0.79268, 0.449405, 0.094996, 0.049903],
+        "c": [17, 1600, 0.792343, 0.449075, 0.094348, 0.048248]
+       },
+       "NO_STOCKOUT": {
+        "a": [17, 1395, 0.704737, 0.415666, 0.090397, -0.051902],
+        "b": [17, 1395, 0.479558, 0.299458, 0.049995, 0.000367],
+        "c": [17, 1395, 0.482379, 0.301127, 0.050611, -0.000121]
+       }
+      },
+      "LR": {
+       "ALL_WEEKS": {
+        "a": [17, 1593, 0.669279, 0.362512, 0.086989, -0.002807],
+        "b": [17, 1593, 0.604392, 0.335149, 0.086475, 0.062526],
+        "c": [17, 1593, 0.604459, 0.334907, 0.085221, 0.060994]
+       },
+       "NO_STOCKOUT": {
+        "a": [17, 915, 0.59998, 0.326646, 0.069192, -0.008816],
+        "b": [17, 915, 0.419065, 0.24229, 0.04515, 0.017702],
+        "c": [17, 915, 0.422234, 0.243995, 0.045139, 0.017909]
+       }
+      }
+     },
+     "ml.tsb": {
+      "H1": {
+       "ALL_WEEKS": {
+        "a": [17, 1600, 0.949827, 0.529199, 0.121447, -0.014367],
+        "b": [17, 1600, 0.824187, 0.469312, 0.102031, 0.050413],
+        "c": [17, 1600, 0.826338, 0.470557, 0.102617, 0.049469]
+       },
+       "NO_STOCKOUT": {
+        "a": [17, 1395, 0.727644, 0.430178, 0.093293, -0.051315],
+        "b": [17, 1395, 0.528793, 0.329649, 0.059688, 0.003729],
+        "c": [17, 1395, 0.533463, 0.332431, 0.060837, 0.003335]
+       }
+      },
+      "LR": {
+       "ALL_WEEKS": {
+        "a": [17, 1593, 0.686689, 0.373353, 0.089663, -0.002766],
+        "b": [17, 1593, 0.641661, 0.359252, 0.094256, 0.063304],
+        "c": [17, 1593, 0.644721, 0.360848, 0.094681, 0.062392]
+       },
+       "NO_STOCKOUT": {
+        "a": [17, 915, 0.618972, 0.338974, 0.073153, -0.007014],
+        "b": [17, 915, 0.474069, 0.277835, 0.057586, 0.026279],
+        "c": [17, 915, 0.475163, 0.278304, 0.057752, 0.026242]
+       }
+      }
+     }
+    }
+   },
+   "models": ["baseline.moving_average", "ml.ses", "ml.holt_winters", "ml.tsb"],
+   "substitutions": {
+    "ml.holt_winters": 71,
+    "ml.holt_winters@b": 26,
+    "ml.holt_winters@c": 48
+   }
+  },
+  "top_candidates": ["ml.holt_winters", "ml.tsb"],
+  "us055": {
+   "coverage": {
+    "baseline.moving_average": {
+     "ALL_WEEKS": {
+      "1": [0.830861, 0.836158, 0.836158, 885, 1.0],
+      "10": [0.807186, 0.808046, 0.801149, 870, 0.994444],
+      "11": [0.817964, 0.817241, 0.812644, 870, 0.994444],
+      "12": [0.798802, 0.790805, 0.790805, 870, 1.0],
+      "13": [0.805988, 0.802299, 0.802299, 870, 1.0],
+      "14": [0.805405, 0.816185, 0.816185, 865, 1.0],
+      "2": [0.81369, 0.809091, 0.8, 880, 0.994444],
+      "3": [0.818452, 0.818182, 0.796591, 880, 0.988889],
+      "4": [0.817262, 0.820455, 0.786364, 880, 0.972222],
+      "5": [0.811905, 0.813636, 0.813636, 880, 1.0],
+      "6": [0.806567, 0.813714, 0.813714, 875, 1.0],
+      "7": [0.806567, 0.817143, 0.817143, 875, 1.0],
+      "8": [0.805373, 0.798857, 0.798857, 875, 1.0],
+      "9": [0.814925, 0.825143, 0.825143, 875, 1.0]
+     },
+     "NO_STOCKOUT": {
+      "1": [0.85233, 0.856361, 0.787962, 731, 0.95],
+      "10": [0.831273, 0.819832, 0.759777, 716, 0.944444],
+      "11": [0.834663, 0.83518, 0.781163, 722, 0.95],
+      "12": [0.816534, 0.805014, 0.753482, 718, 0.961111],
+      "13": [0.818578, 0.816384, 0.816384, 708, 1.0],
+      "14": [0.828171, 0.825036, 0.772404, 703, 0.95],
+      "2": [0.843095, 0.831711, 0.764951, 719, 0.95],
+      "3": [0.834052, 0.839065, 0.755158, 727, 0.95],
+      "4": [0.836587, 0.835408, 0.763485, 723, 0.95],
+      "5": [0.829496, 0.834247, 0.819178, 730, 0.988889],
+      "6": [0.833092, 0.828492, 0.769018, 723, 0.95],
+      "7": [0.818575, 0.829436, 0.823934, 727, 0.994444],
+      "8": [0.822335, 0.8125, 0.752778, 720, 0.95],
+      "9": [0.831169, 0.84349, 0.831025, 722, 0.994444]
+     },
+     "horizons_within_band": {
+      "calibrated_late_cuts": 14,
+      "current_late_cuts": 14,
+      "current_late_cuts_no_stockout": 13,
+      "of": 14
+     }
+    },
+    "baseline.naive": {
+     "ALL_WEEKS": {
+      "1": [0.841543, 0.840678, 0.779661, 885, 0.95],
+      "10": [0.846108, 0.843678, 0.772414, 870, 0.95],
+      "11": [0.844311, 0.843678, 0.75977, 870, 0.95],
+      "12": [0.838922, 0.828736, 0.754023, 870, 0.95],
+      "13": [0.843114, 0.84023, 0.772414, 870, 0.955556],
+      "14": [0.831832, 0.847399, 0.827746, 865, 0.983333],
+      "2": [0.830357, 0.839773, 0.826136, 880, 0.988889],
+      "3": [0.849405, 0.855682, 0.780682, 880, 0.95],
+      "4": [0.847024, 0.845455, 0.788636, 880, 0.95],
+      "5": [0.845238, 0.847727, 0.802273, 880, 0.966667],
+      "6": [0.85194, 0.858286, 0.794286, 875, 0.95],
+      "7": [0.838806, 0.846857, 0.804571, 875, 0.966667],
+      "8": [0.837015, 0.829714, 0.778286, 875, 0.955556],
+      "9": [0.845373, 0.836571, 0.780571, 875, 0.95]
+     },
+     "NO_STOCKOUT": {
+      "1": [0.883154, 0.886457, 0.816689, 731, 0.872222],
+      "10": [0.876364, 0.867318, 0.77095, 716, 0.883333],
+      "11": [0.86802, 0.867036, 0.777008, 722, 0.95],
+      "12": [0.862219, 0.849582, 0.768802, 718, 0.933333],
+      "13": [0.870827, 0.867232, 0.793785, 708, 0.95],
+      "14": [0.864307, 0.871977, 0.806543, 703, 0.95],
+      "2": [0.866233, 0.870654, 0.802503, 719, 0.883333],
+      "3": [0.875718, 0.88033, 0.790922, 727, 0.877778],
+      "4": [0.877802, 0.869986, 0.782849, 723, 0.85],
+      "5": [0.872662, 0.871233, 0.806849, 730, 0.95],
+      "6": [0.884393, 0.879668, 0.798064, 723, 0.861111],
+      "7": [0.863211, 0.86795, 0.799175, 727, 0.95],
+      "8": [0.871646, 0.863889, 0.795833, 720, 0.916667],
+      "9": [0.868687, 0.858726, 0.795014, 722, 0.9]
+     },
+     "horizons_within_band": {
+      "calibrated_late_cuts": 14,
+      "current_late_cuts": 12,
+      "current_late_cuts_no_stockout": 1,
+      "of": 14
+     }
+    },
+    "baseline.seasonal_naive": {
+     "ALL_WEEKS": {
+      "1": [0.836202, 0.848588, 0.848588, 885, 1.0],
+      "10": [0.829341, 0.836782, 0.836782, 870, 1.0],
+      "11": [0.838323, 0.842529, 0.833333, 870, 0.988889],
+      "12": [0.84491, 0.864368, 0.86092, 870, 0.994444],
+      "13": [0.82515, 0.83908, 0.83908, 870, 1.011111],
+      "14": [0.826426, 0.853179, 0.853179, 865, 1.005556],
+      "2": [0.822024, 0.834091, 0.835227, 880, 1.005556],
+      "3": [0.835714, 0.846591, 0.846591, 880, 1.0],
+      "4": [0.843452, 0.869318, 0.863636, 880, 0.994444],
+      "5": [0.827381, 0.844318, 0.844318, 880, 1.016667],
+      "6": [0.825672, 0.842286, 0.842286, 875, 1.0],
+      "7": [0.839403, 0.852571, 0.842286, 875, 0.988889],
+      "8": [0.847761, 0.862857, 0.843429, 875, 0.983333],
+      "9": [0.823881, 0.842286, 0.844571, 875, 1.022222]
+     },
+     "NO_STOCKOUT": {
+      "1": [0.863799, 0.870041, 0.823529, 731, 0.955556],
+      "10": [0.864727, 0.870112, 0.801676, 716, 0.95],
+      "11": [0.874547, 0.880886, 0.819945, 722, 0.95],
+      "12": [0.880348, 0.898329, 0.82312, 718, 0.95],
+      "13": [0.857765, 0.871469, 0.846045, 708, 0.977778],
+      "14": [0.861357, 0.883357, 0.815078, 703, 0.95],
+      "2": [0.858279, 0.872045, 0.803894, 719, 0.955556],
+      "3": [0.867816, 0.885832, 0.830812, 727, 0.95],
+      "4": [0.879248, 0.899032, 0.824343, 723, 0.95],
+      "5": [0.853957, 0.867123, 0.856164, 730, 0.988889],
+      "6": [0.858382, 0.868603, 0.799447, 723, 0.95],
+      "7": [0.87041, 0.887208, 0.823934, 727, 0.95],
+      "8": [0.883974, 0.898611, 0.823611, 720, 0.95],
+      "9": [0.853535, 0.869806, 0.854571, 722, 0.983333]
+     },
+     "horizons_within_band": {
+      "calibrated_late_cuts": 11,
+      "current_late_cuts": 9,
+      "current_late_cuts_no_stockout": 0,
+      "of": 14
+     }
+    },
+    "ml.croston": {
+     "ALL_WEEKS": {
+      "1": [0.814837, 0.830508, 0.830508, 885, 1.0],
+      "10": [0.782635, 0.778161, 0.796552, 870, 1.027778],
+      "11": [0.791018, 0.797701, 0.81954, 870, 1.038889],
+      "12": [0.791617, 0.781609, 0.781609, 870, 1.0],
+      "13": [0.78024, 0.788506, 0.81954, 870, 1.05],
+      "14": [0.773574, 0.79422, 0.82659, 865, 1.05],
+      "2": [0.788095, 0.801136, 0.830682, 880, 1.05],
+      "3": [0.794048, 0.806818, 0.815909, 880, 1.016667],
+      "4": [0.802381, 0.813636, 0.813636, 880, 1.0],
+      "5": [0.79881, 0.8125, 0.823864, 880, 1.016667],
+      "6": [0.782687, 0.798857, 0.835429, 875, 1.05],
+      "7": [0.786269, 0.786286, 0.804571, 875, 1.022222],
+      "8": [0.786866, 0.785143, 0.796571, 875, 1.016667],
+      "9": [0.799403, 0.809143, 0.809143, 875, 1.0]
+     },
+     "NO_STOCKOUT": {
+      "1": [0.837993, 0.852257, 0.848153, 731, 0.988889],
+      "10": [0.798545, 0.787709, 0.78352, 716, 0.988889],
+      "11": [0.799855, 0.810249, 0.810249, 722, 1.0],
+      "12": [0.806381, 0.793872, 0.775766, 718, 0.983333],
+      "13": [0.791727, 0.805085, 0.826271, 708, 1.033333],
+      "14": [0.79056, 0.806543, 0.815078, 703, 1.005556],
+      "2": [0.819957, 0.828929, 0.828929, 719, 1.0],
+      "3": [0.80819, 0.823934, 0.823934, 727, 1.0],
+      "4": [0.822126, 0.832642, 0.824343, 723, 0.994444],
+      "5": [0.810791, 0.828767, 0.828767, 730, 1.0],
+      "6": [0.803468, 0.811895, 0.811895, 723, 1.0],
+      "7": [0.796256, 0.797799, 0.797799, 727, 1.0],
+      "8": [0.79913, 0.791667, 0.791667, 720, 1.0],
+      "9": [0.807359, 0.819945, 0.819945, 722, 1.0]
+     },
+     "horizons_within_band": {
+      "calibrated_late_cuts": 14,
+      "current_late_cuts": 14,
+      "current_late_cuts_no_stockout": 13,
+      "of": 14
+     }
+    },
+    "ml.holt": {
+     "ALL_WEEKS": {
+      "1": [0.81365, 0.814689, 0.814689, 885, 1.0],
+      "10": [0.793413, 0.782759, 0.771264, 870, 0.988889],
+      "11": [0.800599, 0.788506, 0.777011, 870, 0.983333],
+      "12": [0.802395, 0.789655, 0.775862, 870, 0.983333],
+      "13": [0.805988, 0.77931, 0.749425, 870, 0.966667],
+      "14": [0.787387, 0.774566, 0.769942, 865, 0.994444],
+      "2": [0.802976, 0.8, 0.8, 880, 1.0],
+      "3": [0.810714, 0.810227, 0.807955, 880, 0.994444],
+      "4": [0.808929, 0.8, 0.763636, 880, 0.961111],
+      "5": [0.81369, 0.810227, 0.804545, 880, 0.994444],
+      "6": [0.810746, 0.804571, 0.794286, 875, 0.983333],
+      "7": [0.805373, 0.792, 0.778286, 875, 0.983333],
+      "8": [0.805373, 0.793143, 0.766857, 875, 0.966667],
+      "9": [0.810746, 0.797714, 0.786286, 875, 0.977778]
+     },
+     "NO_STOCKOUT": {
+      "1": [0.841577, 0.841313, 0.793434, 731, 0.95],
+      "10": [0.813091, 0.794693, 0.736034, 716, 0.927778],
+      "11": [0.809282, 0.800554, 0.788089, 722, 0.983333],
+      "12": [0.815083, 0.802228, 0.756267, 718, 0.961111],
+      "13": [0.812772, 0.786723, 0.748588, 708, 0.961111],
+      "14": [0.80236, 0.778094, 0.72973, 703, 0.955556],
+      "2": [0.834418, 0.821975, 0.764951, 719, 0.922222],
+      "3": [0.825431, 0.826685, 0.779917, 727, 0.95],
+      "4": [0.832972, 0.818811, 0.742739, 723, 0.9],
+      "5": [0.830935, 0.826027, 0.776712, 730, 0.95],
+      "6": [0.828757, 0.810512, 0.767635, 723, 0.933333],
+      "7": [0.817855, 0.799175, 0.764787, 727, 0.961111],
+      "8": [0.82161, 0.804167, 0.747222, 720, 0.922222],
+      "9": [0.821789, 0.806094, 0.768698, 722, 0.955556]
+     },
+     "horizons_within_band": {
+      "calibrated_late_cuts": 13,
+      "current_late_cuts": 14,
+      "current_late_cuts_no_stockout": 14,
+      "of": 14
+     }
+    },
+    "ml.holt_winters": {
+     "ALL_WEEKS": {
+      "1": [0.668613, 0.668613, 0.838596, 685, 1.75],
+      "10": [0.641791, 0.641791, 0.814035, 670, 1.733333],
+      "11": [0.664179, 0.664179, 0.810526, 670, 1.583333],
+      "12": [0.647761, 0.647761, 0.8, 670, 1.516667],
+      "13": [0.631343, 0.631343, 0.821053, 670, 1.7],
+      "14": [0.640602, 0.640602, 0.85614, 665, 1.783333],
+      "2": [0.655882, 0.655882, 0.852632, 680, 1.75],
+      "3": [0.697059, 0.697059, 0.849123, 680, 1.716667],
+      "4": [0.661765, 0.661765, 0.838596, 680, 1.766667],
+      "5": [0.65, 0.65, 0.82807, 680, 1.75],
+      "6": [0.653333, 0.653333, 0.852632, 675, 1.883333],
+      "7": [0.693333, 0.693333, 0.866667, 675, 1.733333],
+      "8": [0.642963, 0.642963, 0.887719, 675, 1.983333],
+      "9": [0.654815, 0.654815, 0.866667, 675, 1.95]
+     },
+     "NO_STOCKOUT": {
+      "1": [0.683746, 0.683746, 0.865217, 566, 1.683333],
+      "10": [0.664247, 0.664247, 0.825328, 551, 1.65],
+      "11": [0.682226, 0.682226, 0.819328, 557, 1.533333],
+      "12": [0.668478, 0.668478, 0.802521, 552, 1.416667],
+      "13": [0.64695, 0.64695, 0.856522, 541, 1.666667],
+      "14": [0.658582, 0.658582, 0.889381, 536, 1.766667],
+      "2": [0.67684, 0.67684, 0.867841, 557, 1.616667],
+      "3": [0.727273, 0.727273, 0.852174, 561, 1.516667],
+      "4": [0.681081, 0.681081, 0.863436, 555, 1.616667],
+      "5": [0.669065, 0.669065, 0.831224, 556, 1.65],
+      "6": [0.670232, 0.670232, 0.865801, 561, 1.7],
+      "7": [0.70922, 0.70922, 0.880851, 564, 1.616667],
+      "8": [0.660617, 0.660617, 0.912281, 551, 1.866667],
+      "9": [0.685662, 0.685662, 0.871795, 544, 1.766667]
+     },
+     "horizons_within_band": {
+      "calibrated_late_cuts": 8,
+      "current_late_cuts": 0,
+      "current_late_cuts_no_stockout": 0,
+      "of": 14
+     }
+    },
+    "ml.sba": {
+     "ALL_WEEKS": {
+      "1": [0.810089, 0.825989, 0.831638, 885, 1.011111],
+      "10": [0.773054, 0.778161, 0.824138, 870, 1.05],
+      "11": [0.78982, 0.801149, 0.834483, 870, 1.05],
+      "12": [0.785629, 0.77931, 0.77931, 870, 1.0],
+      "13": [0.776647, 0.790805, 0.828736, 870, 1.05],
+      "14": [0.764565, 0.79422, 0.834682, 865, 1.066667],
+      "2": [0.78631, 0.801136, 0.827273, 880, 1.05],
+      "3": [0.784524, 0.8, 0.832955, 880, 1.044444],
+      "4": [0.801786, 0.807955, 0.807955, 880, 1.0],
+      "5": [0.789286, 0.803409, 0.828409, 880, 1.044444],
+      "6": [0.764179, 0.784, 0.842286, 875, 1.05],
+      "7": [0.783284, 0.792, 0.824, 875, 1.044444],
+      "8": [0.785075, 0.784, 0.792, 875, 1.005556],
+      "9": [0.795821, 0.812571, 0.832, 875, 1.027778]
+     },
+     "NO_STOCKOUT": {
+      "1": [0.831541, 0.845417, 0.845417, 731, 1.0],
+      "10": [0.790545, 0.793296, 0.796089, 716, 1.005556],
+      "11": [0.798405, 0.814404, 0.84349, 722, 1.033333],
+      "12": [0.80058, 0.793872, 0.793872, 718, 1.0],
+      "13": [0.785922, 0.803672, 0.840395, 708, 1.044444],
+      "14": [0.780236, 0.807966, 0.843528, 703, 1.05],
+      "2": [0.813449, 0.826147, 0.826147, 719, 1.0],
+      "3": [0.798132, 0.819807, 0.828061, 727, 1.005556],
+      "4": [0.819957, 0.824343, 0.824343, 723, 1.0],
+      "5": [0.801439, 0.820548, 0.820548, 730, 1.0],
+      "6": [0.782514, 0.793914, 0.79668, 723, 1.005556],
+      "7": [0.792657, 0.806052, 0.814305, 727, 1.011111],
+      "8": [0.796954, 0.791667, 0.791667, 720, 1.0],
+      "9": [0.806638, 0.825485, 0.825485, 722, 1.0]
+     },
+     "horizons_within_band": {
+      "calibrated_late_cuts": 14,
+      "current_late_cuts": 14,
+      "current_late_cuts_no_stockout": 14,
+      "of": 14
+     }
+    },
+    "ml.ses": {
+     "ALL_WEEKS": {
+      "1": [0.81365, 0.832768, 0.833898, 885, 1.005556],
+      "10": [0.783234, 0.782759, 0.805747, 870, 1.038889],
+      "11": [0.791617, 0.797701, 0.822989, 870, 1.022222],
+      "12": [0.783832, 0.772414, 0.777011, 870, 1.005556],
+      "13": [0.778443, 0.789655, 0.822989, 870, 1.05],
+      "14": [0.773574, 0.79422, 0.830058, 865, 1.05],
+      "2": [0.785119, 0.796591, 0.827273, 880, 1.05],
+      "3": [0.791667, 0.802273, 0.811364, 880, 1.022222],
+      "4": [0.81131, 0.822727, 0.822727, 880, 1.0],
+      "5": [0.80119, 0.818182, 0.822727, 880, 1.011111],
+      "6": [0.78209, 0.795429, 0.828571, 875, 1.05],
+      "7": [0.784478, 0.787429, 0.819429, 875, 1.05],
+      "8": [0.787463, 0.780571, 0.780571, 875, 1.0],
+      "9": [0.798209, 0.812571, 0.817143, 875, 1.011111]
+     },
+     "NO_STOCKOUT": {
+      "1": [0.83871, 0.857729, 0.852257, 731, 0.988889],
+      "10": [0.8, 0.793296, 0.78352, 716, 0.988889],
+      "11": [0.803481, 0.811634, 0.811634, 722, 1.0],
+      "12": [0.796954, 0.78273, 0.771588, 718, 0.988889],
+      "13": [0.790276, 0.80791, 0.837571, 708, 1.044444],
+      "14": [0.794248, 0.809388, 0.820768, 703, 1.011111],
+      "2": [0.817064, 0.824757, 0.824757, 719, 1.0],
+      "3": [0.807471, 0.819807, 0.819807, 727, 1.0],
+      "4": [0.832972, 0.842324, 0.777317, 723, 0.95],
+      "5": [0.814388, 0.836986, 0.836986, 730, 1.0],
+      "6": [0.804191, 0.809129, 0.809129, 723, 1.0],
+      "7": [0.794816, 0.799175, 0.799175, 727, 1.0],
+      "8": [0.80058, 0.788889, 0.788889, 720, 1.0],
+      "9": [0.808081, 0.825485, 0.825485, 722, 1.0]
+     },
+     "horizons_within_band": {
+      "calibrated_late_cuts": 14,
+      "current_late_cuts": 14,
+      "current_late_cuts_no_stockout": 13,
+      "of": 14
+     }
+    },
+    "ml.tsb": {
+     "ALL_WEEKS": {
+      "1": [0.814837, 0.831638, 0.831638, 885, 1.0],
+      "10": [0.782036, 0.77931, 0.805747, 870, 1.038889],
+      "11": [0.790419, 0.797701, 0.82069, 870, 1.038889],
+      "12": [0.790419, 0.78046, 0.78046, 870, 1.0],
+      "13": [0.779042, 0.789655, 0.816092, 870, 1.05],
+      "14": [0.775375, 0.79422, 0.824277, 865, 1.05],
+      "2": [0.789286, 0.801136, 0.825, 880, 1.05],
+      "3": [0.792262, 0.8, 0.803409, 880, 1.005556],
+      "4": [0.804762, 0.814773, 0.814773, 880, 1.0],
+      "5": [0.802976, 0.820455, 0.822727, 880, 1.011111],
+      "6": [0.782687, 0.798857, 0.835429, 875, 1.05],
+      "7": [0.780299, 0.785143, 0.817143, 875, 1.038889],
+      "8": [0.783881, 0.778286, 0.781714, 875, 1.005556],
+      "9": [0.797015, 0.810286, 0.819429, 875, 1.016667]
+     },
+     "NO_STOCKOUT": {
+      "1": [0.837993, 0.853625, 0.848153, 731, 0.994444],
+      "10": [0.797818, 0.787709, 0.782123, 716, 0.988889],
+      "11": [0.79913, 0.810249, 0.817175, 722, 1.005556],
+      "12": [0.805656, 0.793872, 0.778552, 718, 0.983333],
+      "13": [0.791001, 0.80791, 0.827684, 708, 1.038889],
+      "14": [0.79351, 0.809388, 0.816501, 703, 1.005556],
+      "2": [0.821403, 0.828929, 0.828929, 719, 1.0],
+      "3": [0.806034, 0.815681, 0.815681, 727, 1.0],
+      "4": [0.825018, 0.832642, 0.79668, 723, 0.972222],
+      "5": [0.815108, 0.836986, 0.836986, 730, 1.0],
+      "6": [0.804191, 0.811895, 0.811895, 723, 1.0],
+      "7": [0.790497, 0.796424, 0.796424, 727, 1.0],
+      "8": [0.797679, 0.7875, 0.783333, 720, 0.994444],
+      "9": [0.807359, 0.822715, 0.822715, 722, 1.0]
+     },
+     "horizons_within_band": {
+      "calibrated_late_cuts": 14,
+      "current_late_cuts": 14,
+      "current_late_cuts_no_stockout": 13,
+      "of": 14
+     }
+    }
+   },
+   "late_cuts": ["2024-11-06", "2024-12-04", "2025-01-01", "2025-01-29", "2025-02-26", "2025-03-26", "2025-04-23", "2025-05-21", "2025-06-18"]
+  }
+ },
+ "results_sha256": "1ce5ea29580f8c6fdb2b1f029cef0292f73b55385c25d19d988bb696c03fb54d",
+ "unit": "F5c (DT-092)"
+}

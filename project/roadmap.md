@@ -1,6 +1,6 @@
 # Roadmap del proyecto
 
-**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — cierre de la Etapa 1, inicio de la Etapa 2 y orden de implementación propuesto (`DT-047`) · **Versión 1.3** (2026-10-01) — contrato de U1 cerrado (`DT-048` a `DT-052`) y pendiente `DT-P22` · **Versión 1.4** (2026-10-01) — `DT-P22` cerrada; contrato de U1 sin pendientes · **Versión 1.5** (2026-10-01) — U1 implementada · **Versión 1.6** (2026-10-02) — U2 implementada (2026-10-01) y U3 autorizada para implementación (`DT-056`, `DT-057`) · **Versión 1.7** (2026-10-02) — U3 implementada y validada · **Versión 1.8** (2026-10-03) — U4 autorizada para implementación, no implementada (`DT-058` a `DT-063`) · **Versión 1.9** (2026-10-03) — U4 implementada y validada · **Versión 1.10** (2026-10-03) — U5 autorizada para implementación, no implementada (`DT-064` a `DT-067`) · **Versión 1.11** (2026-10-03) — U5 implementada y validada · **Versión 1.12** (2026-10-04) — U6 autorizada para implementación, no implementada (`DT-068`, `DT-069`) · **Versión 1.13** (2026-10-04) — U6 implementada y validada; termina el orden de `DT-047` · **Versión 1.14** (2026-10-05) — Fase 7 autorizada para implementación, no implementada (`DT-070`) · **Versión 1.15** (2026-10-05) — F7a implementada y validada · **Versión 1.16** (2026-10-05) — Fase 7 completada · **Versión 1.17** (2026-10-05) — Fase 5: decisiones documentadas; F5a autorizada (`DT-086`) · **Versión 1.18** (2026-10-05) — F5a implementada, pendiente de revisión · **Versión 1.19** (2026-10-05) — F5a integrada en `main`; F5b autorizada (`DT-088`) · **Versión 1.20** (2026-10-05) — F5b implementada, pendiente de revisión · **Versión 1.21** (2026-10-05) — G1 de la Fase 5 (`DT-089` a `DT-091`); dependencias con las Fases 7 y 8
+**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — cierre de la Etapa 1, inicio de la Etapa 2 y orden de implementación propuesto (`DT-047`) · **Versión 1.3** (2026-10-01) — contrato de U1 cerrado (`DT-048` a `DT-052`) y pendiente `DT-P22` · **Versión 1.4** (2026-10-01) — `DT-P22` cerrada; contrato de U1 sin pendientes · **Versión 1.5** (2026-10-01) — U1 implementada · **Versión 1.6** (2026-10-02) — U2 implementada (2026-10-01) y U3 autorizada para implementación (`DT-056`, `DT-057`) · **Versión 1.7** (2026-10-02) — U3 implementada y validada · **Versión 1.8** (2026-10-03) — U4 autorizada para implementación, no implementada (`DT-058` a `DT-063`) · **Versión 1.9** (2026-10-03) — U4 implementada y validada · **Versión 1.10** (2026-10-03) — U5 autorizada para implementación, no implementada (`DT-064` a `DT-067`) · **Versión 1.11** (2026-10-03) — U5 implementada y validada · **Versión 1.12** (2026-10-04) — U6 autorizada para implementación, no implementada (`DT-068`, `DT-069`) · **Versión 1.13** (2026-10-04) — U6 implementada y validada; termina el orden de `DT-047` · **Versión 1.14** (2026-10-05) — Fase 7 autorizada para implementación, no implementada (`DT-070`) · **Versión 1.15** (2026-10-05) — F7a implementada y validada · **Versión 1.16** (2026-10-05) — Fase 7 completada · **Versión 1.17** (2026-10-05) — Fase 5: decisiones documentadas; F5a autorizada (`DT-086`) · **Versión 1.18** (2026-10-05) — F5a implementada, pendiente de revisión · **Versión 1.19** (2026-10-05) — F5a integrada en `main`; F5b autorizada (`DT-088`) · **Versión 1.20** (2026-10-05) — F5b implementada, pendiente de revisión · **Versión 1.21** (2026-10-05) — G1 de la Fase 5 (`DT-089` a `DT-091`); dependencias con las Fases 7 y 8 · **Versión 1.22** (2026-10-06) — F5c autorizada (`DT-092`) y criterios complementarios de G1 (`DT-093`) · **Versión 1.23** (2026-10-06) — F5c implementada, pendiente de revisión · **Versión 1.24** (2026-10-06) — revisión de F5c: SES cumple los criterios; rótulo recomendado de la banda (Fase 7)
 
 ## Principios de secuenciación
 
@@ -159,7 +159,17 @@ sus endpoints, que van después— y no requiere dependencias nuevas. Sus **regl
   reproducibilidad pasan; el sistema degrada correctamente al baseline si el modelo no está.
   Si la mejora de Nivel 1 **no** se traduce en mejora de Nivel 2, ese hallazgo se documenta y el modelo
   **no se promueve**.
-- **Estado (2026-10-05, G1):** 🟡 **G1 registrado; F5c pendiente de autorización** (`DT-089` a `DT-091`,
+- **Estado (2026-10-06):** 🟡 **F5c autorizada e implementada, pendiente de revisión** (`DT-092`; rama `feature/ml-f5c`;
+  `docs/reports/fase5-f5c-candidatos-sintetico.md`, `docs/05` §20.7).
+  - Ninguno de los cinco candidatos nuevos cumple el criterio de unidades faltantes frente a la media móvil 13 con (a).
+    *(Corregido en la revisión: **SES cumple todos los criterios**; con las estrategias (b) y (c) de `DT-011`, también
+    TSB. Sin promoción: G2 y G3 siguen sin autorizar.)*
+  - Las estrategias (b) y (c) de `DT-011` reducen las unidades faltantes.
+  - Todo es `SYNTHETIC` y nada se promueve.
+  - Criterios complementarios de G1 registrados antes de evaluar candidatos (`DT-093`, `docs/05` §20.6).
+  - F5d, G2 y G3 siguen sin autorizar.
+  - La Fase 7 no cambia: el rótulo de la banda solo se recomienda en el informe de F5c.
+- **Estado anterior (2026-10-05, G1):** 🟡 **G1 registrado; F5c pendiente de autorización** (`DT-089` a `DT-091`,
   `docs/05` §20.5). Todo es provisional y `SYNTHETIC`.
   - **Hecho:** F5a y F5b integradas en `main` (PR #8 y #9).
   - **G1:**
@@ -211,7 +221,8 @@ sus endpoints, que van después— y no requiere dependencias nuevas. Sus **regl
 - **Entregables:** aplicación web funcional, componentes, pruebas.
 - **Dependencias:** Fases 3 y 4; además la Fase 5 para la vista de predicciones con incertidumbre
   (`US-075` necesita el intervalo de `US-055`). *(2026-10-05, tras G1: US-055 sigue pendiente de F5c, así que la vista
-  de predicciones sigue mostrando la banda de U3 como **«nominal 0.80, no validada»**; la interfaz no cambia.)*
+  de predicciones sigue mostrando la banda de U3 como **«nominal 0.80, no validada»**; la interfaz no cambia.)* *(2026-10-06, revisión de F5c: rótulo recomendado «Intervalo nominal 0,80. Cobertura observada entre 0,75 y 0,85 en pruebas con datos sintéticos; no validada con datos reales.» Es un ajuste
+  posterior de F7d que se autoriza aparte; `frontend/` no cambia.)*
 - **Criterio de finalización:** todas las vistas navegables con datos reales de la API; el desglose
   del cálculo es visible en el detalle de producto; sin lógica de negocio duplicada en el cliente.
 - **Estado (2026-10-05):** ✅ **Completada** — F7a a F7d integradas en `main` (PR #2 a #5, `22f1805`) y

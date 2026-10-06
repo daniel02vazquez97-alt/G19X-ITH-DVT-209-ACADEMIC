@@ -236,10 +236,10 @@ def model_level_spearman(
 ) -> dict:
     """Per cut and horizon: Spearman between each L1 aggregate of the models and their total units short.
 
-    The series set of each cut is the F5a comparison set (every model eligible, truth observed) restricted to
-    the simulated products, so both levels see the same series.
+    The series set of each cut is the F5a comparison set (every model of ``models`` eligible, truth observed)
+    restricted to the simulated products, so both levels see the same series.
     """
-    common = common_keys(observations)
+    common = common_keys(observations, models)
     grouped: dict[tuple[str, str, str], list[Observation]] = defaultdict(list)
     for o in observations:
         grouped[(o.as_of, o.horizon, o.model)].append(o)

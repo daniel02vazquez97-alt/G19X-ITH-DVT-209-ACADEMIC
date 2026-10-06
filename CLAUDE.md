@@ -2,7 +2,7 @@
 
 > Este archivo es la **fuente de verdad operativa** para cualquier agente de IA que trabaje sobre este repositorio.
 > Debe leerse **completo** al inicio de cada sesión, antes de cualquier modificación.
-> Última actualización: 2026-10-05 · Etapa vigente: **ETAPA 2 — Sistema principal** (iniciada: arquitectura y fundación) · Etapa 1 — Datos: **completada**
+> Última actualización: 2026-10-06 · Etapa vigente: **ETAPA 2 — Sistema principal** (iniciada: arquitectura y fundación) · Etapa 1 — Datos: **completada**
 
 ---
 
@@ -372,7 +372,10 @@ con datos `SYNTHETIC`:
 - valores de aceptación de `DT-091`.
 
 **F5c y F5d siguen sin autorizar.** Ningún modelo se promueve ni se integra, el *holdout* no se ha usado y la banda de
-predicción sigue siendo nominal 0,80, no validada.
+predicción sigue siendo nominal 0,80, no validada. *(2026-10-06: **autorizadas F5a, F5b y F5c** (`DT-086`, `DT-088`,
+`DT-092`), con los criterios complementarios de G1 de `DT-093`. F5c trabaja solo en `ml/`, sin *holdout* ni promoción.
+**F5d, G2 y G3 siguen sin autorizar.**)* *(2026-10-06: F5c implementada en `ml/candidates.py` y `ml/f5c/`, pendiente
+de revisión; resultados `SYNTHETIC` en `docs/05` §20.7.)*
 Restricciones vigentes, que se levantan solo por instrucción explícita:
 
 - **No escribir código de aplicación** hasta que el responsable autorice la primera unidad de
