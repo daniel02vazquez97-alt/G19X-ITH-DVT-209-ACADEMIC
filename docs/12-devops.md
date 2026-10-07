@@ -180,7 +180,7 @@ Entra ID, con ámbito restringido al repositorio, la rama o el entorno concretos
 - La credencial federada se crea sobre una **identidad administrada asignada por el usuario**, `id-mpa-dev-github`,
   y no sobre un registro de aplicación. Microsoft Learn admite ambas.
 - El sujeto limita el uso al entorno `dev` de GitHub.
-- El único rol es Reader sobre `rg-mpa-dev`; los permisos de despliegue llegan con U12.
+- El único rol es Reader sobre `rg-motor-predictivo-dev`; los permisos de despliegue llegan con U12.
 - El workflow de U8 no cambia.
 - La infraestructura está en `infra/azure/`.
 

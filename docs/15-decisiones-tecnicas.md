@@ -3756,7 +3756,7 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
      - `parameters/dev.bicepparam`, sin secretos ni datos personales. El correo del presupuesto, si llega a
        usarse, entra por la línea de comandos.
   2. **Recursos:**
-     - grupo `rg-mpa-dev`;
+     - grupo `rg-motor-predictivo-dev` (nombre del responsable, parámetro `resourceGroupName`);
      - Key Vault Standard `kv-mpa-dev-<uniqueString>`;
      - identidad administrada asignada por el usuario `id-mpa-dev-github`;
      - una credencial federada `github-dev`;
@@ -3779,20 +3779,36 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
      - **Credencial:** emisor `https://token.actions.githubusercontent.com`, audiencia `api://AzureADTokenExchange`,
        sujeto `repo:daniel02vazquez97-alt/Motor-Predictivo-de-Abastecimiento-de-Inventarios:environment:dev`.
        Solo el entorno `dev` de GitHub puede usarla: ni ramas, ni PR, ni `staging` ni producción.
-     - **Rol:** únicamente **Reader sobre `rg-mpa-dev`**, lo justo para comprobar el inicio de sesión. Los permisos
+     - **Rol:** únicamente **Reader sobre `rg-motor-predictivo-dev`**, lo justo para comprobar el inicio de sesión. Los permisos
        de despliegue los decide U12, nunca Owner.
      - **U8:** el workflow no cambia. U12 añadirá `id-token: write` al job de despliegue y los tres identificadores
        (cliente, tenant y suscripción), que no son credenciales. Microsoft Learn recomienda guardarlos como secretos
        de GitHub; la decisión es de U12.
-  5. **Región: `westus3` (West US 3)**, condicionada a la directiva de la suscripción (punto 7):
-     - **Mexico Central se descarta.** No figura en ninguna tabla de disponibilidad de modelos de Azure OpenAI
-       (U13), y en AI Search (U15) no ofrece *semantic ranker*, enriquecimiento con IA ni recuperación agéntica. Sí
-       tiene PostgreSQL flexible.
-     - **West US 3 tiene todo el stack:** Azure OpenAI Standard regional (gpt-4o-mini, gpt-4.1-mini), AI Search con
-       *semantic ranker*, Azure ML (disponible de forma general) y PostgreSQL flexible. Es la región con todo el
-       stack más próxima a Sonora (Arizona).
-     - **Orden de respaldo:** `southcentralus`, `eastus`, `northcentralus`, `westus`. Se excluye `eastus2`, donde
-       AI Search no admite servicios nuevos por demanda.
+  5. **Región: `westus3` (West US 3)**, condicionada a la directiva de la suscripción (punto 7). Evaluación revisada
+     el 2026-10-07 con las fuentes oficiales vigentes:
+     - «Azure AI Search region support» (actualizada el 2026-10-01; fuente del 2026-08-24);
+     - «Region availability for Foundry Models sold by Azure» (fuente del 2026-09-03);
+     - regiones de PostgreSQL flexible.
+
+     | Región | AI Search (alta demanda) | *Semantic ranker* | Azure OpenAI (gpt-4o-mini, gpt-4.1-mini) | Azure ML | PostgreSQL flexible | Veredicto |
+     |---|---|---|---|---|---|---|
+     | `westus3` | Sí (sin nota) | Sí | Sí: Global, Data Zone y regional | Sí (disponibilidad general anunciada) | Sí | **Elegida** |
+     | `southcentralus` | Sí (sin nota) | Sí | Sí: los tres tipos | Por catálogo ARM | Sí | 1.ª alternativa |
+     | `northcentralus` | Sí (sin nota; sin zonas) | Sí | Sí: los tres tipos | Por catálogo ARM | Sí | 2.ª alternativa |
+     | `westus2` | Sí (nota 3: solo etiquetas de Purview) | Sí | **No aparece en ninguna tabla** | Por catálogo ARM | Sí | Descartada para todo el stack |
+     | `westus` | **No: alta demanda** | Sí | Sí | Por catálogo ARM | Sí | Descartada (U15) |
+     | `eastus` | **No: alta demanda** | Sí | Sí | Por catálogo ARM | Sí | Descartada (U15) |
+     | `mexicocentral` | Sí | **No** | **No** | — | Sí | Descartada |
+
+     - **AI Search en West US 3:** la nota de alta demanda («prevents the creation of new search services») afecta a
+       East US, East US 2 y West US, no a West US 3. Aun así, la capacidad solo se confirma al crear el servicio
+       (U15). Si entonces fallara, la salida es una región secundaria para AI Search, con el resto en `westus3`; es
+       una propuesta, no un diseño.
+     - **Versión anterior corregida:** el orden de respaldo de la primera versión de esta DT incluía `eastus` y
+       `westus`, que AI Search no admite para servicios nuevos. Era un error.
+     - **Regla del README, paso 2:** primera región de `westus3`, `southcentralus` y `northcentralus` que permita la
+       directiva de la suscripción y aparezca en los catálogos ARM de AI Search, Azure ML, PostgreSQL y Cognitive
+       Services, con modelos visibles en `az cognitiveservices model list`.
   6. **Validación local:** Bicep CLI 0.48.1, `build`, `lint` y `build-params` sin avisos. `infra/tests/test_azure_config.py`
      tiene 7 pruebas estáticas, que el job `docker` de U8 ejecuta:
      - solo recursos de U10;

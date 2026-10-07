@@ -176,7 +176,7 @@ inmediato y explícito a un arranque con configuración incompleta que falle má
 | Azure OpenAI | Entra ID (identidad administrada); clave solo como último recurso |
 | Azure AI Search | Entra ID; consultas con filtro de permisos aplicado en origen |
 | Azure Machine Learning | Identidad administrada para invocar el endpoint |
-| Desde GitHub Actions | **OIDC con credenciales federadas**, sin secretos de larga vida. *(2026-10-06, U10, `DT-098`: identidad administrada `id-mpa-dev-github`, credencial limitada al entorno `dev` y solo el rol Reader sobre `rg-mpa-dev`.)* |
+| Desde GitHub Actions | **OIDC con credenciales federadas**, sin secretos de larga vida. *(2026-10-06, U10, `DT-098`: identidad administrada `id-mpa-dev-github`, credencial limitada al entorno `dev` y solo el rol Reader sobre `rg-motor-predictivo-dev`.)* |
 
 El acceso de CI a Azure mediante OpenID Connect elimina la necesidad de almacenar credenciales
 persistentes en GitHub: el flujo intercambia un token de corta vida emitido por GitHub por un token

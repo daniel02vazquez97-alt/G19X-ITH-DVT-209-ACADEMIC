@@ -8,11 +8,11 @@ su propia sesión de Azure CLI. Nadie copia credenciales en archivos, en Git ni 
 
 | Recurso | Nombre | Propósito | Costo esperado |
 |---|---|---|---|
-| Grupo de recursos | `rg-mpa-dev` | Agrupa todo lo del entorno `dev` | Sin costo |
+| Grupo de recursos | `rg-motor-predictivo-dev` | Agrupa todo lo del entorno `dev` | Sin costo |
 | Key Vault (Standard) | `kv-mpa-dev-<13 caracteres de uniqueString>` | Almacén de secretos de `DT-022`, vacío; RBAC; sin acceso de red público | Sin cargo fijo; se cobra por operación (sin consumidores en U10: ~0) |
 | Identidad administrada | `id-mpa-dev-github` | Identidad de GitHub Actions para U12 | Sin costo |
 | Credencial federada | `github-dev` | OIDC: solo el entorno `dev` del repositorio | Sin costo |
-| Asignación de rol | Reader sobre `rg-mpa-dev` | Comprobar el inicio de sesión; nada más | Sin costo |
+| Asignación de rol | Reader sobre `rg-motor-predictivo-dev` | Comprobar el inicio de sesión; nada más | Sin costo |
 | Presupuesto (opcional) | `budget-mpa-dev` | Avisos a 50/75/90/100 % de 50 USD | Sin costo; **Azure for Students no está entre las ofertas que admite Cost Management** |
 
 No crea PostgreSQL, registro de contenedores, cómputo, Azure ML, Azure OpenAI, AI Search, Power BI,
@@ -40,16 +40,40 @@ raíz del repositorio, en PowerShell o bash.
    az account show --query "{suscripcion:name, estado:state}" --output table
    ```
 
-2. **Regiones permitidas.** Azure for Students limita cada suscripción a unas cinco regiones, distintas en cada
-   cuenta, con la asignación de directiva «Allowed resource deployment regions»:
+2. **Región: comprobaciones de solo lectura** (no crean nada). Azure for Students limita cada suscripción a unas
+   cinco regiones, distintas en cada cuenta, con la asignación de directiva «Allowed resource deployment regions».
 
    ```
+   az policy assignment list --query "[].displayName" --output table
    az policy assignment list --query "[?displayName=='Allowed resource deployment regions'].parameters" --output json
+   az provider show --namespace Microsoft.Search --query "resourceTypes[?resourceType=='searchServices'].locations | [0]" --output json
+   az provider show --namespace Microsoft.MachineLearningServices --query "resourceTypes[?resourceType=='workspaces'].locations | [0]" --output json
+   az provider show --namespace Microsoft.DBforPostgreSQL --query "resourceTypes[?resourceType=='flexibleServers'].locations | [0]" --output json
+   az provider show --namespace Microsoft.CognitiveServices --query "resourceTypes[?resourceType=='accounts'].locations | [0]" --output json
+   az cognitiveservices model list --location westus3 --query "[?model.name=='gpt-4o-mini' || model.name=='text-embedding-3-small'].{modelo:model.name, version:model.version, sku:model.skus[0].name}" --output table
+   az cognitiveservices usage list --location westus3 --output table
    ```
 
-   Si `westus3` no aparece, cambia `location` en `parameters/dev.bicepparam` por la primera permitida de esta
-   lista, en este orden (`DT-098`): `westus3`, `southcentralus`, `eastus`, `northcentralus`, `westus`. Si
-   ninguna está permitida, detente y anota la lista: la región se decide de nuevo.
+   Regla de `DT-098`:
+   - la región es la primera de `westus3`, `southcentralus` y `northcentralus` que esté **permitida** por la
+     directiva y figure en los cuatro catálogos;
+   - no se usan `eastus`, `eastus2` ni `westus`: AI Search no admite allí servicios nuevos por alta demanda;
+   - no se usa `westus2`: no tiene Azure OpenAI;
+   - no se usa `mexicocentral`: sin Azure OpenAI ni *semantic ranker*.
+
+   Si ninguna de las tres está permitida, detente y anota la lista: la región se decide de nuevo.
+
+   **Grupo de recursos existente.** Si ya existe `rg-motor-predictivo-dev` en otra región, la región de un grupo no
+   se puede cambiar. Si está vacío y sin bloqueos, se borra y la plantilla lo crea en la región elegida:
+
+   ```
+   az resource list --resource-group rg-motor-predictivo-dev --output table
+   az lock list --resource-group rg-motor-predictivo-dev --output table
+   az group delete --name rg-motor-predictivo-dev --yes
+   az group exists --name rg-motor-predictivo-dev
+   ```
+
+   Las dos primeras órdenes deben salir vacías y la última debe devolver `false`.
 
 3. **Proveedores de recursos** (una vez por suscripción):
 
@@ -66,12 +90,13 @@ raíz del repositorio, en PowerShell o bash.
    az deployment sub what-if --name u10-base-dev --location <region> --template-file infra/azure/main.bicep --parameters infra/azure/parameters/dev.bicepparam
    ```
 
-   **Resultado esperado del what-if: exactamente cinco creaciones y ningún cambio ni borrado.**
-   - `rg-mpa-dev`;
+   **Resultado esperado del what-if: exactamente cinco creaciones y ningún cambio ni borrado** (con el grupo ya
+   borrado; si lo conservaras en la misma región, sería cuatro creaciones y el grupo sin cambios).
+   - `rg-motor-predictivo-dev`;
    - `kv-mpa-dev-…`;
    - `id-mpa-dev-github`;
    - `id-mpa-dev-github/github-dev`;
-   - una asignación de rol Reader con ámbito `rg-mpa-dev`.
+   - una asignación de rol Reader con ámbito `rg-motor-predictivo-dev`.
 
    Todas deben estar en la región elegida. No despliegues si aparece cualquier otro recurso, cualquier cambio o
    borrado, otra región o un rol distinto de Reader.
@@ -85,19 +110,19 @@ raíz del repositorio, en PowerShell o bash.
 ## Verificación posterior
 
 ```
-az resource list --resource-group rg-mpa-dev --query "[].{nombre:name, tipo:type, region:location, etiquetas:tags}" --output json
+az resource list --resource-group rg-motor-predictivo-dev --query "[].{nombre:name, tipo:type, region:location, etiquetas:tags}" --output json
 az keyvault show --name <kv> --query "{rbac:properties.enableRbacAuthorization, red:properties.publicNetworkAccess, retencion:properties.softDeleteRetentionInDays, purga:properties.enablePurgeProtection}" --output table
-az identity federated-credential list --identity-name id-mpa-dev-github --resource-group rg-mpa-dev --query "[].{nombre:name, emisor:issuer, sujeto:subject, audiencia:audiences[0]}" --output table
+az identity federated-credential list --identity-name id-mpa-dev-github --resource-group rg-motor-predictivo-dev --query "[].{nombre:name, emisor:issuer, sujeto:subject, audiencia:audiences[0]}" --output table
 az role assignment list --all --assignee <principalId de id-mpa-dev-github> --query "[].{rol:roleDefinitionName, ambito:scope}" --output table
 az deployment sub show --name u10-base-dev --query properties.outputs --output json
 ```
 
 Esperado:
 
-- dos recursos en `rg-mpa-dev` (Key Vault e identidad), con las seis etiquetas;
+- dos recursos en `rg-motor-predictivo-dev` (Key Vault e identidad), con las seis etiquetas;
 - Key Vault con RBAC `true`, red `Disabled`, retención 7 y sin protección de purga;
 - una sola credencial federada, con sujeto `repo:daniel02vazquez97-alt/Motor-Predictivo-de-Abastecimiento-de-Inventarios:environment:dev`;
-- una sola asignación de rol: `Reader` sobre `rg-mpa-dev`.
+- una sola asignación de rol: `Reader` sobre `rg-motor-predictivo-dev`.
 
 Las salidas `githubIdentityClientId`, `tenantId` y `subscriptionId` son identificadores, no credenciales. U12
 decidirá si se guardan como variables o como secretos de GitHub; Microsoft recomienda secretos.
@@ -126,7 +151,7 @@ decidirá si se guardan como variables o como secretos de GitHub; Microsoft reco
 Borra solo el grupo de recursos de U10; nada fuera de él.
 
 ```
-az group delete --name rg-mpa-dev --yes
+az group delete --name rg-motor-predictivo-dev --yes
 az keyvault list-deleted --query "[?name=='<kv>'].{nombre:name, purga:properties.scheduledPurgeDate}" --output table
 az keyvault purge --name <kv> --location <region>
 ```
@@ -141,6 +166,6 @@ Si llegó a crearse el presupuesto:
 az consumption budget delete --budget-name budget-mpa-dev
 ```
 
-Verificación: `az group exists --name rg-mpa-dev` debe devolver `false` y `az keyvault list-deleted` no debe
+Verificación: `az group exists --name rg-motor-predictivo-dev` debe devolver `false` y `az keyvault list-deleted` no debe
 listar el vault. El historial de despliegues de la suscripción (`az deployment sub delete --name u10-base-dev`)
 es solo metadato y no tiene costo.

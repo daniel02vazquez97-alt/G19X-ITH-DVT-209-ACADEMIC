@@ -48,6 +48,13 @@ class Scope(unittest.TestCase):
         self.assertIn("module budget 'modules/budget.bicep' = if (deployBudget)", MAIN)
         self.assertIn("param deployBudget = false", PARAMS)
 
+    def test_region_and_resource_group_follow_dt098(self) -> None:
+        # westus2 (no Azure OpenAI), westus/eastus/eastus2 (AI Search full) and mexicocentral are excluded.
+        location = re.search(r"^param location = '([a-z0-9]+)'$", PARAMS, re.MULTILINE).group(1)
+        self.assertIn(location, {"westus3", "southcentralus", "northcentralus"})
+        self.assertIn("param resourceGroupName = 'rg-motor-predictivo-dev'", PARAMS)
+        self.assertIn("  name: resourceGroupName\n", MAIN)
+
     def test_every_resource_is_tagged(self) -> None:
         for key in ("project", "environment", "owner", "purpose", "managedBy", "costControl"):
             self.assertRegex(MAIN, rf"\n  {key}: ")

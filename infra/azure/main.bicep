@@ -21,6 +21,9 @@ param location string
 @maxLength(8)
 param projectName string = 'mpa'
 
+@description('Nombre del grupo de recursos del entorno.')
+param resourceGroupName string = 'rg-motor-predictivo-${environment}'
+
 @description('Valor de la etiqueta owner: un rol, nunca un nombre ni un correo personal.')
 param ownerTag string = 'responsable-del-proyecto'
 
@@ -67,7 +70,7 @@ var tags = {
 }
 
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' = {
-  name: 'rg-${projectName}-${environment}'
+  name: resourceGroupName
   location: location
   tags: tags
 }
