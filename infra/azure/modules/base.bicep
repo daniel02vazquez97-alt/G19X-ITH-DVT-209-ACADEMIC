@@ -16,6 +16,9 @@ param githubOwner string
 param githubRepository string
 param githubEnvironment string
 
+@description('U12 (DT-100): permite que el servicio de despliegue de plantillas de ARM lea secretos (getSecret) como servicio de confianza. El acceso de red público sigue deshabilitado.')
+param armSecretAccess bool = false
+
 // Rol integrado Reader (Microsoft Learn, «Azure built-in roles»).
 var readerRoleId = 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
 
@@ -37,11 +40,13 @@ resource keyVault 'Microsoft.KeyVault/vaults@2024-11-01' = {
     enableSoftDelete: true
     softDeleteRetentionInDays: 7
     enabledForDeployment: false
-    enabledForTemplateDeployment: false
+    enabledForTemplateDeployment: armSecretAccess
     enabledForDiskEncryption: false
     publicNetworkAccess: 'Disabled'
     networkAcls: {
-      bypass: 'None'
+      // Con armSecretAccess, solo los servicios de confianza de Microsoft (entre ellos el despliegue de
+      // plantillas de ARM) atraviesan la red; Container Apps no lo es y nunca lee el vault (DT-100).
+      bypass: armSecretAccess ? 'AzureServices' : 'None'
       defaultAction: 'Deny'
     }
   }

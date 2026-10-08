@@ -1,0 +1,98 @@
+# CD de `dev` (U12, `DT-100`): construye las tres imágenes de U7/U11/U12, las publica en el ACR de dev y actualiza
+# la api, el frontend y el job de bootstrap en Azure Container Apps.
+#
+# - Login a Azure por OIDC con la identidad administrada `id-mpa-dev-github` de U10: su credencial federada solo
+#   acepta el entorno `dev` de este repositorio (job con `environment: dev`). Ningún secreto: client-id, tenant-id,
+#   subscription-id y los nombres de recursos son variables NO secretas del entorno `dev` de GitHub
+#   (tmp/u12-evidence/github-dev-variables.txt, que escribe infra/azure/deploy-u12.ps1 -Stage Core).
+# - Push al registro con `az acr login` (token de Entra ID; rol AcrPush): sin usuario administrador ni contraseñas.
+# - Roles de la identidad: Reader (grupo), AcrPush (registro), Container Apps Contributor (grupo) y Managed Identity
+#   Operator (solo la identidad de ejecución). Nunca Owner ni ámbito de suscripción.
+# - Manual (workflow_dispatch): `dev` es una demo con crédito limitado. staging y producción (con aprobación) no
+#   existen todavía; se añadirían como entornos de GitHub propios con su credencial federada.
+# La infraestructura (Bicep, what-if) no la despliega este workflow: la despliega el responsable con deploy-u12.ps1.
+
+name: Deploy dev
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_bootstrap:
+        description: "Ejecutar el job de bootstrap tras actualizar (idempotente: no duplica datos)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Imágenes, ACR y Container Apps (dev, OIDC)
+    runs-on: ubuntu-24.04
+    environment: dev
+    timeout-minutes: 60
+    env:
+      TAG: ${{ github.sha }}
+      REGISTRY: ${{ vars.ACR_LOGIN_SERVER }}
+      RG: ${{ vars.AZURE_RESOURCE_GROUP }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Azure login por OIDC (sin secretos)
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Extensiones de Azure CLI sin preguntas
+        run: az config set extension.use_dynamic_install=yes_without_prompt --only-show-errors
+      - name: Login al registro con el token de Entra ID (AcrPush)
+        run: az acr login --name "${{ vars.ACR_NAME }}"
+      - name: Construir las imágenes (Dockerfiles de U7, U11 y U12)
+        run: |
+          docker build --file infra/docker/backend.Dockerfile --build-arg VCS_REF="$TAG" --tag "$REGISTRY/inventory/backend:$TAG" .
+          docker build --file infra/docker/frontend.Dockerfile --build-arg VCS_REF="$TAG" \
+            --build-arg VITE_APP_ENV=dev \
+            --build-arg VITE_ENTRA_TENANT_ID="${{ vars.ENTRA_TENANT_ID }}" \
+            --build-arg VITE_ENTRA_SPA_CLIENT_ID="${{ vars.ENTRA_SPA_CLIENT_ID }}" \
+            --build-arg VITE_ENTRA_API_SCOPE="api://${{ vars.ENTRA_API_CLIENT_ID }}/access_as_user" \
+            --tag "$REGISTRY/inventory/frontend:$TAG" .
+          docker build --file infra/docker/bootstrap.Dockerfile --build-arg VCS_REF="$TAG" --tag "$REGISTRY/inventory/bootstrap:$TAG" .
+      - name: Publicar en el registro
+        run: |
+          for image in backend frontend bootstrap; do docker push "$REGISTRY/inventory/$image:$TAG"; done
+      - name: Actualizar la api, el frontend y el job (si ya existen)
+        run: |
+          if ! az containerapp show --name "${{ vars.CA_API }}" --resource-group "$RG" --query name --output tsv > /dev/null 2>&1; then
+            echo "Las apps aún no existen: ejecuta deploy-u12.ps1 -Stage Apps -ImageTag $TAG" | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          az containerapp update --name "${{ vars.CA_API }}" --resource-group "$RG" --image "$REGISTRY/inventory/backend:$TAG" --output none
+          az containerapp update --name "${{ vars.CA_FRONTEND }}" --resource-group "$RG" --image "$REGISTRY/inventory/frontend:$TAG" --output none
+          az containerapp job update --name "${{ vars.CAJ_BOOTSTRAP }}" --resource-group "$RG" --image "$REGISTRY/inventory/bootstrap:$TAG" --output none
+          echo "Imágenes $TAG desplegadas en dev." | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Bootstrap (opcional, idempotente)
+        if: ${{ inputs.run_bootstrap }}
+        run: |
+          execution=$(az containerapp job start --name "${{ vars.CAJ_BOOTSTRAP }}" --resource-group "$RG" --query name --output tsv)
+          echo "Ejecución $execution"
+          for _ in $(seq 1 160); do
+            status=$(az containerapp job execution show --name "${{ vars.CAJ_BOOTSTRAP }}" --resource-group "$RG" \
+              --job-execution-name "$execution" --query properties.status --output tsv)
+            echo "$(date -u +%H:%M:%S) $status"
+            case "$status" in Succeeded) echo "Bootstrap $execution: Succeeded" >> "$GITHUB_STEP_SUMMARY"; exit 0 ;; Failed|Stopped|Degraded) exit 1 ;; esac
+            sleep 15
+          done
+          exit 1
+      - name: Resumen
+        if: always()
+        run: |
+          echo "Etiqueta: \`$TAG\`" >> "$GITHUB_STEP_SUMMARY"
+          az containerapp show --name "${{ vars.CA_FRONTEND }}" --resource-group "$RG" \
+            --query "properties.configuration.ingress.fqdn" --output tsv 2>/dev/null | sed 's|^|Frontend: https://|' >> "$GITHUB_STEP_SUMMARY" || true

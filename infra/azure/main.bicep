@@ -75,6 +75,9 @@ resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   tags: tags
 }
 
+@description('U12 (DT-100): el despliegue de plantillas de ARM puede leer los secretos de PostgreSQL del Key Vault (getSecret); la red pública sigue deshabilitada.')
+param keyVaultArmSecretAccess bool = false
+
 module base 'modules/base.bicep' = {
   name: 'u10-base'
   scope: resourceGroup
@@ -86,6 +89,7 @@ module base 'modules/base.bicep' = {
     githubOwner: githubOwner
     githubRepository: githubRepository
     githubEnvironment: githubEnvironment
+    armSecretAccess: keyVaultArmSecretAccess
   }
 }
 
