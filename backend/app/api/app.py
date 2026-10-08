@@ -14,8 +14,17 @@ from .settings import Settings, load_settings
 TITLE = "Motor Predictivo de Abastecimiento — API V1 (solo lectura)"
 
 
+def _validator(settings: Settings) -> TokenValidator:
+    """``local``: development tokens (`DT-065`); ``dev``: Microsoft Entra ID access tokens (`DT-099`)."""
+    if settings.entra is not None:
+        from .entra import EntraTokenValidator  # optional group `entra`; never imported with APP_ENV=local
+
+        return EntraTokenValidator(settings.entra)
+    return DevTokenValidator(settings.identities)
+
+
 def create_app(settings: Settings | None = None, validator: TokenValidator | None = None) -> FastAPI:
-    """``settings`` from the environment by default; refuses to build outside ``APP_ENV=local`` (`DT-065`)."""
+    """``settings`` from the environment by default; only ``APP_ENV=local`` and ``dev`` build (`DT-065`, `DT-099`)."""
     settings = load_settings() if settings is None else settings
     app = FastAPI(
         title=TITLE,
@@ -27,7 +36,7 @@ def create_app(settings: Settings | None = None, validator: TokenValidator | Non
         swagger_ui_oauth2_redirect_url=None,  # no extra public route beyond /docs and /openapi.json
     )
     app.state.settings = settings
-    app.state.token_validator = validator if validator is not None else DevTokenValidator(settings.identities)
+    app.state.token_validator = validator if validator is not None else _validator(settings)
     app.state.text_generator = TemplateGenerator()  # U6: deterministic template (`DT-068`)
     errors.install(app)
     correlation.install(app)

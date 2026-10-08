@@ -1,7 +1,8 @@
 """``python -m app.api`` — serve the API V1 on 127.0.0.1:8000 with uvicorn (`DT-064`, `DT-065`).
 
-Requires ``APP_ENV=local``, ``DATABASE_URL`` and ``DEV_AUTH_IDENTITIES`` in the environment; any other
-``APP_ENV`` is refused before the server starts. Exit status 1 when the configuration is refused.
+Requires ``DATABASE_URL`` and either ``APP_ENV=local`` with ``DEV_AUTH_IDENTITIES`` (`DT-065`) or
+``APP_ENV=dev`` with the Entra ID identifiers (`DT-099`) in the environment; any other ``APP_ENV`` is refused
+before the server starts. Exit status 1 when the configuration is refused.
 """
 
 from __future__ import annotations

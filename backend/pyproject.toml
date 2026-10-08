@@ -16,6 +16,10 @@
 #     pip install -e ".[db,api,test]"
 # Ejecución local (solo `APP_ENV=local`, `DT-065`): `python -m app.api` en 127.0.0.1:8000.
 #
+# U11 — Microsoft Entra ID (`DT-099`): grupo OPCIONAL `entra` (PyJWT con `cryptography`) para validar los
+# tokens de acceso con `APP_ENV=dev`. `APP_ENV=local` no lo importa ni lo necesita. Instalación:
+#     pip install -e ".[db,api,entra,test]"
+#
 # Pruebas (unittest, `docs/13` §14), desde este directorio:
 #     python3 -m unittest discover -s tests -t .
 # Integración contra PostgreSQL real (U2), suite aparte; exige U2_TEST_ADMIN_DSN:
@@ -41,3 +45,7 @@ api = [
     "uvicorn==0.52.4",
 ]
 test = ["httpx2==2.13.1"]
+entra = [
+    "PyJWT[crypto]==2.15.1",
+    "cryptography==50.0.2",
+]

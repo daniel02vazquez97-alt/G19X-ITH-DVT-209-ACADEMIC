@@ -305,7 +305,7 @@ Los recálculos y las cargas de datos son procesos largos. Patrón uniforme:
 1. **Solo lectura.** La API expone datos cargados y resultados ya calculados. Cargar, pronosticar y
    recomendar son ejecuciones batch explícitas (`docs/03` §16.7). Un `GET` nunca recalcula (§5.2).
 2. **Autenticada por defecto.** Todo `/api/v1/*` exige `Authorization: Bearer`; las únicas
-   excepciones son las de §1: `/health` y, **solo fuera de producción**, la documentación interactiva. Hasta la Fase 8 el token lo valida un `TokenValidator` local de
+   excepciones son las de §1: `/health` y, **solo fuera de producción**, la documentación interactiva. Con `APP_ENV=dev` el token es un token de acceso de Microsoft Entra ID que la API valida (U11, `DT-099`); con `APP_ENV=local` lo valida un `TokenValidator` local de
    desarrollo (`docs/10` §15); la autorización por rol se aplica igual, en el backend.
 3. **Roles explícitos por endpoint**, sin jerarquía implícita: cada endpoint enumera los roles que
    admite, según la matriz de §3.
