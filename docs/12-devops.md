@@ -98,6 +98,14 @@ La interfaz queda en `http://127.0.0.1:8080`. Para entrar se pega uno de los tok
 `docker compose -f infra/docker-compose.yml --profile app down`; con `-v` se borran también la base y el dataset.
 Sin `--profile app`, el mismo archivo sigue levantando **solo PostgreSQL**, como en U2.
 
+**Modo `dev` con Microsoft Entra ID (U11, `DT-099`):** un segundo archivo se superpone sin cambiar nada de lo
+anterior, en el **proyecto Compose aislado `u11-entra-dev`** (volúmenes y red propios; nunca `infra_pgdata`):
+`docker compose -p u11-entra-dev -f infra/docker-compose.yml -f infra/docker-compose.entra-dev.yml --env-file
+tmp/u11-evidence/entra-dev.env --profile app up --build -d` (API con `APP_ENV=dev`, SPA compilada con MSAL;
+abrir `http://localhost:8080`; comprobación: `python infra/docker/smoke.py --entra`). Antes se para el entorno
+local con `stop` (puertos compartidos); su limpieza, `down -v`, solo con `-p u11-entra-dev`. Requiere haber ejecutado `infra/azure/deploy-u11.ps1`
+(`infra/azure/entra/README.md`). La imagen `backend` incluye desde U11 el grupo `entra` de `pyproject.toml`.
+
 | Servicio | Imagen | Qué hace | Termina en |
 |---|---|---|---|
 | `postgres` | `postgres:16.15-alpine3.24` (por digest) | PostgreSQL 16, `trust`, `127.0.0.1:5432`, volumen `pgdata` | `healthy` (`pg_isready`) |
@@ -184,6 +192,11 @@ Entra ID, con ámbito restringido al repositorio, la rama o el entorno concretos
 - El workflow de U8 no cambia.
 - La infraestructura está en `infra/azure/`.
 
+*Nota del 2026-10-07 (U12, `DT-100`):* `.github/workflows/deploy-dev.yml` (manual, entorno `dev`) entra por OIDC con
+`id-mpa-dev-github`, sube las tres imágenes al ACR con `AcrPush` y actualiza las apps y el job con `Container Apps
+Contributor` (grupo) y `Managed Identity Operator` (solo `id-mpa-dev-runtime`). Sin secretos de GitHub: solo
+variables con identificadores. La infraestructura la despliega el responsable con `infra/azure/deploy-u12.ps1`.
+
 ### 4.4 Buenas prácticas del pipeline
 
 - Permisos mínimos por workflow (`permissions:` explícito, no el conjunto por defecto).
@@ -241,6 +254,11 @@ entre entornos.
 decidirá en la Fase 12–13 con requisitos reales de carga y presupuesto. Decidirlo ahora sería
 comprometer una arquitectura sin información.
 
+*Nota del 2026-10-07 (`DT-100`, cierra `DT-P01` para `dev`):* `dev` corre en Azure Container Apps (perfil
+Consumption, `centralus`) con PostgreSQL Flexible Server 16 B1ms y ACR Basic; despliegue **manual** (no automático
+desde `main`) por el crédito limitado. Procedimiento, costes y desmontaje: `infra/azure/u12/README.md`. `staging` y
+`prod` siguen sin decidir.
+
 ## 6. Base de datos
 
 - **Migraciones versionadas** en el repositorio; ningún cambio manual de esquema en ningún entorno.
@@ -248,6 +266,9 @@ comprometer una arquitectura sin información.
 - Se aplican como parte del despliegue, con credencial dedicada y distinta de la de la aplicación.
 - Las migraciones destructivas requieren aprobación explícita y respaldo previo.
 - Compatibilidad hacia atrás durante el despliegue: primero el esquema, después el código.
+
+*Nota del 2026-10-07 (U12):* en `dev`, las migraciones las aplica el job `caj-mpa-dev-bootstrap` con `mpa_owner`; la
+API usa `mpa_app`, con solo `SELECT`. Ambas contraseñas se generan en el Key Vault y nunca se escriben a mano.
 
 ## 7. Versionado y publicaciones
 

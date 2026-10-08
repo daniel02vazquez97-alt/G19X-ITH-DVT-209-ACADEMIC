@@ -388,6 +388,12 @@ y rol `analytics_reader`; sin Power BI. Las vistas dependen de tablas operativas
 recrearlas.)*
 *(2026-10-06: **U10 autorizada**, `DT-098`: Bicep de la base de Azure de `dev` en `infra/azure/`; el despliegue lo
 ejecuta el responsable con su sesión. U11–U16 siguen sin autorizar.)*
+*(2026-10-07: U10 desplegada y verificada en `centralus`. **U11 autorizada**, `DT-099`: Entra ID en `dev` (registros,
+app roles de ASSUMPTION-010, MSAL, validación de tokens, `APP_ENV=dev`); la configuración real la ejecuta el
+responsable con `infra/azure/deploy-u11.ps1`. `APP_ENV=local` no cambia. U12–U16 siguen sin autorizar.)*
+*(2026-10-07: **U12 autorizada**, `DT-100` (cierra `DT-P01` para `dev`): Container Apps Consumption, ACR Basic,
+PostgreSQL 16 B1ms, job único de bootstrap; el despliegue real lo ejecuta el responsable con
+`infra/azure/deploy-u12.ps1` (`infra/azure/u12/README.md`). U13–U16 siguen sin autorizar.)*
 Restricciones vigentes, que se levantan solo por instrucción explícita:
 
 - **No escribir código de aplicación fuera de una unidad autorizada.** Cada unidad (U1 a U6 de `DT-047`,

@@ -1,6 +1,6 @@
 # 15 — Decisiones técnicas (ADR)
 
-**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-18) — `DT-024` a `DT-030`, preparación del Componente 2 · **Versión 1.3** (2026-09-19) — `DT-031`, reglas mínimas de V1 · **Versión 1.4** (2026-09-21) — cierre de las reglas V1: `DT-031` pasa a `ACEPTADA` con trece reglas · **Versión 1.5** (2026-09-21) — `DT-032` y `DT-033`, decisiones que el Componente 2 tenía que tomar al implementarse · **Versión 1.6** (2026-09-21) — tabla canónica de identificadores de componente en `DT-030` · **Versión 1.7** (2026-09-23) — `DT-034` y `DT-035`, demanda latente persistente y sus políticas de generación · **Versión 1.8** (2026-09-24) — `DT-036` y `DT-037`, políticas sintéticas de inventario y comportamiento de proveedores; **enmienda de `DT-027`** (restricción 3) y cierre del pendiente de `data_origin` de `DT-026` · **Versión 1.9** (2026-09-24) — `DT-038` y `DT-039`, contratos de salida de los Componentes 4 y 5, tras la auditoría pre-implementación; cierre de los pendientes de `DT-034` (recorte de la demanda y contrato de `consumption.csv`) y correcciones a `DT-036` y `DT-037` · **Versión 1.10** (2026-09-26) — cierre de D-01: `DT-040` (publicación atómica del dataset, W1), regla general de incremento de `generator_version` en `DT-033`, y actualizaciones de `DT-036`, `DT-038` y `DT-039` (A2, B2, `expected_at`, autoría de los identificadores) · **Versión 1.11** (2026-09-26) — implementación del Componente 4: enmienda de `DT-037` §3 (D-C4-1, reparto de la entrega partida) y actualización de `DT-038` (D-C4-2 precondiciones, D-C4-3 lead time y disparo diario, flujos pseudoaleatorios, `metrics` pendiente) · **Versión 1.12** (2026-09-27) — cierre de D-01, opción A: elegibilidad de las órdenes `CANCELLED` sintéticas respecto de `valid_to` (`DT-039` §5.2) · **Versión 1.13** (2026-09-28) — implementación del Componente 5 (`DT-039` §13), sin cambios en ninguna regla · **Versión 1.14** (2026-09-28) — implementación del Componente 6 (`DT-037` §6, decisiones A1 y A2) y corrección de texto en `DT-040` §3 · **Versión 1.15** (2026-09-29) — implementación de W1 (`DT-040` §9, detalles pendientes resueltos) y `generator_version` 0.3.0 · **Versión 1.16** (2026-09-29) — `DT-041`, contrato e implementación del Componente 7 (sin integrar en W1); notas de redacción en `DT-030` y `DT-031` (`V1-07`, `V1-08`) · **Versión 1.17** (2026-09-29) — `DT-042`, validador del dataset e informe de calidad; integración de C7 y C8 en W1 (`DT-040`); `generator_version` 0.4.0 (`DT-033`); formas de `scenario_assignment` y `quality_report` (`DT-025`); `metrics` de `DT-038` §12 cerrado · **Versión 1.18** (2026-09-30) — Etapa 2, arquitectura y fundación: `DT-043` a `DT-047` (todas `PROPUESTA`) y pendientes `DT-P13` a `DT-P21` · **Versión 1.19** (2026-09-30) — autorización de U1: `DT-043` y `DT-045` `ACEPTADA`, `DT-047` `ACEPTADA` en cuanto a U1; `DT-P15` y `DT-P20` cerradas; `DT-P14` abierta en parte y **bloquea U1** · **Versión 1.20** (2026-10-01) — `DT-P14` **cerrada** con el estimador poblacional, `INSUFFICIENT_HISTORY` para `n = 0` y la evaluación exacta B3 (`docs/06` §16.6); ninguna fórmula V1 cambia · **Versión 1.21** (2026-10-01) — cierre del contrato de U1: `DT-048` a `DT-052` `ACEPTADA` (aclaraciones A-1 en `DT-050` y A-2 en `DT-051`), y pendiente `DT-P22`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.22** (2026-10-01) — `DT-P22` `ACEPTADA` (opción (a)): `PRODUCT_OUT_OF_VALIDITY` cubre también la vigencia que termina dentro del horizonte; cierre de `DT-049`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.23** (2026-10-01) — `DT-053` (frontera de la salida parcial) y `DT-054` (sin monotonía global de `S` frente a `L` en V1), tras el audit de pre-codificación de U1; ninguna fórmula cambia · **Versión 1.24** (2026-10-01) — `DT-044` `ACEPTADA` (cantidades en `numeric`; `quantity_on_hand ≥ 0` compatible con `BR-X09`/`V1-13`); `DT-047` aceptada para U2; `DT-055` (entorno técnico de U2) · **Versión 1.25** (2026-10-02) — U3 autorizada para implementación: `DT-P17` cerrada por `DT-056` (baselines V1); `DT-046` `ACEPTADA`; `DT-057` (persistencia y ejecución del forecast); `DT-047` aceptada para U3; pendiente nueva `DT-P23` · **Versión 1.26** (2026-10-03) — cierre documental de U4 y autorización para implementación (no implementada): `DT-058` a `DT-063` `ACEPTADA`; `DT-P18` cerrada por `DT-059` y `DT-P21` por `DT-058`; `DT-047` aceptada para U4; nota en `DT-P16`, que sigue abierta · **Versión 1.27** (2026-10-03) — U4 implementada y validada: registro de la implementación en `DT-047` y en `DT-058` a `DT-063`; ninguna decisión cambia · **Versión 1.28** (2026-10-03) — U5 autorizada para implementación (no implementada): `DT-064` (dependencias), `DT-065` (autenticación local), `DT-066` (contrato de lectura) y `DT-067` (historia, desviación poblacional) `ACEPTADA`; `DT-047` aceptada para U5 · **Versión 1.29** (2026-10-03) — U5 implementada y validada: registro de la implementación en `DT-047` y en `DT-064` a `DT-067`; ninguna decisión cambia · **Versión 1.30** (2026-10-04) — U6 autorizada para implementación (no implementada): `DT-068` (entrega y contrato de la explicación) y `DT-069` (presentación, verificación y degradación de cifras) `ACEPTADA`; `DT-047` aceptada para U6 · **Versión 1.31** (2026-10-04) — U6 implementada y validada: registro de la implementación en `DT-047`, `DT-068` y `DT-069`; ninguna decisión cambia · **Versión 1.32** (2026-10-05) — Fase 7 autorizada para implementación (no implementada): `DT-070` (alcance, stack y versiones, autenticación local, contrato con la API, formato regional, proxy, partición F7a–F7d e integración con `main`) `ACEPTADA`; separada de `DT-047` · **Versión 1.33** (2026-10-05) — Fase 7 implementada: estado e implementación de `DT-070` · **Versión 1.34** (2026-10-05) — Fase 5, cierre documental (no autorizada): `DT-071` a `DT-085` (partición y puertas, `ml/`, dependencias, enmienda acotada de D-12, backtesting, Nivel 1, segmentación `PROPUESTA`, regla de `DT-021`, criterios `PROPUESTA`, simulador de Nivel 2 con decisiones `OPEN`, estudios de `DT-011` y `DT-010`, intervalos, promoción y Git); notas en `DT-010`, `DT-011`, `DT-021`, `DT-056`, `DT-P03`, `DT-P04` y `DT-P23`; `DT-086` autoriza F5a por separado; propuestas del responsable para OD-S1 a OD-S4, criterio serie-corte en `DT-078`, aclaración del Nivel 1 con días imputados y bloqueo de U1 para `DT-010` (`DT-083`) · **Versión 1.35** (2026-10-05) — `DT-087` `ACEPTADA` (población por corte a la fecha, enmienda de interpretación de `DT-075` punto 6); notas en `DT-075` y `DT-079` tras la revisión de F5a · **Versión 1.36** (2026-10-05) — notas en `DT-073` (JSON versionado como resumen) y `DT-077` (el «19 intermitentes» era un artefacto de `valid_to`) · **Versión 1.37** (2026-10-05) — `DT-088` autoriza F5b; OD-S1 a OD-S4 `ACEPTADA` en `DT-080` con sus refinamientos · **Versión 1.38** (2026-10-05) — `DT-080`: decisiones del responsable al cerrar F5b; nota en `DT-078` (las candidatas ordenan igual por serie-corte) · **Versión 1.39** (2026-10-05) — G1: `DT-089` (baseline oficial), `DT-090` (MASE) y `DT-091` (valores de aceptación), `ACEPTADA` y provisionales (`SYNTHETIC`); notas en `DT-010`, `DT-011`, `DT-021` (cerrada por `DT-090`), `DT-077`, `DT-079`, `DT-081`, `DT-P03` y `DT-P04` · **Versión 1.40** (2026-10-06) — `DT-092` autoriza F5c; `DT-093`, criterios complementarios de G1 (horizonte L + R, cortes comparables, tolerancias, banda de sesgo, cobertura, segmentación y estacionalidad, estimadores de `DT-081`, ajuste de modelos, Holt-Winters con 104 semanas y sustitución en el simulador); notas en `DT-071`, `DT-077` a `DT-082`, `DT-090` y `DT-091` · **Versión 1.41** (2026-10-06) — `DT-092`: registro de la implementación de F5c (pendiente de revisión); ninguna decisión cambia · **Versión 1.42** (2026-10-06) — revisión de F5c: `DT-093` puntos 12 a 14 (interpretaciones aceptadas, sensibilidad de cadencia, tabla de criterios con SES y por estrategia); nota en `DT-081` (conclusión provisional y propuesta de (b)) · **Versión 1.43** (2026-10-06) — `DT-094` (alcance de cierre de la Etapa 2: stack completo por unidades U7 a U16, Azure for Students, Bicep, corpus sintético) y `DT-095` (U7, Docker: autorizada; implementación pendiente de revisión) · **Versión 1.44** (2026-10-06) — `DT-096` (U8, CI con GitHub Actions: autorizada; implementación pendiente de revisión) y digests de las imágenes base en `DT-095`, pendientes de verificación externa · **Versión 1.45** (2026-10-06) — `DT-097` (U9, capa analítica de solo lectura y migración `0004`: autorizada; implementación pendiente de revisión) · **Versión 1.46** (2026-10-06) — `DT-098` (U10, base de Azure de `dev`: autorizada; implementación pendiente de revisión y despliegue pendiente del responsable); nota en `DT-022`
+**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-18) — `DT-024` a `DT-030`, preparación del Componente 2 · **Versión 1.3** (2026-09-19) — `DT-031`, reglas mínimas de V1 · **Versión 1.4** (2026-09-21) — cierre de las reglas V1: `DT-031` pasa a `ACEPTADA` con trece reglas · **Versión 1.5** (2026-09-21) — `DT-032` y `DT-033`, decisiones que el Componente 2 tenía que tomar al implementarse · **Versión 1.6** (2026-09-21) — tabla canónica de identificadores de componente en `DT-030` · **Versión 1.7** (2026-09-23) — `DT-034` y `DT-035`, demanda latente persistente y sus políticas de generación · **Versión 1.8** (2026-09-24) — `DT-036` y `DT-037`, políticas sintéticas de inventario y comportamiento de proveedores; **enmienda de `DT-027`** (restricción 3) y cierre del pendiente de `data_origin` de `DT-026` · **Versión 1.9** (2026-09-24) — `DT-038` y `DT-039`, contratos de salida de los Componentes 4 y 5, tras la auditoría pre-implementación; cierre de los pendientes de `DT-034` (recorte de la demanda y contrato de `consumption.csv`) y correcciones a `DT-036` y `DT-037` · **Versión 1.10** (2026-09-26) — cierre de D-01: `DT-040` (publicación atómica del dataset, W1), regla general de incremento de `generator_version` en `DT-033`, y actualizaciones de `DT-036`, `DT-038` y `DT-039` (A2, B2, `expected_at`, autoría de los identificadores) · **Versión 1.11** (2026-09-26) — implementación del Componente 4: enmienda de `DT-037` §3 (D-C4-1, reparto de la entrega partida) y actualización de `DT-038` (D-C4-2 precondiciones, D-C4-3 lead time y disparo diario, flujos pseudoaleatorios, `metrics` pendiente) · **Versión 1.12** (2026-09-27) — cierre de D-01, opción A: elegibilidad de las órdenes `CANCELLED` sintéticas respecto de `valid_to` (`DT-039` §5.2) · **Versión 1.13** (2026-09-28) — implementación del Componente 5 (`DT-039` §13), sin cambios en ninguna regla · **Versión 1.14** (2026-09-28) — implementación del Componente 6 (`DT-037` §6, decisiones A1 y A2) y corrección de texto en `DT-040` §3 · **Versión 1.15** (2026-09-29) — implementación de W1 (`DT-040` §9, detalles pendientes resueltos) y `generator_version` 0.3.0 · **Versión 1.16** (2026-09-29) — `DT-041`, contrato e implementación del Componente 7 (sin integrar en W1); notas de redacción en `DT-030` y `DT-031` (`V1-07`, `V1-08`) · **Versión 1.17** (2026-09-29) — `DT-042`, validador del dataset e informe de calidad; integración de C7 y C8 en W1 (`DT-040`); `generator_version` 0.4.0 (`DT-033`); formas de `scenario_assignment` y `quality_report` (`DT-025`); `metrics` de `DT-038` §12 cerrado · **Versión 1.18** (2026-09-30) — Etapa 2, arquitectura y fundación: `DT-043` a `DT-047` (todas `PROPUESTA`) y pendientes `DT-P13` a `DT-P21` · **Versión 1.19** (2026-09-30) — autorización de U1: `DT-043` y `DT-045` `ACEPTADA`, `DT-047` `ACEPTADA` en cuanto a U1; `DT-P15` y `DT-P20` cerradas; `DT-P14` abierta en parte y **bloquea U1** · **Versión 1.20** (2026-10-01) — `DT-P14` **cerrada** con el estimador poblacional, `INSUFFICIENT_HISTORY` para `n = 0` y la evaluación exacta B3 (`docs/06` §16.6); ninguna fórmula V1 cambia · **Versión 1.21** (2026-10-01) — cierre del contrato de U1: `DT-048` a `DT-052` `ACEPTADA` (aclaraciones A-1 en `DT-050` y A-2 en `DT-051`), y pendiente `DT-P22`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.22** (2026-10-01) — `DT-P22` `ACEPTADA` (opción (a)): `PRODUCT_OUT_OF_VALIDITY` cubre también la vigencia que termina dentro del horizonte; cierre de `DT-049`; ninguna fórmula V1 ni regla B3 cambia · **Versión 1.23** (2026-10-01) — `DT-053` (frontera de la salida parcial) y `DT-054` (sin monotonía global de `S` frente a `L` en V1), tras el audit de pre-codificación de U1; ninguna fórmula cambia · **Versión 1.24** (2026-10-01) — `DT-044` `ACEPTADA` (cantidades en `numeric`; `quantity_on_hand ≥ 0` compatible con `BR-X09`/`V1-13`); `DT-047` aceptada para U2; `DT-055` (entorno técnico de U2) · **Versión 1.25** (2026-10-02) — U3 autorizada para implementación: `DT-P17` cerrada por `DT-056` (baselines V1); `DT-046` `ACEPTADA`; `DT-057` (persistencia y ejecución del forecast); `DT-047` aceptada para U3; pendiente nueva `DT-P23` · **Versión 1.26** (2026-10-03) — cierre documental de U4 y autorización para implementación (no implementada): `DT-058` a `DT-063` `ACEPTADA`; `DT-P18` cerrada por `DT-059` y `DT-P21` por `DT-058`; `DT-047` aceptada para U4; nota en `DT-P16`, que sigue abierta · **Versión 1.27** (2026-10-03) — U4 implementada y validada: registro de la implementación en `DT-047` y en `DT-058` a `DT-063`; ninguna decisión cambia · **Versión 1.28** (2026-10-03) — U5 autorizada para implementación (no implementada): `DT-064` (dependencias), `DT-065` (autenticación local), `DT-066` (contrato de lectura) y `DT-067` (historia, desviación poblacional) `ACEPTADA`; `DT-047` aceptada para U5 · **Versión 1.29** (2026-10-03) — U5 implementada y validada: registro de la implementación en `DT-047` y en `DT-064` a `DT-067`; ninguna decisión cambia · **Versión 1.30** (2026-10-04) — U6 autorizada para implementación (no implementada): `DT-068` (entrega y contrato de la explicación) y `DT-069` (presentación, verificación y degradación de cifras) `ACEPTADA`; `DT-047` aceptada para U6 · **Versión 1.31** (2026-10-04) — U6 implementada y validada: registro de la implementación en `DT-047`, `DT-068` y `DT-069`; ninguna decisión cambia · **Versión 1.32** (2026-10-05) — Fase 7 autorizada para implementación (no implementada): `DT-070` (alcance, stack y versiones, autenticación local, contrato con la API, formato regional, proxy, partición F7a–F7d e integración con `main`) `ACEPTADA`; separada de `DT-047` · **Versión 1.33** (2026-10-05) — Fase 7 implementada: estado e implementación de `DT-070` · **Versión 1.34** (2026-10-05) — Fase 5, cierre documental (no autorizada): `DT-071` a `DT-085` (partición y puertas, `ml/`, dependencias, enmienda acotada de D-12, backtesting, Nivel 1, segmentación `PROPUESTA`, regla de `DT-021`, criterios `PROPUESTA`, simulador de Nivel 2 con decisiones `OPEN`, estudios de `DT-011` y `DT-010`, intervalos, promoción y Git); notas en `DT-010`, `DT-011`, `DT-021`, `DT-056`, `DT-P03`, `DT-P04` y `DT-P23`; `DT-086` autoriza F5a por separado; propuestas del responsable para OD-S1 a OD-S4, criterio serie-corte en `DT-078`, aclaración del Nivel 1 con días imputados y bloqueo de U1 para `DT-010` (`DT-083`) · **Versión 1.35** (2026-10-05) — `DT-087` `ACEPTADA` (población por corte a la fecha, enmienda de interpretación de `DT-075` punto 6); notas en `DT-075` y `DT-079` tras la revisión de F5a · **Versión 1.36** (2026-10-05) — notas en `DT-073` (JSON versionado como resumen) y `DT-077` (el «19 intermitentes» era un artefacto de `valid_to`) · **Versión 1.37** (2026-10-05) — `DT-088` autoriza F5b; OD-S1 a OD-S4 `ACEPTADA` en `DT-080` con sus refinamientos · **Versión 1.38** (2026-10-05) — `DT-080`: decisiones del responsable al cerrar F5b; nota en `DT-078` (las candidatas ordenan igual por serie-corte) · **Versión 1.39** (2026-10-05) — G1: `DT-089` (baseline oficial), `DT-090` (MASE) y `DT-091` (valores de aceptación), `ACEPTADA` y provisionales (`SYNTHETIC`); notas en `DT-010`, `DT-011`, `DT-021` (cerrada por `DT-090`), `DT-077`, `DT-079`, `DT-081`, `DT-P03` y `DT-P04` · **Versión 1.40** (2026-10-06) — `DT-092` autoriza F5c; `DT-093`, criterios complementarios de G1 (horizonte L + R, cortes comparables, tolerancias, banda de sesgo, cobertura, segmentación y estacionalidad, estimadores de `DT-081`, ajuste de modelos, Holt-Winters con 104 semanas y sustitución en el simulador); notas en `DT-071`, `DT-077` a `DT-082`, `DT-090` y `DT-091` · **Versión 1.41** (2026-10-06) — `DT-092`: registro de la implementación de F5c (pendiente de revisión); ninguna decisión cambia · **Versión 1.42** (2026-10-06) — revisión de F5c: `DT-093` puntos 12 a 14 (interpretaciones aceptadas, sensibilidad de cadencia, tabla de criterios con SES y por estrategia); nota en `DT-081` (conclusión provisional y propuesta de (b)) · **Versión 1.43** (2026-10-06) — `DT-094` (alcance de cierre de la Etapa 2: stack completo por unidades U7 a U16, Azure for Students, Bicep, corpus sintético) y `DT-095` (U7, Docker: autorizada; implementación pendiente de revisión) · **Versión 1.44** (2026-10-06) — `DT-096` (U8, CI con GitHub Actions: autorizada; implementación pendiente de revisión) y digests de las imágenes base en `DT-095`, pendientes de verificación externa · **Versión 1.45** (2026-10-06) — `DT-097` (U9, capa analítica de solo lectura y migración `0004`: autorizada; implementación pendiente de revisión) · **Versión 1.46** (2026-10-06) — `DT-098` (U10, base de Azure de `dev`: autorizada; implementación pendiente de revisión y despliegue pendiente del responsable); nota en `DT-022` · **Versión 1.47** (2026-10-07) — `DT-098` con el registro del despliegue real (U10 completada) y `DT-099` (U11, Entra ID en `dev`: autorizada e implementada; configuración real y prueba real pendientes del responsable)
 
 Registro de decisiones arquitectónicas. Formato: ID, decisión, contexto, alternativas, razón,
 consecuencias, estado.
@@ -3784,31 +3784,37 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
      - **U8:** el workflow no cambia. U12 añadirá `id-token: write` al job de despliegue y los tres identificadores
        (cliente, tenant y suscripción), que no son credenciales. Microsoft Learn recomienda guardarlos como secretos
        de GitHub; la decisión es de U12.
-  5. **Región: `westus3` (West US 3)**, condicionada a la directiva de la suscripción (punto 7). Evaluación revisada
-     el 2026-10-07 con las fuentes oficiales vigentes:
+  5. **Región principal `centralus` (Central US), respaldo `northcentralus`** (decisión del responsable,
+     2026-10-07). La directiva «Allowed resource deployment regions» de la suscripción permite exactamente
+     `northcentralus`, `chilecentral`, `norwayeast`, `centralus` y `mexicocentral`.
+
+     **Fuentes oficiales:**
      - «Azure AI Search region support» (actualizada el 2026-10-01; fuente del 2026-08-24);
      - «Region availability for Foundry Models sold by Azure» (fuente del 2026-09-03);
      - regiones de PostgreSQL flexible.
 
-     | Región | AI Search (alta demanda) | *Semantic ranker* | Azure OpenAI (gpt-4o-mini, gpt-4.1-mini) | Azure ML | PostgreSQL flexible | Veredicto |
+     | Región | AI Search | *Semantic ranker* | Azure OpenAI (gpt-4o-mini, gpt-4.1-mini, text-embedding-3-small) | PostgreSQL flexible | Permitida | Veredicto |
      |---|---|---|---|---|---|---|
-     | `westus3` | Sí (sin nota) | Sí | Sí: Global, Data Zone y regional | Sí (disponibilidad general anunciada) | Sí | **Elegida** |
-     | `southcentralus` | Sí (sin nota) | Sí | Sí: los tres tipos | Por catálogo ARM | Sí | 1.ª alternativa |
-     | `northcentralus` | Sí (sin nota; sin zonas) | Sí | Sí: los tres tipos | Por catálogo ARM | Sí | 2.ª alternativa |
-     | `westus2` | Sí (nota 3: solo etiquetas de Purview) | Sí | **No aparece en ninguna tabla** | Por catálogo ARM | Sí | Descartada para todo el stack |
-     | `westus` | **No: alta demanda** | Sí | Sí | Por catálogo ARM | Sí | Descartada (U15) |
-     | `eastus` | **No: alta demanda** | Sí | Sí | Por catálogo ARM | Sí | Descartada (U15) |
-     | `mexicocentral` | Sí | **No** | **No** | — | Sí | Descartada |
+     | `centralus` | Sí, sin nota de alta demanda; *serverless* y zonas | Sí | **Global Standard y Data Zone Standard: sí. Standard regional: no** | Sí | Sí | **Principal** |
+     | `northcentralus` | Sí, sin nota de alta demanda; sin zonas | Sí | Global, Data Zone y regional (gpt-4o-mini, gpt-4.1-mini) | Sí | Sí | Respaldo |
+     | `mexicocentral` | Sí, pero solo con zonas | **No** | **No figura** | Sí | Sí | Descartada (U13, U15) |
+     | `chilecentral`, `norwayeast` | — | — | — | — | Sí | Sin ventaja sobre `centralus` |
+     | `westus3` (evaluación anterior) | Sí | Sí | Sí | Sí | **No** | Descartada: la directiva no la permite |
 
-     - **AI Search en West US 3:** la nota de alta demanda («prevents the creation of new search services») afecta a
-       East US, East US 2 y West US, no a West US 3. Aun así, la capacidad solo se confirma al crear el servicio
-       (U15). Si entonces fallara, la salida es una región secundaria para AI Search, con el resto en `westus3`; es
-       una propuesta, no un diseño.
-     - **Versión anterior corregida:** el orden de respaldo de la primera versión de esta DT incluía `eastus` y
-       `westus`, que AI Search no admite para servicios nuevos. Era un error.
-     - **Regla del README, paso 2:** primera región de `westus3`, `southcentralus` y `northcentralus` que permita la
-       directiva de la suscripción y aparezca en los catálogos ARM de AI Search, Azure ML, PostgreSQL y Cognitive
-       Services, con modelos visibles en `az cognitiveservices model list`.
+     - **Azure OpenAI en Central US** solo admite despliegues *Global Standard* (el tráfico puede procesarse en
+       cualquier región) y *Data Zone Standard* (dentro de EE. UU.), no *Standard* regional. Para datos `SYNTHETIC`
+       no es un obstáculo, pero U13 lo debe decidir y registrar (`DT-P08`).
+     - **Cuota de Azure OpenAI:** U13 tiene que comprobarla en `centralus` (`az cognitiveservices usage list
+       --location centralus`). No bloquea U10.
+     - **Azure ML:** U14 confirmará su disponibilidad con el catálogo de proveedores (`az provider show --namespace
+       Microsoft.MachineLearningServices`). Key Vault e identidad administrada las confirma el `validate` de U10.
+     - **Capacidad de AI Search:** solo se confirma al crear el servicio (U15). Si fallara, la salida sería
+       `northcentralus` solo para AI Search; es una propuesta, no un diseño.
+     - **Historial:**
+       - la primera versión de esta DT eligió `westus3`, con un orden de respaldo que incluía por error `eastus` y
+         `westus`, regiones donde AI Search no admite servicios nuevos;
+       - la revisión del 2026-10-07 mantuvo `westus3`;
+       - la directiva de la suscripción la excluye, así que esta decisión la sustituye.
   6. **Validación local:** Bicep CLI 0.48.1, `build`, `lint` y `build-params` sin avisos. `infra/tests/test_azure_config.py`
      tiene 7 pruebas estáticas, que el job `docker` de U8 ejecuta:
      - solo recursos de U10;
@@ -3835,12 +3841,42 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
   - Nada de U10 puede generar consumo inesperado ni hay que apagar nada.
 - **Desmontaje:** `az group delete` del grupo, y después `az keyvault purge` del vault en borrado temporal, sin tocar
   nada fuera del grupo (README).
-- **Pendiente del responsable:**
-  1. lista de regiones permitidas por la directiva «Allowed resource deployment regions» de su suscripción;
-  2. registro de los proveedores `Microsoft.KeyVault` y `Microsoft.ManagedIdentity`;
-  3. `validate` y `what-if`, que deben dar exactamente cinco creaciones;
-  4. despliegue y verificación del README;
-  5. los identificadores y la fecha resultantes, que se anotan en esta DT. El agente no tiene acceso a Azure.
+- **Pendiente del responsable:** nada. Los cinco puntos quedaron resueltos el 2026-10-07: regiones permitidas
+  (`centralus`; el grupo vacío de `eastus` ya se había eliminado), proveedores `Registered`, `validate` y `what-if`,
+  despliegue y verificación, e identificadores anotados abajo. El agente no tiene acceso a Azure: el responsable
+  ejecutó `infra/azure/deploy-dev.ps1` con su propia sesión de Azure CLI.
+- **Despliegue real (2026-10-07, despliegue `u10-base-dev`, `Succeeded` a las 08:22:07 UTC):**
+  - **Antes:** el grupo no existía; Bicep compiló sin avisos; proveedores `Registered`; `validate` `Succeeded`;
+    `what-if` con exactamente **cinco `Create`** en `centralus` (grupo, Key Vault, identidad, credencial federada y
+    asignación de rol) y ningún `Modify`, `Delete` ni recurso fuera del grupo.
+  - **Después:** las nueve comprobaciones del script en `OK` (región; solo recursos de U10 en el grupo; Key Vault con
+    RBAC; Key Vault sin acceso público; una sola credencial federada; sujeto OIDC limitado a `dev`; una sola
+    asignación, `Reader`; rol limitado al grupo; nada creado fuera del grupo).
+  - **Evidencia:** `tmp/u10-evidence/u10-evidence.json` en la copia del responsable (ignorada por Git), solo con
+    identificadores y sin secretos.
+  - **Identificadores** (no son credenciales):
+
+    | Campo | Valor |
+    |---|---|
+    | Suscripción | `Azure for Students`, `0239bbd1-fc72-4dd7-a816-fcbf29f5a631` |
+    | Tenant | `6ce4b1ba-ae4f-4887-bd6b-acb3c72039ad` |
+    | Grupo de recursos | `rg-motor-predictivo-dev`, `/subscriptions/0239bbd1-fc72-4dd7-a816-fcbf29f5a631/resourceGroups/rg-motor-predictivo-dev` |
+    | Región | `centralus` (grupo, Key Vault e identidad) |
+    | Key Vault | `kv-mpa-dev-dymtafh7zjbba`, `/subscriptions/0239bbd1-fc72-4dd7-a816-fcbf29f5a631/resourceGroups/rg-motor-predictivo-dev/providers/Microsoft.KeyVault/vaults/kv-mpa-dev-dymtafh7zjbba`; Standard, RBAC, red `Disabled`, retención 7 días, sin protección de purga |
+    | Identidad administrada | `id-mpa-dev-github`, `/subscriptions/0239bbd1-fc72-4dd7-a816-fcbf29f5a631/resourceGroups/rg-motor-predictivo-dev/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-mpa-dev-github` |
+    | `principalId` | `3db51754-d5e6-4340-8962-021fe1ca229c` |
+    | `clientId` | `36b5933a-728d-4f56-b6a8-8e79fdb978be` |
+    | Credencial federada | `github-dev`; emisor `https://token.actions.githubusercontent.com`; audiencia `api://AzureADTokenExchange`; sujeto `repo:daniel02vazquez97-alt/Motor-Predictivo-de-Abastecimiento-de-Inventarios:environment:dev` |
+    | Asignación de rol | `d55c4dda-5646-53d4-b0ea-1c8fb80b7cf7`, `Reader`, ámbito `/subscriptions/0239bbd1-fc72-4dd7-a816-fcbf29f5a631/resourceGroups/rg-motor-predictivo-dev` |
+
+  - **Sin credenciales persistentes:** ningún secreto de cliente, certificado, clave ni cadena de conexión; el Key
+    Vault está vacío; la identidad solo se usará con tokens OIDC de corta duración emitidos por GitHub Actions para
+    el entorno `dev`.
+  - **Aún no ejercitado:** ningún workflow inicia sesión todavía con esta identidad. El primer `azure/login` por
+    OIDC, que exige el entorno `dev` en GitHub, llegará con la unidad que lo use (U12 decide variables o secretos
+    para `clientId`, `tenantId` y `subscriptionId`).
+  - **Nota para U13:** en `centralus` Azure OpenAI solo ofrece Global Standard y Data Zone Standard; U13 requiere
+    comprobar la cuota de Azure OpenAI en `centralus` antes de desplegar.
 
   Microsoft Learn se consultó desde el agente con la herramienta de lectura web, aunque los shells no alcanzan
   `learn.microsoft.com`.
@@ -3863,14 +3899,264 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
   - anuncio de Azure ML en West US 3;
   - precios de Key Vault.
 - **Estado:** autorización `ACEPTADA` (2026-10-06, decisión del responsable con el prompt «U10: Base de Azure,
-  Bicep, presupuesto y federación OIDC»); implementación pendiente de revisión; **despliegue real pendiente del
-  responsable**.
+  Bicep, presupuesto y federación OIDC»); **desplegada y verificada el 2026-10-07** en `centralus` por el
+  responsable (despliegue real autorizado con el prompt «U10: despliegue real desde Azure CLI»); **U10
+  COMPLETADA**. Código pendiente de commit e integración por PR.
+
+## DT-099 — U11: Microsoft Entra ID, MSAL y autorización por app roles en `dev`
+
+- **Decisión:** **U11 autorizada** (prompt «U11: Microsoft Entra ID + MSAL + autorización por roles», 2026-10-07).
+  Cubre los registros de aplicación de la API y de la SPA, los cuatro app roles de ASSUMPTION-010, MSAL en
+  React, la validación de tokens en el backend, la matriz rol × endpoint, `APP_ENV=dev`, pruebas,
+  documentación y un script reproducible que ejecuta el responsable con su sesión de Azure CLI. No autoriza
+  U12, despliegue de la aplicación, PostgreSQL gestionado, registro de contenedores, `staging`, producción,
+  Azure OpenAI, Azure ML, AI Search ni Power BI. El agente no recibe, guarda, copia ni registra credenciales
+  ni tokens.
+- **Regla fundamental:** `APP_ENV=local` funciona igual que antes (tokens `dev-…` de `DT-065`, sin Azure, sin
+  Entra ID, sin dependencias nuevas en tiempo de ejecución); `APP_ENV=dev` usa Entra ID. Ninguna prueba
+  necesita Entra ID real.
+- **Microsoft Learn** (consultado el 2026-10-07 con la herramienta de lectura web del agente) y qué respalda:
+
+  | Página | Actualizada | Respalda |
+  |---|---|---|
+  | [Access tokens](https://learn.microsoft.com/en-us/entra/identity-platform/access-tokens) | 2025-05-14 | Validar firma (RS256), `iss` exacto, `aud`, vigencia; claves desde la metadata OIDC y `jwks_uri`; revisar claves cada 24 h; la SPA no valida tokens de acceso |
+  | [Access token claims reference](https://learn.microsoft.com/en-us/entra/identity-platform/access-token-claims-reference) | 2026-06-25 | En v2.0 `aud` = client ID de la API; `oid` como identificador estable; `scp` solo en tokens de usuario; `azp` = cliente |
+  | [Verify scopes and app roles](https://learn.microsoft.com/en-us/entra/identity-platform/scenario-protected-web-api-verification-scope-app-roles) | 2025-01-30 | Exigir el scope `access_as_user` en tokens delegados; rechazar tokens sin `scp` ni `roles` |
+  | [Add app roles](https://learn.microsoft.com/en-us/entra/identity-platform/howto-add-app-roles-in-apps) | 2026-09-25 | Roles en el registro de la API; llegan en el claim `roles` del token de acceso; `value` sin espacios |
+  | [Assign users and groups](https://learn.microsoft.com/en-us/entra/identity/enterprise-apps/assign-user-or-group-access-portal) | 2026-04-01 | Asignación por Graph `appRoleAssignedTo`; el propietario del service principal puede asignar; **grupos exigen Entra ID P1/P2** |
+  | [Restrict an app to a set of users](https://learn.microsoft.com/en-us/entra/identity-platform/howto-restrict-your-app-to-a-set-of-users) | 2025-07-08 | `appRoleAssignmentRequired` (ver la corrección en «Registros»: en una API se aplica a clientes, no a usuarios delegados) |
+  | [Delegate app registration permissions](https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/delegate-app-roles) | 2024-11-17 | «Users can register applications» y el rol Application Developer |
+  | [Protected web API: app registration](https://learn.microsoft.com/en-us/entra/identity-platform/scenario-protected-web-api-app-registration) | 2025-09-11 | Application ID URI `api://{clientId}`; scope `access_as_user` |
+  | [Redirect URI restrictions](https://learn.microsoft.com/en-us/entra/identity-platform/reply-url) | 2025-05-14 | HTTP solo para localhost; plataforma SPA |
+  | [Implicit grant flow](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-implicit-grant-flow) | 2026-01-22 | No usar el flujo implícito; código de autorización (PKCE) para SPA |
+  | [SPA: code configuration](https://learn.microsoft.com/en-us/entra/identity-platform/scenario-spa-app-registration) y [tutorial React](https://learn.microsoft.com/en-us/entra/identity-platform/tutorial-single-page-app-react-prepare-app) | 2025-05-13 / 2025-05-25 | `@azure/msal-browser` + `@azure/msal-react`, `PublicClientApplication`, `MsalProvider` |
+  | [az ad app](https://learn.microsoft.com/en-us/cli/azure/ad/app) y [apiApplication (Graph)](https://learn.microsoft.com/en-us/graph/api/resources/apiapplication) | vigentes | `az ad app create/list`, `requestedAccessTokenVersion`, `preAuthorizedApplications` |
+
+  Además: metadata OIDC real del tenant (`issuer` `https://login.microsoftonline.com/6ce4b1ba-…/v2.0`,
+  `jwks_uri` en el mismo host, RS256), y el código de `@azure/msal-browser` 5.24.0: la renovación silenciosa por
+  iframe de MSAL 5 exige una página puente, por eso se renueva solo con caché y *refresh token* y, si hace falta
+  interacción, con redirección.
+- **ASSUMPTION-010** (texto exacto: «Los roles `ADMIN`, `PLANNER`, `ANALYST` y `VIEWER` cubren las necesidades
+  iniciales», `VIGENTE`, pendiente de validación con el negocio) es suficiente para implementar: define los
+  cuatro valores y la matriz ya está en `docs/07` §7.2. No se cambia.
+
+  | Rol | `value` | GUID (fijo) | Descripción (`docs/10` §3.1) | Miembros permitidos |
+  |---|---|---|---|---|
+  | VIEWER | `VIEWER` | `8caa5ebf-db9b-433b-be35-282728ec4d8d` | Consulta: solo lectura | `User` (usuarios; grupos con P1/P2) |
+  | ANALYST | `ANALYST` | `15648c45-c30f-4b86-b87a-e51f714cd856` | Analista: consulta y analiza | `User` |
+  | PLANNER | `PLANNER` | `b5ef7fb8-1abb-492a-bafe-5bc019ce8172` | Planificador / comprador | `User` |
+  | ADMIN | `ADMIN` | `d4b7aa24-bcf5-445f-9f8a-9a98617d5fb0` | Administra el sistema | `User` |
+
+  Sin `Application`: en V1 no hay clientes sin usuario (los tokens solo de aplicación se rechazan).
+- **Registros** (estado deseado en `infra/azure/entra/u11-entra.dev.json`; solo identificadores):
+  1. **API** `app-mpa-dev-api`: un solo tenant (`AzureADMyOrg`); Application ID URI `api://<appId>`; scope
+     delegado `access_as_user` (id `a6d5e3d6-d5cd-47c5-8a25-bb927086500e`, tipo `User`); `requestedAccessTokenVersion = 2`;
+     los cuatro app roles; la SPA **preautorizada** para el scope (sin pantalla de consentimiento para la API); sin
+     flujo implícito; sin secretos ni certificados. Service principal con **`appRoleAssignmentRequired = true`**.
+     *Corregido el 2026-10-07 con la prueba real:* este ajuste **no** impide que Entra ID emita un token delegado
+     a un usuario sin rol cuando lo pide la SPA (caso 4: token emitido, sin claim `roles`). Según Microsoft Learn
+     («Protected web API: expose scopes»), en una API la asignación obligatoria se comprueba sobre las
+     **aplicaciones cliente** (AADSTS501051) y «el código de la API debe comprobar los app roles». La barrera
+     de «sin rol asignado ⇒ sin acceso» (`docs/10` §3.2) es el **backend**, y la prueba real lo confirma; el ajuste
+     se mantiene como defensa adicional para clientes solo de aplicación.
+  2. **SPA** `app-mpa-dev-spa`: un solo tenant; plataforma **SPA** (código + PKCE) con `http://localhost:5173`
+     (Vite, `vite.config.ts`) y `http://localhost:8080` (Docker, `infra/docker-compose.yml`), los dos orígenes
+     reales de `dev`; ningún URL de producción. Único permiso: `access_as_user` de la API. **Ningún permiso de
+     Microsoft Graph** (ni `User.Read`); MSAL pide además `openid profile offline_access`. Sin flujo implícito, sin
+     secretos, sin certificados, `isFallbackPublicClient = false`.
+  3. La identidad `id-mpa-dev-github` de U10 (GitHub Actions → Azure) es otra cosa y U11 no la toca.
+
+  Microsoft Learn recomienda no registrar URI de localhost que solo difieren en el puerto; se registran los dos
+  explícitos porque la página no garantiza que la plataforma SPA ignore el puerto, y así coinciden siempre.
+- **Audiencia, emisor y scope:** `aud` = client ID de la API (tokens v2.0); `iss` =
+  `https://login.microsoftonline.com/<tenant>/v2.0`; `tid` = tenant de DT-098; scope pedido por la SPA:
+  `api://<client ID de la API>/access_as_user` (nunca `https://graph.microsoft.com/.default`).
+- **Backend** (`app/api/entra.py`, implementa el puerto `TokenValidator` de `DT-065`; el puerto, las
+  dependencias por endpoint y el contrato 401/403 no cambian):
+  - firma RS256 con la clave del `kid` en el JWKS del tenant; `jwks_uri` sale de la metadata OIDC del tenant en
+    el host fijo `login.microsoftonline.com` (se comprueba el `issuer` de la metadata y que `jwks_uri` siga en ese
+    host); nunca de una URL configurable ni del token. Caché del JWKS 24 h y un refresco forzado ante un `kid`
+    desconocido (`PyJWKClient`); descubrimiento perezoso, una sola vez;
+  - `iss` exacto, `aud` exacto, `exp`/`nbf`/`iat` con 60 s de margen, `ver = 2.0`, `tid` = tenant, `azp` = SPA,
+    `scp` contiene `access_as_user`, `oid` GUID. Algoritmo distinto de RS256 o sin `kid`: rechazado antes de buscar
+    la clave. Nunca se decodifica sin verificar la firma;
+  - `subject_id` = `oid`; roles = `roles` ∩ {cuatro de ASSUMPTION-010} (valores desconocidos se ignoran). Token
+    válido sin roles: autenticado, `/me` responde y el resto da 403 (RS-002);
+  - token inválido: 401 `INVALID_TOKEN`; sin cabecera: 401 `AUTHENTICATION_REQUIRED`; sin rol: 403 `FORBIDDEN`;
+    JWKS o metadata inalcanzables: 500 (fallo del servidor, no del cliente). En el registro solo la categoría del
+    rechazo; nunca el token ni sus claims.
+  - **Configuración** (`settings.py`): `APP_ENV=dev` exige `ENTRA_TENANT_ID`, `ENTRA_API_CLIENT_ID` y
+    `ENTRA_SPA_CLIENT_ID` (GUID, no secretos), rechaza `DEV_AUTH_IDENTITIES` y exige el grupo `entra`; si falta algo,
+    `REFUSED` antes de arrancar. `staging` y `prod` siguen negándose. `ENTRA_API_AUDIENCE` de `docs/10` §6 no hace
+    falta: en v2.0 la audiencia es el client ID.
+  - **Dependencia nueva:** grupo opcional `entra` = `PyJWT[crypto]==2.15.1` y `cryptography==50.0.2` (PyPI,
+    2026-09-28 y 2026-09-30). Microsoft no publica validador de tokens para Python (sí Microsoft.Identity.Web para
+    .NET) y remite a bibliotecas JWT; PyJWT trae `PyJWKClient` con caché. `local` no lo importa (prueba en un
+    proceso sin `jwt`). `ml/` no cambia.
+- **Frontend** (`src/auth/authMode.ts`, `src/auth/entra/`, `src/EntraApp.tsx`):
+  - `@azure/msal-browser 5.24.0` y `@azure/msal-react 5.7.2` (publicados juntos el 2026-10-02; React 16.8–19);
+    tres paquetes nuevos en el lockfile (con `@azure/msal-common`). MSAL se carga en un *chunk* aparte solo en
+    compilaciones `dev`: el paquete de `local` no lo incluye;
+  - `VITE_APP_ENV` (`local` por defecto) y, en `dev`, `VITE_ENTRA_TENANT_ID`, `VITE_ENTRA_SPA_CLIENT_ID`,
+    `VITE_ENTRA_API_SCOPE` y `VITE_ENTRA_REDIRECT_URI` (opcional). Solo identificadores; una compilación `dev`
+    incompleta falla cerrada (página de configuración incompleta), nunca vuelve a `local`;
+  - `PublicClientApplication` con autoridad del tenant (nunca `common`), caché de MSAL en el
+    **almacenamiento de sesión de la pestaña** (`sessionStorage`), `loginRedirect` / `logoutRedirect`,
+    `acquireTokenSilent` solo con caché y *refresh token* y, si pide interacción, `acquireTokenRedirect`; errores
+    de MSAL mostrados por código;
+  - *Corrección del 2026-10-07 (primer inicio de sesión real):* la versión inicial usaba `memoryStorage` para
+    cumplir `docs/10` §4 («en memoria») y el inicio de sesión falló con `in_mem_redirect_unavailable`: MSAL 5
+    rechaza cualquier redirección con almacenamiento en memoria (`redirectPreflightCheck` de
+    `@azure/msal-browser` 5.24.0), y las ventanas emergentes exigirían una página puente nueva y otro redirect
+    URI en Entra ID. Error del desarrollador: las pruebas usaban un MSAL simulado y no lo detectaron. Ahora:
+    `sessionStorage`, como el tutorial de React de Microsoft Learn («More secure; use localStorage for SSO
+    between tabs»). Es una **desviación de `docs/10` §4**, acotada a `dev` y a MSAL: dura lo que la pestaña, nunca
+    `localStorage`, y el código de la aplicación sigue sin leer ni escribir almacenamiento (ESLint lo prohíbe).
+    Alternativa si el responsable exige memoria estricta: ventanas emergentes con página puente (cambia los
+    redirect URI de la SPA). Prueba nueva con el MSAL **real** (`msalRedirect.test.ts`): `loginRedirect` construye
+    la petición de código con PKCE (`S256`), el scope de la API y el redirect URI registrado; con
+    `memoryStorage` falla con el mismo error que vio el responsable;
+  - el puerto de sesión no cambia para las vistas: `useAuth()` y `useApiClient()`. La identidad y los roles
+    salen de `GET /api/v1/me` (la SPA no lee los claims del token de acceso). Cada petición lleva
+    `Authorization: Bearer` con un token de MSAL; 401 cierra la sesión (sin reentrar sola), 403 la mantiene;
+  - `/acceso` (fuera de la navegación): hace las 13 peticiones de la matriz con el token de la sesión y muestra
+    solo el código HTTP y si coincide con la matriz. Existe porque la interfaz oculta lo que un rol no puede usar
+    y la prueba real necesita ver el 403 del backend sin copiar tokens.
+- **Matriz rol × endpoint:** la de `docs/07` §7.2, sin cambios (`require_roles` por endpoint, sin jerarquía):
+
+  | Endpoint | VIEWER | ANALYST | PLANNER | ADMIN |
+  |---|:-:|:-:|:-:|:-:|
+  | `GET /health` | pública | pública | pública | pública |
+  | `GET /api/v1/me` | ✓ | ✓ | ✓ | ✓ (cualquier autenticado, también sin rol) |
+  | `GET /api/v1/products`, `/products/{id}`, `/products/{id}/forecast`, `/products/{id}/recommendation` | ✓ | ✓ | ✓ | ✓ |
+  | `GET /api/v1/products/{id}/history` | — | ✓ | ✓ | ✓ |
+  | `GET /api/v1/inventory`, `/inventory/{product_id}` | ✓ | ✓ | ✓ | ✓ |
+  | `GET /api/v1/forecasts` | ✓ | ✓ | ✓ | ✓ |
+  | `GET /api/v1/recommendations`, `/recommendations/{id}`, `/recommendations/{id}/explanation` | ✓ | ✓ | ✓ | ✓ |
+  | `GET /api/v1/runs/{run_id}` | — | — | ✓ | ✓ |
+
+  Ninguna combinación queda indecisa: los 14 endpoints de U5/U6 tienen roles explícitos.
+- **Asignación de roles en `dev`:** directa a usuarios (grupos exigen P1/P2), y solo la que pide el responsable
+  para sí mismo con `deploy-u11.ps1 -AssignRole`; nada se asigna por defecto. Quién aprueba asignaciones para otras
+  personas y el mapeo a grupos siguen pendientes (clase C, `docs/10` §3.3).
+- **Script** `infra/azure/deploy-u11.ps1` (patrón de `deploy-dev.ps1`, ASCII, Windows PowerShell 5.1 y 7): comprueba
+  sesión, tenant y suscripción; permiso para registrar aplicaciones (política del tenant y roles de directorio) y
+  se detiene ante `Authorization_RequestDenied` diciendo qué falta, sin elevar privilegios; busca por nombre y se
+  detiene si hay duplicados; plan y `ALREADY_CONFIGURED` si no hay nada que hacer; confirmación `CONFIGURAR`;
+  crea/corrige con `az ad app create` y Microsoft Graph (`az rest`); se añade el usuario como propietario de los
+  cuatro objetos; verifica (registros únicos, roles, scope, URI, sin flujo implícito, cero secretos y certificados
+  en aplicaciones y service principals, sin credenciales federadas, asignación obligatoria); evidencia con
+  identificadores en `tmp/u11-evidence/` y `entra-dev.env`. **Rollback:** `-Rollback <ejecución>` borra solo los
+  objetos que esa ejecución registró en `created-<ejecución>.json`, tras escribir `ELIMINAR` y releer cada uno.
+  Probado de extremo a extremo contra un Azure CLI simulado (`infra/tests/fake_az.py`), también con el JSON de
+  Windows PowerShell 5.1.
+- **Docker:** `infra/docker-compose.entra-dev.yml` se superpone al de U7 (API con `APP_ENV=dev`; SPA compilada con
+  los `VITE_*` como argumentos de construcción, imagen aparte `inventory/frontend:entra-dev`); la imagen
+  `backend` incluye el grupo `entra`. Sin el segundo archivo todo sigue en `local`.
+  - *Corrección del 2026-10-07 (primer arranque real):* sin nombre de proyecto, Compose usaba el de la carpeta
+    (`infra`) y el arranque de U11 reutilizó `infra_pgdata`, migrada antes con otros bytes de
+    `0001_dataset_tables.sql` → `MigrationError: applied migration 0001_dataset_tables has changed on disk`; `init`
+    falló y API y frontend no arrancaron. No era Entra ID. Ahora el archivo de U11 fija `name: u11-entra-dev` y la
+    documentación usa `-p u11-entra-dev`: volúmenes `u11-entra-dev_pgdata` y `u11-entra-dev_dataset`, base nueva que
+    migra desde cero, y `down -v` solo dentro de ese proyecto. `smoke.py --entra` reutiliza la smoke de U7 para este
+    modo. No se tocó la migración, su checksum ni la verificación, ni el volumen local.
+  - **Causa de fondo, pendiente de decisión del responsable (no se cambia sin autorización):**
+    `app.db.migrations` guarda el SHA-256 de los **bytes** de cada archivo; Git tiene LF y el árbol de trabajo de
+    Windows CRLF (`core.autocrlf=true`), de modo que la misma migración da hashes distintos según desde dónde se
+    construya la imagen o se ejecute `migrate` (0001: `82574549…` con LF, `e6dfdfb9…` con CRLF). Una base migrada
+    desde un lado rechaza al otro. Opciones: `.gitattributes` con `*.sql text eol=lf` (cambia los bytes en Windows y
+    exige rehacer o actualizar el registro de las bases ya migradas con CRLF), o normalizar los finales de línea al
+    calcular el hash (cambia U2). El volumen `infra_pgdata` del entorno local sigue intacto y, con la imagen actual,
+    dará el mismo error hasta que se decida.
+- **Cambios fuera de U11, acotados y necesarios:** U5 (`settings.py`, `app.py`, docstrings de `__main__.py` y
+  `serve_api.py`): aceptar `dev` y elegir el validador; nada de la lógica de U1–U6 ni de la matriz. F7: el cliente
+  admite un proveedor de token asíncrono, el contexto de sesión expone `mode` y `checking`, `AuthGate` elige la
+  pantalla de inicio de sesión, ruta `/acceso`, y la prueba de arquitectura admite el host de la autoridad de
+  Entra ID como única URL absoluta. CI: el job de la API instala `entra`.
+- **Configuración real (2026-10-07, responsable, `deploy-u11.ps1`):** 9/9 comprobaciones, `ALREADY_CONFIGURED`
+  en las ejecuciones siguientes, cero secretos y cero certificados. La cuenta del responsable es Global
+  Administrator del tenant y «Users can register applications» = Yes. Identificadores (no son secretos):
+
+  | Objeto | appId | objectId | Service principal |
+  |---|---|---|---|
+  | API `app-mpa-dev-api` | `a9c9ec35-cd73-4ce6-8efd-46755ac86cbe` | `44e0b1af-3179-4690-a92c-4e83d99b5805` | `c396c334-89a7-4a16-8414-6eddcebf17ab` |
+  | SPA `app-mpa-dev-spa` | `1ce46703-15f3-4f3d-8668-431e43b813ac` | `d714f2f9-0930-4255-88ab-e8975588e2ef` | `1e2b928e-c884-46ff-946a-c43f955a4664` |
+
+  Tenant `6ce4b1ba-ae4f-4887-bd6b-acb3c72039ad`; Application ID URI y audiencia
+  `api://a9c9ec35-cd73-4ce6-8efd-46755ac86cbe` / `a9c9ec35-…`; scope
+  `api://a9c9ec35-cd73-4ce6-8efd-46755ac86cbe/access_as_user`; tokens v2.0; redirect URIs `http://localhost:5173` y
+  `http://localhost:8080`; los cuatro app roles con los GUID de la tabla de arriba.
+- **Prueba real (2026-10-07, entorno `u11-entra-dev`, http://localhost:8080):**
+
+  | # | Caso | Resultado |
+  |---|---|---|
+  | 1 | Usuario autorizado (`VIEWER`): inicio de sesión con Microsoft (código + PKCE) → token de acceso → API | ✅ Sesión abierta; roles de la sesión: `VIEWER` (de `GET /me`, validado por la API). 11 endpoints permitidos → 200 |
+  | 2 | Autenticado sin el rol necesario | ✅ `GET /products/1/history` → **403** y `GET /runs/1` → **403** desde la API; las 13 filas de `/acceso` coinciden con la matriz |
+  | 3 | No autenticado | ✅ Sin cabecera: 401 `AUTHENTICATION_REQUIRED` con `WWW-Authenticate: Bearer`; `Bearer x`: 401 `INVALID_TOKEN` |
+  | 4 | Sin ningún rol (`-RemoveRole VIEWER,PLANNER`, nuevo inicio de sesión) | ✅ Sesión con roles «ninguno»: `GET /me` → 200 y los 12 endpoints restantes → **403** de la API (13/13 coinciden). Entra ID sí emitió el token (ver la corrección sobre `appRoleAssignmentRequired`): la barrera es el backend, como exige RS-002 |
+  | 5 | Cambio de rol (`-AssignRole PLANNER`, nuevo inicio de sesión) | ✅ Roles `PLANNER, VIEWER`: los 13 endpoints → 200, incluidos `history` y `runs/1` (13/13 coinciden) |
+
+  Tablas de `/acceso` y salidas de `curl` aportadas por el responsable (solo códigos HTTP, sin tokens). Cadena
+  comprobada: navegador → MSAL (código + PKCE) → Entra ID → token de acceso → API (firma, `iss`, `aud`, `tid`,
+  `azp`, `scp`, vigencia) → roles → endpoint.
+- **Clase C, sin inventar:** validación de ASSUMPTION-010 con el negocio; quién aprueba asignaciones; mapeo a
+  grupos; MFA y acceso condicional; autorización por ámbito de datos (`docs/10` §3.3 y §14).
+- **Estado:** autorización `ACEPTADA` (2026-10-07); **U11 COMPLETADA** el 2026-10-07: configuración real y los
+  cinco casos de la prueba real en verde. Quedan anotadas dos desviaciones o correcciones (caché de MSAL en
+  `sessionStorage`; `appRoleAssignmentRequired` no filtra usuarios delegados) y, fuera de U11, la causa de fondo
+  CRLF/LF de las migraciones. Código pendiente de commit e integración por PR.
+
+## DT-100 — U12: destino de cómputo de `dev` (cierra `DT-P01`)
+
+- **Contexto:** U12 autorizada el 2026-10-07. La primera auditoría encontró `DT-P01` abierta y U12 se detuvo con una
+  propuesta (Container Apps Consumo, ACR Basic, PostgreSQL B1ms, red mínima). El responsable la **aceptó** el mismo
+  día con correcciones: un único job de bootstrap y firewall de PostgreSQL limitado a las IP de salida.
+- **Decisión (`ACEPTADA`, 2026-10-07; cierra `DT-P01` para `dev`):**
+  1. **Cómputo:** Azure Container Apps, perfil Consumption, un entorno `cae-mpa-dev` en `centralus`, sin Log
+     Analytics. `frontend` con ingress externo HTTPS; `api` con ingress **interno**; ambas 0–1 réplicas.
+  2. **Carga inicial:** un único job manual `caj-mpa-dev-bootstrap` (imagen `inventory/bootstrap`) que ejecuta en
+     una sola ejecución dataset → migrate → ingest → forecast → recommend y crea/actualiza el usuario `mpa_app`. El
+     dataset se genera dentro del job con `generated_at` fijo (`2026-09-29T22:54:38Z`), así que repetir el job es
+     idempotente (sin `INTEGRITY_CONFLICT`, `ALREADY_COMPUTED`). Ningún dato en las imágenes.
+  3. **Registro:** ACR Basic sin usuario administrador. GitHub sube con `AcrPush` por OIDC; las apps descargan con
+     la identidad `id-mpa-dev-runtime` (`AcrPull`).
+  4. **PostgreSQL:** Flexible Server 16, `Standard_B1ms`, 32 GB, sin HA ni georredundancia, TLS obligatorio. Dos
+     usuarios: `mpa_owner` (administrador: migraciones y carga) y `mpa_app` (solo `SELECT`, usado por la API).
+  5. **Red:** acceso público de PostgreSQL limitado a una regla por IP de salida del entorno (`aca-out-*`), nunca
+     `0.0.0.0`; las IP pueden cambiar y se refrescan con `deploy-u12.ps1 -Stage Firewall`. Sin VNet.
+  6. **Secretos:** contraseñas generadas por `deploy-u12.ps1 -Stage Secrets` en el Key Vault de U10 (plano de control
+     de ARM); `main.bicep` las pasa con `getSecret` a secretos de Container Apps; la API recibe `PGPASSWORD` y una
+     `DATABASE_URL` sin contraseña. **Key Vault — opción C, `ACEPTADA` el 2026-10-08 solo para MVP/`dev`:**
+     Container Apps no es un servicio de confianza del Key Vault; se mantiene `publicNetworkAccess: Disabled` y se
+     activan `enabledForTemplateDeployment` + `networkAcls.bypass: AzureServices` (servicio de confianza de ARM para
+     plantillas), con *what-if* limitado a esas dos propiedades y la palabra `CAMBIAR-KV`. Sin `keyVaultUrl` en
+     tiempo de ejecución. Consecuencia aceptada: rotar un secreto exige volver a desplegar. `getSecret` requiere
+     `Microsoft.KeyVault/vaults/deploy/action` solo para quien despliega (el responsable); GitHub no la necesita ni
+     la recibe. Si la sesión del responsable no la tiene, rol personalizado mínimo `Key Vault Resource Manager
+     Template Deployment Operator` (solo esa acción, asignable en el grupo, asignado sobre el vault). Descartadas
+     para U12: **A)** acceso público + RBAC; **B)** VNet + endpoint privado, que es el camino para producción.
+  7. **CD:** `.github/workflows/deploy-dev.yml`, manual, entorno `dev`, OIDC con `id-mpa-dev-github`; roles nuevos:
+     `AcrPush` (registro), `Container Apps Contributor` (grupo) y `Managed Identity Operator` (solo la identidad de
+     ejecución). La infraestructura la despliega el responsable (validate → what-if → confirmación).
+  8. **Mismo origen:** nginx toma el destino del proxy de `API_UPSTREAM` (por defecto `http://api:8000`, sin cambio
+     local; en Azure `http://ca-mpa-dev-api`). El redirect URI `https://<FQDN del frontend>` se añade al estado
+     deseado de U11 y se aplica con `deploy-u11.ps1`.
+- **Implementación:** `infra/azure/u12/` (Bicep + `README.md`), `infra/azure/deploy-u12.ps1`, `infra/docker/
+  bootstrap.py` y `bootstrap.Dockerfile`, `nginx.conf` como plantilla, `smoke.py` con `SMOKE_API_URL=none`, y U10
+  con el parámetro `keyVaultArmSecretAccess` (por defecto `false`; `true` solo en `dev.bicepparam`).
+- **Costes:** estimación, no cifra garantizada (`infra/azure/u12/README.md` §7): ACR Basic ≈ 5 USD/mes (precio de
+  lista); PostgreSQL B1ms del orden de 12–16 USD/mes encendido (fuente secundaria, por confirmar) y almacenamiento
+  aparte; Container Apps dentro de la concesión gratuita en uso de demo.
+- **Estado:** `ACEPTADA` (2026-10-07; opción C del Key Vault aceptada el 2026-10-08). **`DT-P01` cerrada para `dev`.**
+  U12 autorizada para el despliegue real. Código y pruebas locales en verde; **despliegue real pendiente** de que el
+  responsable ejecute `deploy-u12.ps1` (nada creado todavía). U12 no se cierra hasta cumplir los 15 criterios de
+  cierre (despliegue, OIDC, ACR, PostgreSQL, bootstrap, frontend, API, Entra con la URL real, redespliegue, fallos).
 
 ## Decisiones deliberadamente NO tomadas
 
 | ID | Tema | Se decidirá en | Por qué no ahora |
 |---|---|---|---|
-| `DT-P01` | Servicio de cómputo en Azure (App Service / Container Apps / AKS) | Fase 12–13 | Requiere carga real y presupuesto |
+| `DT-P01` | ✅ **CERRADA para `dev` (2026-10-07).** Azure Container Apps, perfil Consumption (`DT-100`). `staging` y producción siguen sin decidir | — | Se revisa con carga real antes de `staging` |
 | `DT-P02` | Inferencia en línea vs. solo por lotes | Fase 5–6 | Depende del tiempo de cálculo real |
 | `DT-P03` | Algoritmo concreto del modelo de producción | Fase 5 | Se decide con datos, no por preferencia *(2026-10-05: se decide en F5c/F5d con los criterios de `DT-079`; niveles 3–4 fuera, `DT-071`.)* *(2026-10-05, G1: sigue sin decidir. La referencia es el baseline oficial, la media móvil de 13 semanas (`DT-089`), con MASE (`DT-090`) y los valores de `DT-091`.)* |
 | `DT-P04` | Umbrales numéricos de aceptación del modelo | Fase 1–5 | Fijarlos sin datos sería inventar un requisito *(2026-10-05: valores propuestos en `DT-079`, incluido el 5 %, `OPEN` hasta la puerta G1.)* *(2026-10-05, G1: valores provisionales `ACEPTADA` en `DT-091`, solo con datos `SYNTHETIC`; siguen abiertas la banda de sesgo y la tolerancia de cobertura.)* |
