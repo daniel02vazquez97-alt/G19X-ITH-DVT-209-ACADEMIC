@@ -10,6 +10,8 @@ export const PATHS = {
   recommendation: '/recomendaciones/:recommendationId',
   forecasts: '/predicciones',
   run: '/ejecuciones/:runId',
+  /** Access check of the session (U11, DT-099); not in the navigation. */
+  accessCheck: '/acceso',
 } as const;
 
 function withId(pattern: string, name: string, id: string | number): string {

@@ -3,10 +3,15 @@ import type { ApiClient } from '../api/client';
 import type { Identity } from './authenticator';
 
 export interface AuthContextValue {
+  /** `local`: development token (DT-070); `entra`: Microsoft Entra ID with MSAL (U11, DT-099). */
+  mode: 'local' | 'entra';
   /** Identity of the open session, or `null` when nobody is signed in. */
   identity: Identity | null;
+  /** `entra` only: a signed-in account is being turned into a session (token and `GET /me`). */
+  checking: boolean;
   /** Why the last session ended without a logout (a 401), if it did. */
   sessionNotice: string | null;
+  /** `local`: validates a development token. `entra`: starts the Microsoft sign-in (redirect). */
   login(credential: string): Promise<void>;
   logout(): void;
 }
