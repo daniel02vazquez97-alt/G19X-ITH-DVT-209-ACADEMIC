@@ -99,9 +99,9 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-      - name: Dependencias fijadas en backend/pyproject.toml (db, api, test)
+      - name: Dependencias fijadas en backend/pyproject.toml (db, api, test y entra de U11)
         run: |
-          python infra/ci/backend_requirements.py db api test > "$RUNNER_TEMP/requirements.txt"
+          python infra/ci/backend_requirements.py db api test entra > "$RUNNER_TEMP/requirements.txt"
           pip install --requirement "$RUNNER_TEMP/requirements.txt"
       - name: Suite de la API
         working-directory: backend
