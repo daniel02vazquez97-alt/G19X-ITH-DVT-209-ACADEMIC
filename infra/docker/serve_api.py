@@ -1,7 +1,8 @@
 """Container entry point of the API V1 (U7, `DT-095`).
 
-Same behaviour as ``python -m app.api`` (`DT-065`): the configuration comes from the environment, any
-``APP_ENV`` other than ``local`` is refused before the server starts, and the access log is the API's own.
+Same behaviour as ``python -m app.api`` (`DT-065`, `DT-099`): the configuration comes from the environment,
+only ``APP_ENV=local`` and ``APP_ENV=dev`` (Entra ID) start, anything else is refused before the server
+starts, and the access log is the API's own.
 The only difference is the bind address: inside the container the server listens on all interfaces so
 that the ``frontend`` proxy and the healthcheck reach it; what the host sees is decided by
 ``infra/docker-compose.yml``, which publishes the port on 127.0.0.1 only.

@@ -1,6 +1,6 @@
 # 12 — Estrategia DevOps
 
-**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-10-03) — §5: correspondencia entre los entornos y `APP_ENV` para la API de U5 (`DT-065`) · **Versión 1.3** (2026-10-05) — §2.2: excepción de merge commit para la integración inicial de U1–U6; §3.1: imagen `frontend` en el mismo origen que `/api` (`DT-070`) · **Versión 1.4** (2026-10-05) — §2.2: merge commit para las unidades de la Fase 5 (`DT-085`) · **Versión 1.5** (2026-10-06) — §3.4: U7 implementada, pendiente de revisión (`DT-095`): imágenes, `docker compose` del sistema completo y verificación; el resto de este documento sigue siendo diseño
+**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-10-03) — §5: correspondencia entre los entornos y `APP_ENV` para la API de U5 (`DT-065`) · **Versión 1.3** (2026-10-05) — §2.2: excepción de merge commit para la integración inicial de U1–U6; §3.1: imagen `frontend` en el mismo origen que `/api` (`DT-070`) · **Versión 1.4** (2026-10-05) — §2.2: merge commit para las unidades de la Fase 5 (`DT-085`) · **Versión 1.5** (2026-10-06) — §3.4: U7 implementada, pendiente de revisión (`DT-095`): imágenes, `docker compose` del sistema completo y verificación; el resto de este documento sigue siendo diseño · **Versión 1.6** (2026-10-06) — §4.5: U8 implementada, pendiente de revisión (`DT-096`); §3.4: bases de U7 fijadas por digest, pendiente de verificación externa · **Versión 1.7** (2026-10-06) — §4.3: identidad administrada con credencial federada OIDC de U10 (`DT-098`)
 
 > No se crean workflows, imágenes ni recursos en esta etapa.
 
@@ -98,9 +98,17 @@ La interfaz queda en `http://127.0.0.1:8080`. Para entrar se pega uno de los tok
 `docker compose -f infra/docker-compose.yml --profile app down`; con `-v` se borran también la base y el dataset.
 Sin `--profile app`, el mismo archivo sigue levantando **solo PostgreSQL**, como en U2.
 
+**Modo `dev` con Microsoft Entra ID (U11, `DT-099`):** un segundo archivo se superpone sin cambiar nada de lo
+anterior, en el **proyecto Compose aislado `u11-entra-dev`** (volúmenes y red propios; nunca `infra_pgdata`):
+`docker compose -p u11-entra-dev -f infra/docker-compose.yml -f infra/docker-compose.entra-dev.yml --env-file
+tmp/u11-evidence/entra-dev.env --profile app up --build -d` (API con `APP_ENV=dev`, SPA compilada con MSAL;
+abrir `http://localhost:8080`; comprobación: `python infra/docker/smoke.py --entra`). Antes se para el entorno
+local con `stop` (puertos compartidos); su limpieza, `down -v`, solo con `-p u11-entra-dev`. Requiere haber ejecutado `infra/azure/deploy-u11.ps1`
+(`infra/azure/entra/README.md`). La imagen `backend` incluye desde U11 el grupo `entra` de `pyproject.toml`.
+
 | Servicio | Imagen | Qué hace | Termina en |
 |---|---|---|---|
-| `postgres` | `postgres:16.15-alpine3.24` | PostgreSQL 16, `trust`, `127.0.0.1:5432`, volumen `pgdata` | `healthy` (`pg_isready`) |
+| `postgres` | `postgres:16.15-alpine3.24` (por digest) | PostgreSQL 16, `trust`, `127.0.0.1:5432`, volumen `pgdata` | `healthy` (`pg_isready`) |
 | `dataset` | `infra/docker/dataset.Dockerfile` | Publica `ds-6c8ad65b4999` en el volumen `dataset` con el generador 0.4.0 sin modificar (unos 30 s); si ya está, lo reutiliza | Salida 0 |
 | `init` | `infra/docker/backend.Dockerfile` | `migrate` → `ingestion` → `forecast` → `recommend` con `RUN_AS_OF=2025-12-31` (`DT-058`); idempotente | Salida 0 |
 | `api` | `infra/docker/backend.Dockerfile` | API V1 con `APP_ENV=local` y las identidades ficticias de `.env.example` (`DT-065`), en `127.0.0.1:8000` | `healthy` (`/health`) |
@@ -117,8 +125,9 @@ Sin `--profile app`, el mismo archivo sigue levantando **solo PostgreSQL**, como
 - `HEALTHCHECK`;
 - etiquetas OCI con versión y `VCS_REF`.
 
-**Excepción declarada:** las bases están fijadas por versión exacta, pero aún **sin digest** (regla 2). El digest se
-resolverá contra el registro en la primera construcción con acceso a él.
+**Regla 2:** las bases están fijadas por versión exacta **y digest** del índice multiplataforma (2026-10-06, U8), tomado
+de `docker-library/repo-info`. Ese digest queda **pendiente de verificación externa** hasta la primera construcción con
+acceso al registro, que será el job `docker` de CI (`DT-095`, `DT-096`).
 
 **Verificación:**
 
@@ -175,6 +184,19 @@ Es el método documentado tanto por GitHub como por Microsoft y es el que se ado
 permiso `id-token: write` en el workflow y una credencial federada configurada en la aplicación de
 Entra ID, con ámbito restringido al repositorio, la rama o el entorno concretos.
 
+*Nota del 2026-10-06 (U10, `DT-098`):*
+- La credencial federada se crea sobre una **identidad administrada asignada por el usuario**, `id-mpa-dev-github`,
+  y no sobre un registro de aplicación. Microsoft Learn admite ambas.
+- El sujeto limita el uso al entorno `dev` de GitHub.
+- El único rol es Reader sobre `rg-motor-predictivo-dev`; los permisos de despliegue llegan con U12.
+- El workflow de U8 no cambia.
+- La infraestructura está en `infra/azure/`.
+
+*Nota del 2026-10-07 (U12, `DT-100`):* `.github/workflows/deploy-dev.yml` (manual, entorno `dev`) entra por OIDC con
+`id-mpa-dev-github`, sube las tres imágenes al ACR con `AcrPush` y actualiza las apps y el job con `Container Apps
+Contributor` (grupo) y `Managed Identity Operator` (solo `id-mpa-dev-runtime`). Sin secretos de GitHub: solo
+variables con identificadores. La infraestructura la despliega el responsable con `infra/azure/deploy-u12.ps1`.
+
 ### 4.4 Buenas prácticas del pipeline
 
 - Permisos mínimos por workflow (`permissions:` explícito, no el conjunto por defecto).
@@ -184,6 +206,32 @@ Entra ID, con ámbito restringido al repositorio, la rama o el entorno concretos
 - Ejecución en paralelo de trabajos independientes.
 - El pipeline debe tardar poco: un CI lento se acaba evitando.
 - **Falla rápido**: primero lo barato (formato, lint), después lo caro (pruebas, build).
+
+### 4.5 Implementación de U8 (`DT-096`, 2026-10-06, pendiente de revisión)
+
+`.github/workflows/ci.yml` implementa la parte de CI de `ci.yml` de §4.2, sin cobertura (el proyecto no define
+herramienta) ni linter de Python (decisión del responsable). Se ejecuta en cada PR, en cada push a `main` y a mano.
+
+| Job | Comprobación |
+|---|---|
+| `secret-scan` | `python infra/ci/secret_scan.py`: archivos prohibidos y patrones de secretos, sin imprimir valores |
+| `ml` | Suite de `ml/` (solo biblioteca estándar) con el dataset publicado en el job |
+| `backend` | Suite por defecto, sin dependencias opcionales |
+| `api` | Suite de la API sin base, con los grupos `db`, `api` y `test` |
+| `integration` | PostgreSQL 16 efímero (contenedor de servicio): migraciones y suite de integración |
+| `generator` | Suite del generador |
+| `frontend` | `npm ci`, ESLint, `tsc`, Prettier, Vitest y build con Node 24.21.0 y npm 11.19.0 |
+| `docker` | Pruebas de `infra/tests`, construcción de las imágenes de U7, sistema completo `healthy` y `smoke.py` |
+
+Puntos clave:
+
+- **Permisos:** `contents: read`, sin persistir credenciales.
+- **Acciones:** fijadas por SHA (§4.4).
+- **Azure:** sin secretos ni OIDC hacia Azure (§4.3), que llegan con U10/U12.
+- **`build.yml`, `deploy.yml`, `ml-train.yml`, `db-migrate.yml` y `security.yml`** siguen siendo diseño.
+
+**Antes de hacer `main` obligatoria** (§2.2, la activa el responsable en GitHub), conviene ver la primera ejecución en
+verde. Los jobs que conviene exigir son los ocho de la tabla.
 
 ## 5. Entornos
 
@@ -206,6 +254,11 @@ entre entornos.
 decidirá en la Fase 12–13 con requisitos reales de carga y presupuesto. Decidirlo ahora sería
 comprometer una arquitectura sin información.
 
+*Nota del 2026-10-07 (`DT-100`, cierra `DT-P01` para `dev`):* `dev` corre en Azure Container Apps (perfil
+Consumption, `centralus`) con PostgreSQL Flexible Server 16 B1ms y ACR Basic; despliegue **manual** (no automático
+desde `main`) por el crédito limitado. Procedimiento, costes y desmontaje: `infra/azure/u12/README.md`. `staging` y
+`prod` siguen sin decidir.
+
 ## 6. Base de datos
 
 - **Migraciones versionadas** en el repositorio; ningún cambio manual de esquema en ningún entorno.
@@ -213,6 +266,9 @@ comprometer una arquitectura sin información.
 - Se aplican como parte del despliegue, con credencial dedicada y distinta de la de la aplicación.
 - Las migraciones destructivas requieren aprobación explícita y respaldo previo.
 - Compatibilidad hacia atrás durante el despliegue: primero el esquema, después el código.
+
+*Nota del 2026-10-07 (U12):* en `dev`, las migraciones las aplica el job `caj-mpa-dev-bootstrap` con `mpa_owner`; la
+API usa `mpa_app`, con solo `SELECT`. Ambas contraseñas se generan en el Key Vault y nunca se escriben a mano.
 
 ## 7. Versionado y publicaciones
 

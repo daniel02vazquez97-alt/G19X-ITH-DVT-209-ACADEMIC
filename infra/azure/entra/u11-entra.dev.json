@@ -1,0 +1,59 @@
+{
+  "_comment": "U11 (DT-099): desired state of the two Entra ID app registrations of dev. Identifiers only, never secrets. The GUIDs of the app roles and of the scope are fixed here once and never regenerated. ASCII only (read by Windows PowerShell 5.1).",
+  "tenantId": "6ce4b1ba-ae4f-4887-bd6b-acb3c72039ad",
+  "subscriptionName": "Azure for Students",
+  "signInAudience": "AzureADMyOrg",
+  "api": {
+    "displayName": "app-mpa-dev-api",
+    "requestedAccessTokenVersion": 2,
+    "appRoleAssignmentRequired": true,
+    "scope": {
+      "id": "a6d5e3d6-d5cd-47c5-8a25-bb927086500e",
+      "value": "access_as_user",
+      "type": "User",
+      "isEnabled": true,
+      "adminConsentDisplayName": "Acceder a la API del Motor Predictivo como el usuario",
+      "adminConsentDescription": "Permite que la SPA del Motor Predictivo llame a su API en nombre del usuario que inicio sesion. Los permisos efectivos dependen de los roles de aplicacion asignados.",
+      "userConsentDisplayName": "Acceder a la API del Motor Predictivo en tu nombre",
+      "userConsentDescription": "Permite que la aplicacion llame a la API del Motor Predictivo en tu nombre."
+    },
+    "appRoles": [
+      {
+        "id": "8caa5ebf-db9b-433b-be35-282728ec4d8d",
+        "value": "VIEWER",
+        "displayName": "VIEWER",
+        "description": "Consulta: solo lectura de estado, riesgos y recomendaciones (ASSUMPTION-010, pendiente de validacion con el negocio).",
+        "allowedMemberTypes": ["User"],
+        "isEnabled": true
+      },
+      {
+        "id": "15648c45-c30f-4b86-b87a-e51f714cd856",
+        "value": "ANALYST",
+        "displayName": "ANALYST",
+        "description": "Analista: consulta y analiza historicos, modelos y desempeno de proveedores; sin acciones operativas (ASSUMPTION-010, pendiente de validacion con el negocio).",
+        "allowedMemberTypes": ["User"],
+        "isEnabled": true
+      },
+      {
+        "id": "b5ef7fb8-1abb-492a-bafe-5bc019ce8172",
+        "value": "PLANNER",
+        "displayName": "PLANNER",
+        "description": "Planificador / comprador: opera el abastecimiento (ASSUMPTION-010, pendiente de validacion con el negocio).",
+        "allowedMemberTypes": ["User"],
+        "isEnabled": true
+      },
+      {
+        "id": "d4b7aa24-bcf5-445f-9f8a-9a98617d5fb0",
+        "value": "ADMIN",
+        "displayName": "ADMIN",
+        "description": "Administra el sistema (ASSUMPTION-010, pendiente de validacion con el negocio).",
+        "allowedMemberTypes": ["User"],
+        "isEnabled": true
+      }
+    ]
+  },
+  "spa": {
+    "displayName": "app-mpa-dev-spa",
+    "redirectUris": ["http://localhost:5173", "http://localhost:8080", "https://ca-mpa-dev-frontend.greensmoke-cfd723ad.centralus.azurecontainerapps.io"]
+  }
+}

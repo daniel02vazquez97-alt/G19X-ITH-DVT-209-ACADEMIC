@@ -1,4 +1,5 @@
 import type { RouteObject } from 'react-router';
+import { AccessCheckPage } from '../auth/AccessCheckPage';
 import { AuthGate } from '../auth/AuthGate';
 import { ForbiddenState } from '../components/ForbiddenState';
 import { AppShell } from '../layout/AppShell';
@@ -63,6 +64,7 @@ export const routes: RouteObject[] = [
           </RoleGate>
         ),
       },
+      { path: relative(PATHS.accessCheck), element: <AccessCheckPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

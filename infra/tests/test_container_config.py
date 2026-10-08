@@ -18,8 +18,9 @@ DOCKER = ROOT / "infra" / "docker"
 COMPOSE = ROOT / "infra" / "docker-compose.yml"
 DOCKERFILES = {name: DOCKER / f"{name}.Dockerfile" for name in ("backend", "dataset", "frontend")}
 APP_SERVICES = ("dataset", "init", "api", "frontend")
-# An exact release (major.minor.patch, or major.minor for PostgreSQL) plus an optional variant.
-PINNED = re.compile(r"^[a-z0-9/._-]+:\d+\.\d+(\.\d+)?(-[a-z0-9.-]+)?$")
+# An exact release (major.minor.patch, or major.minor for PostgreSQL), an optional variant and the digest
+# of the multi-platform index (docs/12 §3.2, rule 2; `DT-095`).
+PINNED = re.compile(r"^[a-z0-9/._-]+:\d+\.\d+(\.\d+)?(-[a-z0-9.-]+)?@sha256:[0-9a-f]{64}$")
 
 
 def text(path: Path) -> str:
@@ -94,10 +95,11 @@ class Images(unittest.TestCase):
     def test_backend_dependencies_come_pinned_from_pyproject(self) -> None:
         project = tomllib.loads(text(ROOT / "backend" / "pyproject.toml"))["project"]
         groups = project["optional-dependencies"]
-        for requirement in project["dependencies"] + groups["db"] + groups["api"]:
+        for requirement in project["dependencies"] + groups["db"] + groups["api"] + groups["entra"]:
             with self.subTest(requirement=requirement):
                 self.assertRegex(requirement, r"^[A-Za-z0-9_.\[\]-]+==[0-9][A-Za-z0-9.]*$")
         self.assertIn("tomllib.load(open('pyproject.toml', 'rb'))", text(DOCKERFILES["backend"]))
+        self.assertIn("o['entra']", text(DOCKERFILES["backend"]))  # U11: APP_ENV=dev validates Entra ID tokens
         self.assertNotIn("'test'", text(DOCKERFILES["backend"]))
 
 
@@ -156,7 +158,13 @@ class Proxy(unittest.TestCase):
     def test_nginx_serves_unprivileged_and_proxies_api_on_the_same_origin(self) -> None:
         conf = text(DOCKER / "nginx.conf")
         self.assertRegex(conf, r"(?m)^\s*listen 8080;")
-        self.assertIn("proxy_pass http://api:8000;", conf)
+        self.assertIn("proxy_pass ${API_UPSTREAM};", conf)  # U12: template; local default below
+        self.assertIn("proxy_set_header Host $proxy_host;", conf)
+        dockerfile = text(DOCKER / "frontend.Dockerfile")
+        self.assertIn("ENV API_UPSTREAM=http://api:8000", dockerfile)
+        self.assertIn("envsubst '${API_UPSTREAM}'", dockerfile)  # only this variable: $host, $uri stay nginx's
+        active = "\n".join(line for line in conf.splitlines() if not line.lstrip().startswith("#"))
+        self.assertNotRegex(active, r"azurecontainerapps|https?://[a-z]")  # no environment URL in the image
         self.assertIn("location /api/ {", conf)
         self.assertIn("pid /tmp/nginx.pid;", conf)
         self.assertNotRegex(conf, r"(?m)^\s*user\s")

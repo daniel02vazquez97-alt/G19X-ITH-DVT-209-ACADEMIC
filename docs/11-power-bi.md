@@ -1,6 +1,6 @@
 # 11 — Diseño analítico en Power BI
 
-**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §9, fuentes de la Etapa 2; §§1–8 no cambian · **Versión 1.3** (2026-10-03) — §9: corrección de la fila de recomendaciones (`DT-P18` cerrada por `DT-059`)
+**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §9, fuentes de la Etapa 2; §§1–8 no cambian · **Versión 1.3** (2026-10-03) — §9: corrección de la fila de recomendaciones (`DT-P18` cerrada por `DT-059`) · **Versión 1.4** (2026-10-06) — §10: capa analítica de U9 implementada, pendiente de revisión (`DT-097`); ningún informe ni conexión de Power BI
 
 > **No se crea ningún dashboard en esta etapa.** Se define qué se va a medir y con qué estructura,
 > para que el modelo de datos de la Fase 2 ya contemple lo que la analítica necesitará.
@@ -230,3 +230,30 @@ calcula el motor (§1).*
 
 Quién consume cada informe sigue pendiente del negocio (§8.2). Ningún KPI de esta tabla se presenta
 como métrica real de la organización mientras la fuente sea `SYNTHETIC` (`DT-004`).
+
+## 10. Capa analítica implementada (U9, `DT-097`, 2026-10-06, pendiente de revisión)
+
+Migración `0004`, esquema `analytics`, rol `analytics_reader` (solo `SELECT` sobre estas vistas; `docs/10` §7). Es
+el origen previsto en §2 para U16. Las fórmulas de los indicadores están en `knowledge/glossary.md`
+(«Indicadores analíticos»), su definición única (§6.3). Aquí se dice qué vista los sostiene.
+
+| Vista | Grano | Para qué | Fuente |
+|---|---|---|---|
+| `data_load` | Una fila (carga `COMPLETED`) | Fecha de los datos y corte, visibles en cada informe (§6.4) | `data_loads` |
+| `dim_date` | Día | Calendario natural (sin día hábil ni festivos: calendario del negocio pendiente) | Periodo cargado y horizonte de forecast |
+| `dim_product`, `dim_category`, `dim_supplier`, `dim_location`, `dim_model_version` | Una fila por entidad | Dimensiones de §3.1 que existen en la base (sin segmento de serie ni de confiabilidad; sin datos de contacto) | Tablas maestras y `model_versions` |
+| `fact_consumption` | Producto × ubicación × día | Consumo, desabasto y demanda latente (solo `SYNTHETIC`) | `consumption`, `demand` |
+| `fact_inventory_current` | Producto × ubicación al corte | Stock actual y posición contable | `inventory` |
+| `fact_inventory_daily` | Producto × ubicación × día | Existencia al cierre del día (suma de movimientos), base de rotación e inventario medio | `inventory_movements` |
+| `fact_purchase_order_line` | Línea de orden | Pendientes y antigüedad, lead time observado, cumplimiento en tiempo y cantidad | Órdenes, líneas, recepciones, `product_suppliers` |
+| `fact_forecast` | Producto × ubicación × semana × corte × versión | Demanda proyectada y uso de baseline | `forecasts` de ejecuciones `COMPLETED` |
+| `fact_recommendation` | Ejecución × producto × ubicación | Evaluaciones del motor por resultado, con sus magnitudes ya calculadas | `recommendations` de ejecuciones `COMPLETED` |
+
+Los KPI de §9 que siguen pendientes o bloqueados no tienen vista; la lista está en `DT-097`. **Pendiente para U16:**
+
+- Import o DirectQuery (`DT-014`);
+- RLS (`DT-P10`);
+- la cuenta de conexión y su secreto;
+- licencia y publicación;
+- los informes;
+- los indicadores fuera de U9.

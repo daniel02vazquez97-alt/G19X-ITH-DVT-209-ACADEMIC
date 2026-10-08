@@ -1,0 +1,46 @@
+# Sistema completo con Microsoft Entra ID en el entorno `dev` (U11, `DT-099`). Se superpone a
+# infra/docker-compose.yml; no lo modifica. Todo sigue publicado solo en 127.0.0.1.
+#
+# Proyecto Compose AISLADO `u11-entra-dev`: sus contenedores, red y volúmenes (u11-entra-dev_pgdata,
+# u11-entra-dev_dataset) son distintos de los del entorno local (proyecto `infra`: infra_pgdata,
+# infra_dataset). La PostgreSQL de U11 empieza siempre vacía y migra desde cero; nunca reutiliza la base local.
+# El nombre lo fija `name:` abajo y, por claridad, también -p en cada comando:
+#
+#   docker compose -f infra/docker-compose.yml --profile app stop        # libera 5432/8000/8080; NO borra nada
+#   docker compose -p u11-entra-dev -f infra/docker-compose.yml -f infra/docker-compose.entra-dev.yml \
+#       --env-file tmp/u11-evidence/entra-dev.env --profile app up --build -d
+#   python infra/docker/smoke.py --entra
+#
+# Limpieza al terminar la prueba real (solo el proyecto u11-entra-dev: sus contenedores, volúmenes y red):
+#   docker compose -p u11-entra-dev -f infra/docker-compose.yml -f infra/docker-compose.entra-dev.yml \
+#       --env-file tmp/u11-evidence/entra-dev.env --profile app down -v
+#
+# tmp/u11-evidence/entra-dev.env lo escribe infra/azure/deploy-u11.ps1 (ignorado por Git) con tres
+# identificadores, que no son secretos: ENTRA_TENANT_ID, ENTRA_API_CLIENT_ID y ENTRA_SPA_CLIENT_ID.
+# Abrir http://localhost:8080 (no 127.0.0.1: el redirect URI registrado es localhost).
+#
+# Sin este archivo, `docker compose -f infra/docker-compose.yml --profile app up` sigue siendo el modo local
+# de siempre (APP_ENV=local, tokens de desarrollo, sin Azure).
+
+name: u11-entra-dev
+
+services:
+  api:
+    environment:
+      APP_ENV: dev
+      # .env.example (env_file del servicio) trae las identidades ficticias de local; en dev se anulan.
+      DEV_AUTH_IDENTITIES: ""
+      ENTRA_TENANT_ID: ${ENTRA_TENANT_ID:?falta ENTRA_TENANT_ID (deploy-u11.ps1 escribe tmp/u11-evidence/entra-dev.env)}
+      ENTRA_API_CLIENT_ID: ${ENTRA_API_CLIENT_ID:?falta ENTRA_API_CLIENT_ID}
+      ENTRA_SPA_CLIENT_ID: ${ENTRA_SPA_CLIENT_ID:?falta ENTRA_SPA_CLIENT_ID}
+
+  frontend:
+    build:
+      args:
+        VITE_APP_ENV: dev
+        VITE_ENTRA_TENANT_ID: ${ENTRA_TENANT_ID:?falta ENTRA_TENANT_ID}
+        VITE_ENTRA_SPA_CLIENT_ID: ${ENTRA_SPA_CLIENT_ID:?falta ENTRA_SPA_CLIENT_ID}
+        VITE_ENTRA_API_SCOPE: api://${ENTRA_API_CLIENT_ID:?falta ENTRA_API_CLIENT_ID}/access_as_user
+        VITE_ENTRA_REDIRECT_URI: http://localhost:8080
+    # Imagen aparte: la de local (inventory/frontend:local) no se sobrescribe.
+    image: inventory/frontend:entra-dev

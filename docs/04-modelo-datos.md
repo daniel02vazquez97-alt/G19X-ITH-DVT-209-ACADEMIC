@@ -1,6 +1,6 @@
 # 04 — Modelo de datos conceptual
 
-**Estado:** Versión 1.0 — Etapa 0 (conceptual, no implementado) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-18) — `data_origin` en las entidades maestras (`DT-026`) y vigencia de `Product` (`DT-027`) · **Versión 1.3** (2026-09-24) — `data_origin` en `Inventory`, `PurchaseOrder`, `PurchaseOrderItem` y `PurchaseOrderReceipt`; semántica diaria de `is_stockout_affected` (`DT-036`); enmienda de la restricción 3 de vigencia (`DT-027`) · **Versión 1.4** (2026-09-30) — Etapa 2: §9, del dataset 0.4.0 a PostgreSQL (modelo físico mínimo, ingesta, trazabilidad), `DT-044`. §§1–8 no cambian · **Versión 1.5** (2026-10-01) — U2: `DT-044` `ACEPTADA` e implementada; §9.9, implementación (`DT-055`). §§1–8 no cambian · **Versión 1.6** (2026-10-02) — U3 autorizada: §9.10, modelo físico de U3 (`DT-057`); nota en §3.14 y §9.6 · **Versión 1.7** (2026-10-02) — §9.10 implementado (migración `0002`) · **Versión 1.8** (2026-10-03) — U4 autorizada (no implementada): §9.11, modelo físico de U4 (`DT-059` a `DT-063`); notas en §3.16, §9.6 y §9.8 · **Versión 1.9** (2026-10-03) — §9.11 implementado (migración `0003`); ninguna decisión cambia
+**Estado:** Versión 1.0 — Etapa 0 (conceptual, no implementado) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-18) — `data_origin` en las entidades maestras (`DT-026`) y vigencia de `Product` (`DT-027`) · **Versión 1.3** (2026-09-24) — `data_origin` en `Inventory`, `PurchaseOrder`, `PurchaseOrderItem` y `PurchaseOrderReceipt`; semántica diaria de `is_stockout_affected` (`DT-036`); enmienda de la restricción 3 de vigencia (`DT-027`) · **Versión 1.4** (2026-09-30) — Etapa 2: §9, del dataset 0.4.0 a PostgreSQL (modelo físico mínimo, ingesta, trazabilidad), `DT-044`. §§1–8 no cambian · **Versión 1.5** (2026-10-01) — U2: `DT-044` `ACEPTADA` e implementada; §9.9, implementación (`DT-055`). §§1–8 no cambian · **Versión 1.6** (2026-10-02) — U3 autorizada: §9.10, modelo físico de U3 (`DT-057`); nota en §3.14 y §9.6 · **Versión 1.7** (2026-10-02) — §9.10 implementado (migración `0002`) · **Versión 1.8** (2026-10-03) — U4 autorizada (no implementada): §9.11, modelo físico de U4 (`DT-059` a `DT-063`); notas en §3.16, §9.6 y §9.8 · **Versión 1.9** (2026-10-03) — §9.11 implementado (migración `0003`); ninguna decisión cambia · **Versión 1.10** (2026-10-06) — §9.12, capa analítica de U9 (migración `0004`, `DT-097`)
 
 > Modelo **conceptual**. No define todavía tipos SQL definitivos, índices ni migraciones; eso
 > corresponde a la Fase 2. Los nombres de entidad se expresan en inglés (convención de código);
@@ -935,3 +935,12 @@ filas `FORECAST` existentes siguen siendo válidas sin reescribirse. Crea `recom
 `infra/docker-compose.yml`: con `ds-6c8ad65b4999` y corte `2025-12-31`, la ejecución `RECOMMENDATION` 2
 consume la ejecución `FORECAST` 1 y persiste 100 filas (50 `RECOMMEND`, 40 `NO_NEED`, 10 `NOT_CALCULABLE`;
 95 con `forecast_id`).
+
+### 9.12 Capa analítica de U9 (`DT-097`, migración `0004`, 2026-10-06, pendiente de revisión)
+
+La migración `0004` no crea ni modifica ninguna tabla. Añade el esquema `analytics` con 13 vistas sobre las tablas
+de §9.9 a §9.11 y el rol `analytics_reader` (solo lectura de esas vistas; `docs/10` §7). El catálogo está en
+`docs/11` §10.
+
+Consecuencia para migraciones futuras: PostgreSQL impide borrar una tabla, o una columna, que use alguna vista. Una
+migración que lo necesite tendrá que recrear las vistas afectadas en la misma transacción.

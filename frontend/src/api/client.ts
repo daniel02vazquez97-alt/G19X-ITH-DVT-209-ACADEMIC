@@ -21,7 +21,8 @@ export interface UnauthorizedEvent {
 }
 
 export interface ApiClientOptions {
-  getToken: () => string | null;
+  /** Session token; asynchronous with Entra ID, where MSAL renews it silently (U11, DT-099). */
+  getToken: () => string | null | Promise<string | null>;
   /** Called on every 401 of a request that used the session token. */
   onUnauthorized?: (event: UnauthorizedEvent) => void;
   fetchImpl?: typeof fetch;
@@ -51,7 +52,9 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
   return {
     async get<T>(path: string, request: RequestOptions = {}): Promise<T> {
       const usesSession = request.token === undefined;
-      const token = usesSession ? options.getToken() : (request.token ?? null);
+      const provided = usesSession ? options.getToken() : (request.token ?? null);
+      // Only an asynchronous provider (MSAL) is awaited: the development token keeps its synchronous path.
+      const token = provided instanceof Promise ? await provided : provided;
       const headers: Record<string, string> = { Accept: 'application/json' };
       if (token) {
         headers.Authorization = `Bearer ${token}`;

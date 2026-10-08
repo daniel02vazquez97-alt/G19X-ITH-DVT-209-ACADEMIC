@@ -67,7 +67,7 @@ export function AuthProvider({ children, authenticator, fetchImpl }: AuthProvide
   const logout = useCallback(() => endSession(null), [endSession]);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ identity, sessionNotice, login, logout }),
+    () => ({ mode: 'local', identity, checking: false, sessionNotice, login, logout }),
     [identity, sessionNotice, login, logout],
   );
 

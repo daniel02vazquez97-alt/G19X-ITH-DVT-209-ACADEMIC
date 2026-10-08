@@ -1,6 +1,6 @@
 # Glosario del dominio
 
-**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1
+**Estado:** Versión 1.0 — Etapa 0 · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-10-06) — sección «Indicadores analíticos» (U9, `DT-097`)
 
 Definiciones únicas y compartidas. Si un término significa una cosa en la aplicación y otra en un
 informe de Power BI, el proyecto ha fallado. **Este documento es la referencia.**
@@ -329,3 +329,30 @@ solo** dataset por base (`DT-044`, propuesta). Otro `dataset_version`, o datos r
 **Conjunto de política V1 provisional** *(`policy_set = V1_PROVISIONAL`)* — Los parámetros técnicos
 de `DT-031` (`R_v1`, `z_v1`, `N_v1`, `N_MIN_v1`, `LT_MAX_v1`) tal como viajan en cada resultado del
 motor. **No es una política de la organización**: marca la recomendación como provisional.
+
+---
+
+## Indicadores analíticos
+
+*Añadido el 2026-10-06 con U9 (`DT-097`). Definición única de cada indicador que la capa `analytics` permite
+calcular (`docs/11` §6.3). Power BI solo agrega estas columnas, nunca recalcula reglas (`docs/11` §1). Con datos
+`SYNTHETIC`, ninguno es una métrica real de la organización (`DT-004`).*
+
+| Indicador | Fórmula | Unidad | Grano de origen | Vista y filtro |
+|---|---|---|---|---|
+| **Stock actual** | Σ `quantity_on_hand` | Unidades del producto | Producto × ubicación al corte | `fact_inventory_current` |
+| **Posición de inventario contable** | Σ (`quantity_on_hand` + `quantity_in_transit` − `quantity_reserved`) = Σ `accounting_position` | Unidades | Ídem | `fact_inventory_current` |
+| **Inventario medio** (periodo P) | Media de `on_hand_end_of_day` en los días de P | Unidades | Producto × ubicación × día | `fact_inventory_daily` |
+| **Rotación de inventario** (P) | Σ `consumed_quantity` en P ÷ inventario medio en P; sin valor si el inventario medio es 0 | Veces | Producto × día | `fact_consumption`, `fact_inventory_daily` |
+| **Incidencias de desabasto** | Número de filas con `is_stockout_affected` | Producto-día | Producto × ubicación × día | `fact_consumption` |
+| **Tasa de satisfacción alcanzada** (*fill rate*) | Σ `consumed_quantity` ÷ Σ `latent_demand_quantity` | Proporción | Ídem | `fact_consumption`; **solo `SYNTHETIC`** |
+| **Órdenes pendientes** | Número de `purchase_order_id` distintos con `is_open`; unidades Σ `quantity_pending`; valor Σ `quantity_pending` × `unit_cost` por `currency` | Órdenes, unidades, moneda | Línea | `fact_purchase_order_line` |
+| **Antigüedad de órdenes pendientes** | `open_age_days_at_cut` = corte − emisión (media o máximo) | Días | Línea abierta | `fact_purchase_order_line` |
+| **Lead time medio observado** | Media de `observed_lead_time_days` (una observación por línea completamente recibida, fechada por su última recepción, como V1-09) | Días | Línea | `fact_purchase_order_line`, `is_fully_received` |
+| **Variabilidad del lead time** | Desviación estándar poblacional de `observed_lead_time_days` | Días | Línea | Ídem |
+| **Desviación acordado vs. observado** | Media de (`observed_lead_time_days` − `agreed_lead_time_days`) | Días | Línea con par producto–proveedor | Ídem |
+| **Cumplimiento en tiempo** | Líneas con `is_on_time` ÷ líneas con `is_fully_received` *(interpretación `PROPUESTA`, `DT-097`)* | Proporción | Línea | Ídem |
+| **Cumplimiento en cantidad** | Σ `quantity_received` ÷ Σ `quantity_ordered` en líneas con `order_status` `RECEIVED` o `CANCELLED` *(interpretación `PROPUESTA`)* | Proporción | Línea | Ídem |
+| **Demanda proyectada** | Σ `predicted_quantity` de las series con `is_primary`, por corte y semana | Unidades | Producto × ubicación × semana × corte | `fact_forecast` |
+| **Uso de baseline** | Series primarias con `method_used = 'BASELINE'` ÷ series primarias, por ejecución | Proporción | Producto × ubicación × ejecución | `fact_forecast` |
+| **Evaluaciones por resultado** | Número de filas por `outcome`; cantidad recomendada Σ `recommended_quantity` en `RECOMMEND` | Evaluaciones, unidades | Ejecución × producto × ubicación | `fact_recommendation` |

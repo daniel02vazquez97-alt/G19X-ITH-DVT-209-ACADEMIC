@@ -1,6 +1,6 @@
 # 10 — Seguridad
 
-**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §15, seguridad local de la Etapa 2; §§1–14 no cambian · **Versión 1.3** (2026-10-03) — U5 autorizada: `APP_ENV` con `local` y `DEV_AUTH_IDENTITIES` en §6; concreción del validador de desarrollo en §15 (`DT-065`)
+**Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §15, seguridad local de la Etapa 2; §§1–14 no cambian · **Versión 1.3** (2026-10-03) — U5 autorizada: `APP_ENV` con `local` y `DEV_AUTH_IDENTITIES` en §6; concreción del validador de desarrollo en §15 (`DT-065`) · **Versión 1.4** (2026-10-07) — U11: Entra ID en `dev`; §6 y §15 (`DT-099`); la matriz no cambia
 
 > No se crean credenciales, aplicaciones de Entra ID ni recursos de Azure en esta etapa.
 > Antes de implementar, verificar la documentación oficial vigente de Microsoft Entra ID.
@@ -122,7 +122,7 @@ evidentes.
 |---|---|
 | Desarrollo local | Archivo `.env` local, **excluido por `.gitignore`** |
 | CI/CD | *Secrets* y *environments* de GitHub, con acceso restringido |
-| Azure | Almacén de secretos gestionado, accedido mediante identidad administrada. Producto **sin fijar** (`DT-022`, `PROPUESTA`); Azure Key Vault es el candidato natural |
+| Azure | Almacén de secretos gestionado, accedido mediante identidad administrada. Producto **sin fijar** (`DT-022`, `PROPUESTA`); Azure Key Vault es el candidato natural. *(2026-10-07, U12, `DT-100`: Key Vault de U10 sin acceso público; las contraseñas de PostgreSQL de `dev` se generan allí y llegan a Container Apps por `getSecret` en el despliegue de ARM (`enabledForTemplateDeployment` + bypass de servicios de confianza: opción C, aceptada el 2026-10-08 solo para MVP/`dev`; producción irá a VNet + endpoint privado; rotar exige redesplegar); la API recibe `PGPASSWORD`, nunca una cadena con contraseña.)* |
 
 ### 5.3 Controles
 
@@ -139,9 +139,9 @@ Toda configuración sensible o dependiente del entorno se lee de variables. Conj
 
 ```
 DATABASE_URL                 # sin credenciales embebidas en el repositorio
-ENTRA_TENANT_ID
-ENTRA_API_CLIENT_ID
-ENTRA_API_AUDIENCE
+ENTRA_TENANT_ID              # solo con APP_ENV=dev (U11, DT-099); identificadores, no secretos
+ENTRA_API_CLIENT_ID          # audiencia de los tokens v2.0
+ENTRA_SPA_CLIENT_ID          # único cliente admitido (claim azp)
 AZURE_OPENAI_ENDPOINT
 AZURE_OPENAI_DEPLOYMENT
 AZURE_SEARCH_ENDPOINT
@@ -162,7 +162,7 @@ inmediato y explícito a un arranque con configuración incompleta que falle má
 |---|---|
 | **Usuario de aplicación** | Privilegios mínimos: `SELECT`/`INSERT`/`UPDATE` sobre las tablas necesarias. **Sin DDL** |
 | **Usuario de migraciones** | Credencial separada, usada solo por el proceso de migración |
-| **Usuario de lectura analítica** | Solo lectura, sobre las vistas expuestas a Power BI |
+| **Usuario de lectura analítica** | Solo lectura, sobre las vistas expuestas a Power BI. *(2026-10-06, U9, `DT-097`: rol `analytics_reader` sin `LOGIN`, con `USAGE` sobre el esquema `analytics` y `SELECT` sobre sus vistas, nada sobre las tablas; la cuenta de conexión de U16 será miembro del rol, con su secreto fuera del repositorio.)* |
 | **Conexión** | TLS obligatorio; sin acceso público a la instancia |
 | **Contraseñas** | En el almacén de secretos; nunca en el código ni en la URL versionada |
 | **Consultas** | Siempre parametrizadas. Prohibida la concatenación de SQL con entrada del usuario |
@@ -176,7 +176,7 @@ inmediato y explícito a un arranque con configuración incompleta que falle má
 | Azure OpenAI | Entra ID (identidad administrada); clave solo como último recurso |
 | Azure AI Search | Entra ID; consultas con filtro de permisos aplicado en origen |
 | Azure Machine Learning | Identidad administrada para invocar el endpoint |
-| Desde GitHub Actions | **OIDC con credenciales federadas**, sin secretos de larga vida |
+| Desde GitHub Actions | **OIDC con credenciales federadas**, sin secretos de larga vida. *(2026-10-06, U10, `DT-098`: identidad administrada `id-mpa-dev-github`, credencial limitada al entorno `dev` y solo el rol Reader sobre `rg-motor-predictivo-dev`.)* |
 
 El acceso de CI a Azure mediante OpenID Connect elimina la necesidad de almacenar credenciales
 persistentes en GitHub: el flujo intercambia un token de corta vida emitido por GitHub por un token
@@ -289,3 +289,13 @@ comparación es en tiempo constante y los tokens nunca se registran. `APP_ENV` e
 negarse a arrancar hasta que exista el validador de Entra ID (Fase 8). Sin cabecera: 401
 `AUTHENTICATION_REQUIRED`; token mal formado, de otro esquema o desconocido: 401 `INVALID_TOKEN`; rol no
 permitido: 403 `FORBIDDEN`.
+
+**Concreción de U11 (2026-10-07, `DT-099`; implementada, configuración real pendiente del responsable).**
+`APP_ENV=dev` sustituye el validador de desarrollo por `EntraTokenValidator` tras el mismo puerto: tokens de
+acceso v2.0 de Microsoft Entra ID firmados con RS256 (JWKS del tenant desde su metadata OIDC, caché 24 h),
+`iss` y `tid` del tenant, `aud` = client ID de la API, `azp` = SPA, `scp` con `access_as_user`, vigencia con 60 s
+de margen; `subject_id` = `oid` y roles = claim `roles` limitado a los cuatro de ASSUMPTION-010. La SPA usa MSAL
+(código de autorización + PKCE; caché de MSAL en el almacenamiento de sesión de la pestaña, nunca `localStorage`: MSAL 5 no admite redirecciones con caché en memoria, desviación de §4 anotada en `DT-099`) y solo pide el scope de la API; sin permisos de Microsoft Graph,
+sin secretos ni certificados en ningún registro. Sin rol asignado el token llega sin claim `roles` y la API responde 403 a todo salvo `/me`
+(prueba real del 2026-10-07; `appRoleAssignmentRequired` en la API no filtra usuarios delegados, `DT-099`). `local` no cambia y sigue sin Azure. Configuración: `infra/azure/deploy-u11.ps1` e
+`infra/azure/entra/README.md`. La matriz de autorización sigue siendo la de `docs/07` §7.2.

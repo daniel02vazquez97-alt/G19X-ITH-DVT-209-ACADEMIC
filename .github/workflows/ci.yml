@@ -1,0 +1,239 @@
+# CI de U8 (`DT-096`, docs/12 §4): verifica el repositorio completo sin Azure y sin credenciales.
+#
+# - Permisos mínimos: solo lectura del contenido. Sin OIDC hacia Azure (llega con U10/U12).
+# - Acciones fijadas por SHA de commit (docs/12 §4.4); la etiqueta va en el comentario.
+# - Python 3.11.16 (versión validada del backend) y Node 24.21.0 con npm 11.19.0 (`DT-070`).
+# - Ningún linter de Python: el proyecto no define uno (decisión del responsable, sin Ruff ni Black).
+#   El frontend usa sus comprobaciones existentes: ESLint, `tsc` y Prettier.
+# - Cada suite usa el comando oficial del proyecto; ningún número de pruebas se fija como condición.
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.11.16"
+  NODE_VERSION: "24.21.0"
+  NPM_VERSION: "11.19.0"
+  DATASET_VERSION: ds-6c8ad65b4999
+  PYTHONDONTWRITEBYTECODE: "1"
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+
+jobs:
+  secret-scan:
+    name: Detección de secretos
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Archivos prohibidos y patrones de secretos (sin imprimir valores)
+        run: python infra/ci/secret_scan.py
+
+  ml:
+    name: ML (ml/, solo biblioteca estándar)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Dependencia del generador (PyYAML, solo para publicar el dataset)
+        run: pip install --requirement data/synthetic/requirements.txt
+      - name: Publicar el dataset sintético 0.4.0
+        run: |
+          python -m data.synthetic.generator
+          grep -q "\"dataset_version\": \"$DATASET_VERSION\"" data/synthetic/output/manifest.json
+      - name: Pruebas de ml/
+        env:
+          PYTHONPATH: backend
+        run: python -m unittest discover -s ml/tests -t .
+
+  backend:
+    name: Backend (suite por defecto, sin dependencias opcionales)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Dependencia del generador (PyYAML, solo para publicar el dataset)
+        run: pip install --requirement data/synthetic/requirements.txt
+      - name: Publicar el dataset sintético 0.4.0 (las pruebas de ingesta lo leen)
+        run: |
+          python -m data.synthetic.generator
+          grep -q "\"dataset_version\": \"$DATASET_VERSION\"" data/synthetic/output/manifest.json
+      - name: Suite por defecto
+        working-directory: backend
+        run: python -m unittest discover -s tests -t .
+
+  api:
+    name: API (sin base de datos)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Dependencias fijadas en backend/pyproject.toml (db, api, test y entra de U11)
+        run: |
+          python infra/ci/backend_requirements.py db api test entra > "$RUNNER_TEMP/requirements.txt"
+          pip install --requirement "$RUNNER_TEMP/requirements.txt"
+      - name: Suite de la API
+        working-directory: backend
+        run: python -m unittest discover -s tests/api -t tests/api
+
+  integration:
+    name: Integración (PostgreSQL 16 efímero)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      # Contenedor de servicio del job: se crea y se destruye con él. Autenticación `trust`, como en
+      # `DT-055`: no hay contraseña ni credencial que guardar.
+      postgres:
+        image: postgres:16.15-alpine3.24@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
+        env:
+          POSTGRES_DB: inventory
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d inventory"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres@localhost:5432/inventory
+      U2_TEST_ADMIN_DSN: postgresql://postgres@localhost:5432/postgres
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Dependencias (backend db, api y test; PyYAML del generador)
+        run: |
+          python infra/ci/backend_requirements.py db api test > "$RUNNER_TEMP/requirements.txt"
+          pip install --requirement "$RUNNER_TEMP/requirements.txt" --requirement data/synthetic/requirements.txt
+      - name: Publicar el dataset sintético 0.4.0
+        run: |
+          python -m data.synthetic.generator
+          grep -q "\"dataset_version\": \"$DATASET_VERSION\"" data/synthetic/output/manifest.json
+      - name: Migraciones sobre la base del servicio
+        working-directory: backend
+        run: python -m app.db migrate
+      - name: Suite de integración (cada prueba crea y borra su base u2_test_*)
+        working-directory: backend
+        run: python -m unittest discover -s tests/db -t tests/db
+
+  generator:
+    name: Generador sintético
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Dependencia del generador (PyYAML)
+        run: pip install --requirement data/synthetic/requirements.txt
+      - name: Suite del generador
+        run: python -m unittest discover -s data/synthetic/tests -t .
+
+  frontend:
+    name: Frontend (ESLint, tsc, Prettier, Vitest, build)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Versión de npm (la incluida en Node 24.21.0)
+        run: test "$(npm --version)" = "$NPM_VERSION"
+      - name: Instalar dependencias del lockfile
+        run: npm ci --no-audit --no-fund
+      - name: ESLint
+        run: npm run lint
+      - name: tsc
+        run: npm run typecheck
+      - name: Prettier
+        run: npm run format:check
+      - name: Vitest
+        run: npm test
+      - name: Build
+        run: npm run build
+
+  docker:
+    name: Docker (configuración de U7 y smoke del sistema completo)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      COMPOSE: docker compose -f infra/docker-compose.yml --profile app
+      VCS_REF: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Pruebas estáticas de infra/ (contenedores y detector de secretos)
+        run: python -m unittest discover -s infra/tests -t infra/tests
+      - name: Construir las imágenes (bases oficiales fijadas por digest)
+        run: $COMPOSE build
+      - name: Levantar el sistema completo
+        run: $COMPOSE up -d
+      - name: Esperar a que el frontend esté healthy
+        run: |
+          for _ in $(seq 1 60); do
+            status="$(docker inspect -f '{{.State.Health.Status}}' "$($COMPOSE ps -q frontend)" 2>/dev/null || true)"
+            if [ "$status" = "healthy" ]; then exit 0; fi
+            sleep 2
+          done
+          echo "frontend no llegó a healthy" >&2
+          exit 1
+      - name: Smoke (frontend → API → PostgreSQL)
+        run: python infra/docker/smoke.py
+      - name: Estado y registros (solo si algo falló)
+        if: failure()
+        run: |
+          $COMPOSE ps -a
+          $COMPOSE logs --no-color
+      - name: Desmontar (contenedores y volúmenes)
+        if: always()
+        run: $COMPOSE down -v

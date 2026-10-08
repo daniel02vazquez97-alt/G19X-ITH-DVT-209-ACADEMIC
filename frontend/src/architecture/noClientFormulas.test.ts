@@ -68,7 +68,12 @@ describe('no business formulas in the client', () => {
   });
 
   it('the API base is relative', () => {
-    const offenders = files.filter(([, text]) => /https?:\/\//.test(text)).map(([path]) => path);
+    // The only absolute URL allowed is the Entra ID authority host (U11, DT-099), not an API base.
+    const offenders = files
+      .filter(([, text]) =>
+        /https?:\/\//.test(text.replaceAll('https://login.microsoftonline.com/', '')),
+      )
+      .map(([path]) => path);
     expect(offenders).toEqual([]);
   });
 });

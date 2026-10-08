@@ -15,6 +15,11 @@ from app.api import __main__ as api_main
 from app.api.auth import VIEWER
 from app.api.settings import Settings, SettingsError, load_settings
 
+ENTRA = {
+    "ENTRA_TENANT_ID": "11111111-2222-4333-8444-555555555555",
+    "ENTRA_API_CLIENT_ID": "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+    "ENTRA_SPA_CLIENT_ID": "12345678-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+}
 GOOD_IDENTITIES = json.dumps({TOKENS[VIEWER]: {"subject_id": "dev-viewer", "roles": ["VIEWER"]}})
 
 
@@ -31,11 +36,37 @@ class LoadSettingsTest(unittest.TestCase):
         self.assertEqual(loaded.app_env, "local")
         self.assertEqual(set(loaded.identities), {TOKENS[VIEWER]})
 
-    def test_deployed_environments_refuse_to_start(self) -> None:
-        for app_env in ("dev", "staging", "prod"):
+    def test_unauthorized_environments_refuse_to_start(self) -> None:
+        # U11 (`DT-099`) authorizes `dev` with Entra ID; `staging` and `prod` still refuse.
+        for app_env in ("staging", "prod"):
             with self.subTest(app_env), self.assertRaises(SettingsError) as caught:
-                load_settings(env(APP_ENV=app_env))
+                load_settings(env(APP_ENV=app_env, **ENTRA))
             self.assertIn("refuses to start", str(caught.exception))
+
+    def test_dev_requires_entra_and_no_development_identities(self) -> None:
+        loaded = load_settings(env(APP_ENV="dev", DEV_AUTH_IDENTITIES=None, **ENTRA))
+        self.assertEqual((loaded.app_env, dict(loaded.identities)), ("dev", {}))
+        self.assertEqual(loaded.entra.tenant_id, ENTRA["ENTRA_TENANT_ID"])
+        self.assertEqual(load_settings(env(APP_ENV="dev", DEV_AUTH_IDENTITIES="", **ENTRA)).app_env, "dev")
+        cases = {
+            "development identities present": env(APP_ENV="dev", **ENTRA),
+            "no Entra configuration": env(APP_ENV="dev", DEV_AUTH_IDENTITIES=None),
+            "missing tenant": env(APP_ENV="dev", DEV_AUTH_IDENTITIES=None, **{**ENTRA, "ENTRA_TENANT_ID": None}),
+            "missing SPA": env(APP_ENV="dev", DEV_AUTH_IDENTITIES=None, **{**ENTRA, "ENTRA_SPA_CLIENT_ID": None}),
+            "tenant not a GUID": env(APP_ENV="dev", DEV_AUTH_IDENTITIES=None, **{**ENTRA, "ENTRA_TENANT_ID": "common"}),
+            "audience as URI": env(APP_ENV="dev", DEV_AUTH_IDENTITIES=None,
+                                   **{**ENTRA, "ENTRA_API_CLIENT_ID": "api://aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee"}),
+            "no database": env(APP_ENV="dev", DEV_AUTH_IDENTITIES=None, DATABASE_URL=None, **ENTRA),
+        }
+        for name, environ in cases.items():
+            with self.subTest(name), self.assertRaises(SettingsError) as caught:
+                load_settings(environ)
+            for value in ENTRA.values():
+                self.assertNotIn(value, str(caught.exception))  # refusals name variables, not values
+
+    def test_local_ignores_entra_variables(self) -> None:
+        loaded = load_settings(env(**ENTRA))
+        self.assertEqual((loaded.app_env, loaded.entra), ("local", None))
 
     def test_missing_or_unknown_app_env(self) -> None:
         for value in (None, "", "production", "LOCAL"):
@@ -80,6 +111,19 @@ class LoadSettingsTest(unittest.TestCase):
 class MainTest(unittest.TestCase):
     def test_refused_configuration_never_starts_the_server(self) -> None:
         with mock.patch.dict("os.environ", env(APP_ENV="prod"), clear=True), \
+                mock.patch.object(api_main.uvicorn, "run") as run, redirect_stderr(io.StringIO()) as err:
+            self.assertEqual(api_main.main(), 1)
+        run.assert_not_called()
+        self.assertIn("REFUSED", err.getvalue())
+
+    def test_dev_serves_with_entra_and_refuses_without_it(self) -> None:
+        with mock.patch.dict("os.environ", env(APP_ENV="dev", DEV_AUTH_IDENTITIES=None, **ENTRA), clear=True), \
+                mock.patch.object(api_main.uvicorn, "run") as run:
+            self.assertEqual(api_main.main(), 0)
+        from app.api.entra import EntraTokenValidator
+
+        self.assertIsInstance(run.call_args.args[0].state.token_validator, EntraTokenValidator)
+        with mock.patch.dict("os.environ", env(APP_ENV="dev"), clear=True), \
                 mock.patch.object(api_main.uvicorn, "run") as run, redirect_stderr(io.StringIO()) as err:
             self.assertEqual(api_main.main(), 1)
         run.assert_not_called()
