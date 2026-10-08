@@ -4,6 +4,12 @@ Infraestructura mínima en Bicep sobre la que se construirán U11–U16. **El si
 local sin nada de esto** (RNF-006). El agente prepara y valida; **el despliegue lo ejecuta el responsable** con
 su propia sesión de Azure CLI. Nadie copia credenciales en archivos, en Git ni en el chat.
 
+**Estado:** desplegada y verificada el 2026-10-07 en `centralus` con `deploy-dev.ps1` (`what-if` con cinco
+creaciones, 9/9 comprobaciones). Los identificadores resultantes están en `DT-098`.
+
+Microsoft Entra ID de `dev` (U11, `DT-099`) no crea recursos de Azure ni toca este grupo: ver
+[`entra/README.md`](entra/README.md) y `deploy-u11.ps1`.
+
 ## Qué crea
 
 | Recurso | Nombre | Propósito | Costo esperado |
@@ -50,18 +56,19 @@ raíz del repositorio, en PowerShell o bash.
    az provider show --namespace Microsoft.MachineLearningServices --query "resourceTypes[?resourceType=='workspaces'].locations | [0]" --output json
    az provider show --namespace Microsoft.DBforPostgreSQL --query "resourceTypes[?resourceType=='flexibleServers'].locations | [0]" --output json
    az provider show --namespace Microsoft.CognitiveServices --query "resourceTypes[?resourceType=='accounts'].locations | [0]" --output json
-   az cognitiveservices model list --location westus3 --query "[?model.name=='gpt-4o-mini' || model.name=='text-embedding-3-small'].{modelo:model.name, version:model.version, sku:model.skus[0].name}" --output table
-   az cognitiveservices usage list --location westus3 --output table
+   az cognitiveservices model list --location centralus --query "[?model.name=='gpt-4o-mini' || model.name=='text-embedding-3-small'].{modelo:model.name, version:model.version, sku:model.skus[0].name}" --output table
+   az cognitiveservices usage list --location centralus --output table
    ```
 
-   Regla de `DT-098`:
-   - la región es la primera de `westus3`, `southcentralus` y `northcentralus` que esté **permitida** por la
-     directiva y figure en los cuatro catálogos;
-   - no se usan `eastus`, `eastus2` ni `westus`: AI Search no admite allí servicios nuevos por alta demanda;
-   - no se usa `westus2`: no tiene Azure OpenAI;
-   - no se usa `mexicocentral`: sin Azure OpenAI ni *semantic ranker*.
+   La directiva de esta suscripción permite exactamente `northcentralus`, `chilecentral`, `norwayeast`, `centralus`
+   y `mexicocentral` (comprobado el 2026-10-07). Por eso (`DT-098`):
+   - región principal: `centralus`;
+   - región de respaldo: `northcentralus`;
+   - `westus3` queda descartada porque la directiva no la permite;
+   - `mexicocentral` se descarta porque AI Search no tiene allí *semantic ranker* ni Azure OpenAI;
+   - `chilecentral` y `norwayeast` no aportan ventaja frente a `centralus`.
 
-   Si ninguna de las tres está permitida, detente y anota la lista: la región se decide de nuevo.
+   Si la directiva cambia, se revisa `DT-098` antes de tocar `parameters/dev.bicepparam`.
 
    **Grupo de recursos existente.** Si ya existe `rg-motor-predictivo-dev` en otra región, la región de un grupo no
    se puede cambiar. Si está vacío y sin bloqueos, se borra y la plantilla lo crea en la región elegida:
