@@ -13,7 +13,9 @@ param projectName string
 param environment string
 param tags object
 param githubOwner string
+param githubOwnerId string
 param githubRepository string
+param githubRepositoryId string
 param githubEnvironment string
 
 @description('U12 (DT-100): permite que el servicio de despliegue de plantillas de ARM lea secretos (getSecret) como servicio de confianza. El acceso de red público sigue deshabilitado.')
@@ -63,7 +65,9 @@ resource githubFederation 'Microsoft.ManagedIdentity/userAssignedIdentities/fede
   name: 'github-${githubEnvironment}'
   properties: {
     issuer: 'https://token.actions.githubusercontent.com'
-    subject: 'repo:${githubOwner}/${githubRepository}:environment:${githubEnvironment}'
+    // Formato inmutable de GitHub (propietario@id/repositorio@id): es el que GitHub emite para este repositorio
+    // (AADSTS700213 del 2026-10-09 con el formato sin ids). Sigue limitado al entorno dev: ni ramas ni PR.
+    subject: 'repo:${githubOwner}@${githubOwnerId}/${githubRepository}@${githubRepositoryId}:environment:${githubEnvironment}'
     audiences: [
       'api://AzureADTokenExchange'
     ]

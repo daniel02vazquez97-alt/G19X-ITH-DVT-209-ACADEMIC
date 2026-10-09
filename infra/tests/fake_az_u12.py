@@ -185,7 +185,8 @@ def main(args: list[str]) -> int:
                 return out({"name": "id-mpa-dev-runtime", "clientId": "r", "principalId": RUNTIME_ID})
             return out({"name": "id-mpa-dev-github", "clientId": "c", "principalId": GITHUB_ID})
         if args[:3] == ["identity", "federated-credential", "list"]:
-            return out([{"subject": "repo:o/r:environment:dev"}])
+            return out([{"subject": os.environ.get("FAKE_AZ_OIDC_SUBJECT", "repo:daniel02vazquez97-alt@290574726/G19X-ITH-DVT-209-ACADEMIC@1408075880:environment:dev"),
+                        "issuer": "https://token.actions.githubusercontent.com", "audiences": ["api://AzureADTokenExchange"]}])
         print(f"ERROR: unexpected az command: {' '.join(args)}", file=sys.stderr)
         return 1
     finally:

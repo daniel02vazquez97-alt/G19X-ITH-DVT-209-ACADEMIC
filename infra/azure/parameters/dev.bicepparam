@@ -8,8 +8,11 @@ param location = 'centralus'
 param resourceGroupName = 'rg-motor-predictivo-dev'
 param projectName = 'mpa'
 param ownerTag = 'responsable-del-proyecto'
+// Sujeto OIDC con ids inmutables (DT-098, nota del 2026-10-09): repo:<owner>@<id>/<repo>@<id>:environment:dev.
 param githubOwner = 'daniel02vazquez97-alt'
-param githubRepository = 'Motor-Predictivo-de-Abastecimiento-de-Inventarios'
+param githubOwnerId = '290574726'
+param githubRepository = 'G19X-ITH-DVT-209-ACADEMIC'
+param githubRepositoryId = '1408075880'
 param githubEnvironment = 'dev'
 param deployBudget = false
 // U12 (DT-100): getSecret desde las plantillas de U12; publicNetworkAccess sigue en Disabled.

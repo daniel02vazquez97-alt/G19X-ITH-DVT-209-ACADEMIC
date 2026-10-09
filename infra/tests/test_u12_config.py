@@ -470,6 +470,10 @@ class PreflightOnly(unittest.TestCase):
             "API publica": ({"FAKE_AZ_EXISTING": "1", "FAKE_AZ_API_PUBLIC": "1"}, "ca-mpa-dev-api: ingress interno"),
             "regla 0.0.0.0": ({"FAKE_AZ_EXISTING": "1", "FAKE_AZ_OPEN_RULE": "1"}, "regla de firewall no permitida"),
             "GitHub lee secretos": ({"FAKE_AZ_GITHUB_ROLE": "Key Vault Contributor"}, "id-mpa-dev-github: roles"),
+            "sujeto OIDC antiguo": ({"FAKE_AZ_OIDC_SUBJECT": "repo:daniel02vazquez97-alt/Motor-Predictivo-de-Abastecimiento-de-Inventarios:environment:dev"},
+                                    "una sola federacion OIDC, sujeto esperado"),
+            "sujeto OIDC de rama": ({"FAKE_AZ_OIDC_SUBJECT": "repo:daniel02vazquez97-alt@290574726/G19X-ITH-DVT-209-ACADEMIC@1408075880:ref:refs/heads/main"},
+                                    "una sola federacion OIDC, sujeto esperado"),
         }
         for name, (env, reason) in cases.items():
             with self.subTest(name):
