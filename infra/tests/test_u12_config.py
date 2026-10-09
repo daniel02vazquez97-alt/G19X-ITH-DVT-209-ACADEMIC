@@ -96,6 +96,10 @@ class Infrastructure(unittest.TestCase):
         self.assertIn("charset: 'UTF8'", postgres)
         environment = MODULES["environment.bicep"]
         self.assertIn("workloadProfileType: 'Consumption'", environment)
+        # Express does not run jobs nor allowInsecure (ARM failure of 2026-10-09): the mode is always explicit.
+        self.assertIn("environmentMode: 'WorkloadProfiles'", environment)
+        self.assertIn("'Microsoft.App/managedEnvironments@2026-07-01'", environment)
+        self.assertNotIn("Express", code(environment))
         self.assertNotIn("Dedicated", code(environment))
         self.assertNotIn("appLogsConfiguration", environment)  # no Log Analytics
 
@@ -113,11 +117,15 @@ class Infrastructure(unittest.TestCase):
         apps = MODULES["apps.bicep"]
         api, frontend = apps.split("resource frontend")[0], apps.split("resource frontend")[1].split("resource bootstrap")[0]
         self.assertIn("external: false", api)
+        self.assertIn("allowInsecure: false", api)  # internal AND HTTPS only
+        self.assertNotIn("allowInsecure: true", apps)
         self.assertIn("targetPort: 8000", api)
         self.assertIn("external: true", frontend)
         self.assertIn("allowInsecure: false", frontend)
         self.assertIn("targetPort: 8080", frontend)
-        self.assertIn("{ name: 'API_UPSTREAM', value: 'http://${apiName}' }", frontend)
+        # nginx reaches the api over TLS at its internal FQDN (<app>.internal.<domain>), never over plain HTTP.
+        self.assertIn("{ name: 'API_UPSTREAM', value: 'https://${api.properties.configuration.ingress.fqdn}' }", frontend)
+        self.assertNotIn("'http://${apiName}'", apps)
         self.assertEqual(apps.count("minReplicas: 0"), 2)
         self.assertEqual(apps.count("maxReplicas: 1"), 2)
         self.assertIn("triggerType: 'Manual'", apps)
@@ -451,9 +459,17 @@ class PreflightOnly(unittest.TestCase):
         result, state = self.run_preflight(env={"FAKE_AZ_EXISTING": "1"})
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         for line in ("acrmpadevx: usuario administrador deshabilitado", "psql-mpa-dev-x: SKU Standard_B1ms",
-                     "ca-mpa-dev-api: ingress interno", "caj-mpa-dev-bootstrap: job manual",
+                     "ca-mpa-dev-api: ingress interno, solo HTTPS", "caj-mpa-dev-bootstrap: job manual",
+                     "cae-mpa-dev: modo WorkloadProfiles (admite el job de bootstrap)",
                      "id-mpa-dev-runtime: roles AcrPull (solo AcrPull)"):
             self.assertIn(line, result.stdout)
+        self.assert_only_reads(state)
+
+    def test_an_express_environment_is_reported_without_touching_it(self) -> None:
+        result, state = self.run_preflight(env={"FAKE_AZ_EXISTING": "1", "FAKE_AZ_EXPRESS": "1"})
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)  # a warning: Core tries the conversion
+        self.assertIn("AVISO  cae-mpa-dev: modo 'Express', sin jobs", result.stdout)
+        self.assertIn("README de U12, 5.2", result.stdout)
         self.assert_only_reads(state)
 
     def test_missing_deploy_action_asks_for_the_key_vault_role_stage(self) -> None:

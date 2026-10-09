@@ -5,7 +5,8 @@ the ARM control plane, plus the bodies the script sent (to prove the value never
 custom roles and role assignments the `KeyVaultRole` stage creates. ``FAKE_AZ_DEPLOYER_ROLE`` (default ``Owner``) and
 ``FAKE_AZ_GITHUB_ROLE`` (default ``Reader``) choose the built-in role of the signed-in user and of the GitHub identity.
 ``FAKE_AZ_EXISTING=1`` makes the U12 resources exist (as Core and Apps leave them); ``FAKE_AZ_KV_PUBLIC=1``,
-``FAKE_AZ_ACR_ADMIN=1``, ``FAKE_AZ_API_PUBLIC=1`` and ``FAKE_AZ_OPEN_RULE=1`` break one setting each. Every call is
+``FAKE_AZ_ACR_ADMIN=1``, ``FAKE_AZ_API_PUBLIC=1`` and ``FAKE_AZ_OPEN_RULE=1`` break one setting each;
+``FAKE_AZ_EXPRESS=1`` leaves the environment in Express mode (2026-10-09). Every call is
 recorded in full (``argv``) so the tests can prove the preflight only reads.
 """
 
@@ -54,9 +55,11 @@ def resources() -> list[dict]:
          "type": "Microsoft.DBforPostgreSQL/flexibleServers", "sku": {"name": "Standard_B1ms"},
          "properties": {"version": "16", "state": "Ready", "highAvailability": {"mode": "Disabled"}}},
         {"id": f"{app}/managedEnvironments/cae-mpa-dev", "name": "cae-mpa-dev", "type": "Microsoft.App/managedEnvironments",
-         "properties": {"workloadProfiles": [{"name": "Consumption", "workloadProfileType": "Consumption"}]}},
+         "properties": {"environmentMode": "Express" if flag("FAKE_AZ_EXPRESS") else "WorkloadProfiles",
+                        "workloadProfiles": [{"name": "Consumption", "workloadProfileType": "Consumption"}]}},
         {"id": f"{app}/containerApps/ca-mpa-dev-api", "name": "ca-mpa-dev-api", "type": "Microsoft.App/containerApps",
-         "properties": {"configuration": {"ingress": {"external": bool(flag("FAKE_AZ_API_PUBLIC"))}, "registries": registry}}},
+         "properties": {"configuration": {"ingress": {"external": bool(flag("FAKE_AZ_API_PUBLIC")), "allowInsecure": False},
+                                          "registries": registry}}},
         {"id": f"{app}/containerApps/ca-mpa-dev-frontend", "name": "ca-mpa-dev-frontend", "type": "Microsoft.App/containerApps",
          "properties": {"configuration": {"ingress": {"external": True, "allowInsecure": False}, "registries": registry}}},
         {"id": f"{app}/jobs/caj-mpa-dev-bootstrap", "name": "caj-mpa-dev-bootstrap", "type": "Microsoft.App/jobs",

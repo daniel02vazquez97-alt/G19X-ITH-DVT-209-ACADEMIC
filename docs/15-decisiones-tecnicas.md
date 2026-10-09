@@ -4164,6 +4164,16 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
   responsable ejecute `deploy-u12.ps1` (nada creado todavía). U12 no se cierra hasta cumplir los 15 criterios de
   cierre (despliegue, OIDC, ACR, PostgreSQL, bootstrap, frontend, API, Entra con la URL real, redespliegue, fallos).
 
+- **Nota del 2026-10-09 (entorno Express):** `-Stage Apps` falló: `cae-mpa-dev` estaba en modo **Express**, que no
+  admite Container Apps Jobs (`ExpressEnvironmentResourceNotSupported`) ni `allowInsecure`
+  (`ExpressEnvironmentFeatureNotSupported`). La plantilla no fijaba `environmentMode`. Corrección:
+  `environmentMode: 'WorkloadProfiles'` explícito (API `2026-07-01`, mismo perfil Consumption, sin coste fijo); la api
+  pasa a `allowInsecure: false` y nginx la llama por HTTPS a su FQDN interno, con SNI y certificado verificado contra las
+  CA del sistema (mejora la seguridad respecto del HTTP anterior). El guardia rechaza un entorno que no sea
+  `WorkloadProfiles` y una api con HTTP; `Core` comprueba el modo tras desplegar. Recuperación en
+  `infra/azure/u12/README.md` §5.2: conversión en el mismo recurso si Azure la admite; si no, recrear solo el entorno
+  (sin datos), con nueva URL del frontend y nuevas IP de salida.
+
 ## Decisiones deliberadamente NO tomadas
 
 | ID | Tema | Se decidirá en | Por qué no ahora |

@@ -8,7 +8,7 @@ agente no ve ni maneja contraseñas, tokens ni cadenas de conexión con secreto.
 
 ```
 navegador ──HTTPS──► ca-mpa-dev-frontend (ingress externo, nginx :8080, MSAL)
-                         │  /api/* → http://ca-mpa-dev-api   (API_UPSTREAM, dentro del entorno)
+                         │  /api/* → https://ca-mpa-dev-api.internal.<dominio>   (API_UPSTREAM, TLS verificado)
                          ▼
                      ca-mpa-dev-api (ingress interno, FastAPI :8000, tokens de Entra ID)
                          │  TLS (sslmode=require), usuario mpa_app (solo lectura)
@@ -26,7 +26,7 @@ kv-mpa-dev-… (U10, sin acceso público) ─ getSecret en tiempo de despliegue 
 |---|---|---|
 | Registro | `acrmpadev<sufijo>` | Basic, sin usuario administrador |
 | PostgreSQL | `psql-mpa-dev-<sufijo>` | Flexible Server 16, `Standard_B1ms` Burstable, 32 GB sin autocrecimiento, copias 7 días sin georredundancia, sin HA, `require_secure_transport=ON`, base `inventory` |
-| Entorno | `cae-mpa-dev` | Container Apps, perfil Consumption únicamente, sin Log Analytics |
+| Entorno | `cae-mpa-dev` | Container Apps estándar (`environmentMode: WorkloadProfiles`, nunca Express), perfil Consumption únicamente, sin Log Analytics |
 | API | `ca-mpa-dev-api` | ingress interno, 0,5 vCPU / 1 GiB, 0–1 réplicas, sonda `/health` |
 | Frontend | `ca-mpa-dev-frontend` | ingress externo solo HTTPS, 0,25 vCPU / 0,5 GiB, 0–1 réplicas |
 | Job | `caj-mpa-dev-bootstrap` | manual, 1 vCPU / 2 GiB, 1 h de límite, sin reintentos |
@@ -109,7 +109,7 @@ proyecto y la suscripción de U10 seleccionada. Cada etapa se detiene si algo no
 | 7 | GitHub → Actions → **Deploy dev** → *Run workflow* | construye y sube `inventory/backend`, `inventory/frontend` e `inventory/bootstrap` con la etiqueta = SHA del commit; aún no hay apps que actualizar | — |
 | 8 | `… -Stage Apps -ImageTag <sha>` | crea api, frontend y job con esa etiqueta; después ejecuta `Firewall` | escribir `DESPLEGAR` |
 | 9 | `… -Stage Bootstrap` | arranca el job y espera: dataset → migrate → ingest → forecast → recommend en una sola ejecución; debe terminar en `Succeeded` y `BOOTSTRAP OK` | — |
-| 10 | `… -Stage Verify` | 18 comprobaciones (Azure, aplicación y seguridad: ACR, PostgreSQL `Ready` y TLS, firewall, ingress, identidades y RBAC, Key Vault opción C, contraseñas solo como `secretRef`, última ejecución del job `Succeeded`, frontend 200, API viva tras el proxy) y `tmp/u12-evidence/u12-evidence.json` (solo identificadores) | — |
+| 10 | `… -Stage Verify` | 19 comprobaciones (Azure, aplicación y seguridad: ACR, PostgreSQL `Ready` y TLS, firewall, ingress, identidades y RBAC, Key Vault opción C, contraseñas solo como `secretRef`, última ejecución del job `Succeeded`, frontend 200, API viva tras el proxy) y `tmp/u12-evidence/u12-evidence.json` (solo identificadores) | — |
 | 11 | smoke (lo imprime `Verify`) | `$env:SMOKE_FRONTEND_URL='<url>'; $env:SMOKE_API_URL='none'; $env:SMOKE_TIMEOUT='120'; python infra/docker/smoke.py --entra` | — |
 | 12 | navegador | abrir la URL del frontend, iniciar sesión, comprobar las vistas con el rol asignado (§6) | — |
 
@@ -136,13 +136,56 @@ detiene el script; no escribe nada en Azure ni en disco (ni siquiera evidencias)
 | 6. RBAC | tu `Microsoft.KeyVault/vaults/deploy/action` (`ALLOWED` / `MISSING`); `id-mpa-dev-github` (una federación `environment:dev`, solo roles autorizados dentro del grupo, sin `deploy/action`); `id-mpa-dev-runtime` (solo `AcrPull`, si existe); tus roles en el grupo |
 | 7. ACR | si existe: Basic, sin administrador, solo `AcrPull`/`AcrPush` |
 | 8. PostgreSQL | Flexible Server 16 `Standard_B1ms` ofrecido en `centralus`; si existe: SKU, versión, sin HA, TLS, reglas `aca-out-*` sin `0.0.0.0` |
-| 9. Container Apps | si existen: perfil Consumption, api interna, frontend solo HTTPS, imágenes por identidad, job manual |
+| 9. Container Apps | si existen: modo `WorkloadProfiles` (aviso si es Express, §5.2), perfil Consumption, api interna solo HTTPS, frontend solo HTTPS, imágenes por identidad, job manual |
 | 10. Bicep | `build` y `lint` de U10 y U12, parámetros, valores de `DT-100` (región, Consumption, ACR Basic, PostgreSQL 16 B1ms, Key Vault opción C) |
 | 11. Seguridad | detector de secretos y pruebas de configuración de U12 (con Python 3.9+ y `git`; sin Python, aviso), workflow con OIDC y sin secretos |
 | 12. Resultado | `PREFLIGHT OK` (código 0) o `PREFLIGHT BLOQUEADO` (código 1) con la lista de bloqueos |
 
 Con `PREFLIGHT OK`, la última línea dice `U12 PREFLIGHT OK — KeyVaultRole no requerido` o
 `U12 PREFLIGHT OK — requiere etapa KeyVaultRole`, y la etapa siguiente. Los avisos (`AVISO`) no bloquean.
+
+### 5.2 Entorno en modo Express (incidente del 2026-10-09)
+
+El primer `-Stage Apps` falló con `ExpressEnvironmentResourceNotSupported` (los Container Apps Jobs no existen en
+Express) y `ExpressEnvironmentFeatureNotSupported` (`allowInsecure` en `ca-mpa-dev-api`): `cae-mpa-dev` quedó en
+modo **Express**. La plantilla no fijaba `environmentMode`; ahora lo fija a `WorkloadProfiles` (API `2026-07-01`)
+con el mismo perfil Consumption, y la api ya no usa `allowInsecure` (nginx la llama por HTTPS a su FQDN interno con
+el certificado verificado). Microsoft no documenta la conversión de Express a estándar en el mismo recurso, así que
+primero se intenta sin borrar nada y, solo si Azure no la acepta, se recrea **únicamente** el entorno.
+
+1. **Diagnóstico (solo lectura):**
+
+   ```powershell
+   az containerapp env show -g rg-motor-predictivo-dev -n cae-mpa-dev --query "{modo:properties.environmentMode, dominio:properties.defaultDomain, estado:properties.provisioningState}" -o table
+   az containerapp list -g rg-motor-predictivo-dev --query "[].{app:name, entorno:properties.managedEnvironmentId}" -o table
+   az containerapp job list -g rg-motor-predictivo-dev --query "[].name" -o table
+   powershell -ExecutionPolicy Bypass -File infra\azure\deploy-u12.ps1 -PreflightOnly
+   ```
+
+   El preflight avisa `cae-mpa-dev: modo 'Express', sin jobs`.
+2. **Intento sin borrar:** `-Stage Core`. El *what-if* debe mostrar `Modify` en `cae-mpa-dev` (modo a
+   `WorkloadProfiles`) y nada más que cambie (las asignaciones de rol pueden salir `Modify` por `reference()`). Si el
+   despliegue termina y el script dice `Entorno cae-mpa-dev: modo WorkloadProfiles`, saltar al paso 4.
+3. **Solo si el paso 2 falla** (error de ARM o `DETENIDO: el entorno … sigue en modo 'Express'`): recrear el entorno.
+   - Se borra únicamente lo que vive dentro de `cae-mpa-dev`: las apps o el job que el `Apps` fallido haya dejado
+     (sin datos: la base está en PostgreSQL) y el propio entorno.
+   - **Se conservan:** ACR y sus imágenes, PostgreSQL y la base `inventory`, Key Vault y sus secretos, las dos
+     identidades, sus roles y la federación OIDC. Ninguno depende del entorno.
+
+   ```powershell
+   az containerapp delete -g rg-motor-predictivo-dev -n ca-mpa-dev-frontend --yes   # solo si aparece en la lista
+   az containerapp delete -g rg-motor-predictivo-dev -n ca-mpa-dev-api --yes        # solo si aparece en la lista
+   az containerapp job delete -g rg-motor-predictivo-dev -n caj-mpa-dev-bootstrap --yes  # solo si aparece
+   az containerapp env delete -g rg-motor-predictivo-dev -n cae-mpa-dev --yes
+   powershell -ExecutionPolicy Bypass -File infra\azure\deploy-u12.ps1 -Stage Core
+   ```
+
+   El entorno nuevo tiene **otro dominio**: `Core` sustituye la URL anterior del frontend en
+   `infra/azure/entra/u11-entra.dev.json` (no la acumula), y hay que aplicarla con `deploy-u11.ps1`. Las IP de salida
+   también son nuevas: las recoge `-Stage Apps` (`Firewall`).
+4. Integrar estos cambios en `main` y ejecutar **Deploy dev**: la imagen del frontend debe incluir la nueva
+   configuración TLS de nginx. Usar la etiqueta nueva en `-Stage Apps -ImageTag <sha>`; la `267803e…` no la tiene.
+5. Seguir con `Bootstrap`, `Verify`, smoke y E2E (§6).
 
 ## 6. Pruebas de aceptación
 
@@ -227,7 +270,7 @@ secretos del vault quedan en borrado temporal según la retención de U10.
 | ACR Basic sin escaneo de vulnerabilidades ni geo-replicación | Premium o escaneo de Defender, retención y firma de imágenes |
 | Despliegue manual (`workflow_dispatch`) sin aprobación | entornos `staging`/`prod` con aprobación y credencial federada propia |
 | Rotación de contraseñas manual | rotación programada |
-| `allowInsecure` HTTP dentro del entorno entre frontend y api | mTLS del entorno o red privada |
+| TLS entre frontend y api con el certificado del entorno (sin `allowInsecure`), pero sin red privada | red privada y, si se exige, mTLS del entorno |
 
 ## 10. Problemas frecuentes
 

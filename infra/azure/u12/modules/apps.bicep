@@ -2,8 +2,9 @@
 //
 // - frontend: única entrada pública (ingress externo, solo HTTPS). nginx sirve la SPA compilada para Entra ID y
 //   reenvía /api a la API en el mismo origen: no hace falta CORS.
-// - api: ingress INTERNO (sin endpoint público); APP_ENV=dev valida tokens de Entra ID (U11). HTTP dentro del
-//   entorno, de nginx a la api; el TLS termina en el ingress externo del frontend.
+// - api: ingress INTERNO (sin endpoint público); APP_ENV=dev valida tokens de Entra ID (U11). nginx llega a la api
+//   por HTTPS con su FQDN interno (<app>.internal.<dominio>), verificando el certificado del entorno y con SNI; la api
+//   no admite HTTP (allowInsecure: false).
 // - bootstrap: job Manual de una sola réplica: genera el dataset, migra, carga, pronostica y recomienda en un único
 //   contenedor y en ese orden (infra/docker/bootstrap.py); idempotente.
 // Contraseñas: DATABASE_URL va SIN contraseña (no es secreto) y libpq toma la contraseña de PGPASSWORD, que es un
@@ -61,7 +62,7 @@ resource api 'Microsoft.App/containerApps@2025-01-01' = {
         external: false
         targetPort: 8000
         transport: 'http'
-        allowInsecure: true
+        allowInsecure: false
       }
       registries: registries
       secrets: [
@@ -141,8 +142,8 @@ resource frontend 'Microsoft.App/containerApps@2025-01-01' = {
             memory: '0.5Gi'
           }
           env: [
-            // Destino del proxy /api de nginx: la api por su nombre dentro del entorno (puerto del ingress, 80).
-            { name: 'API_UPSTREAM', value: 'http://${apiName}' }
+            // Destino del proxy /api de nginx: la api por HTTPS con su FQDN interno (solo resoluble dentro del entorno).
+            { name: 'API_UPSTREAM', value: 'https://${api.properties.configuration.ingress.fqdn}' }
           ]
           probes: [
             {
@@ -159,9 +160,6 @@ resource frontend 'Microsoft.App/containerApps@2025-01-01' = {
       }
     }
   }
-  dependsOn: [
-    api
-  ]
 }
 
 resource bootstrap 'Microsoft.App/jobs@2025-01-01' = {
