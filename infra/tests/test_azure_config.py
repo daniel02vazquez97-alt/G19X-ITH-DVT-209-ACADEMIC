@@ -26,6 +26,9 @@ MAIN = text(AZURE / "main.bicep")
 BASE = text(AZURE / "modules" / "base.bicep")
 BUDGET = text(AZURE / "modules" / "budget.bicep")
 PARAMS = text(AZURE / "parameters" / "dev.bicepparam")
+EXPECTED_SUBJECT = "repo:daniel02vazquez97-alt@290574726/G19X-ITH-DVT-209-ACADEMIC@1408075880:environment:dev"
+OLD_SUBJECT = "repo:daniel02vazquez97-alt/Motor-Predictivo-de-Abastecimiento-de-Inventarios:environment:dev"
+IMMUTABLE_SUBJECT = re.compile(r"^repo:[A-Za-z0-9-]+@[0-9]+/[A-Za-z0-9._-]+@[0-9]+:environment:dev$")
 ALL = {"main.bicep": MAIN, "base.bicep": BASE, "budget.bicep": BUDGET, "dev.bicepparam": PARAMS}
 DEPLOY = AZURE / "deploy-dev.ps1"
 PWSH = shutil.which("pwsh")
@@ -97,8 +100,36 @@ class Security(unittest.TestCase):
     def test_federation_is_oidc_and_limited_to_the_dev_environment(self) -> None:
         self.assertIn("issuer: 'https://token.actions.githubusercontent.com'", BASE)
         self.assertIn("'api://AzureADTokenExchange'", BASE)
-        self.assertIn("subject: 'repo:${githubOwner}/${githubRepository}:environment:${githubEnvironment}'", BASE)
+        self.assertEqual(BASE.count("'api://AzureADTokenExchange'"), 1)  # a single audience
+        self.assertIn("subject: 'repo:${githubOwner}@${githubOwnerId}/${githubRepository}@${githubRepositoryId}"
+                      ":environment:${githubEnvironment}'", BASE)
         self.assertEqual(BASE.count("federatedIdentityCredentials@"), 1)
+        self.assertEqual(BASE.count("subject:"), 1)  # no branch, pull_request or other environment subjects
+        self.assertIn("@allowed([\n  'dev'\n])\nparam githubEnvironment string = 'dev'", MAIN)
+
+    def test_federation_subject_uses_the_immutable_ids_format(self) -> None:
+        # GitHub emits repo:<owner>@<owner id>/<repo>@<repo id>:environment:<env> for this repository
+        # (AADSTS700213 on 2026-10-09 with the old subject). The desired state must produce exactly that.
+        values = dict(re.findall(r"^param (github\w+) = '([^']*)'$", PARAMS, re.MULTILINE))
+        subject = (f"repo:{values['githubOwner']}@{values['githubOwnerId']}/{values['githubRepository']}"
+                   f"@{values['githubRepositoryId']}:environment:{values['githubEnvironment']}")
+        self.assertEqual(subject, EXPECTED_SUBJECT)
+        self.assertEqual(values["githubEnvironment"], "dev")
+        self.assertRegex(EXPECTED_SUBJECT, IMMUTABLE_SUBJECT)
+        self.assertNotRegex(OLD_SUBJECT, IMMUTABLE_SUBJECT)  # the former name-only subject is rejected
+        for widened in ("repo:daniel02vazquez97-alt@290574726/G19X-ITH-DVT-209-ACADEMIC@1408075880:ref:refs/heads/main",
+                        "repo:daniel02vazquez97-alt@290574726/G19X-ITH-DVT-209-ACADEMIC@1408075880:pull_request",
+                        "repo:daniel02vazquez97-alt@290574726/G19X-ITH-DVT-209-ACADEMIC@1408075880:environment:prod",
+                        "repo:daniel02vazquez97-alt@290574726/G19X-ITH-DVT-209-ACADEMIC@1408075880:environment:dev2",
+                        "repo:daniel02vazquez97-alt@290574726/*:environment:dev"):
+            self.assertNotRegex(widened, IMMUTABLE_SUBJECT)
+        # The guarded scripts check the real credential against the same subject, case-sensitively.
+        self.assertIn(f"$ExpectedSubject = '{EXPECTED_SUBJECT}'", text(AZURE / "deploy-dev.ps1"))
+        self.assertIn("$federations[0].subject -ceq $ExpectedSubject", text(AZURE / "deploy-dev.ps1"))
+        u12 = text(AZURE / "deploy-u12.ps1")
+        self.assertIn(f"$ExpectedGithubSubject = '{EXPECTED_SUBJECT}'", u12)
+        self.assertIn('"$($fics[0].subject)" -ceq $ExpectedGithubSubject', u12)
+        self.assertNotIn(OLD_SUBJECT, text(AZURE / "README.md"))
 
     def test_the_only_role_is_reader_on_the_resource_group(self) -> None:
         self.assertEqual(re.findall(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", BASE), [READER])

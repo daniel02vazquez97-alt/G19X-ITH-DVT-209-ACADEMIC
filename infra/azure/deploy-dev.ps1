@@ -41,7 +41,7 @@ $Location = 'centralus'  # must match param location in parameters/dev.biceppara
 $DeploymentName = 'u10-base-dev'
 $Template = 'infra/azure/main.bicep'
 $Parameters = 'infra/azure/parameters/dev.bicepparam'
-$ExpectedSubject = 'repo:daniel02vazquez97-alt/Motor-Predictivo-de-Abastecimiento-de-Inventarios:environment:dev'
+$ExpectedSubject = 'repo:daniel02vazquez97-alt@290574726/G19X-ITH-DVT-209-ACADEMIC@1408075880:environment:dev'
 $ReaderRoleId = 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
 $EvidenceDir = 'tmp/u10-evidence'
 
@@ -228,7 +228,7 @@ foreach ($c in $changes) {
             if (-not $c.resourceId.StartsWith($rgId, [System.StringComparison]::OrdinalIgnoreCase)) { $problems.Add('identidad fuera del grupo') }
         }
         'Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials' {
-            if ($after.properties.subject -ne $ExpectedSubject) { $problems.Add("sujeto OIDC inesperado: $($after.properties.subject)") }
+            if ($after.properties.subject -cne $ExpectedSubject) { $problems.Add("sujeto OIDC inesperado: $($after.properties.subject)") }
             if ($after.properties.issuer -ne 'https://token.actions.githubusercontent.com') { $problems.Add('emisor OIDC inesperado') }
         }
         'Microsoft.Authorization/roleAssignments' {
@@ -278,7 +278,7 @@ $checks = [ordered]@{
     'Key Vault con RBAC'                    = ($kv.properties.enableRbacAuthorization -eq $true)
     'Key Vault sin acceso publico'          = ($kv.properties.publicNetworkAccess -eq 'Disabled')
     'una sola credencial federada'          = ($federations.Count -eq 1)
-    'sujeto OIDC limitado a dev'            = ($federations.Count -eq 1 -and $federations[0].subject -eq $ExpectedSubject)
+    'sujeto OIDC limitado a dev'            = ($federations.Count -eq 1 -and $federations[0].subject -ceq $ExpectedSubject)
     'una sola asignacion de rol: Reader'    = ($roles.Count -eq 1 -and $roles[0].roleDefinitionName -eq 'Reader')
     'rol limitado al grupo'                 = ($roles.Count -eq 1 -and $roles[0].scope -eq $group.id)
     'nada creado fuera del grupo'           = (@($outputResources | Where-Object { -not $_.StartsWith($group.id, [System.StringComparison]::OrdinalIgnoreCase) }).Count -eq 0)

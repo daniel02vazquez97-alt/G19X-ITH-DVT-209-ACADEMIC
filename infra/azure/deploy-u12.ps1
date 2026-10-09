@@ -62,6 +62,8 @@ $KeyVaultApi = '2024-11-01'
 # a secure parameter value during deployment"). Only the person who deploys the infrastructure needs it.
 $DeployAction = 'Microsoft.KeyVault/vaults/deploy/action'
 $DeployRoleName = 'Key Vault Resource Manager Template Deployment Operator'
+# OIDC subject of id-mpa-dev-github (U10, DT-098): GitHub's immutable format with owner and repository ids.
+$ExpectedGithubSubject = 'repo:daniel02vazquez97-alt@290574726/G19X-ITH-DVT-209-ACADEMIC@1408075880:environment:dev'
 $GithubAllowedRoles = @('Reader', 'Container Apps Contributor', 'AcrPush', 'Managed Identity Operator')
 # Built-in roles (Microsoft Learn, "Azure built-in roles"); the two Container Apps / identity ones are resolved by
 # name at run time and must exist with exactly that name.
@@ -680,7 +682,7 @@ function Invoke-Preflight {
     if ($null -eq $gh) { Block 'no existe id-mpa-dev-github (U10)' }
     else {
         $fics = Invoke-Az @('identity', 'federated-credential', 'list', '--identity-name', $gh.name, '--resource-group', $ResourceGroup, '--output', 'json') -Array -What 'credenciales federadas'
-        Expect ($fics.Count -eq 1 -and "$($fics[0].subject)" -like 'repo:*:environment:dev') "id-mpa-dev-github: una sola federacion OIDC, entorno dev ($(@($fics | ForEach-Object { $_.subject }) -join ', '))"
+        Expect ($fics.Count -eq 1 -and "$($fics[0].subject)" -ceq $ExpectedGithubSubject -and "$($fics[0].issuer)" -eq 'https://token.actions.githubusercontent.com' -and ((@($fics[0].audiences) -join ',') -eq 'api://AzureADTokenExchange')) "id-mpa-dev-github: una sola federacion OIDC, sujeto esperado, entorno dev ($(@($fics | ForEach-Object { $_.subject }) -join ', '))"
         $ghAll = Invoke-Az @('role', 'assignment', 'list', '--all', '--assignee', $gh.principalId, '--output', 'json') -Array -What 'roles de GitHub'
         $ghBad = @($ghAll | Where-Object { $_.roleDefinitionName -notin $GithubAllowedRoles -or -not "$($_.scope)".StartsWith($rgId, [System.StringComparison]::OrdinalIgnoreCase) })
         Expect ($ghBad.Count -eq 0) ("id-mpa-dev-github: roles " + ((@($ghAll | ForEach-Object { $_.roleDefinitionName }) -join ', ')) + ' (solo los autorizados, dentro del grupo)')

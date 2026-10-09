@@ -128,7 +128,7 @@ Esperado:
 
 - dos recursos en `rg-motor-predictivo-dev` (Key Vault e identidad), con las seis etiquetas;
 - Key Vault con RBAC `true`, red `Disabled`, retención 7 y sin protección de purga;
-- una sola credencial federada, con sujeto `repo:daniel02vazquez97-alt/Motor-Predictivo-de-Abastecimiento-de-Inventarios:environment:dev`;
+- una sola credencial federada, con sujeto `repo:daniel02vazquez97-alt@290574726/G19X-ITH-DVT-209-ACADEMIC@1408075880:environment:dev` (formato inmutable de GitHub con ids de propietario y repositorio; `DT-098`, nota del 2026-10-09);
 - una sola asignación de rol: `Reader` sobre `rg-motor-predictivo-dev`.
 
 Las salidas `githubIdentityClientId`, `tenantId` y `subscriptionId` son identificadores, no credenciales. U12

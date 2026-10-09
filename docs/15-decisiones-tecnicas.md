@@ -3903,6 +3903,18 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
   responsable (despliegue real autorizado con el prompt «U10: despliegue real desde Azure CLI»); **U10
   COMPLETADA**. Código pendiente de commit e integración por PR.
 
+- **Nota del 2026-10-09 (sujeto OIDC):** el primer `Deploy dev` falló en `azure/login` con `AADSTS700213` («No
+  matching federated identity record found»). GitHub emite para este repositorio el sujeto en formato inmutable, con
+  ids de propietario y repositorio: `repo:daniel02vazquez97-alt@290574726/G19X-ITH-DVT-209-ACADEMIC@1408075880:environment:dev`,
+  y la credencial `github-dev` tenía el formato antiguo, solo con nombres
+  (`repo:daniel02vazquez97-alt/Motor-Predictivo-de-Abastecimiento-de-Inventarios:environment:dev`). Corrección del
+  estado deseado: `githubOwnerId` y `githubRepositoryId` en `main.bicep`, `base.bicep` y `parameters/dev.bicepparam`;
+  el mismo sujeto exacto (comparación sensible a mayúsculas) en `deploy-dev.ps1` y `deploy-u12.ps1`; pruebas que
+  rechazan el formato antiguo, ramas, `pull_request` y otros entornos. Sin cambios en el emisor
+  (`https://token.actions.githubusercontent.com`), la audiencia (`api://AzureADTokenExchange`), el entorno `dev`, la
+  identidad ni sus roles. La credencial real la actualiza el responsable con Azure CLI (`az identity
+  federated-credential update`); el despliegue de Bicep no se usa para eso.
+
 ## DT-099 — U11: Microsoft Entra ID, MSAL y autorización por app roles en `dev`
 
 - **Decisión:** **U11 autorizada** (prompt «U11: Microsoft Entra ID + MSAL + autorización por roles», 2026-10-07).

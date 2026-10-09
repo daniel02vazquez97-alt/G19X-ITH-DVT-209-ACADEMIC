@@ -30,8 +30,18 @@ param ownerTag string = 'responsable-del-proyecto'
 @description('Propietario (usuario u organización) del repositorio de GitHub.')
 param githubOwner string
 
+@description('Id numérico e inmutable del propietario en GitHub (formato de sujeto OIDC con ids, DT-098).')
+@minLength(1)
+@maxLength(20)
+param githubOwnerId string
+
 @description('Nombre del repositorio de GitHub.')
 param githubRepository string
+
+@description('Id numérico e inmutable del repositorio en GitHub (formato de sujeto OIDC con ids, DT-098).')
+@minLength(1)
+@maxLength(20)
+param githubRepositoryId string
 
 @description('Entorno de GitHub Actions al que se limita la credencial federada.')
 @allowed([
@@ -87,7 +97,9 @@ module base 'modules/base.bicep' = {
     environment: environment
     tags: tags
     githubOwner: githubOwner
+    githubOwnerId: githubOwnerId
     githubRepository: githubRepository
+    githubRepositoryId: githubRepositoryId
     githubEnvironment: githubEnvironment
     armSecretAccess: keyVaultArmSecretAccess
   }
