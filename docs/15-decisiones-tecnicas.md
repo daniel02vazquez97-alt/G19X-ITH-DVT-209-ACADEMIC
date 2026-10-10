@@ -4164,6 +4164,30 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
   responsable ejecute `deploy-u12.ps1` (nada creado todavía). U12 no se cierra hasta cumplir los 15 criterios de
   cierre (despliegue, OIDC, ACR, PostgreSQL, bootstrap, frontend, API, Entra con la URL real, redespliegue, fallos).
 
+- **Nota del 2026-10-09 (entorno Express):** `-Stage Apps` falló: `cae-mpa-dev` estaba en modo **Express**, que no
+  admite Container Apps Jobs (`ExpressEnvironmentResourceNotSupported`) ni `allowInsecure`
+  (`ExpressEnvironmentFeatureNotSupported`). La plantilla no fijaba `environmentMode`. Corrección:
+  `environmentMode: 'WorkloadProfiles'` explícito (API `2026-07-01`, mismo perfil Consumption, sin coste fijo); la api
+  pasa a `allowInsecure: false` y nginx la llama por HTTPS a su FQDN interno, con SNI y certificado verificado contra las
+  CA del sistema (mejora la seguridad respecto del HTTP anterior). El guardia rechaza un entorno que no sea
+  `WorkloadProfiles` y una api con HTTP; `Core` comprueba el modo tras desplegar. Recuperación en
+  `infra/azure/u12/README.md` §5.2: conversión en el mismo recurso si Azure la admite; si no, recrear solo el entorno
+  (sin datos), con nueva URL del frontend y nuevas IP de salida.
+
+- **Nota del 2026-10-09 (Bicep en CI):** `test_bicep_builds_and_lints_clean` falló en la CI del PR de la corrección
+  anterior con `Warning BCP081: Resource type "Microsoft.App/managedEnvironments@2026-07-01" does not have types
+  available`. Causa: el job `docker` usaba el Bicep de la imagen del runner (`ubuntu-24.04` 20260907, Bicep 0.46.1),
+  sin los tipos de esa API; reproducido localmente con 0.46.1. Bicep 0.48.1 (release estable de Azure/bicep) sí los
+  tiene: `build`, `lint` y `build-params` sin ningún aviso. Corrección: la CI instala Bicep 0.48.1 por versión exacta y
+  SHA-256 (`b09ec25a…7f6e`) antes de `infra/tests`; la prueba sigue sin tolerar ningún aviso (no hay excepción para
+  BCP081) y una prueba nueva comprueba el fijado. Para subir de versión: nueva versión y su SHA-256 en `ci.yml` y en
+  la prueba.
+- **Nota del 2026-10-10:** la CI siguió en rojo (94 pruebas, 3 fallos) porque el commit `d78ed05` llevó la prueba del
+  fijado pero no `.github/workflows/ci.yml`: el job usó el Bicep del runner, ya **0.47.16**, que también da BCP081
+  para esa API (reproducido). `BICEP_VERSION` y `BICEP_SHA256` pasan al `env` del job `docker`; la prueba comprueba
+  además que el SHA-256 se valida antes de `chmod` y de ejecutar el binario, y que `bicep --version` se imprime antes
+  de la suite.
+
 ## Decisiones deliberadamente NO tomadas
 
 | ID | Tema | Se decidirá en | Por qué no ahora |

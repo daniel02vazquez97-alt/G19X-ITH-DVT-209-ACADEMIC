@@ -221,7 +221,7 @@ herramienta) ni linter de Python (decisión del responsable). Se ejecuta en cada
 | `integration` | PostgreSQL 16 efímero (contenedor de servicio): migraciones y suite de integración |
 | `generator` | Suite del generador |
 | `frontend` | `npm ci`, ESLint, `tsc`, Prettier, Vitest y build con Node 24.21.0 y npm 11.19.0 |
-| `docker` | Pruebas de `infra/tests`, construcción de las imágenes de U7, sistema completo `healthy` y `smoke.py` |
+| `docker` | Pruebas de `infra/tests` con Bicep CLI 0.48.1 fijado por versión y SHA-256 (U12, `DT-100`), construcción de las imágenes de U7, sistema completo `healthy` y `smoke.py` |
 
 Puntos clave:
 

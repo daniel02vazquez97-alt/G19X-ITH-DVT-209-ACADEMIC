@@ -296,11 +296,16 @@ function Test-U12WhatIf($WhatIf, [string]$RgId, [string[]]$RoleIds, [bool]$Apps)
                 if (($id -split '/')[-1] -ne 'require_secure_transport' -or "$(Get-Prop $p 'value')" -ne 'ON') { $problems.Add("configuracion de PostgreSQL inesperada: $id") }
             }
             'Microsoft.App/managedEnvironments' {
+                # Express does not run Container Apps Jobs (the bootstrap) nor allowInsecure (2026-10-09, DT-100).
+                if ("$(Get-Prop $p 'environmentMode')" -cne 'WorkloadProfiles') { $problems.Add("entorno de Container Apps en modo '$(Get-Prop $p 'environmentMode')': debe ser WorkloadProfiles") }
                 foreach ($w in (As-Array (Get-Prop $p 'workloadProfiles'))) { if ("$(Get-Prop $w 'workloadProfileType')" -ne 'Consumption') { $problems.Add('perfil de carga distinto de Consumption') } }
             }
             'Microsoft.App/containerApps' {
                 $ingress = Get-Prop (Get-Prop $p 'configuration') 'ingress'
-                if ($id -like '*-api') { if ((Get-Prop $ingress 'external') -ne $false) { $problems.Add('la api tendria ingress publico') } }
+                if ($id -like '*-api') {
+                    if ((Get-Prop $ingress 'external') -ne $false) { $problems.Add('la api tendria ingress publico') }
+                    if ((Get-Prop $ingress 'allowInsecure') -ne $false) { $problems.Add('la api admitiria HTTP inseguro') }
+                }
                 elseif ($id -like '*-frontend') {
                     if ((Get-Prop $ingress 'external') -ne $true) { $problems.Add('el frontend sin ingress externo') }
                     if ((Get-Prop $ingress 'allowInsecure') -ne $false) { $problems.Add('el frontend admitiria HTTP inseguro') }
@@ -412,7 +417,8 @@ function Add-RedirectUri([string]$Text, [string]$Uri) {
     $pattern = '("redirectUris":\s*\[)([^\]]*)(\])'
     $m = [regex]::Match($Text, $pattern)
     if (-not $m.Success) { throw 'no se encontro spa.redirectUris en el estado deseado de U11' }
-    $inner = $m.Groups[2].Value.TrimEnd()
+    # A recreated environment gets a new default domain: the previous Container Apps URI is replaced, never kept.
+    $inner = ($m.Groups[2].Value -replace ',\s*"https://[a-z0-9.-]+\.azurecontainerapps\.io"', '').TrimEnd()
     $replacement = $m.Groups[1].Value + $inner + ', "' + $Uri + '"' + $m.Groups[3].Value
     return $Text.Substring(0, $m.Index) + $replacement + $Text.Substring($m.Index + $m.Length)
 }
@@ -470,14 +476,14 @@ if ($SelfTest) {
         (Ch 'Create' 'Microsoft.DBforPostgreSQL/flexibleServers' 'psql-mpa-dev-x' @{ sku = @{ name = 'Standard_B1ms' }; properties = @{ version = '16'; highAvailability = @{ mode = 'Disabled' } } }),
         (Ch 'Create' 'Microsoft.DBforPostgreSQL/flexibleServers/databases' 'psql-mpa-dev-x/inventory' @{}),
         (Ch 'Create' 'Microsoft.DBforPostgreSQL/flexibleServers/configurations' 'psql-mpa-dev-x/require_secure_transport' @{ properties = @{ value = 'ON' } }),
-        (Ch 'Create' 'Microsoft.App/managedEnvironments' 'cae-mpa-dev' @{ properties = @{ workloadProfiles = @(@{ workloadProfileType = 'Consumption' }) } }),
+        (Ch 'Create' 'Microsoft.App/managedEnvironments' 'cae-mpa-dev' @{ properties = @{ environmentMode = 'WorkloadProfiles'; workloadProfiles = @(@{ workloadProfileType = 'Consumption' }) } }),
         (Ch 'Create' 'Microsoft.ManagedIdentity/userAssignedIdentities' 'id-mpa-dev-runtime' @{}),
         (& $role $AcrPullRoleId), (& $role $AcrPushRoleId), (& $role 'cac0'), (& $role 'mio0'),
         [ordered]@{ changeType = 'Ignore'; resourceId = "$rg/providers/Microsoft.KeyVault/vaults/kv" })
     $roundTrip = { param($changes) ConvertFrom-Json -InputObject (ConvertTo-Json -InputObject ([ordered]@{ changes = $changes }) -Depth 20) }
     Check 'what-if de core conforme' ((Test-U12WhatIf (& $roundTrip $core) $rg $roles $false).Count -eq 0)
     $apps = $core + @(
-        (Ch 'Create' 'Microsoft.App/containerApps' 'ca-mpa-dev-api' @{ properties = @{ configuration = @{ ingress = @{ external = $false }; registries = @(@{ identity = 'id' }) } } }),
+        (Ch 'Create' 'Microsoft.App/containerApps' 'ca-mpa-dev-api' @{ properties = @{ configuration = @{ ingress = @{ external = $false; allowInsecure = $false }; registries = @(@{ identity = 'id' }) } } }),
         (Ch 'Create' 'Microsoft.App/containerApps' 'ca-mpa-dev-frontend' @{ properties = @{ configuration = @{ ingress = @{ external = $true; allowInsecure = $false }; registries = @(@{ identity = 'id' }) } } }),
         (Ch 'Create' 'Microsoft.App/jobs' 'caj-mpa-dev-bootstrap' @{ properties = @{ configuration = @{ triggerType = 'Manual' } } }),
         (Ch 'Create' 'Microsoft.DBforPostgreSQL/flexibleServers/firewallRules' 'psql-mpa-dev-x/aca-out-20-1-2-3' @{ properties = @{ startIpAddress = '20.1.2.3'; endIpAddress = '20.1.2.3' } }))
@@ -487,7 +493,10 @@ if ($SelfTest) {
         'ACR admin'            = (Ch 'Create' 'Microsoft.ContainerRegistry/registries' 'acr3' @{ sku = @{ name = 'Basic' }; properties = @{ adminUserEnabled = $true } })
         'regla 0.0.0.0'        = (Ch 'Create' 'Microsoft.DBforPostgreSQL/flexibleServers/firewallRules' 'psql/aca-out-0' @{ properties = @{ startIpAddress = '0.0.0.0'; endIpAddress = '0.0.0.0' } })
         'rango amplio'         = (Ch 'Create' 'Microsoft.DBforPostgreSQL/flexibleServers/firewallRules' 'psql/aca-out-r' @{ properties = @{ startIpAddress = '1.0.0.0'; endIpAddress = '1.255.255.255' } })
-        'api publica'          = (Ch 'Modify' 'Microsoft.App/containerApps' 'ca-mpa-dev-api' @{ properties = @{ configuration = @{ ingress = @{ external = $true } } } })
+        'api publica'          = (Ch 'Modify' 'Microsoft.App/containerApps' 'ca-mpa-dev-api' @{ properties = @{ configuration = @{ ingress = @{ external = $true; allowInsecure = $false } } } })
+        'api HTTP'             = (Ch 'Modify' 'Microsoft.App/containerApps' 'ca-mpa-dev-api' @{ properties = @{ configuration = @{ ingress = @{ external = $false; allowInsecure = $true } } } })
+        'entorno Express'      = (Ch 'Modify' 'Microsoft.App/managedEnvironments' 'cae-mpa-dev' @{ properties = @{ environmentMode = 'Express'; workloadProfiles = @(@{ workloadProfileType = 'Consumption' }) } })
+        'entorno sin modo'     = (Ch 'Modify' 'Microsoft.App/managedEnvironments' 'cae-mpa-dev' @{ properties = @{ workloadProfiles = @(@{ workloadProfileType = 'Consumption' }) } })
         'frontend HTTP'        = (Ch 'Modify' 'Microsoft.App/containerApps' 'ca-mpa-dev-frontend' @{ properties = @{ configuration = @{ ingress = @{ external = $true; allowInsecure = $true } } } })
         'registro con clave'   = (Ch 'Modify' 'Microsoft.App/containerApps' 'ca-mpa-dev-api' @{ properties = @{ configuration = @{ ingress = @{ external = $false }; registries = @(@{ passwordSecretRef = 'p'; username = 'u' }) } } })
         'Owner'                = (& $role '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')
@@ -569,6 +578,8 @@ if ($SelfTest) {
     $rejected = $false
     try { Add-RedirectUri $spec 'http://evil.example' | Out-Null } catch { $rejected = $true }
     Check 'redirect URI ajeno a Container Apps -> rechazado' $rejected
+    $moved = Add-RedirectUri $once 'https://ca-mpa-dev-frontend.xyz.centralus.azurecontainerapps.io'
+    Check 'redirect URI de un entorno recreado: sustituye al anterior' ($moved.Contains('"http://localhost:8080", "https://ca-mpa-dev-frontend.xyz.centralus.azurecontainerapps.io"]') -and -not $moved.Contains('abc.centralus'))
     Write-Host ("PowerShell {0}: {1}" -f $PSVersionTable.PSVersion, $(if ($script:failed -eq 0) { 'SELFTEST OK' } else { "SELFTEST FALLO ($($script:failed))" }))
     if ($script:failed -eq 0) { exit 0 } else { exit 1 }
 }
@@ -744,12 +755,15 @@ function Invoke-Preflight {
         $env = Show-Res $r.id
         $profiles = @((As-Array $env.properties.workloadProfiles) | ForEach-Object { "$($_.workloadProfileType)" })
         Expect (@($profiles | Where-Object { $_ -ne 'Consumption' }).Count -eq 0) "$($env.name): perfiles $($profiles -join ', ')"
+        $mode = "$($env.properties.environmentMode)"
+        if ($mode -ceq 'WorkloadProfiles') { Pass "$($env.name): modo WorkloadProfiles (admite el job de bootstrap)" }
+        else { Warn "$($env.name): modo '$mode', sin jobs; Core intentara pasarlo a WorkloadProfiles y, si Azure no lo admite, hay que recrearlo (README de U12, 5.2)" }
     }
     if ($envs.Count -gt 1) { Block 'mas de un entorno de Container Apps en el grupo' }
     foreach ($r in $apps) {
         $app = Show-Res $r.id
         $ing = $app.properties.configuration.ingress
-        if ($app.name -like '*-api') { Expect ($ing.external -eq $false) "$($app.name): ingress interno" }
+        if ($app.name -like '*-api') { Expect ($ing.external -eq $false -and $ing.allowInsecure -eq $false) "$($app.name): ingress interno, solo HTTPS" }
         elseif ($app.name -like '*-frontend') { Expect ($ing.external -eq $true -and $ing.allowInsecure -eq $false) "$($app.name): ingress externo solo HTTPS" }
         else { Block "app no prevista: $($app.name)" }
         $regs = @((As-Array $app.properties.configuration.registries))
@@ -1001,6 +1015,12 @@ switch ($Stage) {
     'Core' {
         Step 'Core: ACR, PostgreSQL, entorno de Container Apps, identidad de ejecucion y roles de GitHub'
         $out = Invoke-U12Deployment @{ deployApps = $false } $false 'DESPLEGAR'
+        $envNow = Invoke-Az @('resource', 'show', '--resource-group', $ResourceGroup, '--name', $out.environmentName, '--resource-type', 'Microsoft.App/managedEnvironments', '--output', 'json') -What 'entorno de Container Apps'
+        if ("$($envNow.properties.environmentMode)" -cne 'WorkloadProfiles') {
+            Stop-U12 ("el entorno $($out.environmentName) sigue en modo '$($envNow.properties.environmentMode)' (sin jobs): Azure no lo convirtio. " +
+                      'Recrearlo segun infra/azure/u12/README.md 5.2 y repetir Core.')
+        }
+        Write-Host "Entorno $($out.environmentName): modo WorkloadProfiles" -ForegroundColor Green
         $entraText = Get-Content -Raw -Path $EntraSpec
         $newText = Add-RedirectUri $entraText $out.frontendUrl
         if ($newText -ne $entraText) { Set-Content -Path $EntraSpec -Value $newText -NoNewline -Encoding ASCII; Write-Host "Redirect URI de la SPA anadido al estado deseado de U11: $($out.frontendUrl)" }
@@ -1098,7 +1118,8 @@ switch ($Stage) {
             'PostgreSQL 16, B1ms, sin alta disponibilidad'        = ("$($pg.version)" -eq '16' -and $pg.sku.name -eq 'Standard_B1ms' -and $pg.highAvailability.mode -eq 'Disabled')
             'PostgreSQL con TLS obligatorio'                     = ($tls -eq 'ON')
             'firewall: solo IP de salida (aca-out-*), sin 0.0.0.0' = ($rules.Count -gt 0 -and @($rules | Where-Object { $_.name -notlike 'aca-out-*' -or $_.startIpAddress -ne $_.endIpAddress -or $_.startIpAddress -eq '0.0.0.0' }).Count -eq 0)
-            'api sin ingress publico'                            = ($api.properties.configuration.ingress.external -eq $false)
+            'api sin ingress publico y solo HTTPS'               = ($api.properties.configuration.ingress.external -eq $false -and $api.properties.configuration.ingress.allowInsecure -eq $false)
+            'entorno en modo WorkloadProfiles (admite jobs)'     = ("$((Invoke-Az @('resource', 'show', '--resource-group', $ResourceGroup, '--name', $out.environmentName, '--resource-type', 'Microsoft.App/managedEnvironments', '--output', 'json') -What 'entorno').properties.environmentMode)" -ceq 'WorkloadProfiles')
             'frontend solo HTTPS'                                = ($fe.properties.configuration.ingress.external -eq $true -and $fe.properties.configuration.ingress.allowInsecure -eq $false)
             'imagenes con identidad administrada, sin credenciales' = ($registries.Count -eq 3 -and @($registries | Where-Object { $_.passwordSecretRef -or $_.username -or -not $_.identity }).Count -eq 0)
             'job de bootstrap manual'                            = ($job.properties.configuration.triggerType -eq 'Manual')

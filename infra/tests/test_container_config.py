@@ -160,6 +160,11 @@ class Proxy(unittest.TestCase):
         self.assertRegex(conf, r"(?m)^\s*listen 8080;")
         self.assertIn("proxy_pass ${API_UPSTREAM};", conf)  # U12: template; local default below
         self.assertIn("proxy_set_header Host $proxy_host;", conf)
+        for directive in ("proxy_ssl_server_name on;", "proxy_ssl_verify on;",  # U12: TLS to the internal api FQDN
+                          "proxy_ssl_trusted_certificate /etc/ssl/certs/ca-certificates.crt;"):
+            self.assertIn(directive, conf)
+        self.assertNotIn("proxy_ssl_verify off", conf)
+        self.assertRegex(text(DOCKER / "frontend.Dockerfile"), r"(?m)^FROM nginx:[0-9.]+-alpine@sha256:")  # ships ca-certificates
         dockerfile = text(DOCKER / "frontend.Dockerfile")
         self.assertIn("ENV API_UPSTREAM=http://api:8000", dockerfile)
         self.assertIn("envsubst '${API_UPSTREAM}'", dockerfile)  # only this variable: $host, $uri stay nginx's

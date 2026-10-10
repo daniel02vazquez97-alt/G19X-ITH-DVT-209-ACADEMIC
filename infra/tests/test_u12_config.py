@@ -96,6 +96,10 @@ class Infrastructure(unittest.TestCase):
         self.assertIn("charset: 'UTF8'", postgres)
         environment = MODULES["environment.bicep"]
         self.assertIn("workloadProfileType: 'Consumption'", environment)
+        # Express does not run jobs nor allowInsecure (ARM failure of 2026-10-09): the mode is always explicit.
+        self.assertIn("environmentMode: 'WorkloadProfiles'", environment)
+        self.assertIn("'Microsoft.App/managedEnvironments@2026-07-01'", environment)
+        self.assertNotIn("Express", code(environment))
         self.assertNotIn("Dedicated", code(environment))
         self.assertNotIn("appLogsConfiguration", environment)  # no Log Analytics
 
@@ -113,11 +117,15 @@ class Infrastructure(unittest.TestCase):
         apps = MODULES["apps.bicep"]
         api, frontend = apps.split("resource frontend")[0], apps.split("resource frontend")[1].split("resource bootstrap")[0]
         self.assertIn("external: false", api)
+        self.assertIn("allowInsecure: false", api)  # internal AND HTTPS only
+        self.assertNotIn("allowInsecure: true", apps)
         self.assertIn("targetPort: 8000", api)
         self.assertIn("external: true", frontend)
         self.assertIn("allowInsecure: false", frontend)
         self.assertIn("targetPort: 8080", frontend)
-        self.assertIn("{ name: 'API_UPSTREAM', value: 'http://${apiName}' }", frontend)
+        # nginx reaches the api over TLS at its internal FQDN (<app>.internal.<domain>), never over plain HTTP.
+        self.assertIn("{ name: 'API_UPSTREAM', value: 'https://${api.properties.configuration.ingress.fqdn}' }", frontend)
+        self.assertNotIn("'http://${apiName}'", apps)
         self.assertEqual(apps.count("minReplicas: 0"), 2)
         self.assertEqual(apps.count("maxReplicas: 1"), 2)
         self.assertIn("triggerType: 'Manual'", apps)
@@ -170,7 +178,8 @@ class Infrastructure(unittest.TestCase):
                      ["build-params", str(U12 / "dev.bicepparam"), "--stdout"]):
             result = subprocess.run([BICEP, *args], capture_output=True, text=True, timeout=120)
             self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertNotIn("Warning", result.stderr)
+            # Strict on purpose: no warning is tolerated (a BCP081 means Bicep cannot validate that resource).
+            self.assertNotIn("Warning", result.stderr, f"{bicep_version()}: {result.stderr}")
 
 
 class Images(unittest.TestCase):
@@ -250,7 +259,35 @@ class Bootstrap(unittest.TestCase):
         self.assertNotEqual(bootstrap.scram_sha256_verifier("pencil"), bootstrap.scram_sha256_verifier("pencil"))
 
 
+def bicep_version() -> str:
+    return subprocess.run([BICEP, "--version"], capture_output=True, text=True, timeout=60).stdout.strip()
+
+
 class Workflow(unittest.TestCase):
+    def test_ci_pins_the_bicep_cli_that_has_the_types(self) -> None:
+        # The runner image's Bicep (0.46.1) lacks Microsoft.App/managedEnvironments@2026-07-01 (BCP081): CI installs
+        # 0.48.1 by exact version and SHA-256 before infra/tests, and puts it first on PATH.
+        ci = text(ROOT / ".github" / "workflows" / "ci.yml")
+        docker_job = ci.split("\n  docker:\n")[1]
+        self.assertIn('BICEP_VERSION: "0.48.1"', docker_job)
+        self.assertIn('BICEP_SHA256: "b09ec25a9d376c1f8e33ede6ed22b587f915ad68488d5db77a6f9541748c7f6e"', docker_job)
+        self.assertIn("releases/download/v${BICEP_VERSION}/bicep-linux-x64", docker_job)
+        self.assertIn('sha256sum --check --strict', docker_job)
+        self.assertIn('>> "$GITHUB_PATH"', docker_job)
+        self.assertLess(docker_job.index("Bicep CLI 0.48.1"), docker_job.index("discover -s infra/tests"))
+        install = docker_job.split("Bicep CLI 0.48.1")[1].split("- name:")[0]
+        self.assertNotIn("latest", install)  # never floating
+        # Version and hash belong to the job (every step sees the same values) and the hash is checked before the
+        # binary is ever made executable or run.
+        job_env = docker_job.split("\n    steps:\n")[0]
+        self.assertIn('BICEP_VERSION: "0.48.1"', job_env)
+        self.assertIn('BICEP_SHA256: "%s"' % "b09ec25a9d376c1f8e33ede6ed22b587f915ad68488d5db77a6f9541748c7f6e", job_env)
+        self.assertLess(install.index("sha256sum --check --strict"), install.index("chmod +x"))
+        self.assertLess(install.index("sha256sum --check --strict"), install.index("--version"))
+        self.assertIn('grep -F "Bicep CLI version ${BICEP_VERSION} "', install)
+        tests_step = docker_job.split("Pruebas estáticas de infra/")[1].split("- name:")[0]
+        self.assertLess(tests_step.index("bicep --version"), tests_step.index("python -m unittest discover -s infra/tests"))
+
     SOURCE = text(WORKFLOW)
 
     def test_oidc_without_secrets(self) -> None:
@@ -451,9 +488,17 @@ class PreflightOnly(unittest.TestCase):
         result, state = self.run_preflight(env={"FAKE_AZ_EXISTING": "1"})
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         for line in ("acrmpadevx: usuario administrador deshabilitado", "psql-mpa-dev-x: SKU Standard_B1ms",
-                     "ca-mpa-dev-api: ingress interno", "caj-mpa-dev-bootstrap: job manual",
+                     "ca-mpa-dev-api: ingress interno, solo HTTPS", "caj-mpa-dev-bootstrap: job manual",
+                     "cae-mpa-dev: modo WorkloadProfiles (admite el job de bootstrap)",
                      "id-mpa-dev-runtime: roles AcrPull (solo AcrPull)"):
             self.assertIn(line, result.stdout)
+        self.assert_only_reads(state)
+
+    def test_an_express_environment_is_reported_without_touching_it(self) -> None:
+        result, state = self.run_preflight(env={"FAKE_AZ_EXISTING": "1", "FAKE_AZ_EXPRESS": "1"})
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)  # a warning: Core tries the conversion
+        self.assertIn("AVISO  cae-mpa-dev: modo 'Express', sin jobs", result.stdout)
+        self.assertIn("README de U12, 5.2", result.stdout)
         self.assert_only_reads(state)
 
     def test_missing_deploy_action_asks_for_the_key_vault_role_stage(self) -> None:
