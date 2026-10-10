@@ -178,7 +178,8 @@ class Infrastructure(unittest.TestCase):
                      ["build-params", str(U12 / "dev.bicepparam"), "--stdout"]):
             result = subprocess.run([BICEP, *args], capture_output=True, text=True, timeout=120)
             self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertNotIn("Warning", result.stderr)
+            # Strict on purpose: no warning is tolerated (a BCP081 means Bicep cannot validate that resource).
+            self.assertNotIn("Warning", result.stderr, f"{bicep_version()}: {result.stderr}")
 
 
 class Images(unittest.TestCase):
@@ -258,7 +259,24 @@ class Bootstrap(unittest.TestCase):
         self.assertNotEqual(bootstrap.scram_sha256_verifier("pencil"), bootstrap.scram_sha256_verifier("pencil"))
 
 
+def bicep_version() -> str:
+    return subprocess.run([BICEP, "--version"], capture_output=True, text=True, timeout=60).stdout.strip()
+
+
 class Workflow(unittest.TestCase):
+    def test_ci_pins_the_bicep_cli_that_has_the_types(self) -> None:
+        # The runner image's Bicep (0.46.1) lacks Microsoft.App/managedEnvironments@2026-07-01 (BCP081): CI installs
+        # 0.48.1 by exact version and SHA-256 before infra/tests, and puts it first on PATH.
+        ci = text(ROOT / ".github" / "workflows" / "ci.yml")
+        docker_job = ci.split("\n  docker:\n")[1]
+        self.assertIn('BICEP_VERSION: "0.48.1"', docker_job)
+        self.assertIn('BICEP_SHA256: "b09ec25a9d376c1f8e33ede6ed22b587f915ad68488d5db77a6f9541748c7f6e"', docker_job)
+        self.assertIn("releases/download/v${BICEP_VERSION}/bicep-linux-x64", docker_job)
+        self.assertIn('sha256sum --check --strict', docker_job)
+        self.assertIn('>> "$GITHUB_PATH"', docker_job)
+        self.assertLess(docker_job.index("Bicep CLI 0.48.1"), docker_job.index("discover -s infra/tests"))
+        self.assertNotIn("latest", docker_job.split("Bicep CLI 0.48.1")[1].split("- name:")[0])  # never floating
+
     SOURCE = text(WORKFLOW)
 
     def test_oidc_without_secrets(self) -> None:
