@@ -11,6 +11,15 @@
 > Creada el 2026-10-10 sobre `main` en `5460fd9`. Si el repositorio ha avanzado, verifica lo que dice aquí antes de
 > confiar en ello (§H).
 
+### Documentos de producto
+
+| Documento | Responde a | Cuándo consultarlo |
+|---|---|---|
+| [`docs/00a-prd.md`](00a-prd.md) | **Qué producto** se construye, para quién, con qué capacidades y restricciones; estado de cada requisito oficial (`RF`, `RNF`, `RS`, `RML`) y su trazabilidad | Antes de proponer o interpretar una funcionalidad |
+| [`docs/00b-mvp.md`](00b-mvp.md) | **Hasta dónde llega** la primera versión (`DT-094` punto 10), qué queda fuera y **cómo se acepta** (MVP-01…MVP-10) | Antes de decidir si algo entra en la versión actual, o al registrar una prueba de aceptación |
+
+Los dos están en **borrador** (2026-10-10) hasta que el propietario los apruebe (MVP-10).
+
 ## Índice
 
 | § | Contenido |
@@ -24,6 +33,7 @@
 | [F](#f-operación-segura) | Operación segura (Azure y bases de datos) |
 | [G](#g-estado-actual-evidencias-y-pendientes) | Estado, evidencias y cómo registrarlas |
 | [H](#h-contradicciones-detectadas) | Contradicciones detectadas entre documentos |
+| [I](#i-regla-de-mantenimiento-para-futuras-sesiones) | Regla de mantenimiento para futuras sesiones |
 
 ---
 
@@ -314,7 +324,8 @@ Todas las rutas son relativas a este archivo y apuntan a secciones existentes el
 |---|---|
 | Reglas del proyecto y restricciones vigentes | [`CLAUDE.md`](../CLAUDE.md) §6–§17 |
 | Protocolo de sesión y de reporte | [`AGENTS.md`](../AGENTS.md) §1–§9 |
-| Requisitos | [`docs/01-requerimientos.md`](01-requerimientos.md) |
+| Producto (PRD) y MVP | [`docs/00a-prd.md`](00a-prd.md) §5–§7 y §12; [`docs/00b-mvp.md`](00b-mvp.md) §1, §4 y §6 |
+| Requisitos (normativos, IDs oficiales) | [`docs/01-requerimientos.md`](01-requerimientos.md) §1–§5 |
 | Arquitectura de implementación y reglas de dependencia | [`docs/03-arquitectura.md`](03-arquitectura.md) §16 |
 | **U1** (contrato del motor) | [`docs/06-motor-abastecimiento.md`](06-motor-abastecimiento.md) §16.1–§16.12 |
 | **U2** (ingesta y modelo físico) | [`docs/04-modelo-datos.md`](04-modelo-datos.md) §9.1–§9.9 |
@@ -502,3 +513,27 @@ están marcadas como tales.
 | K-08 | Número de comprobaciones de `Verify`: 18 (fila de `status.md` del 2026-10-08) frente a 19 (script, README y evidencia real) | `status.md` frente a `deploy-u12.ps1` | Script | La fila es historial anterior a la comprobación `WorkloadProfiles`; vale 19 |
 | K-09 | `DT-100` dice que U12 no se cierra hasta cumplir «los 15 criterios», pero ningún documento los enumera | `DT-100` | `DT-100` (exige 15), sin lista | Matriz **derivada** C01–C15, en estado `PROPUESTA` hasta su validación, en el informe de cierre |
 | K-10 | El *Estado* de `DT-100` dice «nada creado todavía» | `DT-100` frente a sus notas posteriores y la evidencia real | Notas posteriores y evidencia | Texto histórico; el estado vigente está en las notas del 2026-10-10 |
+| K-11 | Varios requisitos «Debe» aprobados en `docs/01` (RF-013, RF-014, RNF-012 y las escrituras de RF-001, RF-004, RF-005 y RF-008) no están en la V1, porque decisiones aceptadas los aplazan (`BR-X03`, `docs/07` §7.3, `DT-059`). Ninguna fuente enumera qué exige formalmente el MVP | `docs/01` frente a `DT-094` y los contratos de V1 | Decisiones aceptadas para la V1; `docs/01` para la necesidad | **Sin cambio:** se clasifican como *pendientes*, no se eliminan. Pregunta abierta al propietario en `docs/00b-mvp.md` §1.3 y en `docs/00a-prd.md` §12.2 |
+
+---
+
+## I. Regla de mantenimiento para futuras sesiones
+
+Toda sesión que trabaje en el proyecto:
+
+1. **Lee esta guía antes de trabajar** y después los documentos autoritativos de la unidad (§E).
+2. **Consulta el PRD** ([`docs/00a-prd.md`](00a-prd.md)) para entender qué producto se construye, y **el MVP**
+   ([`docs/00b-mvp.md`](00b-mvp.md)) para conocer sus límites.
+3. **Interpreta un requisito concreto en las DT y los contratos** (`docs/15`, `docs/04`–`docs/09`), no en el PRD: el
+   PRD resume y enlaza.
+4. **Consulta el estado actual en [`project/status.md`](../project/status.md)** y verifica la evidencia en los informes
+   de [`docs/reports/`](reports/README.md).
+5. **No replica requisitos** en varias fuentes cuando basta un enlace. Los identificadores oficiales son los de
+   `docs/01`; no se crean otros.
+6. **Actualiza estado y evidencias cada vez que ejecuta una prueba** (§G.2):
+   - la fila del criterio en el informe o en `docs/00b-mvp.md` §6;
+   - el historial de `status.md`.
+7. **No inventa** estados, decisiones aprobadas, resultados de pruebas ni requisitos. Lo que no tenga fuente se marca
+   `Por definir`, `Propuesta pendiente de aprobación` o `Pendiente de evidencia`.
+8. **No amplía el MVP sin aprobación explícita del propietario.** Un servicio que aparece en la arquitectura o en el
+   roadmap no entra en el MVP por ese motivo (`DT-094` punto 10).

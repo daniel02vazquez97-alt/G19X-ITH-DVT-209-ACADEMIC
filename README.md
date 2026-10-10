@@ -84,6 +84,9 @@ La justificación de cada elección está en [`docs/02-propuesta-tecnica.md`](do
 ├── README.md
 ├── .gitignore
 ├── docs/                        # Documentación técnica
+│   ├── 00-guia-maestra.md           Punto de entrada técnico y operativo (2026-10-10)
+│   ├── 00a-prd.md                   PRD: qué producto, para quién y estado de cada requisito (borrador)
+│   ├── 00b-mvp.md                   MVP: límites de la primera versión y criterios de aceptación (borrador)
 │   ├── 01-requerimientos.md         Requisitos funcionales, no funcionales, seguridad y ML
 │   ├── 02-propuesta-tecnica.md      Problema, solución, estrategias, riesgos
 │   ├── 03-arquitectura.md           Componentes, flujos, interfaces, observabilidad

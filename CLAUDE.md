@@ -10,7 +10,9 @@
 >    componentes, comandos, operación segura, cómo registrar evidencias y contradicciones conocidas.
 > 2. Leer después los documentos autoritativos de esa unidad, que la guía enlaza en su §E. Ante una discrepancia,
 >    manda el documento autoritativo y se registra en la guía §H.
-> 3. Para U12, el estado y la evidencia están **solo** en
+> 3. Para saber qué producto se construye y dónde acaba la versión actual: [`docs/00a-prd.md`](docs/00a-prd.md) y
+>    [`docs/00b-mvp.md`](docs/00b-mvp.md). El MVP no se amplía sin aprobación explícita del responsable.
+> 4. Para U12, el estado y la evidencia están **solo** en
 >    [`docs/reports/u12-cierre-evidencias.md`](docs/reports/u12-cierre-evidencias.md). No se vuelven a pedir las
 >    salidas que ya figuran allí.
 
@@ -248,6 +250,8 @@ Detalle en `docs/13-testing.md`.
 ├── .gitignore
 ├── docs/                      # Documentación técnica
 │   ├── 00-guia-maestra.md     # Punto de entrada técnico y operativo (2026-10-10)
+│   ├── 00a-prd.md             # PRD (borrador, 2026-10-10)
+│   ├── 00b-mvp.md             # Definición y aceptación del MVP (borrador, 2026-10-10)
 │   ├── 01-requerimientos.md
 │   ├── 02-propuesta-tecnica.md
 │   ├── 03-arquitectura.md
