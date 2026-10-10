@@ -275,7 +275,18 @@ class Workflow(unittest.TestCase):
         self.assertIn('sha256sum --check --strict', docker_job)
         self.assertIn('>> "$GITHUB_PATH"', docker_job)
         self.assertLess(docker_job.index("Bicep CLI 0.48.1"), docker_job.index("discover -s infra/tests"))
-        self.assertNotIn("latest", docker_job.split("Bicep CLI 0.48.1")[1].split("- name:")[0])  # never floating
+        install = docker_job.split("Bicep CLI 0.48.1")[1].split("- name:")[0]
+        self.assertNotIn("latest", install)  # never floating
+        # Version and hash belong to the job (every step sees the same values) and the hash is checked before the
+        # binary is ever made executable or run.
+        job_env = docker_job.split("\n    steps:\n")[0]
+        self.assertIn('BICEP_VERSION: "0.48.1"', job_env)
+        self.assertIn('BICEP_SHA256: "%s"' % "b09ec25a9d376c1f8e33ede6ed22b587f915ad68488d5db77a6f9541748c7f6e", job_env)
+        self.assertLess(install.index("sha256sum --check --strict"), install.index("chmod +x"))
+        self.assertLess(install.index("sha256sum --check --strict"), install.index("--version"))
+        self.assertIn('grep -F "Bicep CLI version ${BICEP_VERSION} "', install)
+        tests_step = docker_job.split("Pruebas estáticas de infra/")[1].split("- name:")[0]
+        self.assertLess(tests_step.index("bicep --version"), tests_step.index("python -m unittest discover -s infra/tests"))
 
     SOURCE = text(WORKFLOW)
 

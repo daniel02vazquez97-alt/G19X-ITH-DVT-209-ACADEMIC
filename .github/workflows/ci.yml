@@ -6,6 +6,10 @@
 # - Ningún linter de Python: el proyecto no define uno (decisión del responsable, sin Ruff ni Black).
 #   El frontend usa sus comprobaciones existentes: ESLint, `tsc` y Prettier.
 # - Cada suite usa el comando oficial del proyecto; ningún número de pruebas se fija como condición.
+# - Bicep CLI fijado (U12, notas del 2026-10-09 y 2026-10-10 en DT-100): el de la imagen del runner cambia con la
+#   imagen (0.46.1 y 0.47.16 vistos en ubuntu-24.04) y no tiene los tipos de
+#   Microsoft.App/managedEnvironments@2026-07-01 (BCP081); el job `docker` instala la 0.48.1 publicada por
+#   Azure/bicep, comprueba su SHA-256 antes de ejecutarla y la pone primera en el PATH.
 
 name: CI
 
@@ -205,6 +209,9 @@ jobs:
     env:
       COMPOSE: docker compose -f infra/docker-compose.yml --profile app
       VCS_REF: ${{ github.sha }}
+      # Bicep CLI de las pruebas de infra/ (U12, DT-100): versión exacta y SHA-256 del binario linux-x64 publicado.
+      BICEP_VERSION: "0.48.1"
+      BICEP_SHA256: "b09ec25a9d376c1f8e33ede6ed22b587f915ad68488d5db77a6f9541748c7f6e"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -212,8 +219,19 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+      - name: Bicep CLI 0.48.1 (fijado por versión y SHA-256)
+        run: |
+          mkdir -p "$RUNNER_TEMP/bicep-bin"
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/bicep-bin/bicep" \
+            "https://github.com/Azure/bicep/releases/download/v${BICEP_VERSION}/bicep-linux-x64"
+          echo "${BICEP_SHA256}  $RUNNER_TEMP/bicep-bin/bicep" | sha256sum --check --strict
+          chmod +x "$RUNNER_TEMP/bicep-bin/bicep"
+          echo "$RUNNER_TEMP/bicep-bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/bicep-bin/bicep" --version | grep -F "Bicep CLI version ${BICEP_VERSION} "
       - name: Pruebas estáticas de infra/ (contenedores y detector de secretos)
-        run: python -m unittest discover -s infra/tests -t infra/tests
+        run: |
+          bicep --version
+          python -m unittest discover -s infra/tests -t infra/tests
       - name: Construir las imágenes (bases oficiales fijadas por digest)
         run: $COMPOSE build
       - name: Levantar el sistema completo

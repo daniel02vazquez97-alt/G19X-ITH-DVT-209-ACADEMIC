@@ -4182,6 +4182,11 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
   SHA-256 (`b09ec25a…7f6e`) antes de `infra/tests`; la prueba sigue sin tolerar ningún aviso (no hay excepción para
   BCP081) y una prueba nueva comprueba el fijado. Para subir de versión: nueva versión y su SHA-256 en `ci.yml` y en
   la prueba.
+- **Nota del 2026-10-10:** la CI siguió en rojo (94 pruebas, 3 fallos) porque el commit `d78ed05` llevó la prueba del
+  fijado pero no `.github/workflows/ci.yml`: el job usó el Bicep del runner, ya **0.47.16**, que también da BCP081
+  para esa API (reproducido). `BICEP_VERSION` y `BICEP_SHA256` pasan al `env` del job `docker`; la prueba comprueba
+  además que el SHA-256 se valida antes de `chmod` y de ejecutar el binario, y que `bicep --version` se imprime antes
+  de la suite.
 
 ## Decisiones deliberadamente NO tomadas
 
