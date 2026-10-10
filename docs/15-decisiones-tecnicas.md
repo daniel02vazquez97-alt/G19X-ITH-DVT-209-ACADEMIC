@@ -4190,10 +4190,15 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
 - **Nota del 2026-10-10 (revisión de cierre):** los «15 criterios de cierre» no estaban enumerados en ningún
   documento. `docs/reports/u12-cierre-evidencias.md` §1 propone la lista (C01–C15, **`PROPUESTA`** hasta que la valide
   el responsable), sacada de las áreas de esta decisión y de `infra/azure/u12/README.md` §5 y §6, sin requisitos nuevos;
-  §2 separa la evidencia automatizada de la real de Azure y del navegador, y §5 da el plan mínimo. Ningún criterio está
-  cerrado del todo: el `-Stage Apps` real del 2026-10-10 (etiqueta `2742539…`) falló en `firewall-rule list`
-  (argumentos de la CLI, corregido en `dd2d45f`, PR #3) y faltan `Bootstrap`, `Verify`, smoke, E2E, redespliegue y
-  fallos en Azure. La idempotencia de `bootstrap.py` y su parada con la base detenida se comprobaron en local.
+  §2 separa la evidencia automatizada de la real de Azure y del navegador, y §5 da el plan mínimo. *(Primera revisión,
+  antes de la evidencia real: el `-Stage Apps` del 2026-10-10 con `2742539…` había fallado en `firewall-rule list`,
+  corregido en `dd2d45f`, PR #3.)*
+- **Nota del 2026-10-10 (evidencia real, aportada por el responsable):** U12 está **desplegada y verificada en `dev`**:
+  `u12-dev` `Succeeded`; api y frontend `Running`; bootstrap `caj-mpa-dev-bootstrap-tbazfuc` con `BOOTSTRAP OK` y los
+  recuentos esperados (100 recomendaciones: 50/40/10); `Verify` 19/19 («U12: dev verificado»); smoke `--entra`
+  `SMOKE OK (entra-dev)`. **No está cerrada.** Faltan: `-Stage Firewall` completo tras `dd2d45f`, E2E en el navegador,
+  redespliegue con `run_bootstrap=true`, pruebas de fallo (PostgreSQL detenido, token inválido, imagen inexistente) y
+  cierre documental. Detalle y origen de cada evidencia en `docs/reports/u12-cierre-evidencias.md`.
 
 ## Decisiones deliberadamente NO tomadas
 
