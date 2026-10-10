@@ -2,7 +2,17 @@
 
 > Este archivo es la **fuente de verdad operativa** para cualquier agente de IA que trabaje sobre este repositorio.
 > Debe leerse **completo** al inicio de cada sesión, antes de cualquier modificación.
-> Última actualización: 2026-10-06 · Etapa vigente: **ETAPA 2 — Sistema principal** (iniciada: arquitectura y fundación) · Etapa 1 — Datos: **completada**
+> Última actualización: 2026-10-10 (guía maestra y enlace a la matriz de cierre de U12) · 2026-10-06 · Etapa vigente: **ETAPA 2 — Sistema principal** (iniciada: arquitectura y fundación) · Etapa 1 — Datos: **completada**
+>
+> **Antes de trabajar en cualquier unidad:**
+>
+> 1. Leer [`docs/00-guia-maestra.md`](docs/00-guia-maestra.md): jerarquía de fuentes de verdad, inventario de
+>    componentes, comandos, operación segura, cómo registrar evidencias y contradicciones conocidas.
+> 2. Leer después los documentos autoritativos de esa unidad, que la guía enlaza en su §E. Ante una discrepancia,
+>    manda el documento autoritativo y se registra en la guía §H.
+> 3. Para U12, el estado y la evidencia están **solo** en
+>    [`docs/reports/u12-cierre-evidencias.md`](docs/reports/u12-cierre-evidencias.md). No se vuelven a pedir las
+>    salidas que ya figuran allí.
 
 ---
 
@@ -237,6 +247,7 @@ Detalle en `docs/13-testing.md`.
 ├── README.md                  # Presentación del proyecto
 ├── .gitignore
 ├── docs/                      # Documentación técnica
+│   ├── 00-guia-maestra.md     # Punto de entrada técnico y operativo (2026-10-10)
 │   ├── 01-requerimientos.md
 │   ├── 02-propuesta-tecnica.md
 │   ├── 03-arquitectura.md
@@ -303,7 +314,7 @@ estándar), `backend/app/runs/` (ejecución `forecast`), la migración `0002_for
 `frontend/` existe desde la Fase 7 (2026-10-05, `DT-070`): interfaz React V1 de solo lectura (Vite, React,
 TypeScript), con su `README.md`; se trabaja con Node 24 LTS y npm 11.19.0.
 
-Carpetas que **aún no existen** y se crearán cuando su fase comience: `ml/` y `.github/workflows/`.
+`ml/` existe desde la Fase 5 (F5a, 2026-10-05) y `.github/workflows/` desde U8 (`ci.yml`) y U12 (`deploy-dev.yml`). *(Hasta el 2026-10-10 esta línea decía que aún no existían; corregido como hecho verificable, `docs/00-guia-maestra.md` §H, K-02.)*
 
 ## 15. Flujo de trabajo esperado del agente
 

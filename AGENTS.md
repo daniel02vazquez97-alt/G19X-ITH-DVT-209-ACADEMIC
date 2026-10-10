@@ -12,12 +12,13 @@ Principio rector: **trabajo incremental, verificable y sin sobreingeniería.**
 Toda sesión empieza igual, sin excepciones:
 
 1. Leer `CLAUDE.md` completo.
-2. Leer `AGENTS.md` (este archivo).
-3. Leer `project/status.md` — indica la etapa actual, lo último decidido y los pendientes.
-4. Leer `project/roadmap.md` para ubicar la fase en curso y su criterio de finalización.
-5. Inspeccionar el estado **real** del repositorio (archivos, ramas, cambios sin commitear).
+2. Leer `docs/00-guia-maestra.md` (contexto técnico y operativo, mapa de documentos; desde el 2026-10-10).
+3. Leer `AGENTS.md` (este archivo).
+4. Leer `project/status.md` — indica la etapa actual, lo último decidido y los pendientes.
+5. Leer `project/roadmap.md` para ubicar la fase en curso y su criterio de finalización.
+6. Inspeccionar el estado **real** del repositorio (archivos, ramas, cambios sin commitear).
    Lo documentado y lo real pueden diferir; gana lo real, y la diferencia se reporta.
-6. Confirmar en una frase qué se va a hacer y qué **no**, antes de tocar nada.
+7. Confirmar en una frase qué se va a hacer y qué **no**, antes de tocar nada.
 
 ### Orden de lectura por tipo de tarea
 

@@ -1,5 +1,10 @@
 # Motor Predictivo de Abastecimiento de Inventarios
 
+> **Aviso (2026-10-10):** el resumen de estado de este README es del 2026-09-30 y está desactualizado. El sistema
+> principal (U1–U6, interfaz React, Docker, CI, Entra ID y `dev` en Azure) **está implementado**. Punto de entrada:
+> [`docs/00-guia-maestra.md`](docs/00-guia-maestra.md); estado vigente:
+> [`project/status.md`](project/status.md) (`docs/00-guia-maestra.md` §H, K-01).
+>
 > **Estado actual (2026-09-30): ETAPA 2 — Sistema principal, iniciada** (arquitectura y fundación).
 > La Etapa 1 — Datos está completada: generador de datos sintéticos 0.4.0 y dataset
 > `ds-6c8ad65b4999` validado. El sistema principal todavía **no está implementado**: sus contratos y su
@@ -177,7 +182,7 @@ completas están en [`CLAUDE.md`](CLAUDE.md).
 ## Para agentes de IA
 
 Antes de tocar este repositorio, leer en este orden: [`CLAUDE.md`](CLAUDE.md) →
-[`AGENTS.md`](AGENTS.md) → [`project/status.md`](project/status.md).
+[`docs/00-guia-maestra.md`](docs/00-guia-maestra.md) → [`AGENTS.md`](AGENTS.md) → [`project/status.md`](project/status.md).
 
 Reglas que no se negocian: no inventar requisitos ni datos de negocio; verificar la documentación
 oficial antes de implementar una integración de Azure; mantener separadas la predicción y las reglas
