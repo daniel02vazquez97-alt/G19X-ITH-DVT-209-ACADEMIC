@@ -327,6 +327,23 @@ class ScriptSource(unittest.TestCase):
             if "0.0.0.0" in line:
                 self.assertTrue(any(mark in line for mark in allowed), line)
 
+    def test_firewall_rule_commands_name_the_server_with_server_name(self) -> None:
+        # `az postgres flexible-server firewall-rule` takes the server as --server-name/-s and the RULE as --name/-n
+        # (Microsoft Learn, az postgres flexible-server firewall-rule). `list --name <server>` failed in the real
+        # -Stage Apps run of 2026-10-10 with "unrecognized arguments"; --rule-name does not exist.
+        calls = [line for line in self.SOURCE.splitlines() if "'firewall-rule'," in line and "Invoke-Az" in line]
+        self.assertEqual(len(calls), 3)  # list (Firewall), delete (stale rules), list (Verify)
+        for line in calls:
+            self.assertRegex(line, r"'--server-name', \$(Outputs|out)\.postgresName")
+            self.assertNotRegex(line, r"'--name', \$(Outputs|out)\.postgresName")
+            self.assertNotIn("--rule-name", line)
+        [delete] = [line for line in calls if "'delete'" in line]
+        self.assertIn("'--name', $stale, '--yes'", delete)  # --name is the stale rule, never the server
+        server_calls = [line for line in self.SOURCE.splitlines() if "Invoke-Az @('postgres', 'flexible-server', '" in line
+                        and any(f"'flexible-server', '{verb}'" in line for verb in ("show", "stop", "start"))]
+        self.assertEqual(len(server_calls), 4)  # state (Bootstrap), stop, start, show (Verify)
+        for line in server_calls:  # the server commands themselves keep --name for the server
+            self.assertIn("'--name', $out.postgresName", line)
 
     def test_verify_covers_the_acceptance_checks(self) -> None:
         verify = self.SOURCE.split("    'Verify' {")[1]

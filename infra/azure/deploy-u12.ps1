@@ -908,9 +908,9 @@ function Update-Firewall($Outputs, [string]$Tag) {
         Invoke-U12Deployment @{ deployApps = $true; imageTag = $Tag; postgresAllowedIps = $ips } $true 'FIREWALL' | Out-Null
         Save-Evidence 'postgres-ips.json' ([ordered]@{ date = (Get-Date).ToUniversalTime().ToString('o'); ips = $ips })
     } else { Write-Host 'Las reglas ya coinciden con las IP de salida.' }
-    $rules = Invoke-Az @('postgres', 'flexible-server', 'firewall-rule', 'list', '--resource-group', $ResourceGroup, '--name', $Outputs.postgresName, '--output', 'json') -Array -What 'firewall-rule list'
+    $rules = Invoke-Az @('postgres', 'flexible-server', 'firewall-rule', 'list', '--resource-group', $ResourceGroup, '--server-name', $Outputs.postgresName, '--output', 'json') -Array -What 'firewall-rule list'
     foreach ($stale in (Get-StaleRules @($rules | ForEach-Object { $_.name }) $ips)) {
-        Invoke-Az @('postgres', 'flexible-server', 'firewall-rule', 'delete', '--resource-group', $ResourceGroup, '--name', $Outputs.postgresName, '--rule-name', $stale, '--yes') -Raw -What "borrar regla $stale" | Out-Null
+        Invoke-Az @('postgres', 'flexible-server', 'firewall-rule', 'delete', '--resource-group', $ResourceGroup, '--server-name', $Outputs.postgresName, '--name', $stale, '--yes') -Raw -What "borrar regla $stale" | Out-Null
         Write-Host "  regla obsoleta borrada: $stale"
     }
     $foreign = @($rules | Where-Object { $_.name -notlike 'aca-out-*' })
@@ -1095,7 +1095,7 @@ switch ($Stage) {
         $acr = Invoke-Az @('acr', 'show', '--name', $out.registryName, '--output', 'json') -What 'acr show'
         $pg = Invoke-Az @('postgres', 'flexible-server', 'show', '--resource-group', $ResourceGroup, '--name', $out.postgresName, '--output', 'json') -What 'postgres show'
         $tls = (Invoke-Az @('postgres', 'flexible-server', 'parameter', 'show', '--resource-group', $ResourceGroup, '--server-name', $out.postgresName, '--name', 'require_secure_transport', '--query', 'value', '--output', 'tsv') -Raw -What 'require_secure_transport').Trim()
-        $rules = Invoke-Az @('postgres', 'flexible-server', 'firewall-rule', 'list', '--resource-group', $ResourceGroup, '--name', $out.postgresName, '--output', 'json') -Array -What 'firewall'
+        $rules = Invoke-Az @('postgres', 'flexible-server', 'firewall-rule', 'list', '--resource-group', $ResourceGroup, '--server-name', $out.postgresName, '--output', 'json') -Array -What 'firewall'
         $api = Invoke-Az @('containerapp', 'show', '--name', $out.apiName, '--resource-group', $ResourceGroup, '--output', 'json') -What 'api'
         $fe = Invoke-Az @('containerapp', 'show', '--name', $out.frontendName, '--resource-group', $ResourceGroup, '--output', 'json') -What 'frontend'
         $job = Invoke-Az @('containerapp', 'job', 'show', '--name', $out.bootstrapName, '--resource-group', $ResourceGroup, '--output', 'json') -What 'job'
