@@ -1,177 +1,339 @@
 # U12: matriz de cierre y evidencias (`DT-100`)
 
-**Fecha:** 2026-10-10. Revisión 2, que incorpora la evidencia real de Azure aportada por el responsable.
+**Revisión 3 (2026-10-10).** Formaliza la matriz e incorpora las pruebas y bloqueos de la sesión de Claude Code Cloud
+del mismo día.
 
-**Base revisada:** `main` en `62f25ca` (PR #3).
-
-**Estado de U12:** desplegada y verificada en Azure (Apps, Bootstrap, Verify y smoke de Entra ID). **No está cerrada:**
-faltan la reconciliación completa del firewall, el E2E en el navegador, el redespliegue, las pruebas de fallo y el
-cierre documental.
+- **Base revisada:** `main` en `5460fd9` (PR #4).
+- **Estado de U12:** **desplegada y verificada en `dev`; no cerrada.**
+- **Fuente única del estado de U12:** este informe. `DT-100`, `project/status.md`, `project/roadmap.md`, `CLAUDE.md`
+  y [`docs/00-guia-maestra.md`](../00-guia-maestra.md) §G **enlazan aquí** y no mantienen copias de la matriz.
 
 ## 0. Origen de la evidencia
 
-Cada afirmación de este informe indica de cuál de estas tres fuentes procede:
-
-| Marca | Origen | Qué incluye |
-|---|---|---|
-| **[AZ-U]** | **Evidencia real de Azure aportada por el responsable** | Salidas de PowerShell que ejecutó en su equipo con su sesión de Azure y que compartió fuera de esta sesión. El agente **no** las ejecutó, ni ve la salida completa, ni la tiene versionada. Se recogen tal como el responsable las resumió el 2026-10-10. |
-| **[CC]** | **Pruebas ejecutadas en Claude Code Cloud** | Pruebas locales ejecutadas por el agente en el contenedor de esta sesión, sin acceso a Azure (§3), y estado de GitHub Actions consultado desde la sesión. |
-| **[PEND]** | **Sin ejecutar o sin evidencia suficiente** | Lo que todavía no tiene una salida real que lo demuestre. |
-
-El agente no ejecutó ninguna operación contra Azure ni en el navegador.
-
-## 1. Criterios de cierre: lista `PROPUESTA` C01–C15
-
-`DT-100` dice que «U12 no se cierra hasta cumplir los 15 criterios de cierre», pero solo nombra sus áreas: despliegue,
-OIDC, ACR, PostgreSQL, *bootstrap*, frontend, API, Entra con la URL real, redespliegue y fallos. **Ningún documento del
-repositorio los enumera como lista formal.** La tabla siguiente es una **propuesta del agente**, no una lista que ya
-existiera. Sale de esas áreas, del procedimiento de `infra/azure/u12/README.md` §5 y de sus pruebas de aceptación de §6,
-y no añade requisitos. Queda en estado **`PROPUESTA`** hasta que el responsable la valide (`CLAUDE.md` §7).
-
-| # | Criterio propuesto | Fuente |
-|---|---|---|
-| C01 | Infraestructura desplegada (`Core` y `Apps`; despliegue `u12-dev` `Succeeded`); entorno `WorkloadProfiles` | DT-100 §1, README §5 pasos 4 y 8 |
-| C02 | GitHub entra en Azure por OIDC sin secretos; identidades con permisos mínimos | DT-100 §7, README §2 |
-| C03 | ACR Basic sin usuario administrador; *push* con `AcrPush` y *pull* con `id-mpa-dev-runtime` (`AcrPull`) | DT-100 §3 |
-| C04 | PostgreSQL Flexible 16 `Standard_B1ms`, sin HA, TLS obligatorio, `Ready` | DT-100 §4 |
-| C05 | Firewall solo con reglas `aca-out-<ip>` (nunca `0.0.0.0`), reconciliado por `-Stage Firewall` | DT-100 §5, README §4 |
-| C06 | Key Vault en opción C; contraseñas solo como `secretRef`; `DATABASE_URL` sin contraseña | DT-100 §6, README §3 |
-| C07 | El job de *bootstrap* termina en `Succeeded` y `BOOTSTRAP OK` en una sola ejecución | DT-100 §2, README §5 paso 9 |
-| C08 | El frontend responde 200 por HTTPS | README §5 pasos 10 y 11 |
-| C09 | API con ingress interno y solo HTTPS; detrás del proxy, sin token → 401 | DT-100 §1 y §8, README §5 paso 10 |
-| C10 | *Redirect URI* real aplicado al registro de la SPA e inicio de sesión real con MSAL | DT-100 §8, README §5 paso 5 |
-| C11 | Matriz de roles en el navegador: VIEWER, 11 rutas → 200 y `history`/`runs` → 403; PLANNER, 13 → 200; sin sesión → 401; sin rol → 403 salvo `/me` | README §6 E2E |
-| C12 | Datos reales de la API en el navegador: catálogo, detalle, pronóstico y recomendación con explicación | README §6 E2E |
-| C13 | Redespliegue idempotente: etiqueta nueva en api, frontend y job; `ALREADY_LOADED`/`ALREADY_COMPUTED`; recuentos estables; `/ejecuciones/<n+1>` → 404 | DT-100 §2, README §6 |
-| C14 | Pruebas de fallo de README §6, recuperables y sin pérdida de datos | README §6 |
-| C15 | Cierre documental con todas las salidas (sin secretos) | CLAUDE.md §8, README §5 |
-
-## 2. Evidencia por criterio
-
-Estado:
-
-- ✅ **demostrado** con evidencia real;
-- 🟡 **parcial** (evidencia real de una parte; otra parte [PEND]);
-- ⬜ **pendiente**.
-
-| # | Evidencia real de Azure [AZ-U] | Pruebas en Claude Code Cloud [CC] | Estado | Pendiente [PEND] |
-|---|---|---|---|---|
-| C01 | Despliegue `u12-dev` `Succeeded`, sin error; `ca-mpa-dev-api` y `ca-mpa-dev-frontend` `Succeeded`/`Running`; `caj-mpa-dev-bootstrap` existe con su recurso `Succeeded`; Verify: Workload Profiles OK | Bicep 0.48.1 `build`/`lint` y guardias del *what-if* (`infra/tests`) | ✅ | — |
-| C02 | Verify: identidades con permisos mínimos OK | Deploy dev #2 y #3 en verde con `azure/login` por OIDC (GitHub Actions); `test_u12_config.Workflow` | ✅ | — |
-| C03 | Las apps arrancan (`Running`) con imágenes del ACR; Verify OK (ACR e identidades) | Deploy dev #3 publicó `backend`, `frontend` y `bootstrap` (`2742539…`) con `AcrPush` | ✅ | — |
-| C04 | Verify: PostgreSQL 16/B1ms, TLS obligatorio y `Ready` OK | Bicep (`postgres.bicep`) | ✅ | — |
-| C05 | Las reglas `aca-out-*` se consultaron y existen; Verify: firewall limitado a `aca-out-*`, sin `0.0.0.0` | `test_firewall_rule_commands_name_the_server_with_server_name` (corrección `dd2d45f`, PR #3, en `main`) | 🟡 | **Ejecución completa de `-Stage Firewall` después de la corrección:** no se ha compartido una salida satisfactoria. Ni fallida ni completada. |
-| C06 | Verify: Key Vault opción C OK y el resto de las 19 comprobaciones, entre ellas las contraseñas solo como `secretRef` | Detector de secretos y pruebas de redacción (`infra/tests`) | ✅ | — |
-| C07 | Ejecución `caj-mpa-dev-bootstrap-tbazfuc`: `BOOTSTRAP OK`, `Succeeded`. `data_loads` 1, `products` 100, `inventory` 100, `consumption` 108 235, `calculation_runs` 2, `forecasts` 3 990, `recommendations` 100. Evaluaciones: 100 productos, 50 `RECOMMEND`, 40 `NO_NEED`, 10 `NOT_CALCULABLE`; motor `0.1.0`, política `V1_PROVISIONAL`. Verify: *bootstrap* `Succeeded` | `bootstrap.py` contra PostgreSQL 16 local con los mismos recuentos (§3) | ✅ | — |
-| C08 | Verify: frontend HTTPS 200 OK. Smoke `--entra`: `/` y ruta profunda de la SPA → 200 | Smoke de Compose en el job `docker` de CI | ✅ | — |
-| C09 | Verify: API interna solo HTTPS y API detrás del proxy → 401 sin token. Smoke: peticiones sin token → 401; `/api/v1/runs/1` sin token → 401 | `tests/api` (95) | ✅ | — |
-| C10 | Smoke `SMOKE OK (entra-dev)`: la SPA contiene los identificadores esperados de `entra-dev.env`; en `APP_ENV=dev` se rechazan el token de desarrollo (401) y un token RS256 falsificado (401) | `tests/api` (`test_entra`); `u11-entra.dev.json` incluye la URL real del frontend | 🟡 | **Inicio de sesión real con MSAL en el navegador**, que demuestra también que el *redirect URI* está aplicado |
-| C11 | — | `test_entra.test_role_matrix`, `test_401_without_token_and_with_invalid_tokens` y `test_me_with_and_without_roles` | ⬜ | **E2E en el navegador** con la URL real: VIEWER (rutas autorizadas y no autorizadas en `/acceso`), después PLANNER, sin sesión y sin rol |
-| C12 | — | Contrato de la API (`tests/api`) y suite por defecto (353) | ⬜ | **E2E en el navegador:** catálogo, detalle, pronóstico y recomendación con su explicación |
-| C13 | — | 2.ª ejecución local de `bootstrap.py`: `applied: none`, `ALREADY_LOADED`, `ALREADY_COMPUTED` ×2 y recuentos idénticos | ⬜ | **Redespliegue en Azure** con `run_bootstrap=true`: etiqueta nueva en los 3 recursos, `ALREADY_LOADED`, `ALREADY_COMPUTED`, recuentos estables y `/ejecuciones/<n+1>` → 404 |
-| C14 | El smoke ya mostró rechazos de tokens en Azure (desarrollo y RS256 falsificado → 401). No es la prueba de README §6 (`Authorization: Bearer x`) | Job con la base detenida: para en el paso 2 y se recupera (§3); token inválido → 401 en `tests/api` | ⬜ | **Pruebas de fallo en Azure** (§5) |
-| C15 | — | — | ⬜ | **Cierre documental** después de C05, C10–C14 |
-
-**Resumen:**
-
-- **Demostrados (8):** C01, C02, C03, C04, C06, C07, C08 y C09.
-- **Parciales (2):** C05 (falta la reconciliación con `-Stage Firewall`) y C10 (falta el inicio de sesión real).
-- **Pendientes (5):** C11, C12, C13, C14 y C15.
-
-## 3. Pruebas ejecutadas en Claude Code Cloud [CC]
-
-Entorno del contenedor de la sesión:
-
-- Linux, Python 3.13.16 (CI usa 3.11.16), sin *daemon* de Docker ni Azure CLI.
-- Bicep CLI 0.48.1, con el mismo SHA-256 que fija CI (`b09ec25a…7f6e`).
-- PowerShell 7.4.6, comprobado con su `hashes.sha256`.
-- Los dos binarios están solo en el directorio temporal de la sesión.
-- Las dependencias de Python son las fijadas en `backend/pyproject.toml`, instaladas en un *venv* temporal.
-
-Primera revisión (2026-10-10):
-
-| Comando | Resultado |
+| Marca | Origen |
 |---|---|
-| `python infra/ci/secret_scan.py` | 426 archivos, **0 hallazgos** |
-| `python -m unittest discover -s infra/tests -t infra/tests` sin pwsh ni Bicep | 95 OK, **26 omitidas** |
-| la misma suite con Bicep 0.48.1 y pwsh 7.4.6 en el `PATH` | **95 OK, 0 omitidas** (incluye `-SelfTest`, `-PreflightOnly` y los flujos con el Azure CLI falso) |
-| `python -m data.synthetic.generator` | `ds-6c8ad65b4999` |
-| `cd backend && python -m unittest discover -s tests -t .` | **353 OK** |
-| `cd backend && python -m unittest discover -s tests/api -t tests/api` (grupos `db api test entra`) | **95 OK** |
-| `infra/docker/bootstrap.py` ×2 contra PostgreSQL 16.15 local (`mpa_owner` era superusuario local, a diferencia de Azure) | 1.ª: `COMPLETED` ×3 y `BOOTSTRAP OK`. 2.ª: `applied: none`, `ALREADY_LOADED`, `ALREADY_COMPUTED` ×2 y `BOOTSTRAP OK`, con recuentos idénticos (los mismos que dio Azure en C07) |
-| `mpa_app` tras el *bootstrap* | `SELECT` → 100; `DELETE` → `permission denied for table`; `CREATE TABLE` → `permission denied for schema public` |
-| `bootstrap.py` con la base detenida | código 1, `BOOTSTRAP FAILED at step 2 (migraciones)`, sin paso 3 |
-| `bootstrap.py` después de arrancar la base | `ALREADY_LOADED`, `ALREADY_COMPUTED` ×2 y `BOOTSTRAP OK` |
+| **[AZ-U]** | Ejecutado en Azure **por el responsable** con su sesión de PowerShell y compartido el 2026-10-10. **No lo ejecutó ningún agente**, no hay copia versionada (`tmp/` está excluido de Git) y se recoge tal como el responsable lo resumió. |
+| **[AZ-A]** | Ejecutado en Azure por un agente con acceso autorizado. **Hasta hoy, ninguno** (§3.2). |
+| **[CC]** | Ejecutado por el agente en Claude Code Cloud: local o en un entorno sustituto. **No aprueba un criterio de Azure.** |
+| **[CI]** | GitHub Actions, con su número de *run*. |
+| **[PEND]** | Sin ejecutar o sin evidencia suficiente. |
 
-Consultado en GitHub Actions desde la sesión:
+## 1. Matriz C01–C15: matriz de seguimiento derivada
 
-- CI en verde en `62f25ca` (run 38035570538).
-- Deploy dev #3 en verde (run 38016512995): publicó las imágenes con la etiqueta `2742539…`. En ese momento las apps
-  todavía no existían.
+`DT-100` exige «los 15 criterios de cierre» y solo nombra sus áreas: despliegue, OIDC, ACR, PostgreSQL, *bootstrap*,
+frontend, API, Entra con la URL real, redespliegue y fallos. **Ningún documento los enumera.**
 
-Validaciones de esta revisión 2 (solo documentación): se repiten el detector de secretos y `infra/tests`. Los
-resultados están en el informe de entrega de esta revisión.
+C01–C15 es una **matriz de seguimiento derivada** de `DT-100` y de `infra/azure/u12/README.md` §5–§6:
 
-**No ejecutado en la sesión:**
+- **no** es una lista original aprobada;
+- **no** añade requisitos funcionales;
+- queda en estado **`PROPUESTA`** hasta que el responsable la valide (`CLAUDE.md` §7).
 
-- **Frontend (Vitest, ESLint, `tsc`):** U12 no modificó `frontend/` y el contenedor tiene Node 22, mientras que
-  `engines` exige Node 24.
-- **Suite de integración `tests/db`.**
-- **Smoke de Compose:** no hay *daemon* de Docker.
+Si la lista validada difiere, prevalece la del responsable y esta matriz se ajusta.
 
-## 4. Hallazgos documentales
+**Estados:**
 
-1. **No existía una lista formal de los 15 criterios** (§1). La propuesta C01–C15 espera la validación del responsable.
-2. **`project/status.md` iba por detrás de `main`:** `ci.yml` figuraba como pendiente y faltaban el primer `-Stage Apps`
-   del 2026-10-10 (falló en `firewall-rule list`) y su corrección `dd2d45f`. Ya está recogido, junto con la evidencia
-   real de esta revisión.
-3. ~~El estado real de las apps no estaba registrado~~. **Resuelto** con la evidencia [AZ-U]: api y frontend
-   `Succeeded`/`Running`, job `Succeeded`, `u12-dev` `Succeeded`.
-4. **Número de comprobaciones de `Verify`:** el script tiene 19, igual que el README y la evidencia [AZ-U]. La fila de
-   `status.md` del 2026-10-08 dice 18; es historial anterior a la comprobación `WorkloadProfiles` y se deja como está.
-5. **README §6, «Job con fallo»:** ya corregido en esta rama. El job se detiene en el primer paso que usa la base
-   (2, migraciones); el paso 1 genera el dataset sin base.
-6. **Evidencia [AZ-U] sin versionar:** no hay en el repositorio una copia de `tmp/u12-evidence/u12-evidence.json` ni de
-   las salidas. `tmp/` está excluido de Git a propósito. Para el cierre (C15) conviene decidir si se adjunta un extracto
-   redactado (solo identificadores) o basta con este resumen.
+- `APROBADO`: hay salida real que cumple la aceptación;
+- `PARCIAL`: parte demostrada, parte pendiente;
+- `PENDIENTE`: sin ejecutar;
+- `BLOQUEADO`: no puede ejecutarse por una causa externa identificada;
+- `NO APLICA`.
 
-## 5. Plan mínimo para lo pendiente
+Responsable de toda ejecución en Azure y en el navegador: **el responsable del proyecto**, con su sesión (`DT-100`,
+`CLAUDE.md` §17).
 
-No repite Apps, Bootstrap, Verify ni el smoke de Entra ID, que ya están demostrados. Lo ejecuta el responsable con su
-sesión.
+### C01 — Infraestructura desplegada
 
-| # | Acción | Cierra | Evidencia que hay que aportar (sin secretos) |
-|---|---|---|---|
-| 1 | `deploy-u12.ps1 -Stage Firewall`, ejecución completa con el script corregido (`dd2d45f`) | C05 | Termina sin error; «Las reglas ya coinciden…» o reglas actualizadas; ninguna regla obsoleta ni ajena |
-| 2 | E2E en el navegador con la URL real: `deploy-u11.ps1 -AssignRole VIEWER`, inicio de sesión, `/acceso` (11 → 200; `history` y `runs` → 403), catálogo, detalle, un pronóstico y una recomendación con explicación. Después PLANNER (13 → 200), sin sesión (401) y sin rol (403 salvo `/me`) | C10, C11, C12 | Tabla de `/acceso` por rol y lista de vistas comprobadas, sin tokens |
-| 3 | Redespliegue: PR con un cambio inocuo → merge → Deploy dev con `run_bootstrap=true` | C13 | Etiqueta nueva en api, frontend y job (`az containerapp show … --query properties.template.containers[0].image`); salida del job con `ALREADY_LOADED` y `ALREADY_COMPUTED`; mismos recuentos que en C07; ejecuciones visibles sin cambios y `/ejecuciones/<n+1>` → 404 |
-| 4 | Pruebas de fallo de README §6 (abajo) | C14 | Resultado y recuperación de cada una |
-| 5 | Cierre documental: completar §6, `status.md` y `DT-100`; validar C01–C15 | C15 | — |
+| Campo | Contenido |
+|---|---|
+| Requisito y referencia | «despliegue» (`DT-100`, *Estado*); `DT-100` §1; README §5 pasos 4 y 8 |
+| Aceptación | `u12-dev` `Succeeded`; api, frontend y job creados; entorno `WorkloadProfiles` |
+| Procedimiento | `-Stage Core` y `-Stage Apps -ImageTag <sha>`; comprobación con `-Stage Verify` |
+| Entorno | Azure `dev` (`rg-motor-predictivo-dev`, `centralus`) |
+| Evidencia requerida | Estado del despliegue y de los recursos |
+| Resultado | **[AZ-U]** `u12-dev` `Succeeded`, sin error. `ca-mpa-dev-api` y `ca-mpa-dev-frontend` `Succeeded`/`Running`. `caj-mpa-dev-bootstrap` creado. `cae-mpa-dev` convertido a `WorkloadProfiles` en el mismo recurso, sin recrearlo. Verify: «entorno en modo WorkloadProfiles» OK. **[CC]** `build`/`lint` de Bicep y guardias del *what-if* (`infra/tests`) |
+| Estado | **APROBADO** |
 
-**Pruebas de fallo exigidas** (README §6), con su alcance:
+### C02 — OIDC de GitHub con permisos mínimos
 
-| Prueba | Cómo | Esperado | Recuperación | Alcance |
-|---|---|---|---|---|
-| PostgreSQL detenido | `-Stage Stop` | El frontend carga; las vistas con datos reciben 5xx sin traza ni secreto | `-Stage Start` (y `-Stage Firewall` si la API no conecta); comprobar que los datos siguen ahí (mismos recuentos) | Solo `dev`; detener la base deja la API sin datos mientras dure la prueba |
-| Token inválido | `curl` a `/api/...` a través del frontend con `Authorization: Bearer x` | 401 | — | Solo lectura. El smoke ya cubrió tokens de desarrollo y RS256 falsificados; falta el caso literal de §6 |
-| Etiqueta de imagen inexistente | `-Stage Apps -ImageTag noexiste` | La revisión nueva no arranca y la anterior sigue sirviendo | `-Stage Apps -ImageTag <sha bueno>` | Modifica las apps de `dev`; restaurar la etiqueta buena antes de seguir |
+| Campo | Contenido |
+|---|---|
+| Requisito y referencia | «OIDC»; `DT-100` §7; README §2 |
+| Aceptación | `azure/login` por OIDC sin secretos; `id-mpa-dev-github` con 4 roles dentro del grupo y sin `deploy/action` |
+| Procedimiento | *Deploy dev* y `-Stage Verify` |
+| Entorno | GitHub Actions y Azure |
+| Evidencia requerida | *Run* en verde y comprobaciones de roles |
+| Resultado | **[CI]** *Deploy dev* #2 y #3 en verde (runs 37902049561 y 38016512995). **[AZ-U]** Verify: «GitHub: 4 roles mínimos», «GitHub sin deploy/action» y la identidad de ejecución solo con `AcrPull`, todo OK |
+| Estado | **APROBADO** |
 
-README §6 incluye además «Firewall desactualizado», «Job con fallo» (ya comprobado en local [CC], §3) y «Key Vault
-inaccesible». El responsable decide si entran en el cierre. Si entran, cada uno necesita su evidencia [AZ-U].
+### C03 — ACR y descarga por identidad
 
-## 6. Registro de evidencias reales
+| Campo | Contenido |
+|---|---|
+| Requisito y referencia | «ACR»; `DT-100` §3 |
+| Aceptación | ACR Basic sin usuario administrador; *push* con `AcrPush`; las apps y el job descargan con `id-mpa-dev-runtime` |
+| Procedimiento | *Deploy dev*; `-Stage Apps`; `-Stage Verify` |
+| Entorno | Azure y GitHub |
+| Evidencia requerida | Push en verde; apps en ejecución; Verify |
+| Resultado | **[CI]** run 38016512995 publicó `backend`, `frontend` y `bootstrap` con la etiqueta `2742539…`. **[AZ-U]** apps `Running`; Verify: «ACR Basic sin usuario administrador» e «imágenes con identidad administrada» OK |
+| Estado | **APROBADO** |
+
+### C04 — PostgreSQL
+
+| Campo | Contenido |
+|---|---|
+| Requisito y referencia | «PostgreSQL»; `DT-100` §4 |
+| Aceptación | Flexible 16, `Standard_B1ms`, sin HA, `require_secure_transport=ON`, `Ready` |
+| Procedimiento | `-Stage Verify` |
+| Entorno | Azure |
+| Evidencia requerida | Comprobaciones de Verify |
+| Resultado | **[AZ-U]** «PostgreSQL 16, B1ms, sin alta disponibilidad», «TLS obligatorio» y «arrancado (Ready)», OK |
+| Estado | **APROBADO** |
+
+### C05 — Firewall reconciliado
+
+| Campo | Contenido |
+|---|---|
+| Requisito y referencia | `DT-100` §5; README §4; README §6, fila «Firewall desactualizado» |
+| Aceptación | Solo reglas `aca-out-<ip>` (una por IP de salida actual, nunca `0.0.0.0`) **y** `-Stage Firewall` termina sin error con el script corregido |
+| Procedimiento | `-Stage Firewall`. Si las IP cambiaron, hay un *what-if* y se pide `FIREWALL`; si no, «Las reglas ya coinciden…». Después lista las reglas, borra las obsoletas y `-Stage Verify` |
+| Entorno | Azure |
+| Evidencia requerida | Salida completa de `-Stage Firewall` y Verify posterior |
+| Resultado | **[AZ-U]** Las reglas `aca-out-*` existen; Verify: «firewall: solo IP de salida (aca-out-*), sin 0.0.0.0» OK. Corrección de la CLI (`--server-name`; `--name` = regla en `delete`; nunca `--rule-name`) en `dd2d45f`, en `main`, con prueba de regresión. **[PEND]** Ninguna salida completa de `-Stage Firewall` posterior a la corrección. **[CC]** Sin acceso a Azure (§3.2) |
+| Estado | **PARCIAL**: la configuración es correcta; falta la reconciliación con el script corregido. No es un fallo ni un aprobado |
+| Motivo y responsable | Requiere la sesión de Azure del responsable |
+
+### C06 — Key Vault y secretos
+
+| Campo | Contenido |
+|---|---|
+| Requisito y referencia | `DT-100` §6; README §3 |
+| Aceptación | Opción C (`publicNetworkAccess=Disabled`, plantillas habilitadas, `bypass=AzureServices`); contraseñas solo como `secretRef`; `DATABASE_URL` sin contraseña; la sesión que despliega tiene `deploy/action` |
+| Procedimiento | `-Stage Verify` |
+| Entorno | Azure |
+| Evidencia requerida | Comprobaciones de Verify |
+| Resultado | **[AZ-U]** «Key Vault opción C», «contraseñas solo como secretRef, DATABASE_URL sin contraseña» y «tu sesión puede usar getSecret», OK (parte de 19/19) |
+| Estado | **APROBADO** |
+
+### C07 — Bootstrap en Azure
+
+| Campo | Contenido |
+|---|---|
+| Requisito y referencia | «bootstrap»; `DT-100` §2; README §5 paso 9 |
+| Aceptación | Una ejecución del job en `Succeeded` y `BOOTSTRAP OK`: dataset, migrate, ingest, forecast, recommend y rol `mpa_app` |
+| Procedimiento | `-Stage Bootstrap` |
+| Entorno | Azure |
+| Evidencia requerida | Nombre de la ejecución, estado y resumen de filas |
+| Resultado | **[AZ-U]** `caj-mpa-dev-bootstrap-tbazfuc`: `BOOTSTRAP OK` y `BOOTSTRAP Succeeded`. Filas: `data_loads` 1, `products` 100, `inventory` 100, `consumption` 108 235, `calculation_runs` 2, `forecasts` 3 990, `recommendations` 100. 100 candidatos: 50 `RECOMMEND`, 40 `NO_NEED` y 10 `NOT_CALCULABLE`. Motor `0.1.0`, política `V1_PROVISIONAL`. Verify: «bootstrap: última ejecución Succeeded» OK. **[CC]** mismos recuentos en local (§3.1) |
+| Estado | **APROBADO** |
+
+### C08 — Frontend HTTPS
+
+| Campo | Contenido |
+|---|---|
+| Requisito y referencia | «frontend»; README §5 pasos 10 y 11 |
+| Aceptación | Ingress externo solo HTTPS y 200 en `/` y en una ruta profunda de la SPA |
+| Procedimiento | `-Stage Verify`; `python infra/docker/smoke.py --entra` |
+| Entorno | Azure (URL pública) |
+| Evidencia requerida | Verify y smoke |
+| Resultado | **[AZ-U]** Verify: «frontend solo HTTPS» y «responde 200 por HTTPS» OK. Smoke: `/` y la ruta profunda → 200 |
+| Estado | **APROBADO** |
+
+### C09 — API interna detrás del proxy
+
+| Campo | Contenido |
+|---|---|
+| Requisito y referencia | «API»; `DT-100` §1 y §8 |
+| Aceptación | Ingress interno, solo HTTPS; a través del proxy, sin token → 401 |
+| Procedimiento | `-Stage Verify`; smoke `--entra` |
+| Entorno | Azure |
+| Evidencia requerida | Verify y smoke |
+| Resultado | **[AZ-U]** Verify: «api sin ingress público y solo HTTPS» y «API viva tras el proxy (/api/v1/me sin token → 401)» OK. Smoke: peticiones sin token → 401; `/api/v1/runs/1` sin token → 401 |
+| Estado | **APROBADO** |
+
+### C10 — Entra ID con la URL real
+
+| Campo | Contenido |
+|---|---|
+| Requisito y referencia | «Entra con la URL real»; `DT-100` §8; README §5 paso 5 |
+| Aceptación | *Redirect URI* `https://<FQDN del frontend>` aplicado a la SPA e **inicio de sesión real** con MSAL en esa URL |
+| Procedimiento | `deploy-u11.ps1` (aplica o confirma); iniciar sesión en el navegador |
+| Entorno | Azure, Entra ID y navegador |
+| Evidencia requerida | Salida de `deploy-u11.ps1` (o `ALREADY_CONFIGURED`) y sesión iniciada (`/me` con el rol) |
+| Resultado | **[AZ-U]** Smoke `SMOKE OK (entra-dev)`: la SPA contiene los identificadores esperados de `entra-dev.env`; con `APP_ENV=dev` se rechazan el token de desarrollo y un RS256 falsificado (401). La URL real está en el estado deseado `infra/azure/entra/u11-entra.dev.json`. **[PEND]** Inicio de sesión real; no consta salida de `deploy-u11.ps1` con esa URL. El smoke **no sustituye** al E2E |
+| Estado | **PARCIAL** |
+| Motivo y responsable | Necesita navegador y una cuenta del tenant: el responsable |
+
+### C11 — Matriz de roles en el navegador
+
+| Campo | Contenido |
+|---|---|
+| Requisito y referencia | README §6 E2E; matriz de [`docs/07-api.md`](../07-api.md) §7.2; método de `/acceso` en `infra/azure/entra/README.md` §4 |
+| Aceptación | VIEWER en `/acceso`: `runs` e `history` → 403 y el resto no 403, con «Coincide» = sí en las 13 filas. PLANNER: 13 sin 403. Sin sesión → 401. Sin rol → 403 en todo salvo `/me` |
+| Procedimiento | `deploy-u11.ps1 -AssignRole VIEWER` → iniciar sesión en la URL de Azure → `/acceso` → «Comprobar la matriz». Después PLANNER y `-RemoveRole`, cerrando sesión entre cambios |
+| Entorno | Navegador con la URL real |
+| Evidencia requerida | Tabla de `/acceso` por rol, que no contiene tokens |
+| Resultado | **[PEND]** **[CC]** cubierto por pruebas automatizadas (`test_entra.test_role_matrix`, `tests/api`), que no sustituyen a la prueba real |
+| Estado | **PENDIENTE** |
+| Motivo y responsable | Navegador y cuenta real: el responsable. Bloqueado para el agente (§3.2) |
+| Ambigüedad | README §6 dice «11 permitidos → 200»; un 404 legítimo (id inexistente) no es un 403. Se acepta «no 403 y Coincide = sí», que es el criterio de `/acceso` en U11. **A confirmar por el responsable** |
+
+### C12 — Datos reales en el navegador
+
+| Campo | Contenido |
+|---|---|
+| Requisito y referencia | README §6 E2E |
+| Aceptación | Con VIEWER: catálogo, detalle de producto, un pronóstico y una recomendación con su explicación, servidos por la API real |
+| Procedimiento | Recorrido en la interfaz tras C11 |
+| Entorno | Navegador |
+| Evidencia requerida | Lista de vistas comprobadas con su identificador (sin tokens) |
+| Resultado | **[PEND]** |
+| Estado | **PENDIENTE** |
+| Motivo y responsable | El responsable |
+
+### C13 — Redespliegue idempotente
+
+| Campo | Contenido |
+|---|---|
+| Requisito y referencia | «redespliegue»; `DT-100` §2; README §6 *Redespliegue* |
+| Aceptación | api, frontend y job con la etiqueta nueva. La ejecución del job en `Succeeded`, con migración ya aplicada sin reaplicar, ingesta `ALREADY_LOADED` y forecast/recommend `ALREADY_COMPUTED`. Los mismos recuentos que C07. Ejecuciones visibles sin cambio y `/ejecuciones/<n+1>` → 404 |
+| Procedimiento | Cambio inocuo integrado en `main` → *Deploy dev* con `run_bootstrap=true` → `az containerapp show … --query properties.template.containers[0].image` (×3) → registros del job (portal, *Console logs*: sin Log Analytics no hay registros por CLI) → interfaz |
+| Entorno | GitHub Actions, Azure y navegador |
+| Evidencia requerida | Run de *Deploy dev*, las tres etiquetas, líneas `ALREADY_*`, recuentos y 404 |
+| Resultado | **[PEND]**. **[CC]** dos ejecuciones locales de `bootstrap.py` idempotentes (§3.1): **no** aprueban el criterio |
+| Estado | **PENDIENTE** |
+| Motivo y responsable | El responsable dispara *Deploy dev* o autoriza expresamente al agente a dispararlo (§3.2). La verificación de registros y del 404 requiere portal y navegador |
+
+### C14 — Pruebas de fallo
+
+| Campo | Contenido |
+|---|---|
+| Requisito y referencia | README §6 *Fallos* (seis filas) |
+| Aceptación | Por cada prueba: el efecto esperado de la tabla y su recuperación, sin pérdida de datos |
+| Procedimiento | [`docs/00-guia-maestra.md`](../00-guia-maestra.md) §F.4 |
+| Entorno | Azure |
+| Evidencia requerida | Resultado y recuperación de cada prueba, con Verify 19/19 al final |
+| Resultado | **[PEND]** en Azure. **[AZ-U]** relacionado: el smoke mostró rechazo (401) de tokens de desarrollo y RS256 falsificados, pero no es el caso literal `Bearer x`. **[CC]** con la base detenida, `bootstrap.py` se para en el paso 2 y se recupera; `Bearer x` → 401 en `tests/api` |
+| Estado | **PENDIENTE** |
+| Alcance | Exigidas por el responsable (2026-10-10): **PostgreSQL detenido y recuperación**, **token inválido** e **imagen inexistente**. Las otras tres filas de README §6 (firewall desactualizado, job con fallo y Key Vault inaccesible) quedan **pendientes de decisión de alcance**; no se marcan `NO APLICA` sin esa decisión |
+| Motivo y responsable | El responsable. El token inválido es de solo lectura y podría ejecutarlo un agente si tuviera red hacia la URL (§3.2) |
+
+### C15 — Cierre documental
+
+| Campo | Contenido |
+|---|---|
+| Requisito y referencia | `CLAUDE.md` §8 y §12; README §5 |
+| Aceptación | C01–C14 en `APROBADO` (o `NO APLICA` justificado); matriz validada por el responsable; `status.md`, `roadmap.md` y `DT-100` actualizados; evidencias sin secretos |
+| Procedimiento | `docs/00-guia-maestra.md` §G.2 |
+| Entorno | Repositorio |
+| Evidencia requerida | PR con los cambios |
+| Resultado | **[PEND]** |
+| Estado | **PENDIENTE**, hasta completar C05, C10–C14 |
+
+### Resumen
+
+| Estado | Criterios |
+|---|---|
+| APROBADO (8) | C01, C02, C03, C04, C06, C07, C08, C09 |
+| PARCIAL (2) | C05, C10 |
+| PENDIENTE (5) | C11, C12, C13, C14, C15 |
+| BLOQUEADO / NO APLICA | — (los bloqueos de §3.2 afectan al agente, no al criterio) |
+
+## 2. Fuentes de la evidencia [AZ-U]
+
+Resumen literal aportado por el responsable el 2026-10-10. No se vuelve a pedir:
+
+- **Apps:** api y frontend `Succeeded`/`Running`; `caj-mpa-dev-bootstrap` creado y `Succeeded`; `u12-dev`
+  `Succeeded`; `cae-mpa-dev` convertido a `WorkloadProfiles` en el mismo recurso.
+- **Bootstrap:** C07.
+- **Verify:** «U12: dev verificado», con las 19 comprobaciones del script en `OK`:
+  - ACR;
+  - PostgreSQL 16/B1ms/sin HA;
+  - TLS;
+  - firewall;
+  - api interna HTTPS;
+  - entorno `WorkloadProfiles`;
+  - frontend HTTPS;
+  - imágenes por identidad;
+  - job manual;
+  - roles de GitHub;
+  - identidad de ejecución;
+  - Key Vault opción C;
+  - `deploy/action` propia;
+  - GitHub sin `deploy/action`;
+  - `secretRef`;
+  - PostgreSQL `Ready`;
+  - *bootstrap* `Succeeded`;
+  - frontend 200;
+  - API → 401 sin token.
+- **Smoke:** `python infra/docker/smoke.py --entra` → `SMOKE OK (entra-dev)`.
+
+## 3. Pruebas y bloqueos de la sesión de Claude Code Cloud (2026-10-10)
+
+### 3.1 Ejecutado [CC]
+
+Herramientas descargadas al directorio temporal de la sesión y verificadas, no instaladas en el repositorio:
+
+- Bicep 0.48.1 (SHA-256 de `ci.yml`);
+- PowerShell 7.4.6 (`hashes.sha256` de la publicación);
+- Node 24.21.0 con npm 11.19.0 (`SHASUMS256.txt` de nodejs.org).
+
+Python 3.13.16; dependencias fijadas en un *venv* temporal.
+
+| Prueba | Resultado |
+|---|---|
+| `python infra/ci/secret_scan.py` | 0 hallazgos |
+| `infra/tests` con Bicep 0.48.1 y `pwsh` 7.4.6 | 95 OK, 0 omitidas (incluye `-SelfTest`, `-PreflightOnly` y los flujos con el Azure CLI falso) |
+| Backend, suite por defecto | 353 OK |
+| `tests/api` (grupos `db`, `api`, `test`, `entra`) | 95 OK |
+| `tests/db`, integración contra PostgreSQL 16.15 efímero (`U2_TEST_ADMIN_DSN`) | 177 OK |
+| Frontend con Node 24.21.0: `npm ci`, ESLint, `tsc`, Prettier, Vitest y build | todo con código 0; Vitest 23 archivos, 176 pruebas; build con un aviso de tamaño de *chunk* |
+| `bootstrap.py` ×2 contra PostgreSQL 16.15 local, sobre `5460fd9` | 1.ª `applied: 0001…0004`, `COMPLETED` ×3, `BOOTSTRAP OK`; 2.ª `applied: none`, `ALREADY_LOADED`, `ALREADY_COMPUTED` ×2, recuentos idénticos a C07 |
+| `mpa_app` tras el *bootstrap* | `SELECT` OK; `DELETE` y `CREATE TABLE` denegados |
+| `bootstrap.py` con la base detenida | código 1 en el paso 2 (migraciones); recuperación con `BOOTSTRAP OK` al arrancar la base |
+
+**No ejecutado:** smoke de Docker Compose, porque no hay *daemon* de Docker. Lo cubre el job `docker` de CI, en verde
+en `main` `62f25ca` (run 38035570538) **[CI]**.
+
+### 3.2 Bloqueos exactos para las pruebas en Azure
+
+| Prueba | Bloqueo | Qué lo levantaría |
+|---|---|---|
+| `-Stage Firewall` (C05), fallos con `Stop`/`Start` e imagen inexistente (C14) | El contenedor no tiene Azure CLI ni credenciales de Azure (`~/.azure` no existe, ninguna variable `AZURE_*`). `CLAUDE.md` §17: el agente nunca recibe credenciales | Ejecución por el responsable |
+| Token inválido (C14) y smoke contra la URL real | El proxy de salida de la sesión **rechaza** `ca-mpa-dev-frontend.greensmoke-cfd723ad.centralus.azurecontainerapps.io:443` (`connect_rejected`, política de red del entorno) | Ejecución por el responsable, o añadir ese dominio a los permitidos del entorno de Claude Code Cloud |
+| E2E (C10–C12) | Sin navegador interactivo ni cuenta del tenant | El responsable |
+| Redespliegue (C13) | El agente podría disparar *Deploy dev* (`workflow_dispatch`) desde las herramientas de GitHub, pero eso **crea revisiones nuevas en Azure** y **no lo ha autorizado expresamente** el responsable. Además, verificar `ALREADY_*`, los recuentos y el 404 requiere el portal y el navegador | Autorización explícita para disparar el workflow, más la verificación por el responsable |
+
+## 4. Plan mínimo para lo pendiente
+
+Lo ejecuta el responsable. No repite Apps, Bootstrap, Verify ni el smoke.
+
+| # | Acción | Cierra |
+|---|---|---|
+| 1 | `deploy-u12.ps1 -Stage Firewall`, y después `-Stage Verify` | C05 |
+| 2 | `deploy-u11.ps1` (confirmar *redirect URI*); E2E con VIEWER, PLANNER, sin sesión y sin rol (C11) y vistas de datos (C12) | C10, C11, C12 |
+| 3 | *Deploy dev* con `run_bootstrap=true` sobre `main` actual. El último commit de `main` es solo documental, así que sirve como cambio inocuo. Después las comprobaciones de C13 | C13 |
+| 4 | Fallos de `docs/00-guia-maestra.md` §F.4, en este orden: token inválido, imagen inexistente con su restauración, PostgreSQL detenido con su recuperación, y Verify al final | C14 |
+| 5 | Validar C01–C15, actualizar este informe y cerrar U12 en `DT-100`, `status.md` y `roadmap.md` | C15 |
+
+## 5. Registro de evidencias reales
 
 | Paso | Origen | Resultado | Estado |
 |---|---|---|---|
-| Despliegue `u12-dev` | [AZ-U] | `Succeeded`, sin error | ✅ |
-| Apps | [AZ-U] | `ca-mpa-dev-api` y `ca-mpa-dev-frontend` `Succeeded`/`Running`; `caj-mpa-dev-bootstrap` `Succeeded` | ✅ |
-| Bootstrap | [AZ-U] | `caj-mpa-dev-bootstrap-tbazfuc`: `BOOTSTRAP OK`, `Succeeded`; recuentos de C07 | ✅ |
-| Verify | [AZ-U] | 19/19 `OK`, «U12: dev verificado» | ✅ |
-| Smoke | [AZ-U] | `python infra/docker/smoke.py --entra` → `SMOKE OK (entra-dev)` | ✅ |
-| Firewall | [AZ-U] | Reglas `aca-out-*` existentes, sin `0.0.0.0`; ejecución completa de `-Stage Firewall` posterior a la corrección **sin salida aportada** | [PEND] |
-| E2E en el navegador | — | | [PEND] |
-| Redespliegue | — | | [PEND] |
-| Fallos: PostgreSQL detenido y recuperación | — | | [PEND] |
-| Fallos: token inválido | — | | [PEND] |
-| Fallos: imagen inexistente | — | | [PEND] |
-| Cierre documental | — | | [PEND] |
+| Despliegue `u12-dev` y apps | [AZ-U] | `Succeeded`; api y frontend `Running`; job creado | APROBADO |
+| Bootstrap | [AZ-U] | `caj-mpa-dev-bootstrap-tbazfuc`, `BOOTSTRAP OK` | APROBADO |
+| Verify | [AZ-U] | 19/19, «U12: dev verificado» | APROBADO |
+| Smoke Entra | [AZ-U] | `SMOKE OK (entra-dev)` | APROBADO (C08, C09); parcial para C10 |
+| Firewall completo | — | | PENDIENTE |
+| E2E | — | | PENDIENTE |
+| Redespliegue | — | | PENDIENTE |
+| Fallos ×3 (+3 por decidir) | — | | PENDIENTE |
+| Cierre documental | — | | PENDIENTE |
+
+## Historial del informe
+
+| Revisión | Cambio |
+|---|---|
+| 1 (2026-10-10, `fe032c5`) | Primera matriz `PROPUESTA` y plan, antes de la evidencia real |
+| 2 (2026-10-10, `527c3f7`) | Evidencia real de Azure aportada por el responsable |
+| 3 (2026-10-10) | Matriz formal por criterio (requisito, aceptación, procedimiento, entorno, evidencia, resultado, estado y responsable); pruebas y bloqueos de Claude Code Cloud; fuente única del estado de U12 |

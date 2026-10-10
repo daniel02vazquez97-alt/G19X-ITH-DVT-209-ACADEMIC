@@ -4199,6 +4199,12 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
   `SMOKE OK (entra-dev)`. **No está cerrada.** Faltan: `-Stage Firewall` completo tras `dd2d45f`, E2E en el navegador,
   redespliegue con `run_bootstrap=true`, pruebas de fallo (PostgreSQL detenido, token inválido, imagen inexistente) y
   cierre documental. Detalle y origen de cada evidencia en `docs/reports/u12-cierre-evidencias.md`.
+- **Nota del 2026-10-10 (matriz formal, revisión 3):** el estado de los criterios de cierre de U12 se mantiene
+  **solo** en [`docs/reports/u12-cierre-evidencias.md`](reports/u12-cierre-evidencias.md) §1. C01–C15 es una matriz de
+  seguimiento **derivada** de esta decisión y del README de U12 (`PROPUESTA` hasta su validación), no una lista original.
+  Resumen: 8 `APROBADO` (C01–C04, C06–C09), 2 `PARCIAL` (C05 firewall sin `-Stage Firewall` completo tras `dd2d45f`;
+  C10 sin inicio de sesión real) y 5 `PENDIENTE` (E2E, redespliegue, fallos, cierre). La sesión de Claude Code Cloud no
+  tiene Azure CLI, credenciales ni salida de red a `*.azurecontainerapps.io`: no ejecutó ninguna prueba en Azure.
 
 ## Decisiones deliberadamente NO tomadas
 
