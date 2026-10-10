@@ -4187,6 +4187,18 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
   para esa API (reproducido). `BICEP_VERSION` y `BICEP_SHA256` pasan al `env` del job `docker`; la prueba comprueba
   además que el SHA-256 se valida antes de `chmod` y de ejecutar el binario, y que `bicep --version` se imprime antes
   de la suite.
+- **Nota del 2026-10-10 (revisión de cierre):** los «15 criterios de cierre» no estaban enumerados en ningún
+  documento. `docs/reports/u12-cierre-evidencias.md` §1 propone la lista (C01–C15, **`PROPUESTA`** hasta que la valide
+  el responsable), sacada de las áreas de esta decisión y de `infra/azure/u12/README.md` §5 y §6, sin requisitos nuevos;
+  §2 separa la evidencia automatizada de la real de Azure y del navegador, y §5 da el plan mínimo. *(Primera revisión,
+  antes de la evidencia real: el `-Stage Apps` del 2026-10-10 con `2742539…` había fallado en `firewall-rule list`,
+  corregido en `dd2d45f`, PR #3.)*
+- **Nota del 2026-10-10 (evidencia real, aportada por el responsable):** U12 está **desplegada y verificada en `dev`**:
+  `u12-dev` `Succeeded`; api y frontend `Running`; bootstrap `caj-mpa-dev-bootstrap-tbazfuc` con `BOOTSTRAP OK` y los
+  recuentos esperados (100 recomendaciones: 50/40/10); `Verify` 19/19 («U12: dev verificado»); smoke `--entra`
+  `SMOKE OK (entra-dev)`. **No está cerrada.** Faltan: `-Stage Firewall` completo tras `dd2d45f`, E2E en el navegador,
+  redespliegue con `run_bootstrap=true`, pruebas de fallo (PostgreSQL detenido, token inválido, imagen inexistente) y
+  cierre documental. Detalle y origen de cada evidencia en `docs/reports/u12-cierre-evidencias.md`.
 
 ## Decisiones deliberadamente NO tomadas
 
