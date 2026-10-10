@@ -211,7 +211,7 @@ datos vienen de la API real (catálogo, detalle), un pronóstico y una recomenda
 | Firewall desactualizado | borrar una regla `aca-out-*` en el portal | errores de conexión a la base | `-Stage Firewall` |
 | Imagen inexistente | `-Stage Apps -ImageTag noexiste` | la revisión nueva no arranca; la anterior sigue sirviendo | `-Stage Apps -ImageTag <sha bueno>` |
 | Token inválido | `curl` a `/api/...` con `Authorization: Bearer x` | 401 | — |
-| Job con fallo | ejecutar el job con la base detenida | `Failed`, se detiene en el primer paso, sin pasos siguientes | arrancar la base y repetir |
+| Job con fallo | ejecutar el job con la base detenida | `Failed`, se detiene en el primer paso que usa la base (2, migraciones; el 1 genera el dataset sin base), sin pasos siguientes | arrancar la base y repetir |
 | Key Vault inaccesible | `Core` o `Apps` sin la etapa 2 (bypass desactivado) | ARM rechaza `getSecret` en la validación y no cambia nada | etapa 2 |
 
 ## 7. Costes y control
