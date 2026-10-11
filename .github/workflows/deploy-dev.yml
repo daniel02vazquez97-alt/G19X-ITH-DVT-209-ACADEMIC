@@ -6,8 +6,10 @@
 #   subscription-id y los nombres de recursos son variables NO secretas del entorno `dev` de GitHub
 #   (tmp/u12-evidence/github-dev-variables.txt, que escribe infra/azure/deploy-u12.ps1 -Stage Core).
 # - Push al registro con `az acr login` (token de Entra ID; rol AcrPush): sin usuario administrador ni contraseñas.
-# - Roles de la identidad: Reader (grupo), AcrPush (registro), Container Apps Contributor (grupo) y Managed Identity
-#   Operator (solo la identidad de ejecución). Nunca Owner ni ámbito de suscripción.
+# - Roles de la identidad: Reader (grupo), AcrPush (registro), Container Apps Contributor (grupo), Managed Identity
+#   Operator (solo la identidad de ejecución) y el rol personalizado del job (solo sobre caj-mpa-dev-bootstrap: leer,
+#   actualizar, arrancar y leer ejecuciones; Container Apps Contributor no cubre Microsoft.App/jobs). Nunca Owner ni
+#   ámbito de suscripción.
 # - Manual (workflow_dispatch): `dev` es una demo con crédito limitado. staging y producción (con aprobación) no
 #   existen todavía; se añadirían como entornos de GitHub propios con su credencial federada.
 # La infraestructura (Bicep, what-if) no la despliega este workflow: la despliega el responsable con deploy-u12.ps1.

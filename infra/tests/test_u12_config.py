@@ -73,7 +73,8 @@ class Infrastructure(unittest.TestCase):
             types |= set(re.findall(r"^resource \w+ '([^@']+)@", source, re.MULTILINE))
         self.assertEqual(types, {
             "Microsoft.KeyVault/vaults", "Microsoft.ManagedIdentity/userAssignedIdentities",
-            "Microsoft.Authorization/roleAssignments", "Microsoft.ContainerRegistry/registries",
+            "Microsoft.Authorization/roleAssignments", "Microsoft.Authorization/roleDefinitions",
+            "Microsoft.ContainerRegistry/registries",
             "Microsoft.DBforPostgreSQL/flexibleServers", "Microsoft.DBforPostgreSQL/flexibleServers/databases",
             "Microsoft.DBforPostgreSQL/flexibleServers/configurations",
             "Microsoft.DBforPostgreSQL/flexibleServers/firewallRules", "Microsoft.App/managedEnvironments",
@@ -158,13 +159,77 @@ class Infrastructure(unittest.TestCase):
         self.assertIn("name: guid(registry.id, runtimeIdentityId, acrPullRoleId)", MODULES["registry.bicep"])
         self.assertIn("name: guid(registry.id, githubIdentityId, acrPushRoleId)", MODULES["registry.bicep"])
 
-    def test_roles_are_the_four_minimum_ones(self) -> None:
+    def test_roles_are_the_minimum_ones(self) -> None:
         guids = set(re.findall(GUID, "\n".join(ALL.values())))
         self.assertEqual(guids, {"7f951dda-4ed3-4680-a7ca-43fe172d538d", "8311e382-0749-4cb8-b61a-304f252e45ec"})
-        self.assertEqual("\n".join(ALL.values()).count("Microsoft.Authorization/roleAssignments@"), 4)
+        # The four roles of U12 plus the job role (C13); one custom definition, the job's.
+        self.assertEqual("\n".join(ALL.values()).count("Microsoft.Authorization/roleAssignments@"), 5)
+        self.assertEqual("\n".join(ALL.values()).count("Microsoft.Authorization/roleDefinitions@"), 1)
         self.assertNotRegex("\n".join(ALL.values()), r"8e3af657-a8ff-443c-a75c-2fe8c4bcb635|b24988ac-6180-42a0-ab88-20f7382dd24c")
         self.assertIn("scope: runtimeIdentity", MAIN)  # Managed Identity Operator only on the runtime identity
         self.assertNotIn("targetScope = 'subscription'", MAIN)
+
+    JOB_ACTIONS = ["Microsoft.App/jobs/read", "Microsoft.App/jobs/write", "Microsoft.App/jobs/start/action",
+                   "Microsoft.App/jobs/executions/read", "Microsoft.App/jobs/execution/read"]
+
+    def job_actions(self) -> list[str]:
+        block = re.search(r"var githubJobActions = \[\n(.*?)\n\]", MAIN, re.DOTALL).group(1)
+        return re.findall(r"^\s+'([^']+)'$", block, re.MULTILINE)
+
+    def test_job_role_has_exactly_the_actions_of_deploy_dev(self) -> None:
+        # Deploy dev #4 failed with AuthorizationFailed on Microsoft.App/jobs/write: Container Apps Contributor only
+        # covers Microsoft.App/containerApps/*. The built-in job roles grant Microsoft.App/jobs/*/action (listSecrets).
+        actions = self.job_actions()
+        self.assertEqual(actions, self.JOB_ACTIONS)
+        for action in actions:
+            self.assertNotIn("*", action)
+            self.assertNotRegex(action.lower(), r"listsecrets|/delete$|/stop|/suspend|/resume|authtoken|/exec/action|logstream")
+        self.assertNotIn("managedEnvironments", "\n".join(actions))  # Reader (U10, group) already reads it
+        script = re.search(r"\$GithubJobActions = @\((.*?)\)\n", ScriptSource.SOURCE, re.DOTALL).group(1)
+        self.assertEqual(re.findall(r"'([^']+)'", script), self.JOB_ACTIONS)  # the guard checks the same five
+        definition = MAIN.split("resource githubJobRoleDefinition ")[1].split("\n}\n")[0]
+        self.assertIn("'Microsoft.Authorization/roleDefinitions@2022-04-01'", definition)
+        self.assertIn("type: 'CustomRole'", definition)
+        self.assertIn("assignableScopes: [\n      resourceGroup().id\n    ]", definition)  # never the subscription
+        self.assertIn("actions: githubJobActions\n        notActions: []\n        dataActions: []\n        notDataActions: []",
+                      definition)
+        self.assertIn("roleName: 'U12 Bootstrap Job Deployer (${resourceGroup().name})'", definition)
+        self.assertIn('$GithubJobRoleName = "U12 Bootstrap Job Deployer ($ResourceGroup)"', ScriptSource.SOURCE)
+        # Neither the built-in job roles nor Owner/Contributor/User Access Administrator.
+        self.assertNotRegex("\n".join(ALL.values()),
+                            r"4e3d2b60-56ae-4dc6-a233-09c8e5a82e68|b9a307c4-5aa3-4b52-ba60-2b17c136cd7b|18d7d88d-d35e-4fb5-a5c3-7773c20a72d9")
+
+    def test_job_role_is_assigned_only_on_the_bootstrap_job(self) -> None:
+        assignment = MAIN.split("resource githubBootstrapJob ")[1].split("\n}\n")[0]
+        self.assertIn("= if (deployApps || bootstrapJobExists) {", assignment)  # the job must exist
+        self.assertIn("\n  scope: bootstrapJob\n", assignment)
+        self.assertIn("resource bootstrapJob 'Microsoft.App/jobs@2025-01-01' existing = {\n  name: names.bootstrap\n}", MAIN)
+        self.assertIn("roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', githubJobRoleDefinition.name)",
+                      assignment)
+        self.assertIn("principalId: githubIdentity.properties.principalId", assignment)
+        self.assertIn("name: guid(bootstrapJob.id, githubIdentity.id, githubJobRoleDefinition.name)", assignment)
+        self.assertIn("dependsOn: [\n    apps\n  ]", assignment)  # created with the job in the apps phase
+        self.assertIn("param bootstrapJobExists bool = false", MAIN)
+        self.assertNotIn("bootstrapJobExists", PARAMS)  # computed by deploy-u12.ps1 before each deployment
+
+    @unittest.skipUnless(BICEP, "Bicep CLI not available")
+    def test_compiled_job_role(self) -> None:
+        result = subprocess.run([BICEP, "build", str(U12 / "main.bicep"), "--stdout"], capture_output=True, text=True,
+                                timeout=120)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        resources = json.loads(result.stdout)["resources"]
+        [definition] = [r for r in resources if r["type"] == "Microsoft.Authorization/roleDefinitions"]
+        self.assertNotIn("condition", definition)  # managed with the other GitHub roles (core phase)
+        self.assertEqual(definition["properties"]["assignableScopes"], ["[resourceGroup().id]"])
+        self.assertEqual(definition["properties"]["permissions"][0]["notActions"], [])
+        self.assertEqual(definition["properties"]["permissions"][0]["dataActions"], [])
+        [assignment] = [r for r in resources if r["type"] == "Microsoft.Authorization/roleAssignments"
+                        and "bootstrap" in r.get("scope", "")]
+        self.assertEqual(assignment["scope"], "[resourceId('Microsoft.App/jobs', variables('names').bootstrap)]")
+        self.assertEqual(assignment["condition"], "[or(parameters('deployApps'), parameters('bootstrapJobExists'))]")
+        self.assertIn("[resourceId('Microsoft.Authorization/roleDefinitions', guid(resourceGroup().id, 'u12-github-bootstrap-job'))]",
+                      assignment["dependsOn"])
+        self.assertEqual(json.loads(result.stdout)["variables"]["githubJobActions"], self.JOB_ACTIONS)
 
     def test_parameters_are_identifiers_of_u10_and_u11(self) -> None:
         self.assertIn("param keyVaultName = 'kv-mpa-dev-dymtafh7zjbba'", PARAMS)
@@ -305,6 +370,16 @@ class Workflow(unittest.TestCase):
         self.assertNotRegex(self.SOURCE, r"(?m)^\s+(push|pull_request|schedule):")
         self.assertNotRegex(self.SOURCE.lower(), r"environment: (staging|prod)")
 
+    def test_job_commands_are_the_ones_the_job_role_allows(self) -> None:
+        # The job role grants read, write (update = GET + PATCH), start and the execution reads, nothing else: a new
+        # job command in the workflow (stop, secret list, delete, logs...) needs its action reviewed first.
+        verbs = re.findall(r"az containerapp job ([a-z]+(?: show| list)?)", self.SOURCE)
+        self.assertEqual(sorted(set(verbs)), ["execution show", "start", "update"])
+        # `job update` only lists secrets for --yaml or registry flags (azure-cli containerapp_job_decorator.py).
+        [update] = [line for line in self.SOURCE.splitlines() if "az containerapp job update" in line]
+        self.assertNotRegex(update, r"--registry-|--yaml|--secrets|--set-env-vars")
+        self.assertNotRegex(code(self.SOURCE), r"az containerapp job (secret|stop|delete|logs)")
+
     def test_builds_the_three_existing_dockerfiles(self) -> None:
         for dockerfile in ("backend", "frontend", "bootstrap"):
             self.assertIn(f"--file infra/docker/{dockerfile}.Dockerfile", self.SOURCE)
@@ -352,8 +427,18 @@ class ScriptSource(unittest.TestCase):
                       "Key Vault opcion C: privado, plantillas=true, bypass=AzureServices", "GitHub sin deploy/action",
                       "contrasenas solo como secretRef", "PostgreSQL arrancado (Ready)",
                       "bootstrap: ultima ejecucion Succeeded", "frontend responde 200 por HTTPS",
-                      "API viva tras el proxy", "GitHub: 4 roles minimos"):
+                      "API viva tras el proxy", "GitHub: 4 roles minimos",
+                      "GitHub: rol del job (5 acciones, sin comodines, listSecrets ni delete) solo sobre el job de bootstrap"):
             self.assertIn(check, verify)
+        self.assertIn("Get-GithubRoleProblems $ghRoles (Get-AssignedCustomRoles $ghRoles $rgId) $rgId $job.id $true", verify)
+        self.assertIn("$ghRoles.Count -eq 5", verify)
+
+    def test_deployments_know_whether_the_job_exists(self) -> None:
+        deploy = self.SOURCE.split("function Invoke-U12Deployment")[1].split("\nfunction ")[0]
+        self.assertIn("$Overrides['bootstrapJobExists'] = $jobExists", deploy)
+        self.assertIn("$jobRole = $Apps -or $jobExists", deploy)
+        self.assertIn("Test-U12WhatIf $whatIf $rgId $allowedRoles $Apps $jobRole", deploy)
+        self.assertIn("'Microsoft.Authorization/roleDefinitions'", self.SOURCE.split("$AllowedTypes = @(")[1].split(")")[0])
         self.assertIn("    Protect-Evidence $Object\n", self.SOURCE)  # every evidence file is redacted
         self.assertNotRegex(self.SOURCE, r"--assignee-object-id', \$gh")  # the deploy role is never given to GitHub
 
@@ -511,6 +596,26 @@ class PreflightOnly(unittest.TestCase):
             self.assertIn(line, result.stdout)
         self.assert_only_reads(state)
 
+    def test_job_role_missing_on_a_deployed_dev_is_a_warning(self) -> None:
+        result, state = self.run_preflight(env={"FAKE_AZ_EXISTING": "1"})
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("AVISO  id-mpa-dev-github sin rol sobre caj-mpa-dev-bootstrap", result.stdout)
+        self.assertIn("-Stage Core lo crea y no crea nada mas", result.stdout)
+        self.assert_only_reads(state)
+
+    def test_job_role_on_the_job_is_accepted(self) -> None:
+        result, state = self.run_preflight(env={"FAKE_AZ_EXISTING": "1", "FAKE_AZ_JOB_ROLE": "ok"})
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("OK     id-mpa-dev-github: rol del job (5 acciones) solo sobre caj-mpa-dev-bootstrap", result.stdout)
+        self.assertNotIn("BLOQUEO", result.stdout)
+        self.assert_only_reads(state)
+
+    def test_job_role_is_not_expected_before_the_job_exists(self) -> None:
+        result, state = self.run_preflight()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("INFO   caj-mpa-dev-bootstrap no existe todavia: su rol para GitHub lo asigna la fase Apps", result.stdout)
+        self.assert_only_reads(state)
+
     def test_an_express_environment_is_reported_without_touching_it(self) -> None:
         result, state = self.run_preflight(env={"FAKE_AZ_EXISTING": "1", "FAKE_AZ_EXPRESS": "1"})
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)  # a warning: Core tries the conversion
@@ -532,6 +637,10 @@ class PreflightOnly(unittest.TestCase):
             "API publica": ({"FAKE_AZ_EXISTING": "1", "FAKE_AZ_API_PUBLIC": "1"}, "ca-mpa-dev-api: ingress interno"),
             "regla 0.0.0.0": ({"FAKE_AZ_EXISTING": "1", "FAKE_AZ_OPEN_RULE": "1"}, "regla de firewall no permitida"),
             "GitHub lee secretos": ({"FAKE_AZ_GITHUB_ROLE": "Key Vault Contributor"}, "id-mpa-dev-github: roles"),
+            "rol del job sobre el grupo": ({"FAKE_AZ_EXISTING": "1", "FAKE_AZ_JOB_ROLE": "rg"},
+                                           "rol del job con ambito distinto del job de bootstrap"),
+            "rol del job con comodin": ({"FAKE_AZ_EXISTING": "1", "FAKE_AZ_JOB_ROLE": "wide"},
+                                        "comodin en el rol del job: Microsoft.App/jobs/*/action"),
             "sujeto OIDC antiguo": ({"FAKE_AZ_OIDC_SUBJECT": "repo:daniel02vazquez97-alt/Motor-Predictivo-de-Abastecimiento-de-Inventarios:environment:dev"},
                                     "una sola federacion OIDC, sujeto esperado"),
             "sujeto OIDC de rama": ({"FAKE_AZ_OIDC_SUBJECT": "repo:daniel02vazquez97-alt@290574726/G19X-ITH-DVT-209-ACADEMIC@1408075880:ref:refs/heads/main"},

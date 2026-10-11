@@ -19,6 +19,8 @@
 #              never written to disk except a temporary request body that is deleted at once).
 #   Core       ACR Basic, PostgreSQL 16 B1ms, Container Apps environment (Consumption), runtime identity and the
 #              minimum roles of the GitHub identity. validate -> what-if (checked automatically) -> DESPLEGAR.
+#              The GitHub role on the bootstrap job (custom, five actions, scope = the job) is part of those roles:
+#              once the job exists, re-running Core adds it and the what-if may create nothing else (C13).
 #   Apps       api, frontend and the bootstrap job with -ImageTag (pushed by GitHub Actions); then Firewall.
 #   Firewall   PostgreSQL rules = the current outbound IPs of Container Apps (never 0.0.0.0); stale rules removed.
 #   Bootstrap  starts the manual job (dataset -> migrate -> ingest -> forecast -> recommend) and waits for it.
@@ -65,6 +67,13 @@ $DeployRoleName = 'Key Vault Resource Manager Template Deployment Operator'
 # OIDC subject of id-mpa-dev-github (U10, DT-098): GitHub's immutable format with owner and repository ids.
 $ExpectedGithubSubject = 'repo:daniel02vazquez97-alt@290574726/G19X-ITH-DVT-209-ACADEMIC@1408075880:environment:dev'
 $GithubAllowedRoles = @('Reader', 'Container Apps Contributor', 'AcrPush', 'Managed Identity Operator')
+# Container Apps Contributor has no Microsoft.App/jobs action (Deploy dev #4: AuthorizationFailed on jobs/write), and
+# the built-in job roles grant Microsoft.App/jobs/*/action (listSecrets included). GitHub gets this custom role, on the
+# bootstrap job only, with exactly what deploy-dev.yml calls (u12/main.bicep declares it; both lists must match).
+$BootstrapJobName = 'caj-mpa-dev-bootstrap'
+$GithubJobRoleName = "U12 Bootstrap Job Deployer ($ResourceGroup)"
+$GithubJobActions = @('Microsoft.App/jobs/read', 'Microsoft.App/jobs/write', 'Microsoft.App/jobs/start/action',
+    'Microsoft.App/jobs/executions/read', 'Microsoft.App/jobs/execution/read')
 # Built-in roles (Microsoft Learn, "Azure built-in roles"); the two Container Apps / identity ones are resolved by
 # name at run time and must exist with exactly that name.
 $AcrPullRoleId = '7f951dda-4ed3-4680-a7ca-43fe172d538d'
@@ -73,7 +82,7 @@ $ReaderRoleId = 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
 $NamedRoles = [ordered]@{ containerAppsContributorRoleId = 'Container Apps Contributor'; managedIdentityOperatorRoleId = 'Managed Identity Operator' }
 $AllowedTypes = @(
     'Microsoft.ManagedIdentity/userAssignedIdentities', 'Microsoft.Authorization/roleAssignments',
-    'Microsoft.ContainerRegistry/registries', 'Microsoft.DBforPostgreSQL/flexibleServers',
+    'Microsoft.Authorization/roleDefinitions', 'Microsoft.ContainerRegistry/registries', 'Microsoft.DBforPostgreSQL/flexibleServers',
     'Microsoft.DBforPostgreSQL/flexibleServers/databases', 'Microsoft.DBforPostgreSQL/flexibleServers/configurations',
     'Microsoft.DBforPostgreSQL/flexibleServers/firewallRules', 'Microsoft.App/managedEnvironments',
     'Microsoft.App/containerApps', 'Microsoft.App/jobs')
@@ -196,6 +205,13 @@ function Get-LeafPaths($Delta, [string]$Prefix = '') {
     return ,$paths.ToArray()
 }
 
+# The resource as it will be (Create/Modify) or as it is (NoChange may list only `before`).
+function Get-ChangePayload($Change) {
+    $after = Get-Prop $Change 'after'
+    if ($after) { return $after }
+    return (Get-Prop $Change 'before')
+}
+
 function Get-ChangeType($Change) {
     $after = Get-Prop $Change 'after'
     $before = Get-Prop $Change 'before'
@@ -259,10 +275,74 @@ function Test-KeyVaultWhatIf($WhatIf, [string]$GithubPrincipalId = '') {
     return ,$problems.ToArray()
 }
 
+# The custom role of the bootstrap job, as ARM (what-if: properties.*) or az role definition list returns it: exactly
+# the five actions, no wildcard, listSecrets or delete, nothing in NotActions or data actions, assignable only in the
+# group. Returns the problems found (empty = minimal).
+function Test-JobRoleDefinition($Definition, [string]$RgId) {
+    $problems = New-Object System.Collections.Generic.List[string]
+    $d = $Definition
+    if ($null -ne (Get-Prop $Definition 'properties')) { $d = Get-Prop $Definition 'properties' }
+    if ("$(Get-Prop $d 'roleName')" -cne $GithubJobRoleName) { $problems.Add("rol del job con otro nombre: $(Get-Prop $d 'roleName')") }
+    $kind = "$(Get-Prop $d 'type')$(Get-Prop $d 'roleType')"
+    if ($kind -and $kind -notmatch '^(CustomRole)+$') { $problems.Add("el rol del job no es personalizado: $kind") }
+    $perms = As-Array (Get-Prop $d 'permissions')
+    if ($perms.Count -ne 1) { $problems.Add("el rol del job tiene $($perms.Count) bloques de permisos") }
+    $actions = New-Object System.Collections.Generic.List[string]
+    foreach ($perm in $perms) { foreach ($x in (As-Array (Get-Prop $perm 'actions'))) { $actions.Add("$x") } }
+    foreach ($a in $actions) {
+        if ($a.Contains('*')) { $problems.Add("comodin en el rol del job: $a") }
+        if ($a -match '(?i)listsecrets') { $problems.Add("el rol del job leeria secretos: $a") }
+        if ($a -match '(?i)/delete$') { $problems.Add("el rol del job podria borrar: $a") }
+    }
+    $got = @($actions | ForEach-Object { $_.ToLowerInvariant() } | Sort-Object)
+    $want = @($GithubJobActions | ForEach-Object { $_.ToLowerInvariant() } | Sort-Object)
+    if (($got -join '|') -ne ($want -join '|')) { $problems.Add("acciones del rol del job distintas de las cinco autorizadas: $($actions -join ', ')") }
+    foreach ($k in @('notActions', 'dataActions', 'notDataActions')) {
+        $extra = New-Object System.Collections.Generic.List[string]
+        foreach ($perm in $perms) { foreach ($x in (As-Array (Get-Prop $perm $k))) { $extra.Add("$x") } }
+        if ($extra.Count) { $problems.Add("el rol del job tiene ${k}: $($extra -join ', ')") }
+    }
+    $scopes = New-Object System.Collections.Generic.List[string]
+    foreach ($x in (As-Array (Get-Prop $d 'assignableScopes'))) { $scopes.Add("$x".TrimEnd('/')) }
+    if ($scopes.Count -ne 1 -or -not $scopes[0].Equals($RgId, [System.StringComparison]::OrdinalIgnoreCase)) { $problems.Add("el rol del job es asignable fuera del grupo: $($scopes -join ', ')") }
+    return ,$problems.ToArray()
+}
+
+# Role assignments of id-mpa-dev-github (az role assignment list --all) and the definitions of its custom roles: only
+# the four built-in roles inside the group, plus at most one assignment of the job role, whose scope is exactly the
+# bootstrap job and whose definition is minimal. $RequireJobRole: the job exists, so the assignment must too.
+function Get-GithubRoleProblems($Assignments, $Definitions, [string]$RgId, [string]$JobId, [bool]$RequireJobRole) {
+    $problems = New-Object System.Collections.Generic.List[string]
+    $jobRoles = 0
+    foreach ($a in (As-Array $Assignments)) {
+        $name = "$(Get-Prop $a 'roleDefinitionName')"
+        $scope = "$(Get-Prop $a 'scope')".TrimEnd('/')
+        if ($name -cin $GithubAllowedRoles) {
+            if (-not $scope.StartsWith($RgId, [System.StringComparison]::OrdinalIgnoreCase)) { $problems.Add("$name fuera del grupo: $scope") }
+        } elseif ($name -ceq $GithubJobRoleName) {
+            $jobRoles++
+            if (-not $scope.Equals($JobId, [System.StringComparison]::OrdinalIgnoreCase)) { $problems.Add("rol del job con ambito distinto del job de bootstrap: $scope") }
+            $rid = ("$(Get-Prop $a 'roleDefinitionId')" -split '/')[-1]
+            $def = @((As-Array $Definitions) | Where-Object { "$(Get-Prop $_ 'name')" -eq $rid })
+            if ($def.Count -ne 1) { $problems.Add("no se pudo leer la definicion del rol del job ($rid)") }
+            else { foreach ($p in (Test-JobRoleDefinition $def[0] $RgId)) { $problems.Add($p) } }
+        } else { $problems.Add("rol no autorizado: $name en $scope") }
+    }
+    if ($jobRoles -gt 1) { $problems.Add("el rol del job esta asignado $jobRoles veces") }
+    if ($RequireJobRole -and $jobRoles -eq 0) { $problems.Add("falta el rol del job sobre $JobId") }
+    return ,$problems.ToArray()
+}
+
 # Core/Apps stages: only the resource types of U12, inside the resource group, with the agreed SKUs and settings.
-function Test-U12WhatIf($WhatIf, [string]$RgId, [string[]]$RoleIds, [bool]$Apps) {
+# $JobRole: the bootstrap job exists or is deployed now, so the job role is assigned on it. With $JobRole and without
+# $Apps (Core re-run on a deployed dev) the only thing that may be created is that role and its assignment.
+function Test-U12WhatIf($WhatIf, [string]$RgId, [string[]]$RoleIds, [bool]$Apps, [bool]$JobRole = $Apps) {
     $problems = New-Object System.Collections.Generic.List[string]
     $seen = @{}
+    $subId = $RgId -replace '(?i)/resourceGroups/.*$', ''
+    $jobScope = "$RgId/providers/Microsoft.App/jobs/$BootstrapJobName"
+    $jobRoleIds = New-Object System.Collections.Generic.List[string]
+    $assignments = New-Object System.Collections.Generic.List[object]
     foreach ($c in (As-Array (Get-Prop $WhatIf 'changes'))) {
         $kind = "$(Get-Prop $c 'changeType')"
         if ($kind -eq 'Ignore') { continue }
@@ -270,7 +350,13 @@ function Test-U12WhatIf($WhatIf, [string]$RgId, [string[]]$RoleIds, [bool]$Apps)
         $type = Get-ChangeType $c
         if ($kind -notin @('Create', 'Modify', 'NoChange')) { $problems.Add("cambio no permitido: $kind en $id"); continue }
         if ($type -notin $AllowedTypes) { $problems.Add("recurso inesperado: $type ($id)"); continue }
-        if (-not $id.StartsWith($RgId, [System.StringComparison]::OrdinalIgnoreCase)) { $problems.Add("fuera del grupo: $id") }
+        # A role definition may be listed at the subscription (where Azure keeps definitions) or in the group.
+        $inGroup = $id.StartsWith($RgId + '/', [System.StringComparison]::OrdinalIgnoreCase)
+        if ($type -eq 'Microsoft.Authorization/roleDefinitions') { $inGroup = $inGroup -or $id.StartsWith("$subId/providers/Microsoft.Authorization/roleDefinitions/", [System.StringComparison]::OrdinalIgnoreCase) }
+        if (-not $inGroup) { $problems.Add("fuera del grupo: $id") }
+        if ($JobRole -and -not $Apps -and $kind -eq 'Create' -and $type -notin @('Microsoft.Authorization/roleDefinitions', 'Microsoft.Authorization/roleAssignments')) {
+            $problems.Add("Core sobre dev desplegado solo puede crear el rol del job: Create en $id")
+        }
         if ($id -match '(?i)staging|-prod|openai|cognitive|search|machinelearning|powerbi') { $problems.Add("servicio o entorno no autorizado: $id") }
         $seen[$type] = 1 + [int]$seen[$type]
         $a = Get-Prop $c 'after'
@@ -317,16 +403,34 @@ function Test-U12WhatIf($WhatIf, [string]$RgId, [string[]]$RoleIds, [bool]$Apps)
             'Microsoft.App/jobs' {
                 if ("$(Get-Prop (Get-Prop $p 'configuration') 'triggerType')" -ne 'Manual') { $problems.Add('el job no es Manual') }
             }
-            'Microsoft.Authorization/roleAssignments' {
-                $rd = "$(Get-Prop $p 'roleDefinitionId')"
-                if (-not @($RoleIds | Where-Object { $rd.EndsWith($_) }).Count) { $problems.Add("rol no autorizado: $rd") }
+            'Microsoft.Authorization/roleDefinitions' {
+                foreach ($x in (Test-JobRoleDefinition (Get-ChangePayload $c) $RgId)) { $problems.Add($x) }
+                $jobRoleIds.Add((($id -split '/')[-1]))
             }
+            'Microsoft.Authorization/roleAssignments' { $assignments.Add($c) }
         }
+    }
+    # Assignments are checked once every definition is known: built-in roles of U12 anywhere in the group, the job role
+    # only on the bootstrap job and nothing else on that job.
+    $jobAssignments = 0
+    foreach ($c in $assignments) {
+        $id = "$(Get-Prop $c 'resourceId')"
+        $rd = "$(Get-Prop (Get-Prop (Get-ChangePayload $c) 'properties') 'roleDefinitionId')"
+        $onJob = $id.StartsWith("$jobScope/providers/Microsoft.Authorization/roleAssignments/", [System.StringComparison]::OrdinalIgnoreCase)
+        $isJobRole = $jobRoleIds.Count -gt 0 -and @($jobRoleIds | Where-Object { $rd.EndsWith('/' + $_, [System.StringComparison]::OrdinalIgnoreCase) }).Count -gt 0
+        if ($isJobRole) {
+            $jobAssignments++
+            if (-not $onJob) { $problems.Add("rol del job asignado fuera del job de bootstrap: $id") }
+        } elseif ($onJob) { $problems.Add("otro rol sobre el job de bootstrap: $rd") }
+        elseif (-not @($RoleIds | Where-Object { $rd.EndsWith($_) }).Count) { $problems.Add("rol no autorizado: $rd") }
     }
     $expected = @('Microsoft.ContainerRegistry/registries', 'Microsoft.DBforPostgreSQL/flexibleServers', 'Microsoft.App/managedEnvironments', 'Microsoft.ManagedIdentity/userAssignedIdentities')
     if ($Apps) { $expected += @('Microsoft.App/containerApps', 'Microsoft.App/jobs') }
     foreach ($t in $expected) { if (-not $seen.ContainsKey($t)) { $problems.Add("falta el recurso esperado: $t") } }
-    if ([int]$seen['Microsoft.Authorization/roleAssignments'] -ne 4) { $problems.Add("se esperaban 4 asignaciones de rol y hay $([int]$seen['Microsoft.Authorization/roleAssignments'])") }
+    if ([int]$seen['Microsoft.Authorization/roleDefinitions'] -ne 1) { $problems.Add("se esperaba 1 definicion de rol (la del job) y hay $([int]$seen['Microsoft.Authorization/roleDefinitions'])") }
+    $wantAssignments = if ($JobRole) { 5 } else { 4 }
+    if ([int]$seen['Microsoft.Authorization/roleAssignments'] -ne $wantAssignments) { $problems.Add("se esperaban $wantAssignments asignaciones de rol y hay $([int]$seen['Microsoft.Authorization/roleAssignments'])") }
+    if ($jobAssignments -ne [int]$JobRole) { $problems.Add("se esperaban $([int]$JobRole) asignaciones del rol del job y hay $jobAssignments") }
     if ($Apps -and [int]$seen['Microsoft.App/containerApps'] -ne 2) { $problems.Add('se esperaban exactamente dos apps') }
     return ,$problems.ToArray()
 }
@@ -447,6 +551,18 @@ function Get-RoleDefinitionsAt([string]$PrincipalId, [string]$TargetId) {
     return [ordered]@{ assignments = $relevant; definitions = $definitions.ToArray() }
 }
 
+# Definitions of the roles assigned that are not one of the four built-in ones (the job role). Read-only.
+function Get-AssignedCustomRoles($Assignments, [string]$RgId) {
+    $defs = New-Object System.Collections.Generic.List[object]
+    $ids = @((As-Array $Assignments) | Where-Object { "$(Get-Prop $_ 'roleDefinitionName')" -cnotin $GithubAllowedRoles } |
+        ForEach-Object { ("$(Get-Prop $_ 'roleDefinitionId')" -split '/')[-1] } | Sort-Object -Unique)
+    foreach ($rid in $ids) {
+        $found = Invoke-Az @('role', 'definition', 'list', '--name', $rid, '--scope', $RgId, '--output', 'json') -Array -What "az role definition list $rid"
+        foreach ($f in $found) { $defs.Add($f) }
+    }
+    return ,$defs.ToArray()
+}
+
 function Get-SignedInUserId {
     $id = (Invoke-Az @('ad', 'signed-in-user', 'show', '--query', 'id', '--output', 'tsv') -Raw -What 'az ad signed-in-user show').Trim()
     if ($id -notmatch '^[0-9a-fA-F-]{36}$') { Stop-U12 'no se pudo leer el identificador de tu usuario' }
@@ -471,6 +587,19 @@ if ($SelfTest) {
         return [ordered]@{ changeType = $kind; resourceId = "$rg/providers/$type/$name"; after = $a }
     }
     $role = { param($id) Ch 'Create' 'Microsoft.Authorization/roleAssignments' (New-Guid) @{ properties = @{ roleDefinitionId = "/x/roleDefinitions/$id" } } }
+    $jobRoleId = 'c0570b00-0000-4000-8000-000000000001'
+    $jobId = "$rg/providers/Microsoft.App/jobs/caj-mpa-dev-bootstrap"
+    $roleDef = { param($actions, $scopes, $extra)
+        $perm = [ordered]@{ actions = @($actions); notActions = @(); dataActions = @(); notDataActions = @() }
+        foreach ($k in $extra.Keys) { $perm[$k] = $extra[$k] }
+        [ordered]@{ changeType = 'Create'; resourceId = "/subscriptions/s/providers/Microsoft.Authorization/roleDefinitions/$jobRoleId"
+            after = [ordered]@{ type = 'Microsoft.Authorization/roleDefinitions'; name = $jobRoleId
+                properties = [ordered]@{ roleName = $GithubJobRoleName; type = 'CustomRole'; assignableScopes = @($scopes); permissions = @($perm) } } } }
+    $jobDef = & $roleDef $GithubJobActions @($rg) @{}
+    $assignOn = { param($scopeId, $roleId)
+        [ordered]@{ changeType = 'Create'; resourceId = "$scopeId/providers/Microsoft.Authorization/roleAssignments/$(New-Guid)"
+            after = [ordered]@{ type = 'Microsoft.Authorization/roleAssignments'; properties = [ordered]@{ roleDefinitionId = "/subscriptions/s/providers/Microsoft.Authorization/roleDefinitions/$roleId" } } } }
+    $jobAssign = & $assignOn $jobId $jobRoleId
     $core = @(
         (Ch 'Create' 'Microsoft.ContainerRegistry/registries' 'acrmpadevx' @{ sku = @{ name = 'Basic' }; properties = @{ adminUserEnabled = $false } }),
         (Ch 'Create' 'Microsoft.DBforPostgreSQL/flexibleServers' 'psql-mpa-dev-x' @{ sku = @{ name = 'Standard_B1ms' }; properties = @{ version = '16'; highAvailability = @{ mode = 'Disabled' } } }),
@@ -478,16 +607,55 @@ if ($SelfTest) {
         (Ch 'Create' 'Microsoft.DBforPostgreSQL/flexibleServers/configurations' 'psql-mpa-dev-x/require_secure_transport' @{ properties = @{ value = 'ON' } }),
         (Ch 'Create' 'Microsoft.App/managedEnvironments' 'cae-mpa-dev' @{ properties = @{ environmentMode = 'WorkloadProfiles'; workloadProfiles = @(@{ workloadProfileType = 'Consumption' }) } }),
         (Ch 'Create' 'Microsoft.ManagedIdentity/userAssignedIdentities' 'id-mpa-dev-runtime' @{}),
-        (& $role $AcrPullRoleId), (& $role $AcrPushRoleId), (& $role 'cac0'), (& $role 'mio0'),
+        (& $role $AcrPullRoleId), (& $role $AcrPushRoleId), (& $role 'cac0'), (& $role 'mio0'), $jobDef,
         [ordered]@{ changeType = 'Ignore'; resourceId = "$rg/providers/Microsoft.KeyVault/vaults/kv" })
     $roundTrip = { param($changes) ConvertFrom-Json -InputObject (ConvertTo-Json -InputObject ([ordered]@{ changes = $changes }) -Depth 20) }
     Check 'what-if de core conforme' ((Test-U12WhatIf (& $roundTrip $core) $rg $roles $false).Count -eq 0)
-    $apps = $core + @(
+    $appsOnly = @(
         (Ch 'Create' 'Microsoft.App/containerApps' 'ca-mpa-dev-api' @{ properties = @{ configuration = @{ ingress = @{ external = $false; allowInsecure = $false }; registries = @(@{ identity = 'id' }) } } }),
         (Ch 'Create' 'Microsoft.App/containerApps' 'ca-mpa-dev-frontend' @{ properties = @{ configuration = @{ ingress = @{ external = $true; allowInsecure = $false }; registries = @(@{ identity = 'id' }) } } }),
         (Ch 'Create' 'Microsoft.App/jobs' 'caj-mpa-dev-bootstrap' @{ properties = @{ configuration = @{ triggerType = 'Manual' } } }),
         (Ch 'Create' 'Microsoft.DBforPostgreSQL/flexibleServers/firewallRules' 'psql-mpa-dev-x/aca-out-20-1-2-3' @{ properties = @{ startIpAddress = '20.1.2.3'; endIpAddress = '20.1.2.3' } }))
-    Check 'what-if de apps conforme' ((Test-U12WhatIf (& $roundTrip $apps) $rg $roles $true).Count -eq 0)
+    $apps = $core + $appsOnly + @($jobAssign)
+    Check 'what-if de apps conforme (con el rol del job sobre el job)' ((Test-U12WhatIf (& $roundTrip $apps) $rg $roles $true).Count -eq 0)
+    # Core re-run on a deployed dev (C13): everything already there, only the job role and its assignment are new.
+    $existing = @($core | Where-Object { $_.changeType -eq 'Create' -and $_.resourceId -notlike '*/roleDefinitions/*' } | ForEach-Object { $x = [ordered]@{}; foreach ($k in $_.Keys) { $x[$k] = $_[$k] }; $x.changeType = 'NoChange'; $x })
+    $rerun = $existing + @($jobDef, $jobAssign)
+    Check 'what-if de Core sobre dev desplegado: solo el rol del job y su asignacion' ((Test-U12WhatIf (& $roundTrip $rerun) $rg $roles $false $true).Count -eq 0)
+    Check 'what-if de Core sobre dev desplegado: cualquier otro Create -> rechazado' ((Test-U12WhatIf (& $roundTrip ($rerun + @((Ch 'Create' 'Microsoft.ManagedIdentity/userAssignedIdentities' 'id-otra' @{})))) $rg $roles $false $true).Count -gt 0)
+    Check 'what-if de Core sobre dev desplegado: sin la asignacion del job -> rechazado' ((Test-U12WhatIf (& $roundTrip ($existing + @($jobDef))) $rg $roles $false $true).Count -gt 0)
+    Check 'what-if de Core sin job: el rol se define y no se asigna' ((Test-U12WhatIf (& $roundTrip ($core + @($jobAssign))) $rg $roles $false).Count -gt 0)
+    $jobCase = { param($def, $assign, $pattern)
+        $found = Test-U12WhatIf (& $roundTrip (@($core | Where-Object { $_ -ne $jobDef }) + $appsOnly + @($def, $assign))) $rg $roles $true
+        return (@($found | Where-Object { $_ -match $pattern }).Count -gt 0) }
+    Check 'rol del job: Microsoft.App/jobs/*/action -> rechazado (comodin)' (& $jobCase (& $roleDef ($GithubJobActions + @('Microsoft.App/jobs/*/action')) @($rg) @{}) $jobAssign 'comodin')
+    Check 'rol del job: Microsoft.App/* -> rechazado (comodin)' (& $jobCase (& $roleDef @('Microsoft.App/*') @($rg) @{}) $jobAssign 'comodin')
+    Check 'rol del job: listSecrets/action -> rechazado' (& $jobCase (& $roleDef ($GithubJobActions + @('Microsoft.App/jobs/listSecrets/action')) @($rg) @{}) $jobAssign 'leeria secretos')
+    Check 'rol del job: jobs/delete -> rechazado' (& $jobCase (& $roleDef ($GithubJobActions + @('Microsoft.App/jobs/delete')) @($rg) @{}) $jobAssign 'podria borrar')
+    Check 'rol del job: una accion de mas (stop) -> rechazado' (& $jobCase (& $roleDef ($GithubJobActions + @('Microsoft.App/jobs/stop/action')) @($rg) @{}) $jobAssign 'distintas de las cinco')
+    Check 'rol del job: una accion de menos (start) -> rechazado' (& $jobCase (& $roleDef @($GithubJobActions | Where-Object { $_ -notlike '*/start/*' }) @($rg) @{}) $jobAssign 'distintas de las cinco')
+    Check 'rol del job: acciones de datos -> rechazado' (& $jobCase (& $roleDef $GithubJobActions @($rg) @{ dataActions = @('Microsoft.App/jobs/exec/action') }) $jobAssign 'dataActions')
+    Check 'rol del job: asignable en la suscripcion -> rechazado' (& $jobCase (& $roleDef $GithubJobActions @('/subscriptions/s') @{}) $jobAssign 'asignable fuera del grupo')
+    Check 'rol del job: asignado sobre el grupo -> rechazado' (& $jobCase $jobDef (& $assignOn $rg $jobRoleId) 'fuera del job de bootstrap')
+    Check 'rol del job: asignado sobre otro job -> rechazado' (& $jobCase $jobDef (& $assignOn "$rg/providers/Microsoft.App/jobs/caj-otro" $jobRoleId) 'fuera del job de bootstrap')
+    Check 'rol del job: Owner sobre el job -> rechazado' (& $jobCase $jobDef (& $assignOn $jobId '8e3af657-a8ff-443c-a75c-2fe8c4bcb635') 'otro rol sobre el job')
+    Check 'rol del job: dos definiciones -> rechazado' ((Test-U12WhatIf (& $roundTrip ($apps + @($jobDef))) $rg $roles $true).Count -gt 0)
+    Check 'rol del job: fase Apps sin la asignacion -> rechazado' ((Test-U12WhatIf (& $roundTrip ($core + $appsOnly)) $rg $roles $true).Count -gt 0)
+    $builtIns = @($GithubAllowedRoles | ForEach-Object { [ordered]@{ roleDefinitionName = $_; scope = $rg; roleDefinitionId = "/x/roleDefinitions/$_" } })
+    $jobAz = [ordered]@{ roleDefinitionName = $GithubJobRoleName; scope = $jobId; roleDefinitionId = "/subscriptions/s/providers/Microsoft.Authorization/roleDefinitions/$jobRoleId" }
+    $azDef = { param($actions, $scopes) [ordered]@{ name = $jobRoleId; roleName = $GithubJobRoleName; roleType = 'CustomRole'; assignableScopes = @($scopes)
+        permissions = @([ordered]@{ actions = @($actions); notActions = @(); dataActions = @(); notDataActions = @() }) } }
+    $ghCase = { param($assignments, $defs, $require)
+        $found = Get-GithubRoleProblems (& $roundTrip $assignments).changes (& $roundTrip $defs).changes $rg $jobId $require
+        return ,$found }
+    Check 'GitHub: 4 integrados en el grupo + rol del job sobre el job -> conforme' ((& $ghCase ($builtIns + @($jobAz)) @((& $azDef $GithubJobActions @($rg))) $true).Count -eq 0)
+    Check 'GitHub: sin rol del job -> aviso en Preflight, fallo en Verify' (((& $ghCase $builtIns @() $false).Count -eq 0) -and ((& $ghCase $builtIns @() $true).Count -gt 0))
+    $jobOnRg = [ordered]@{ roleDefinitionName = $GithubJobRoleName; scope = $rg; roleDefinitionId = $jobAz.roleDefinitionId }
+    Check 'GitHub: rol del job sobre el grupo -> rechazado' ((& $ghCase ($builtIns + @($jobOnRg)) @((& $azDef $GithubJobActions @($rg))) $true).Count -gt 0)
+    Check 'GitHub: rol del job con jobs/* -> rechazado' ((& $ghCase ($builtIns + @($jobAz)) @((& $azDef @('Microsoft.App/jobs/*') @($rg))) $true).Count -gt 0)
+    Check 'GitHub: Container Apps Jobs Contributor u Owner -> rechazado' ((& $ghCase ($builtIns + @($jobAz) + @([ordered]@{ roleDefinitionName = 'Container Apps Jobs Contributor'; scope = $jobId; roleDefinitionId = '/x/4e3d2b60' })) @((& $azDef $GithubJobActions @($rg))) $true).Count -gt 0 -and
+        (& $ghCase ($builtIns + @($jobAz) + @([ordered]@{ roleDefinitionName = 'Owner'; scope = $rg; roleDefinitionId = '/x/8e3af657' })) @((& $azDef $GithubJobActions @($rg))) $true).Count -gt 0)
+    Check 'GitHub: integrado fuera del grupo -> rechazado' ((& $ghCase (@([ordered]@{ roleDefinitionName = 'Reader'; scope = '/subscriptions/s'; roleDefinitionId = '/x/r' }) + @($jobAz)) @((& $azDef $GithubJobActions @($rg))) $true).Count -gt 0)
     $bad = [ordered]@{
         'ACR Premium'          = (Ch 'Create' 'Microsoft.ContainerRegistry/registries' 'acr2' @{ sku = @{ name = 'Premium' }; properties = @{ adminUserEnabled = $false } })
         'ACR admin'            = (Ch 'Create' 'Microsoft.ContainerRegistry/registries' 'acr3' @{ sku = @{ name = 'Basic' }; properties = @{ adminUserEnabled = $true } })
@@ -695,8 +863,15 @@ function Invoke-Preflight {
         $fics = Invoke-Az @('identity', 'federated-credential', 'list', '--identity-name', $gh.name, '--resource-group', $ResourceGroup, '--output', 'json') -Array -What 'credenciales federadas'
         Expect ($fics.Count -eq 1 -and "$($fics[0].subject)" -ceq $ExpectedGithubSubject -and "$($fics[0].issuer)" -eq 'https://token.actions.githubusercontent.com' -and ((@($fics[0].audiences) -join ',') -eq 'api://AzureADTokenExchange')) "id-mpa-dev-github: una sola federacion OIDC, sujeto esperado, entorno dev ($(@($fics | ForEach-Object { $_.subject }) -join ', '))"
         $ghAll = Invoke-Az @('role', 'assignment', 'list', '--all', '--assignee', $gh.principalId, '--output', 'json') -Array -What 'roles de GitHub'
-        $ghBad = @($ghAll | Where-Object { $_.roleDefinitionName -notin $GithubAllowedRoles -or -not "$($_.scope)".StartsWith($rgId, [System.StringComparison]::OrdinalIgnoreCase) })
-        Expect ($ghBad.Count -eq 0) ("id-mpa-dev-github: roles " + ((@($ghAll | ForEach-Object { $_.roleDefinitionName }) -join ', ')) + ' (solo los autorizados, dentro del grupo)')
+        $jobId = "$rgId/providers/Microsoft.App/jobs/$BootstrapJobName"
+        $jobExists = $null -ne (Invoke-Az @('resource', 'show', '--ids', $jobId, '--output', 'json') -AllowFailure -What 'job de bootstrap')
+        $ghProblems = Get-GithubRoleProblems $ghAll (Get-AssignedCustomRoles $ghAll $rgId) $rgId $jobId $false
+        Expect ($ghProblems.Count -eq 0) ("id-mpa-dev-github: roles " + ((@($ghAll | ForEach-Object { $_.roleDefinitionName }) -join ', ')) + ' (solo los autorizados, dentro del grupo; el del job solo sobre el job)')
+        foreach ($x in $ghProblems) { Write-Host "         - $x" -ForegroundColor Red }
+        $hasJobRole = @($ghAll | Where-Object { "$($_.roleDefinitionName)" -ceq $GithubJobRoleName }).Count -gt 0
+        if ($hasJobRole) { Pass "id-mpa-dev-github: rol del job ($($GithubJobActions.Count) acciones) solo sobre $BootstrapJobName" }
+        elseif ($jobExists) { Warn "id-mpa-dev-github sin rol sobre ${BootstrapJobName}: Deploy dev no puede actualizar el job (Microsoft.App/jobs/write); -Stage Core lo crea y no crea nada mas" }
+        else { Note "$BootstrapJobName no existe todavia: su rol para GitHub lo asigna la fase Apps" }
         Expect (-not (Test-ActionAllowed (Get-RoleDefinitionsAt $gh.principalId $kv.id).definitions $DeployAction)) "id-mpa-dev-github sin $DeployAction (no la necesita)"
     }
     $rt = Invoke-Az @('identity', 'show', '--name', 'id-mpa-dev-runtime', '--resource-group', $ResourceGroup, '--output', 'json') -AllowFailure -What 'identidad de ejecucion'
@@ -865,6 +1040,12 @@ function Invoke-U12Deployment([hashtable]$Overrides, [bool]$Apps, [string]$Word)
     $roleIds = Resolve-RoleIds
     $Overrides['containerAppsContributorRoleId'] = $roleIds.containerAppsContributorRoleId
     $Overrides['managedIdentityOperatorRoleId'] = $roleIds.managedIdentityOperatorRoleId
+    # The job role is assigned on the job, so only once it exists (or is deployed in this run).
+    $jobExists = $null -ne (Invoke-Az @('resource', 'show', '--resource-group', $ResourceGroup, '--name', $BootstrapJobName, '--resource-type', 'Microsoft.App/jobs', '--output', 'json') -AllowFailure -What 'job de bootstrap')
+    $Overrides['bootstrapJobExists'] = $jobExists
+    $jobRole = $Apps -or $jobExists
+    if ($jobRole) { Write-Host "Rol del job para GitHub: '$GithubJobRoleName' ($($GithubJobActions -join ', ')) solo sobre $BootstrapJobName" }
+    else { Write-Host "$BootstrapJobName no existe todavia: el rol del job se define ahora y se asigna en la fase Apps" }
     $paramFile = Get-U12Parameters $Overrides
     $deployArgs = @('--resource-group', $ResourceGroup, '--name', $U12DeploymentName, '--template-file', $U12Template, '--parameters', "@$paramFile")
     Invoke-Az @('bicep', 'lint', '--file', $U12Template) -Raw -What 'az bicep lint' | Out-Null
@@ -875,7 +1056,7 @@ function Invoke-U12Deployment([hashtable]$Overrides, [bool]$Apps, [string]$Word)
     Save-Evidence "what-if-$Stage.json" $whatIf
     foreach ($c in (As-Array $whatIf.changes)) { if ($c.changeType -ne 'Ignore') { Write-Host (" {0,-9} {1}" -f $c.changeType, $c.resourceId) } }
     $allowedRoles = @($AcrPullRoleId, $AcrPushRoleId, $roleIds.containerAppsContributorRoleId, $roleIds.managedIdentityOperatorRoleId)
-    $problems = Test-U12WhatIf $whatIf $rgId $allowedRoles $Apps
+    $problems = Test-U12WhatIf $whatIf $rgId $allowedRoles $Apps $jobRole
     if ($problems.Count -gt 0) {
         Write-Host ''; Write-Host 'WHAT-IF NO AUTORIZADO' -ForegroundColor Red
         $problems | ForEach-Object { Write-Host " - $_" }
@@ -1041,6 +1222,7 @@ switch ($Stage) {
         Write-Host ''
         Write-Host "Siguientes pasos: 1) deploy-u11.ps1 (redirect URI); 2) variables de GitHub en $EvidenceDir/github-dev-variables.txt;"
         Write-Host '3) ejecutar el workflow "Deploy dev" (publica las imagenes); 4) -Stage Apps -ImageTag <sha del workflow>.'
+        Write-Host 'Si dev ya estaba desplegado (rol del job, C13): -Stage Verify y despues el workflow "Deploy dev".'
     }
     'Apps' {
         if ($ImageTag -notmatch '^[0-9a-f]{7,40}$') { Stop-U12 'falta -ImageTag con el SHA publicado por el workflow "Deploy dev"' }
@@ -1101,6 +1283,8 @@ switch ($Stage) {
         $job = Invoke-Az @('containerapp', 'job', 'show', '--name', $out.bootstrapName, '--resource-group', $ResourceGroup, '--output', 'json') -What 'job'
         $gh = Invoke-Az @('identity', 'show', '--name', 'id-mpa-dev-github', '--resource-group', $ResourceGroup, '--output', 'json') -What 'identidad de GitHub'
         $ghRoles = Invoke-Az @('role', 'assignment', 'list', '--all', '--assignee', $gh.principalId, '--output', 'json') -Array -What 'roles de GitHub'
+        $ghProblems = Get-GithubRoleProblems $ghRoles (Get-AssignedCustomRoles $ghRoles $rgId) $rgId $job.id $true
+        $ghBuiltIn = @($ghRoles | Where-Object { "$($_.roleDefinitionName)" -cin $GithubAllowedRoles })
         $rt = Invoke-Az @('identity', 'show', '--name', 'id-mpa-dev-runtime', '--resource-group', $ResourceGroup, '--output', 'json') -What 'identidad de ejecucion'
         $rtRoles = Invoke-Az @('role', 'assignment', 'list', '--all', '--assignee', $rt.principalId, '--output', 'json') -Array -What 'roles de ejecucion'
         $registries = @(@($api, $fe, $job) | ForEach-Object { (As-Array $_.properties.configuration.registries) })
@@ -1112,7 +1296,6 @@ switch ($Stage) {
         $secretEnvs = @($envs | Where-Object { $_.name -match '(?i)password' })
         $urls = @($envs | Where-Object { $_.name -eq 'DATABASE_URL' })
         $me = Get-SignedInUserId
-        $ghAllowed = $GithubAllowedRoles
         $checks = [ordered]@{
             'ACR Basic sin usuario administrador'                = ($acr.sku.name -eq 'Basic' -and $acr.adminUserEnabled -eq $false)
             'PostgreSQL 16, B1ms, sin alta disponibilidad'        = ("$($pg.version)" -eq '16' -and $pg.sku.name -eq 'Standard_B1ms' -and $pg.highAvailability.mode -eq 'Disabled')
@@ -1123,7 +1306,8 @@ switch ($Stage) {
             'frontend solo HTTPS'                                = ($fe.properties.configuration.ingress.external -eq $true -and $fe.properties.configuration.ingress.allowInsecure -eq $false)
             'imagenes con identidad administrada, sin credenciales' = ($registries.Count -eq 3 -and @($registries | Where-Object { $_.passwordSecretRef -or $_.username -or -not $_.identity }).Count -eq 0)
             'job de bootstrap manual'                            = ($job.properties.configuration.triggerType -eq 'Manual')
-            'GitHub: 4 roles minimos, todos dentro del grupo'     = ($ghRoles.Count -eq 4 -and @($ghRoles | Where-Object { $_.roleDefinitionName -notin $ghAllowed -or -not $_.scope.StartsWith($rgId, [System.StringComparison]::OrdinalIgnoreCase) }).Count -eq 0)
+            'GitHub: 4 roles minimos, todos dentro del grupo'     = ($ghBuiltIn.Count -eq 4 -and (Test-SameList @($ghBuiltIn | ForEach-Object { $_.roleDefinitionName }) $GithubAllowedRoles) -and @($ghBuiltIn | Where-Object { -not "$($_.scope)".StartsWith($rgId, [System.StringComparison]::OrdinalIgnoreCase) }).Count -eq 0)
+            'GitHub: rol del job (5 acciones, sin comodines, listSecrets ni delete) solo sobre el job de bootstrap' = ($ghRoles.Count -eq 5 -and $ghProblems.Count -eq 0)
             'identidad de ejecucion: solo AcrPull sobre el ACR'  = ($rtRoles.Count -eq 1 -and $rtRoles[0].roleDefinitionName -eq 'AcrPull' -and $rtRoles[0].scope -eq $acr.id)
             'Key Vault opcion C: privado, plantillas=true, bypass=AzureServices' = ($kv.properties.publicNetworkAccess -eq 'Disabled' -and $kv.properties.enabledForTemplateDeployment -eq $true -and $kv.properties.networkAcls.bypass -eq 'AzureServices')
             'tu sesion puede usar getSecret (deploy/action)'     = (Test-ActionAllowed (Get-RoleDefinitionsAt $me $kv.id).definitions $DeployAction)
@@ -1136,6 +1320,7 @@ switch ($Stage) {
         }
         $failed = 0
         foreach ($k in $checks.Keys) { $ok = [bool]$checks[$k]; if (-not $ok) { $failed++ }; Write-Host ("{0}  {1}" -f ($(if ($ok) { 'OK  ' } else { 'FAIL' })), $k) }
+        foreach ($x in $ghProblems) { Write-Host "      - $x" -ForegroundColor Red }
         Save-Evidence 'u12-evidence.json' ([ordered]@{
             date = (Get-Date).ToUniversalTime().ToString('o'); subscriptionId = $account.id; tenantId = $account.tenantId; resourceGroup = $ResourceGroup
             frontendUrl = $out.frontendUrl; apiInternalFqdn = $api.properties.configuration.ingress.fqdn; imageTag = (Get-LiveTag $out.apiName)
