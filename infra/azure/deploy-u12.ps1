@@ -280,11 +280,15 @@ function Test-KeyVaultWhatIf($WhatIf, [string]$GithubPrincipalId = '') {
 # group. Returns the problems found (empty = minimal).
 function Test-JobRoleDefinition($Definition, [string]$RgId) {
     $problems = New-Object System.Collections.Generic.List[string]
-    $d = $Definition
-    if ($null -ne (Get-Prop $Definition 'properties')) { $d = Get-Prop $Definition 'properties' }
+    # Two shapes, and `type` means something different in each:
+    #   ARM / what-if:          type = 'Microsoft.Authorization/roleDefinitions', properties.type = 'CustomRole'
+    #   az role definition list: type = 'Microsoft.Authorization/roleDefinitions', roleType = 'CustomRole' (flat)
+    $resourceType = "$(Get-Prop $Definition 'type')"
+    if ($null -ne (Get-Prop $Definition 'properties')) { $d = Get-Prop $Definition 'properties'; $roleType = "$(Get-Prop $d 'type')" }
+    else { $d = $Definition; $roleType = "$(Get-Prop $d 'roleType')" }
     if ("$(Get-Prop $d 'roleName')" -cne $GithubJobRoleName) { $problems.Add("rol del job con otro nombre: $(Get-Prop $d 'roleName')") }
-    $kind = "$(Get-Prop $d 'type')$(Get-Prop $d 'roleType')"
-    if ($kind -and $kind -notmatch '^(CustomRole)+$') { $problems.Add("el rol del job no es personalizado: $kind") }
+    if ($roleType -cne 'CustomRole') { $problems.Add("el rol del job no es personalizado: roleType '$roleType'") }
+    if ($resourceType -and $resourceType -ne 'Microsoft.Authorization/roleDefinitions') { $problems.Add("el rol del job no es una definicion de rol: tipo '$resourceType'") }
     $perms = As-Array (Get-Prop $d 'permissions')
     if ($perms.Count -ne 1) { $problems.Add("el rol del job tiene $($perms.Count) bloques de permisos") }
     $actions = New-Object System.Collections.Generic.List[string]
@@ -643,12 +647,24 @@ if ($SelfTest) {
     Check 'rol del job: fase Apps sin la asignacion -> rechazado' ((Test-U12WhatIf (& $roundTrip ($core + $appsOnly)) $rg $roles $true).Count -gt 0)
     $builtIns = @($GithubAllowedRoles | ForEach-Object { [ordered]@{ roleDefinitionName = $_; scope = $rg; roleDefinitionId = "/x/roleDefinitions/$_" } })
     $jobAz = [ordered]@{ roleDefinitionName = $GithubJobRoleName; scope = $jobId; roleDefinitionId = "/subscriptions/s/providers/Microsoft.Authorization/roleDefinitions/$jobRoleId" }
-    $azDef = { param($actions, $scopes) [ordered]@{ name = $jobRoleId; roleName = $GithubJobRoleName; roleType = 'CustomRole'; assignableScopes = @($scopes)
-        permissions = @([ordered]@{ actions = @($actions); notActions = @(); dataActions = @(); notDataActions = @() }) } }
+    # The shape az role definition list really returns (2026-10-11, dev): flat, with `type` = the ARM resource type and
+    # `roleType` = CustomRole. Verify once read `type` as the role type and failed on a correct role.
+    $azDef = { param($actions, $scopes, $roleType = 'CustomRole', $resType = 'Microsoft.Authorization/roleDefinitions')
+        [ordered]@{ id = "/subscriptions/s/providers/Microsoft.Authorization/roleDefinitions/$jobRoleId"; name = $jobRoleId
+            type = $resType; roleName = $GithubJobRoleName; roleType = $roleType; description = 'U12'; assignableScopes = @($scopes)
+            permissions = @([ordered]@{ actions = @($actions); notActions = @(); dataActions = @(); notDataActions = @() }) } }
     $ghCase = { param($assignments, $defs, $require)
         $found = Get-GithubRoleProblems (& $roundTrip $assignments).changes (& $roundTrip $defs).changes $rg $jobId $require
         return ,$found }
     Check 'GitHub: 4 integrados en el grupo + rol del job sobre el job -> conforme' ((& $ghCase ($builtIns + @($jobAz)) @((& $azDef $GithubJobActions @($rg))) $true).Count -eq 0)
+    Check 'rol del job (az): type=Microsoft.Authorization/roleDefinitions y roleType=CustomRole -> conforme' ((Test-JobRoleDefinition (& $roundTrip @((& $azDef $GithubJobActions @($rg)))).changes[0] $rg).Count -eq 0)
+    $typeCase = { param($def, $pattern) $found = Test-JobRoleDefinition (& $roundTrip @($def)).changes[0] $rg; return (@($found | Where-Object { $_ -match $pattern }).Count -gt 0) }
+    Check 'rol del job (az): roleType BuiltInRole -> rechazado' (& $typeCase (& $azDef $GithubJobActions @($rg) 'BuiltInRole') "no es personalizado: roleType 'BuiltInRole'")
+    Check 'rol del job (az): sin roleType -> rechazado' (& $typeCase (& $azDef $GithubJobActions @($rg) '') "no es personalizado: roleType ''")
+    Check 'rol del job (az): otro tipo de recurso -> rechazado' (& $typeCase (& $azDef $GithubJobActions @($rg) 'CustomRole' 'Microsoft.Authorization/roleAssignments') 'no es una definicion de rol')
+    $armBuiltIn = & $roleDef $GithubJobActions @($rg) @{}; $armBuiltIn.after.properties.type = 'BuiltInRole'
+    Check 'rol del job (what-if): properties.type BuiltInRole -> rechazado' (& $typeCase $armBuiltIn.after "no es personalizado: roleType 'BuiltInRole'")
+    Check 'rol del job (what-if): properties.type CustomRole -> conforme' ((Test-JobRoleDefinition (& $roundTrip @($jobDef.after)).changes[0] $rg).Count -eq 0)
     Check 'GitHub: sin rol del job -> aviso en Preflight, fallo en Verify' (((& $ghCase $builtIns @() $false).Count -eq 0) -and ((& $ghCase $builtIns @() $true).Count -gt 0))
     $jobOnRg = [ordered]@{ roleDefinitionName = $GithubJobRoleName; scope = $rg; roleDefinitionId = $jobAz.roleDefinitionId }
     Check 'GitHub: rol del job sobre el grupo -> rechazado' ((& $ghCase ($builtIns + @($jobOnRg)) @((& $azDef $GithubJobActions @($rg))) $true).Count -gt 0)

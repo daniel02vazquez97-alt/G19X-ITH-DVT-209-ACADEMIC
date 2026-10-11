@@ -7,8 +7,10 @@ custom roles and role assignments the `KeyVaultRole` stage creates. ``FAKE_AZ_DE
 ``FAKE_AZ_EXISTING=1`` makes the U12 resources exist (as Core and Apps leave them); ``FAKE_AZ_KV_PUBLIC=1``,
 ``FAKE_AZ_ACR_ADMIN=1``, ``FAKE_AZ_API_PUBLIC=1`` and ``FAKE_AZ_OPEN_RULE=1`` break one setting each;
 ``FAKE_AZ_EXPRESS=1`` leaves the environment in Express mode (2026-10-09). ``FAKE_AZ_JOB_ROLE`` gives the GitHub
-identity the custom role of the bootstrap job (C13): ``ok`` (the five actions, on the job), ``rg`` (on the whole group)
-or ``wide`` (Microsoft.App/jobs/*/action). Every call is recorded in full (``argv``) so the tests can prove the
+identity the custom role of the bootstrap job (C13): ``ok`` (the five actions, on the job), ``rg`` (on the whole group),
+``builtin`` (roleType BuiltInRole) or ``wide`` (Microsoft.App/jobs/*/action). Every definition has the real flat shape
+of `az role definition list` (``type`` = Microsoft.Authorization/roleDefinitions, ``roleType`` = CustomRole), the one
+-Stage Verify misread on 2026-10-11. Every call is recorded in full (``argv``) so the tests can prove the
 preflight only reads.
 """
 
@@ -26,7 +28,7 @@ USER_ID = "11111111-1111-4111-8111-111111111111"
 RUNTIME_ID = "44444444-4444-4444-8444-444444444444"
 GITHUB_ID = "22222222-2222-4222-8222-222222222222"
 JOB_ID = f"{RG}/providers/Microsoft.App/jobs/caj-mpa-dev-bootstrap"
-JOB_ROLE_ID = "55555555-5555-4555-8555-555555555555"
+JOB_ROLE_ID = "b63d319c-7111-5658-a67f-35e4729e710f"  # the real id in dev (guid() of main.bicep, 2026-10-11)
 JOB_ROLE_NAME = "U12 Bootstrap Job Deployer (rg-motor-predictivo-dev)"
 JOB_ACTIONS = ["Microsoft.App/jobs/read", "Microsoft.App/jobs/write", "Microsoft.App/jobs/start/action",
                "Microsoft.App/jobs/executions/read", "Microsoft.App/jobs/execution/read"]
@@ -40,7 +42,11 @@ BUILT_IN = {  # name -> (id, actions)
 
 
 def definition(name: str, role_id: str, actions: list[str], kind: str = "BuiltInRole", scopes=("/",)) -> dict:
-    return {"name": role_id, "roleName": name, "roleType": kind, "assignableScopes": list(scopes),
+    """As `az role definition list` returns it: flat, `type` is the ARM resource type and `roleType` the kind of role."""
+    return {"id": f"/subscriptions/{SUB}/providers/Microsoft.Authorization/roleDefinitions/{role_id}", "name": role_id,
+            "type": "Microsoft.Authorization/roleDefinitions", "roleName": name, "roleType": kind,
+            "description": f"{name} (fake)", "assignableScopes": list(scopes), "createdBy": None, "createdOn": None,
+            "updatedBy": None, "updatedOn": None,
             "permissions": [{"actions": actions, "notActions": [], "dataActions": [], "notDataActions": []}]}
 
 
@@ -82,7 +88,7 @@ def job_role() -> list[dict]:
     if not kind:
         return []
     actions = ["Microsoft.App/jobs/*/action", *JOB_ACTIONS] if kind == "wide" else JOB_ACTIONS
-    return [definition(JOB_ROLE_NAME, JOB_ROLE_ID, actions, "CustomRole", (RG,))]
+    return [definition(JOB_ROLE_NAME, JOB_ROLE_ID, actions, "BuiltInRole" if kind == "builtin" else "CustomRole", (RG,))]
 
 
 def assignments(s: dict, principal: str) -> list[dict]:
