@@ -1,9 +1,9 @@
 # U12: matriz de cierre y evidencias (`DT-100`)
 
-**Revisión 3 (2026-10-10).** Formaliza la matriz e incorpora las pruebas y bloqueos de la sesión de Claude Code Cloud
-del mismo día.
+**Revisión 4 (2026-10-11).** Incorpora la evidencia E2E real de la matriz de autorización (página «Comprobación de
+acceso» en la aplicación desplegada), aportada por el responsable. La revisión 3 (2026-10-10) formalizó la matriz.
 
-- **Base revisada:** `main` en `5460fd9` (PR #4).
+- **Base revisada:** `main` en `3c8193a` (PR #5).
 - **Estado de U12:** **desplegada y verificada en `dev`; no cerrada.**
 - **Fuente única del estado de U12:** este informe. `DT-100`, `project/status.md`, `project/roadmap.md`, `CLAUDE.md`
   y [`docs/00-guia-maestra.md`](../00-guia-maestra.md) §G **enlazan aquí** y no mantienen copias de la matriz.
@@ -160,9 +160,8 @@ Responsable de toda ejecución en Azure y en el navegador: **el responsable del 
 | Procedimiento | `deploy-u11.ps1` (aplica o confirma); iniciar sesión en el navegador |
 | Entorno | Azure, Entra ID y navegador |
 | Evidencia requerida | Salida de `deploy-u11.ps1` (o `ALREADY_CONFIGURED`) y sesión iniciada (`/me` con el rol) |
-| Resultado | **[AZ-U]** Smoke `SMOKE OK (entra-dev)`: la SPA contiene los identificadores esperados de `entra-dev.env`; con `APP_ENV=dev` se rechazan el token de desarrollo y un RS256 falsificado (401). La URL real está en el estado deseado `infra/azure/entra/u11-entra.dev.json`. **[PEND]** Inicio de sesión real; no consta salida de `deploy-u11.ps1` con esa URL. El smoke **no sustituye** al E2E |
-| Estado | **PARCIAL** |
-| Motivo y responsable | Necesita navegador y una cuenta del tenant: el responsable |
+| Resultado | **[AZ-U]** Smoke `SMOKE OK (entra-dev)` (2026-10-10): la SPA contiene los identificadores esperados de `entra-dev.env`; con `APP_ENV=dev` se rechazan el token de desarrollo y un RS256 falsificado (401). **[AZ-U, E2E, 2026-10-11]** El responsable inició sesión con Microsoft Entra ID en la aplicación desplegada y ejecutó «Comprobación de acceso» con los roles `VIEWER`, `ANALYST`, `PLANNER` y `ADMIN` y sin ningún rol (§2.1). Las respuestas 200 a peticiones autenticadas y la identidad devuelta por `GET /api/v1/me` demuestran que el inicio de sesión real con MSAL funciona en la URL de Azure, y por tanto que el *redirect URI* está aplicado al registro de la SPA. No hay salida de `deploy-u11.ps1`; la demostración es el inicio de sesión efectivo |
+| Estado | **APROBADO** |
 
 ### C11 — Matriz de roles en el navegador
 
@@ -173,10 +172,10 @@ Responsable de toda ejecución en Azure y en el navegador: **el responsable del 
 | Procedimiento | `deploy-u11.ps1 -AssignRole VIEWER` → iniciar sesión en la URL de Azure → `/acceso` → «Comprobar la matriz». Después PLANNER y `-RemoveRole`, cerrando sesión entre cambios |
 | Entorno | Navegador con la URL real |
 | Evidencia requerida | Tabla de `/acceso` por rol, que no contiene tokens |
-| Resultado | **[PEND]** **[CC]** cubierto por pruebas automatizadas (`test_entra.test_role_matrix`, `tests/api`), que no sustituyen a la prueba real |
-| Estado | **PENDIENTE** |
-| Motivo y responsable | Navegador y cuenta real: el responsable. Bloqueado para el agente (§3.2) |
-| Ambigüedad | README §6 dice «11 permitidos → 200»; un 404 legítimo (id inexistente) no es un 403. Se acepta «no 403 y Coincide = sí», que es el criterio de `/acceso` en U11. **A confirmar por el responsable** |
+| Resultado | **[AZ-U, E2E, 2026-10-11]** «Comprobación de acceso» en la aplicación desplegada, «Coincide» = `sí` en todas las filas (detalle en §2.1): `VIEWER` 11 × 200 y 2 × 403 (`/products/1/history`, `/runs/1`); `ANALYST` 12 × 200 y 1 × 403 (`/runs/1`); `PLANNER` 13 × 200; `ADMIN` 13 × 200; sin ningún rol `/me` 200 y los otros 12 → 403. Supera lo exigido: también se comprobaron `ANALYST` y `ADMIN`. **[AZ-U, smoke, 2026-10-10]**, prueba distinta: peticiones **sin token** → 401 a través del proxy, incluido `/api/v1/runs/1`. **[PEND]** No consta el recorrido **sin sesión en el navegador** (abrir la URL sin iniciar sesión o tras cerrarla). La prueba con usuario sin rol **no** lo sustituye: ese usuario sí tiene sesión. **[CC]** `test_entra.test_role_matrix` |
+| Estado | **PARCIAL**: matriz de roles y caso sin rol demostrados; caso sin sesión demostrado solo a nivel de API (smoke) |
+| Motivo y responsable | Falta el caso sin sesión en el navegador: el responsable. **Decisión posible del responsable:** README §6 formula este caso como un código HTTP («Sin sesión → 401»), que el smoke ya demostró a nivel de API. Si se acepta esa lectura, C11 pasa a `APROBADO` sin repetir pruebas |
+| Ambigüedad | **Resuelta (2026-10-11):** las filas permitidas respondieron 200, no solo «no 403», así que no hay que interpretar un posible 404 |
 
 ### C12 — Datos reales en el navegador
 
@@ -187,9 +186,9 @@ Responsable de toda ejecución en Azure y en el navegador: **el responsable del 
 | Procedimiento | Recorrido en la interfaz tras C11 |
 | Entorno | Navegador |
 | Evidencia requerida | Lista de vistas comprobadas con su identificador (sin tokens) |
-| Resultado | **[PEND]** |
-| Estado | **PENDIENTE** |
-| Motivo y responsable | El responsable |
+| Resultado | **[AZ-U, E2E, 2026-10-11]** Con sesión real y `VIEWER`, las peticiones de datos de «Comprobación de acceso» respondieron 200 desde la API real: `/products`, `/products/1`, `/products/1/forecast`, `/products/1/recommendation`, `/inventory`, `/inventory/1`, `/forecasts`, `/recommendations`, `/recommendations/1` y `/recommendations/1/explanation`. **Los códigos HTTP demuestran que las peticiones se atendieron, no el contenido:** no hay evidencia de que se revisaran las vistas de catálogo, detalle, pronóstico y recomendación con su explicación, ni el contenido de las respuestas |
+| Estado | **PARCIAL**: la API sirve esos recursos con sesión real; falta la revisión de las vistas |
+| Motivo y responsable | Recorrer en la interfaz desplegada catálogo, detalle de un producto, su pronóstico y una recomendación con su explicación, y anotar los identificadores vistos (sin tokens ni identificador de sesión): el responsable |
 
 ### C13 — Redespliegue idempotente
 
@@ -228,15 +227,15 @@ Responsable de toda ejecución en Azure y en el navegador: **el responsable del 
 | Entorno | Repositorio |
 | Evidencia requerida | PR con los cambios |
 | Resultado | **[PEND]** |
-| Estado | **PENDIENTE**, hasta completar C05, C10–C14 |
+| Estado | **PENDIENTE**, hasta completar C05 y C11–C14 |
 
 ### Resumen
 
 | Estado | Criterios |
 |---|---|
-| APROBADO (8) | C01, C02, C03, C04, C06, C07, C08, C09 |
-| PARCIAL (2) | C05, C10 |
-| PENDIENTE (5) | C11, C12, C13, C14, C15 |
+| APROBADO (9) | C01, C02, C03, C04, C06, C07, C08, C09, C10 |
+| PARCIAL (3) | C05, C11, C12 |
+| PENDIENTE (3) | C13, C14, C15 |
 | BLOQUEADO / NO APLICA | — (los bloqueos de §3.2 afectan al agente, no al criterio) |
 
 ## 2. Fuentes de la evidencia [AZ-U]
@@ -268,6 +267,36 @@ Resumen literal aportado por el responsable el 2026-10-10. No se vuelve a pedir:
   - API → 401 sin token.
 - **Smoke:** `python infra/docker/smoke.py --entra` → `SMOKE OK (entra-dev)`.
 
+### 2.1 E2E de la matriz de autorización (aportado por el responsable el 2026-10-11)
+
+Página «Comprobación de acceso» (`/acceso`, `frontend/src/auth/AccessCheckPage.tsx`) en la aplicación desplegada en
+Azure, con sesión real de Microsoft Entra ID.
+
+- La página hace 13 peticiones reales: los 14 endpoints salvo `/health`, con el producto, la recomendación y la
+  ejecución de id 1.
+- La columna «Coincide» compara el código recibido con la matriz de roles del cliente (`frontend/src/roles/access.ts`),
+  que reproduce la de [`docs/07-api.md`](../07-api.md) §7.2.
+- La ejecutó el responsable, **no** Claude Code Cloud. Aquí solo se recogen los códigos y la columna «Coincide»: ni el
+  identificador de sesión que muestra la interfaz, ni tokens, ni cabeceras.
+
+| Sesión | 200 | 403 | Peticiones denegadas | «Coincide» |
+|---|---|---|---|---|
+| `VIEWER` | 11 | 2 | `GET /api/v1/products/1/history`, `GET /api/v1/runs/1` | `sí` en todas |
+| `ANALYST` | 12 | 1 | `GET /api/v1/runs/1` | `sí` en todas |
+| `PLANNER` | 13 | 0 | — | `sí` en todas |
+| `ADMIN` | 13 | 0 | — | `sí` en todas |
+| Autenticado sin ningún rol | 1 (`GET /api/v1/me`) | 12 | todos los demás | `sí` en todas |
+
+**Qué demuestra:**
+
+- el inicio de sesión real en la URL de Azure (C10);
+- la autorización por rol en el backend desplegado, conforme a `docs/07` §7.2 (C11);
+- que la API sirve los recursos de datos con sesión real (C12, parcial).
+
+**Qué no demuestra:**
+
+- el comportamiento **sin sesión en el navegador**. La prueba de 401 sin token es otra: el smoke del 2026-10-10;
+- la revisión del **contenido** de las respuestas o de las vistas.
 ## 3. Pruebas y bloqueos de la sesión de Claude Code Cloud (2026-10-10)
 
 ### 3.1 Ejecutado [CC]
@@ -301,7 +330,7 @@ en `main` `62f25ca` (run 38035570538) **[CI]**.
 |---|---|---|
 | `-Stage Firewall` (C05), fallos con `Stop`/`Start` e imagen inexistente (C14) | El contenedor no tiene Azure CLI ni credenciales de Azure (`~/.azure` no existe, ninguna variable `AZURE_*`). `CLAUDE.md` §17: el agente nunca recibe credenciales | Ejecución por el responsable |
 | Token inválido (C14) y smoke contra la URL real | El proxy de salida de la sesión **rechaza** `ca-mpa-dev-frontend.greensmoke-cfd723ad.centralus.azurecontainerapps.io:443` (`connect_rejected`, política de red del entorno) | Ejecución por el responsable, o añadir ese dominio a los permitidos del entorno de Claude Code Cloud |
-| E2E (C10–C12) | Sin navegador interactivo ni cuenta del tenant | El responsable |
+| E2E (C11 sin sesión, C12 vistas) | Sin navegador interactivo ni cuenta del tenant. *(La matriz de roles ya la ejecutó el responsable el 2026-10-11)* | El responsable |
 | Redespliegue (C13) | El agente podría disparar *Deploy dev* (`workflow_dispatch`) desde las herramientas de GitHub, pero eso **crea revisiones nuevas en Azure** y **no lo ha autorizado expresamente** el responsable. Además, verificar `ALREADY_*`, los recuentos y el 404 requiere el portal y el navegador | Autorización explícita para disparar el workflow, más la verificación por el responsable |
 
 ## 4. Plan mínimo para lo pendiente
@@ -311,7 +340,7 @@ Lo ejecuta el responsable. No repite Apps, Bootstrap, Verify ni el smoke.
 | # | Acción | Cierra |
 |---|---|---|
 | 1 | `deploy-u12.ps1 -Stage Firewall`, y después `-Stage Verify` | C05 |
-| 2 | `deploy-u11.ps1` (confirmar *redirect URI*); E2E con VIEWER, PLANNER, sin sesión y sin rol (C11) y vistas de datos (C12) | C10, C11, C12 |
+| 2 | En el navegador, sobre la URL desplegada: (a) abrirla **sin sesión** y comprobar que no se muestran datos (o decidir que el 401 sin token del smoke basta, C11 «Motivo»); (b) con `VIEWER`, recorrer catálogo, detalle, pronóstico y una recomendación con su explicación. *(Ya hecho el 2026-10-11: inicio de sesión real y matriz de los cuatro roles y sin rol)* | C11, C12 |
 | 3 | *Deploy dev* con `run_bootstrap=true` sobre `main` actual. El último commit de `main` es solo documental, así que sirve como cambio inocuo. Después las comprobaciones de C13 | C13 |
 | 4 | Fallos de `docs/00-guia-maestra.md` §F.4, en este orden: token inválido, imagen inexistente con su restauración, PostgreSQL detenido con su recuperación, y Verify al final | C14 |
 | 5 | Validar C01–C15, actualizar este informe y cerrar U12 en `DT-100`, `status.md` y `roadmap.md` | C15 |
@@ -325,7 +354,9 @@ Lo ejecuta el responsable. No repite Apps, Bootstrap, Verify ni el smoke.
 | Verify | [AZ-U] | 19/19, «U12: dev verificado» | APROBADO |
 | Smoke Entra | [AZ-U] | `SMOKE OK (entra-dev)` | APROBADO (C08, C09); parcial para C10 |
 | Firewall completo | — | | PENDIENTE |
-| E2E | — | | PENDIENTE |
+| E2E: matriz de autorización (`/acceso`) | [AZ-U] | 2026-10-11: `VIEWER` 11/2, `ANALYST` 12/1, `PLANNER` 13/0, `ADMIN` 13/0, sin rol 1/12; «Coincide» = `sí` en todas | APROBADO (C10); C11 parcial |
+| E2E: sin sesión en el navegador | — | | PENDIENTE (a nivel de API: 401 sin token, smoke del 2026-10-10) |
+| E2E: revisión de las vistas de datos | — | | PENDIENTE (las peticiones de datos respondieron 200) |
 | Redespliegue | — | | PENDIENTE |
 | Fallos ×3 (+3 por decidir) | — | | PENDIENTE |
 | Cierre documental | — | | PENDIENTE |
@@ -337,3 +368,4 @@ Lo ejecuta el responsable. No repite Apps, Bootstrap, Verify ni el smoke.
 | 1 (2026-10-10, `fe032c5`) | Primera matriz `PROPUESTA` y plan, antes de la evidencia real |
 | 2 (2026-10-10, `527c3f7`) | Evidencia real de Azure aportada por el responsable |
 | 3 (2026-10-10) | Matriz formal por criterio (requisito, aceptación, procedimiento, entorno, evidencia, resultado, estado y responsable); pruebas y bloqueos de Claude Code Cloud; fuente única del estado de U12 |
+| 4 (2026-10-11) | Evidencia E2E [AZ-U] de la matriz de autorización (§2.1): C10 → `APROBADO`; C11 `PENDIENTE` → `PARCIAL` (falta el caso sin sesión en el navegador); C12 `PENDIENTE` → `PARCIAL` (200 en los datos, sin revisión de vistas) |

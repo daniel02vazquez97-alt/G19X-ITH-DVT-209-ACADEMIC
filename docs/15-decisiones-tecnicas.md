@@ -4205,6 +4205,10 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
   Resumen: 8 `APROBADO` (C01–C04, C06–C09), 2 `PARCIAL` (C05 firewall sin `-Stage Firewall` completo tras `dd2d45f`;
   C10 sin inicio de sesión real) y 5 `PENDIENTE` (E2E, redespliegue, fallos, cierre). La sesión de Claude Code Cloud no
   tiene Azure CLI, credenciales ni salida de red a `*.azurecontainerapps.io`: no ejecutó ninguna prueba en Azure.
+- **Nota del 2026-10-11 (E2E de autorización, revisión 4 del informe):** el responsable ejecutó «Comprobación de acceso»
+  en la aplicación desplegada con sesión real de Entra ID. Resultado: los cuatro roles y el usuario sin rol se ajustan a
+  `docs/07` §7.2, con «Coincide» = `sí` en todas las filas. C10 pasa a `APROBADO`; C11 y C12 a `PARCIAL`. Resumen
+  vigente: 9 `APROBADO`, 3 `PARCIAL`, 3 `PENDIENTE`; detalle solo en el informe. U12 sigue sin cerrar.
 
 ## Decisiones deliberadamente NO tomadas
 
