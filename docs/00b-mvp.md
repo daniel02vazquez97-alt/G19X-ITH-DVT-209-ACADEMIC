@@ -175,7 +175,7 @@ Estados distintos, no equivalentes (`DT-094` punto 11 y guía §G.2):
 | Pruebas automatizadas aprobadas | Suites en verde (local o CI) | `tests/api` 95 OK |
 | Prueba de integración local | Contra PostgreSQL real o Docker | `tests/db`; smoke de U7 |
 | Despliegue realizado | El sistema corre en un entorno desplegado | U12: `u12-dev` `Succeeded` **[AZ-U]** |
-| Validación real del entorno desplegado | Pruebas reales en ese entorno: Verify, E2E, redespliegue y fallos | U12: Verify 19/19 **[AZ-U]**; E2E, redespliegue y fallos **pendientes** |
+| Validación real del entorno desplegado | Pruebas reales en ese entorno: Verify, E2E, redespliegue y fallos | U12: Verify 19/19 y matriz de autorización E2E **[AZ-U]**; sin sesión en el navegador, vistas, redespliegue y fallos **pendientes** |
 | Documentación y evidencia de aceptación | Criterios con evidencia y estado documentados y aceptados | MVP-01…09 documentados; **MVP-10 pendiente** |
 
 **El MVP está «terminado»** cuando MVP-01…MVP-09 están cumplidos **y** MVP-10 (aceptación del propietario) está

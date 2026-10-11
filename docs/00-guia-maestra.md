@@ -467,8 +467,9 @@ ejecutó un agente y no está versionada:
 **Pendiente:**
 
 - ejecución completa de `-Stage Firewall` tras la corrección `dd2d45f`;
-- E2E en el navegador con inicio de sesión real (VIEWER, después PLANNER, sin sesión y sin rol; datos, pronóstico y
-  recomendación con explicación);
+- en el navegador: el caso sin sesión y la revisión de las vistas de datos (catálogo, detalle, pronóstico y
+  recomendación con explicación). *(El inicio de sesión real y la matriz de los cuatro roles y sin rol ya constan:
+  **[AZ-U]** 2026-10-11, informe de U12 §2.1);*
 - redespliegue con `run_bootstrap=true`;
 - pruebas de fallo;
 - cierre documental.
