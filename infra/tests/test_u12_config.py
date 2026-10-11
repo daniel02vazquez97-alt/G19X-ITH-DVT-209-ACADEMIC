@@ -604,10 +604,16 @@ class PreflightOnly(unittest.TestCase):
         self.assert_only_reads(state)
 
     def test_job_role_on_the_job_is_accepted(self) -> None:
+        # The fake answers with the real flat shape of `az role definition list` (type = ARM resource type, roleType =
+        # CustomRole): -Stage Verify failed on 2026-10-11 with "no es personalizado: ...roleDefinitionsCustomRole".
         result, state = self.run_preflight(env={"FAKE_AZ_EXISTING": "1", "FAKE_AZ_JOB_ROLE": "ok"})
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("OK     id-mpa-dev-github: rol del job (5 acciones) solo sobre caj-mpa-dev-bootstrap", result.stdout)
         self.assertNotIn("BLOQUEO", result.stdout)
+        self.assertNotIn("no es personalizado", result.stdout)
+        self.assertIn(["role", "definition", "list", "--name", "b63d319c-7111-5658-a67f-35e4729e710f", "--scope",
+                       "/subscriptions/0239bbd1-fc72-4dd7-a816-fcbf29f5a631/resourceGroups/rg-motor-predictivo-dev",
+                       "--output", "json"], state["argv"])
         self.assert_only_reads(state)
 
     def test_job_role_is_not_expected_before_the_job_exists(self) -> None:
@@ -641,6 +647,8 @@ class PreflightOnly(unittest.TestCase):
                                            "rol del job con ambito distinto del job de bootstrap"),
             "rol del job con comodin": ({"FAKE_AZ_EXISTING": "1", "FAKE_AZ_JOB_ROLE": "wide"},
                                         "comodin en el rol del job: Microsoft.App/jobs/*/action"),
+            "rol del job integrado": ({"FAKE_AZ_EXISTING": "1", "FAKE_AZ_JOB_ROLE": "builtin"},
+                                      "el rol del job no es personalizado: roleType 'BuiltInRole'"),
             "sujeto OIDC antiguo": ({"FAKE_AZ_OIDC_SUBJECT": "repo:daniel02vazquez97-alt/Motor-Predictivo-de-Abastecimiento-de-Inventarios:environment:dev"},
                                     "una sola federacion OIDC, sujeto esperado"),
             "sujeto OIDC de rama": ({"FAKE_AZ_OIDC_SUBJECT": "repo:daniel02vazquez97-alt@290574726/G19X-ITH-DVT-209-ACADEMIC@1408075880:ref:refs/heads/main"},
