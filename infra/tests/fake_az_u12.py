@@ -6,8 +6,10 @@ custom roles and role assignments the `KeyVaultRole` stage creates. ``FAKE_AZ_DE
 ``FAKE_AZ_GITHUB_ROLE`` (default ``Reader``) choose the built-in role of the signed-in user and of the GitHub identity.
 ``FAKE_AZ_EXISTING=1`` makes the U12 resources exist (as Core and Apps leave them); ``FAKE_AZ_KV_PUBLIC=1``,
 ``FAKE_AZ_ACR_ADMIN=1``, ``FAKE_AZ_API_PUBLIC=1`` and ``FAKE_AZ_OPEN_RULE=1`` break one setting each;
-``FAKE_AZ_EXPRESS=1`` leaves the environment in Express mode (2026-10-09). Every call is
-recorded in full (``argv``) so the tests can prove the preflight only reads.
+``FAKE_AZ_EXPRESS=1`` leaves the environment in Express mode (2026-10-09). ``FAKE_AZ_JOB_ROLE`` gives the GitHub
+identity the custom role of the bootstrap job (C13): ``ok`` (the five actions, on the job), ``rg`` (on the whole group)
+or ``wide`` (Microsoft.App/jobs/*/action). Every call is recorded in full (``argv``) so the tests can prove the
+preflight only reads.
 """
 
 from __future__ import annotations
@@ -23,6 +25,11 @@ KV_ID = f"{RG}/providers/Microsoft.KeyVault/vaults/kv-mpa-dev-dymtafh7zjbba"
 USER_ID = "11111111-1111-4111-8111-111111111111"
 RUNTIME_ID = "44444444-4444-4444-8444-444444444444"
 GITHUB_ID = "22222222-2222-4222-8222-222222222222"
+JOB_ID = f"{RG}/providers/Microsoft.App/jobs/caj-mpa-dev-bootstrap"
+JOB_ROLE_ID = "55555555-5555-4555-8555-555555555555"
+JOB_ROLE_NAME = "U12 Bootstrap Job Deployer (rg-motor-predictivo-dev)"
+JOB_ACTIONS = ["Microsoft.App/jobs/read", "Microsoft.App/jobs/write", "Microsoft.App/jobs/start/action",
+               "Microsoft.App/jobs/executions/read", "Microsoft.App/jobs/execution/read"]
 BUILT_IN = {  # name -> (id, actions)
     "Owner": ("8e3af657-a8ff-443c-a75c-2fe8c4bcb635", ["*"]),
     "Reader": ("acdd72a7-3385-48ef-bd42-f606fba81ae7", ["*/read"]),
@@ -69,6 +76,15 @@ def resources() -> list[dict]:
     ]
 
 
+def job_role() -> list[dict]:
+    """The custom role of the bootstrap job, as `az role definition list` returns it (FAKE_AZ_JOB_ROLE)."""
+    kind = os.environ.get("FAKE_AZ_JOB_ROLE")
+    if not kind:
+        return []
+    actions = ["Microsoft.App/jobs/*/action", *JOB_ACTIONS] if kind == "wide" else JOB_ACTIONS
+    return [definition(JOB_ROLE_NAME, JOB_ROLE_ID, actions, "CustomRole", (RG,))]
+
+
 def assignments(s: dict, principal: str) -> list[dict]:
     if principal == RUNTIME_ID:
         return [{"scope": f"{RG}/providers/Microsoft.ContainerRegistry/registries/acrmpadevx", "roleDefinitionName": "AcrPull",
@@ -77,6 +93,9 @@ def assignments(s: dict, principal: str) -> list[dict]:
                           "Owner" if principal == USER_ID else "Reader")
     found = [{"scope": f"/subscriptions/{SUB}" if principal == USER_ID else RG, "roleDefinitionName": role,
               "roleDefinitionId": f"/subscriptions/{SUB}/providers/Microsoft.Authorization/roleDefinitions/{BUILT_IN[role][0]}"}]
+    if principal == GITHUB_ID and job_role():
+        found.append({"scope": RG if os.environ["FAKE_AZ_JOB_ROLE"] == "rg" else JOB_ID, "roleDefinitionName": JOB_ROLE_NAME,
+                      "roleDefinitionId": f"/subscriptions/{SUB}/providers/Microsoft.Authorization/roleDefinitions/{JOB_ROLE_ID}"})
     return found + [a for a in s.get("assignments", []) if a["principal"] == principal]
 
 
@@ -156,7 +175,7 @@ def main(args: list[str]) -> int:
         if args[:3] == ["role", "definition", "list"]:
             name = option(args, "--name")
             found = [definition(n, i, a) for n, (i, a) in BUILT_IN.items() if name in (n, i)]
-            found += [r for r in s["roles"] if name in (r["roleName"], r["name"])]
+            found += [r for r in s["roles"] + job_role() if name in (r["roleName"], r["name"])]
             return out(found)
         if args[:3] == ["role", "definition", "create"]:
             body = json.load(open(option(args, "--role-definition")[1:], encoding="ascii"))

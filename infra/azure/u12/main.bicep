@@ -41,6 +41,9 @@ param managedIdentityOperatorRoleId string
 @description('false: solo la base (fase core). true: además api, frontend y job (fase apps).')
 param deployApps bool = false
 
+@description('true si el job de bootstrap ya existe en el grupo; deploy-u12.ps1 lo comprueba antes de cada despliegue.')
+param bootstrapJobExists bool = false
+
 @description('Etiqueta de las imágenes publicadas en el registro por GitHub Actions (SHA del commit).')
 param imageTag string = ''
 
@@ -73,6 +76,19 @@ var names = {
   frontend: 'ca-${projectName}-${environment}-frontend'
   bootstrap: 'caj-${projectName}-${environment}-bootstrap'
 }
+// Container Apps Contributor only covers Microsoft.App/containerApps/*: `az containerapp job update` failed with
+// AuthorizationFailed on Microsoft.App/jobs/write (Deploy dev #4). The built-in job roles (Container Apps Jobs
+// Contributor / Operator) grant Microsoft.App/jobs/*/action, which includes listSecrets, so a custom role is used with
+// exactly what deploy-dev.yml calls: update (GET + PATCH), start, and the execution status. The read actions are also
+// in U10's Reader on the group; they are kept so the role is self-sufficient on the job. Never delete, stop, suspend,
+// listSecrets or a wildcard. Reader already covers Microsoft.App/managedEnvironments/read.
+var githubJobActions = [
+  'Microsoft.App/jobs/read'
+  'Microsoft.App/jobs/write'
+  'Microsoft.App/jobs/start/action'
+  'Microsoft.App/jobs/executions/read'
+  'Microsoft.App/jobs/execution/read'
+]
 
 resource keyVault 'Microsoft.KeyVault/vaults@2024-11-01' existing = {
   name: keyVaultName
@@ -143,6 +159,47 @@ resource githubAssignRuntime 'Microsoft.Authorization/roleAssignments@2022-04-01
     principalType: 'ServicePrincipal'
     description: 'U12: asignar la identidad de ejecucion al actualizar las apps de dev (DT-100).'
   }
+}
+
+// Minimal custom role for the bootstrap job, assignable only inside this group. Like the other GitHub roles it is
+// managed by the core phase; its assignment needs the job, so it is made once the job exists (or is deployed now).
+resource githubJobRoleDefinition 'Microsoft.Authorization/roleDefinitions@2022-04-01' = {
+  name: guid(resourceGroup().id, 'u12-github-bootstrap-job')
+  properties: {
+    roleName: 'U12 Bootstrap Job Deployer (${resourceGroup().name})'
+    description: 'U12: update the image of the bootstrap job, start it and read its executions (DT-100). Nothing else.'
+    type: 'CustomRole'
+    assignableScopes: [
+      resourceGroup().id
+    ]
+    permissions: [
+      {
+        actions: githubJobActions
+        notActions: []
+        dataActions: []
+        notDataActions: []
+      }
+    ]
+  }
+}
+
+resource bootstrapJob 'Microsoft.App/jobs@2025-01-01' existing = {
+  name: names.bootstrap
+}
+
+// Only on the job caj-<project>-<env>-bootstrap: never the group or the subscription.
+resource githubBootstrapJob 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (deployApps || bootstrapJobExists) {
+  name: guid(bootstrapJob.id, githubIdentity.id, githubJobRoleDefinition.name)
+  scope: bootstrapJob
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', githubJobRoleDefinition.name)
+    principalId: githubIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+    description: 'U12: actualizar la imagen del job de bootstrap, arrancarlo y leer sus ejecuciones en dev (DT-100).'
+  }
+  dependsOn: [
+    apps
+  ]
 }
 
 module apps 'modules/apps.bicep' = if (deployApps) {
