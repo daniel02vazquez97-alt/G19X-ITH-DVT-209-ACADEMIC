@@ -17,3 +17,9 @@ class UnverifiedFigureError(ValueError):
     def __init__(self, figures: tuple[str, ...]) -> None:
         self.figures = figures
         super().__init__(f"{len(figures)} unverified figure(s)")
+
+
+class GeneratorUnavailable(RuntimeError):
+    """Internal: a remote generator (U13, Azure OpenAI) gave no usable text: timeout, HTTP error, rate limit or
+    an unexpected answer. ``explain`` falls back to the template (`DT-101` point 8); the message never contains
+    the prompt, the answer or a token."""

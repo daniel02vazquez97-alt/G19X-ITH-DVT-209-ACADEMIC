@@ -11,6 +11,7 @@ import re
 from collections.abc import Iterable
 
 from .errors import UnverifiedFigureError
+from .templates import CARDINAL_WORDS
 from .types import Fact
 
 FIGURE = re.compile(r"-?\d+(?:\.\d+)?")
@@ -26,3 +27,15 @@ def verify(text: str, facts: Iterable[Fact]) -> None:
     unknown = tuple(figure for figure in figures(text) if figure not in allowed)
     if unknown:
         raise UnverifiedFigureError(unknown)
+
+
+_WORDS = re.compile(r"\b(?:" + "|".join(CARDINAL_WORDS) + r")\b", re.IGNORECASE)
+
+
+def verify_no_number_words(text: str) -> None:
+    """U13 (`DT-101` point 7): a remote generator must not write figures with words (`DT-069`, *Consecuencias*).
+    The same list of cardinal words that the templates may not contain; the offending words are kept, never
+    the text."""
+    words = tuple(match.group().lower() for match in _WORDS.finditer(text))
+    if words:
+        raise UnverifiedFigureError(words)

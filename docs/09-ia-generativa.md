@@ -289,6 +289,10 @@ conexión con la base ni recibe ninguna función del motor.
 
 ### 14.4 Qué no se hace ahora
 
+*(Actualización del 2026-10-13, U13, `DT-101`: el paso 2 de §12 está implementado. `ChatGenerator` pone Azure OpenAI
+(`gpt-4.1-mini`, Entra ID sin claves) detrás del mismo puerto para CU-1, con la verificación de §14.3 más el rechazo
+de números escritos con letras y la plantilla como respaldo. El resto de esta sección sigue vigente.)*
+
 Asistente conversacional (`RF-021`, clase D), consultas predefinidas (CU-3), RAG (CU-4, bloqueado por
 ASSUMPTION-008), elección de modelo y región (`DT-P08`) y cualquier costo de Azure.
 

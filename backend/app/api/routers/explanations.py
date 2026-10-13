@@ -48,7 +48,8 @@ def get_explanation(
         unit_of_measure=row["unit_of_measure"],
         provenance=provenance,
     )
-    result = explain(context, request.app.state.text_generator, getattr(request.state, "correlation_id", None))
+    result = explain(context, request.app.state.text_generator, getattr(request.state, "correlation_id", None),
+                     getattr(request.app.state, "text_fallback", None))
     return {
         "recommendation_id": context.recommendation_id,
         "run_id": context.run_id,

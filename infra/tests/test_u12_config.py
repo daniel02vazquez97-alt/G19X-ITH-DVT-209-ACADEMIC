@@ -80,7 +80,11 @@ class Infrastructure(unittest.TestCase):
             "Microsoft.DBforPostgreSQL/flexibleServers/firewallRules", "Microsoft.App/managedEnvironments",
             "Microsoft.App/containerApps", "Microsoft.App/jobs"})
         self.assertIn("resource keyVault 'Microsoft.KeyVault/vaults@2024-11-01' existing", MAIN)  # U10's, read only
-        joined = "\n".join(ALL.values()).lower()
+        # U13 (`DT-101`) only wires the api to its Azure OpenAI account (environment variables and the computed
+        # endpoint); U12 never declares that account: those wiring lines are the only exception.
+        wiring = re.compile(r"genai|AZURE_OPENAI|openai\.azure\.com|U13", re.IGNORECASE)
+        joined = "\n".join(line for text in ALL.values() for line in text.splitlines()
+                           if not wiring.search(line)).lower()
         for forbidden in ("staging", "prod'", "openai", "cognitive", "search", "machinelearning", "insights",
                           "operationalinsights", "natgateway", "virtualnetworks", "privateendpoints"):
             self.assertNotIn(forbidden, joined)

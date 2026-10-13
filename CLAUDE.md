@@ -409,6 +409,9 @@ responsable con `infra/azure/deploy-u11.ps1`. `APP_ENV=local` no cambia. U12–U
 *(2026-10-07: **U12 autorizada**, `DT-100` (cierra `DT-P01` para `dev`): Container Apps Consumption, ACR Basic,
 PostgreSQL 16 B1ms, job único de bootstrap; el despliegue real lo ejecuta el responsable con
 `infra/azure/deploy-u12.ps1` (`infra/azure/u12/README.md`). U13–U16 siguen sin autorizar.)*
+*(2026-10-13: U12 cerrada con verificaciones pendientes aceptadas. **U13 autorizada**, `DT-101`: Azure OpenAI
+(`gpt-4.1-mini`, sin claves, identidad de ejecución) tras `TextGenerator` para CU-1, con la plantilla como respaldo;
+el despliegue lo ejecuta el responsable con `infra/azure/deploy-u13.ps1`. U14–U16 siguen sin autorizar.)*
 Restricciones vigentes, que se levantan solo por instrucción explícita:
 
 - **No escribir código de aplicación fuera de una unidad autorizada.** Cada unidad (U1 a U6 de `DT-047`,

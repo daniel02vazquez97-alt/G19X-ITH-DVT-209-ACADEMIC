@@ -4221,6 +4221,123 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
   verificaciones pendientes aceptadas por el responsable** (informe §4, P1–P5). Resumen: 12 `APROBADO`, 3 `PARCIAL`
   con pendientes aceptados (C12–C14). Esta decisión no cambia; `staging` y producción siguen sin decidir (`DT-P01`).
 
+## DT-101 — U13: Azure OpenAI tras `TextGenerator` (CU-1)
+
+- **Contexto:** el responsable ordenó iniciar U13 el 2026-10-13, tras cerrar U12 (`DT-100`, informe de U12 revisión 7).
+  `DT-094` fija su contenido: «Azure OpenAI tras `TextGenerator`, con la verificación de cifras y la degradación a la
+  plantilla». Como en U12, la primera auditoría se detiene en una **propuesta**: hay decisiones abiertas (`DT-P08`) y un
+  riesgo de viabilidad de la suscripción que debe comprobarse antes de escribir Bicep o código.
+- **Riesgo de viabilidad (bloqueante):** `DT-098` ya anotó casos de Microsoft Q&A en los que suscripciones Azure for
+  Students no pueden crear recursos de Microsoft Foundry en ninguna región (`RequestDisallowedByAzure`) o tienen cuota
+  0 TPM. Siguen apareciendo en 2026. Si se confirma en esta suscripción, U13 queda **BLOQUEADA** por causa externa y
+  solo se puede cerrar la parte local (generador detrás del puerto con un doble de prueba), sin Azure.
+- **Puerta 0 — comprobaciones de solo lectura** (las ejecuta el responsable; no crean nada):
+  1. `az provider show --namespace Microsoft.CognitiveServices --query registrationState -o tsv`;
+  2. `az cognitiveservices model list --location centralus` filtrado a modelos `OpenAI` pequeños, con versión, tipos de
+     despliegue (`skus`) y fecha de retirada de inferencia;
+  3. `az cognitiveservices usage list --location centralus` filtrado a `OpenAI`: cuota disponible por modelo y tipo;
+  4. si 1–3 son favorables, el primer `validate`/`what-if` del Bicep de U13 confirma que ninguna directiva lo rechaza.
+- **Resultados de la Puerta 0 (2026-10-13, [AZ-U]):**
+  - proveedor `Microsoft.CognitiveServices`: **`NotRegistered`**;
+  - catálogo de `centralus` (`model list`, que no depende del registro). Modelos de texto pequeños:
+
+    | Modelo | Versión | Estado | Retirada de inferencia | Despliegues relevantes |
+    |---|---|---|---|---|
+    | `gpt-5.4-mini` | 2026-03-17 | `GenerallyAvailable` | 2027-09-21 | `GlobalStandard`, `DataZoneStandard` |
+    | `gpt-5-mini` | 2025-08-07 | `GenerallyAvailable` | 2027-02-09 | `GlobalStandard`, `DataZoneStandard` |
+    | `gpt-4.1-mini` | 2025-04-14 | `Legacy` | 2027-04-14 | `GlobalStandard`, `DataZoneStandard` |
+    | `gpt-4o-mini` | 2024-07-18 | `Deprecating` | 2027-04-14 | `GlobalStandard`, `DataZoneStandard` |
+    | `o4-mini`, `o3-mini` | — | `Deprecating` | 2026-11-19 | — |
+
+  - cuota (`usage list`) con el proveedor sin registrar: sin filas;
+  - el responsable registró el proveedor (`Registered`, 2026-10-13; sin coste ni recursos) y repitió la consulta. Cuota
+    en `centralus` (límite en unidades de capacidad del despliegue):
+
+    | Cuota | Límite |
+    |---|---|
+    | `OpenAI.S0.AccountCount` | 1 |
+    | `OpenAI.GlobalStandard.gpt-5-mini` | 500 |
+    | `OpenAI.GlobalStandard.gpt4.1-mini` | 200 |
+    | `OpenAI.GlobalStandard.o4-mini` | 100 (modelo retirado el 2026-11-19: descartado) |
+    | `OpenAI.GlobalStandard.text-embedding-3-small` y `DataZoneStandard` | 1000 cada una (relevante para U15) |
+    | `gpt-5.4-mini` (todos los tipos), `gpt-4o-mini`, `gpt-5-nano`, `gpt-4.1-nano` y el resto de modelos de texto | **0** |
+
+  - **Lectura:** U13 es **viable** (hay cuota de texto), pero no con `gpt-5.4-mini`, que tiene cuota 0. Quedan dos
+    candidatos: `gpt-4.1-mini` `2025-04-14` (`Legacy`, retirada el 2027-04-14, no es de razonamiento y admite
+    `temperature`) y `gpt-5-mini` `2025-08-07` (GA, retirada el 2027-02-09, de razonamiento). Ninguno cumple con holgura
+    el criterio de 6 meses; la degradación a la plantilla (punto 8) mantiene la explicación cuando el modelo se retire,
+    y el modelo y el despliegue son parámetros, no código.
+- **Decisión** (propuesta del 2026-10-13; `ACEPTADA` el mismo día con las decisiones del responsable del punto
+  siguiente, que prevalecen sobre las alternativas abiertas de los puntos 2, 5 y 8):
+  1. **Alcance:** solo CU-1 (explicar una recomendación ya calculada) a través del endpoint 14 existente
+     (`DT-068`). Sin chat, sin `/assistant/*`, sin RAG ni AI Search (U15), sin CU-2 a CU-5, sin persistir
+     explicaciones. Ninguna respuesta de la API cambia de forma; solo `explanation.generator` puede valer el nombre del
+     despliegue.
+  2. **Modelo y despliegue (`DT-P08`):** `gpt-5.4-mini` tiene cuota 0; la elección entre `gpt-4.1-mini` y `gpt-5-mini`
+     en *Global Standard* (Puerta 0) la hace el responsable. En general: el modelo pequeño de OpenAI más barato que la Puerta 0 muestre disponible en
+     `centralus` con cuota y **sin retirada anunciada en los próximos 6 meses**, en *Global Standard* (o *Data Zone
+     Standard* si hay cuota). Capacidad mínima. No se fija de memoria: la familia `gpt-4o`/`gpt-4.1` tiene retiradas
+     anunciadas y la versión exacta sale de la Puerta 0 y de la tabla de retiradas de Microsoft Learn.
+  3. **Recurso:** una cuenta `Microsoft.CognitiveServices/accounts` en `rg-motor-predictivo-dev`, `centralus`, con
+     `disableLocalAuth: true` (sin claves), y un único despliegue del modelo elegido. Bicep en `infra/azure/u13/`,
+     desplegado por el responsable con un script guardado como los de U10–U12 (Preflight de solo lectura, `what-if`
+     revisado, palabra de confirmación, Verify).
+  4. **Autenticación:** solo Microsoft Entra ID. La identidad de ejecución `id-mpa-dev-runtime` recibe *Cognitive
+     Services OpenAI User* **sobre la cuenta**, no sobre el grupo. Ninguna clave, en Key Vault ni en variables.
+  5. **Código:** un `AzureOpenAIGenerator` que cumple el puerto `TextGenerator` (`docs/09` §14.3). Por coherencia con
+     `DT-068` punto 12, `app.genai` sigue sin dependencias: la llamada HTTP y el token de la identidad administrada
+     (endpoint de identidad de Container Apps) se hacen con la biblioteca estándar en un adaptador de `app.api`, o
+     con un grupo opcional nuevo (`openai`), según decida el responsable. `APP_ENV=local` y las pruebas no llaman a la
+     red (`CLAUDE.md` §12.5): usan un doble de prueba.
+  6. **Entrada del modelo:** solo el `ExplanationContext` (`facts[]` con su `display`, `flags`, `reasons`, unidad,
+     procedencia del plazo y avisos), delimitado como datos y con las instrucciones de `docs/09` §6. Longitud máxima
+     acotada, sin herramientas ni llamadas a funciones. Con `gpt-4.1-mini`: `temperature` baja y `max_tokens`. Con
+     un modelo de razonamiento (`gpt-5-mini`): no admite `temperature`, `top_p` ni `max_tokens`; se usan
+     `max_completion_tokens` y `reasoning_effort` bajo, con el valor que admita ese modelo (Microsoft Learn, «Reasoning
+     models», actualizada el 2026-09-21).
+  7. **Verificación:** la misma de `DT-069`, sin cambios, y además el rechazo de números escritos con letras (riesgo ya
+     anotado en `DT-069`, *Consecuencias*).
+  8. **Degradación (`DT-094`, RNF-010):** si el servicio no responde, supera el tiempo límite, devuelve error o el texto
+     no supera la verificación, se usa la **plantilla** `template/1.0.0`, que ya está verificada. La respuesta sigue
+     siendo HTTP 200 y nunca devuelve el texto rechazado. *Decisión abierta:* si ese caso se marca con
+     `status = VERIFIED` y `generator = template/1.0.0`, o con un aviso nuevo.
+  9. **Activación:** por configuración (`GENAI_PROVIDER`, *endpoint* y nombre del despliegue, que son identificadores y
+     no secretos). Sin configuración, la API usa la plantilla como hoy.
+  10. **Coste:** sin cargo fijo, pago por *tokens*. Con 100 recomendaciones y explicaciones cortas, el gasto esperado es
+      de céntimos; el responsable lo comprueba en el portal de Sponsorships antes y después. Un límite de peticiones por
+      usuario y un tiempo límite corto evitan consumo inesperado. Desmontaje: borrar el despliegue y la cuenta, y
+      purgarla.
+- **Fuera de U13:** RAG, AI Search, asistente conversacional, evaluación con usuarios reales (`docs/09` §11),
+  prioridad, riesgo y urgencia de CU-1 (`BR-X03`).
+- **Decisiones del responsable (2026-10-13):**
+  - **modelo:** `gpt-4.1-mini` `2025-04-14` en *Global Standard*, capacidad 10 (cuota 200). Se retira el 2027-04-14,
+    dos meses después que `gpt-5-mini`; no es de razonamiento y admite `temperature`;
+  - **conexión:** biblioteca estándar. `app.genai` no cambia de dependencias; la llamada HTTP y el token de la identidad
+    administrada están en `app.api.azure_openai`;
+  - **respaldo:** como hoy. Si el modelo falla, la respuesta es la de la plantilla (`status = VERIFIED`,
+    `generator = template/1.0.0`), sin aviso nuevo; el fallo queda en el registro con su `correlation_id` y su causa.
+- **Implementación (2026-10-13, [CC]):**
+  - `app/genai/chat.py`: `ChatGenerator` y `build_messages` (instrucciones de `docs/09` §6, cifras con su `display`
+    y el texto verificado de la plantilla como referencia, delimitados como datos). La frase de provisionalidad la
+    añade el sistema, nunca el modelo;
+  - `explain(..., fallback=)`: con respaldo, el texto del modelo pasa la verificación de `DT-069` y la de números con
+    letras (`verify_no_number_words`, con la lista `CARDINAL_WORDS` de las plantillas); si falla cualquier cosa, se usa
+    la plantilla. Sin respaldo, el comportamiento de U6 no cambia (`DEGRADED`);
+  - `app/api/azure_openai.py`: token de `IDENTITY_ENDPOINT` con `client_id` de `id-mpa-dev-runtime` (recurso
+    `https://cognitiveservices.azure.com`, renovado 5 minutos antes de caducar), `POST {endpoint}/openai/v1/chat/completions`
+    sin `api-version`, `temperature` 0.2, `max_tokens` 400, tiempo límite de 10 s, límite **global** de 30 llamadas por
+    minuto (no por usuario: simplificación de `docs/09` §9) y caché de 256 prompts idénticos;
+  - `settings.py`: `GENAI_PROVIDER` (`template` por defecto | `azure-openai`, solo con `APP_ENV=dev`),
+    `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_DEPLOYMENT` y `AZURE_CLIENT_ID`; rechaza cualquier clave de Azure OpenAI en
+    el entorno. `APP_ENV=local` no cambia (RNF-006);
+  - infraestructura: `infra/azure/u13/` (Bicep y README) y `infra/azure/deploy-u13.ps1` (Preflight de solo lectura,
+    Deploy con *what-if* comprobado y `OPENAI`, Verify, Remove con `BORRAR`, `-SelfTest`). U12 solo cablea la api
+    (`genaiEnabled`, `false` hasta verificar U13) y su *what-if* sigue rechazando recursos OpenAI;
+  - pruebas: backend 365 (suite por defecto) y 109 (`tests/api`); `infra/tests` con `test_u13_config.py`; Bicep 0.48.1
+    sin avisos.
+- **Estado:** `ACEPTADA` (2026-10-13). Implementada en la rama `feature/u13-azure-openai`; **no desplegada**. El
+  despliegue lo ejecuta el responsable con `infra/azure/u13/README.md` §2.
+
 ## Decisiones deliberadamente NO tomadas
 
 | ID | Tema | Se decidirá en | Por qué no ahora |

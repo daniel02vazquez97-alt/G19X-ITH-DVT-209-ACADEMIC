@@ -1,13 +1,15 @@
 """U6 — deterministic explanation of a persisted recommendation (`docs/09` §14.5, `DT-068`, `DT-069`).
 
 Persisted recommendation → ``ExplanationContext`` → ``facts[]`` → fixed template → verification →
-``VERIFIED`` / ``DEGRADED`` / ``NOT_APPLICABLE``. Standard library only: no LLM, no RAG, no Azure, no
-database connection, no call to the engine and no recalculation (`docs/03` §16.4).
+``VERIFIED`` / ``DEGRADED`` / ``NOT_APPLICABLE``. Standard library only: no RAG, no database connection, no call
+to the engine and no recalculation (`docs/03` §16.4). U13 (`DT-101`) adds ``ChatGenerator``: a chat model behind
+the same port, with the call injected by ``app.api`` and the template as fallback.
 """
 
+from .chat import ChatGenerator, build_messages, message_list
 from .context import build_context
-from .errors import ExplanationError, UnverifiedFigureError
-from .explanation import TemplateGenerator, TextGenerator, explain
+from .errors import ExplanationError, GeneratorUnavailable, UnverifiedFigureError
+from .explanation import TemplateGenerator, TextGenerator, explain, provisional_sentence
 from .types import (
     DEGRADED,
     GENERATOR,
@@ -22,6 +24,7 @@ from .types import (
 )
 
 __all__ = [
+    "ChatGenerator",
     "DEGRADED",
     "GENERATOR",
     "NARRATIVE_UNVERIFIED",
@@ -31,11 +34,15 @@ __all__ = [
     "ExplanationContext",
     "ExplanationError",
     "Fact",
+    "GeneratorUnavailable",
     "Provenance",
     "ReasonDetail",
     "TemplateGenerator",
     "TextGenerator",
     "UnverifiedFigureError",
     "build_context",
+    "build_messages",
     "explain",
+    "message_list",
+    "provisional_sentence",
 ]

@@ -9,6 +9,10 @@
   empty, and the optional group ``entra`` of ``pyproject.toml`` must be installed.
 * ``staging`` and ``prod`` still refuse to start: no unit has authorized them.
 
+``GENAI_PROVIDER`` (U13, `DT-101`): ``template`` (default, U6) or ``azure-openai``, only with ``APP_ENV=dev``;
+then ``AZURE_OPENAI_ENDPOINT``, ``AZURE_OPENAI_DEPLOYMENT`` and ``AZURE_CLIENT_ID`` (identifiers, not secrets) are
+required and ``GENAI_TIMEOUT_SECONDS`` and ``GENAI_MAX_CALLS_PER_MINUTE`` are optional. There is never a key.
+
 ``DATABASE_URL`` is read with the mechanism of `app.db.connection` (never stored in the repository). The
 application reads ``os.environ`` only: no ``.env`` loader. Any refusal happens before the server starts.
 """
@@ -29,6 +33,9 @@ LOCAL = "local"
 DEV = "dev"
 STARTABLE_ENVS = (LOCAL, DEV)
 ENTRA_VARS = ("ENTRA_TENANT_ID", "ENTRA_API_CLIENT_ID", "ENTRA_SPA_CLIENT_ID")
+GENAI_PROVIDERS = ("template", "azure-openai")
+AZURE_OPENAI_VARS = ("AZURE_OPENAI_ENDPOINT", "AZURE_OPENAI_DEPLOYMENT", "AZURE_CLIENT_ID")
+_AOAI_HOSTS = (".openai.azure.com", ".cognitiveservices.azure.com", ".services.ai.azure.com")
 
 
 class SettingsError(RuntimeError):
@@ -42,6 +49,8 @@ class Settings:
     identities: Mapping[str, Identity] = field(repr=False)
     #: Only with ``APP_ENV=dev``: an ``app.api.entra.EntraConfig`` (`DT-099`).
     entra: Any = None
+    #: Only with ``APP_ENV=dev`` and ``GENAI_PROVIDER=azure-openai``: an ``AzureOpenAIConfig`` (`DT-101`).
+    genai: Any = None
 
     def __post_init__(self) -> None:
         if self.app_env not in APP_ENVS:
@@ -57,6 +66,8 @@ class Settings:
             raise SettingsError("APP_ENV=dev requires the Entra ID configuration and no development identities")
         if not self.database_url:
             raise SettingsError(f"{DATABASE_ENV_VAR} is not set")
+        if self.genai is not None and self.app_env != DEV:
+            raise SettingsError("GENAI_PROVIDER=azure-openai is only accepted with APP_ENV=dev")
 
 
 def load_settings(environ: Mapping[str, str] | None = None) -> Settings:
@@ -71,13 +82,46 @@ def load_settings(environ: Mapping[str, str] | None = None) -> Settings:
     database_url = env.get(DATABASE_ENV_VAR, "")
     if not database_url:
         raise SettingsError(f"{DATABASE_ENV_VAR} is not set")
+    genai = _genai_config(env, app_env)
     if app_env == DEV:
-        return Settings(app_env, database_url, {}, _entra_config(env))
+        return Settings(app_env, database_url, {}, _entra_config(env), genai)
     try:
         identities = parse_identities(env.get("DEV_AUTH_IDENTITIES"))
     except IdentityRegistryError as exc:
         raise SettingsError(str(exc)) from exc
     return Settings(app_env, database_url, identities)
+
+
+def _genai_config(env: Mapping[str, str], app_env: str) -> Any:
+    """``None`` for the template (U6); an ``AzureOpenAIConfig`` for ``azure-openai`` (`DT-101`), or a refusal."""
+    provider = env.get("GENAI_PROVIDER") or "template"
+    if provider not in GENAI_PROVIDERS:
+        raise SettingsError(f"GENAI_PROVIDER must be one of {', '.join(GENAI_PROVIDERS)}")
+    if provider == "template":
+        return None
+    if app_env != DEV:
+        raise SettingsError("GENAI_PROVIDER=azure-openai is only accepted with APP_ENV=dev")
+    if any(name.endswith(("_KEY", "_API_KEY")) and name.startswith(("AZURE_OPENAI", "OPENAI")) and env.get(name)
+           for name in env):
+        raise SettingsError("U13 uses Microsoft Entra ID only: remove the Azure OpenAI key from the environment")
+    missing = [name for name in AZURE_OPENAI_VARS if not env.get(name)]
+    if missing:
+        raise SettingsError(f"GENAI_PROVIDER=azure-openai requires {', '.join(missing)}")
+    endpoint = env["AZURE_OPENAI_ENDPOINT"].rstrip("/")
+    host = endpoint.removeprefix("https://")
+    if not endpoint.startswith("https://") or "/" in host or not host.endswith(_AOAI_HOSTS):
+        raise SettingsError("AZURE_OPENAI_ENDPOINT must be https://<account>.openai.azure.com")
+    from .azure_openai import AzureOpenAIConfig
+
+    try:
+        timeout = float(env.get("GENAI_TIMEOUT_SECONDS") or 10)
+        calls = int(env.get("GENAI_MAX_CALLS_PER_MINUTE") or 30)
+    except ValueError as exc:
+        raise SettingsError("GENAI_TIMEOUT_SECONDS and GENAI_MAX_CALLS_PER_MINUTE must be numbers") from exc
+    if not 1 <= timeout <= 30 or not 1 <= calls <= 600:
+        raise SettingsError("GENAI_TIMEOUT_SECONDS must be 1-30 and GENAI_MAX_CALLS_PER_MINUTE 1-600")
+    return AzureOpenAIConfig(endpoint, env["AZURE_OPENAI_DEPLOYMENT"], env["AZURE_CLIENT_ID"],
+                             timeout_seconds=timeout, max_calls_per_minute=calls)
 
 
 def _entra_config(env: Mapping[str, str]) -> Any:
