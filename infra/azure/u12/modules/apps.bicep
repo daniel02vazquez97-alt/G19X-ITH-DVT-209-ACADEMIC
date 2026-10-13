@@ -28,6 +28,12 @@ param entraApiClientId string
 param entraSpaClientId string
 param runAsOf string
 
+@description('U13 (DT-101): la api explica con Azure OpenAI (identidad de ejecución, sin claves) y la plantilla de respaldo.')
+param genaiEnabled bool = false
+param genaiEndpoint string = ''
+param genaiDeployment string = ''
+param runtimeClientId string = ''
+
 @secure()
 param ownerPassword string
 
@@ -35,6 +41,12 @@ param ownerPassword string
 param appPassword string
 
 var appLogin = 'mpa_app'
+var genaiEnv = genaiEnabled ? [
+  { name: 'GENAI_PROVIDER', value: 'azure-openai' }
+  { name: 'AZURE_OPENAI_ENDPOINT', value: genaiEndpoint }
+  { name: 'AZURE_OPENAI_DEPLOYMENT', value: genaiDeployment }
+  { name: 'AZURE_CLIENT_ID', value: runtimeClientId }
+] : []
 var identity = {
   type: 'UserAssigned'
   userAssignedIdentities: {
@@ -81,7 +93,7 @@ resource api 'Microsoft.App/containerApps@2025-01-01' = {
             cpu: json('0.5')
             memory: '1Gi'
           }
-          env: [
+          env: concat([
             { name: 'APP_ENV', value: 'dev' }
             { name: 'DATABASE_URL', value: 'postgresql://${appLogin}@${postgresHost}:5432/inventory?sslmode=require' }
             { name: 'PGPASSWORD', secretRef: 'app-db-password' }
@@ -89,7 +101,7 @@ resource api 'Microsoft.App/containerApps@2025-01-01' = {
             { name: 'ENTRA_API_CLIENT_ID', value: entraApiClientId }
             { name: 'ENTRA_SPA_CLIENT_ID', value: entraSpaClientId }
             { name: 'LOG_LEVEL', value: 'INFO' }
-          ]
+          ], genaiEnv)
           probes: [
             {
               type: 'Liveness'

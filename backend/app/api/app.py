@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 
-from app.genai import TemplateGenerator
+import os
+
+from app.genai import ChatGenerator, TemplateGenerator, TextGenerator
 
 from . import __version__, correlation, errors
 from .auth import DevTokenValidator, TokenValidator
@@ -23,6 +25,17 @@ def _validator(settings: Settings) -> TokenValidator:
     return DevTokenValidator(settings.identities)
 
 
+def _generators(settings: Settings) -> tuple[TextGenerator, TextGenerator | None]:
+    """(generator, fallback): the template alone (U6), or Azure OpenAI with the template as fallback (`DT-101`)."""
+    if settings.genai is None:
+        return TemplateGenerator(), None
+    from .azure_openai import AzureOpenAIChat, ManagedIdentityToken
+
+    token = ManagedIdentityToken(settings.genai, os.environ)
+    chat = AzureOpenAIChat(settings.genai, token.get)
+    return ChatGenerator(chat, f"azure-openai/{settings.genai.deployment}"), TemplateGenerator()
+
+
 def create_app(settings: Settings | None = None, validator: TokenValidator | None = None) -> FastAPI:
     """``settings`` from the environment by default; only ``APP_ENV=local`` and ``dev`` build (`DT-065`, `DT-099`)."""
     settings = load_settings() if settings is None else settings
@@ -37,7 +50,8 @@ def create_app(settings: Settings | None = None, validator: TokenValidator | Non
     )
     app.state.settings = settings
     app.state.token_validator = validator if validator is not None else _validator(settings)
-    app.state.text_generator = TemplateGenerator()  # U6: deterministic template (`DT-068`)
+    # U6: deterministic template (`DT-068`); U13: Azure OpenAI with the template as fallback (`DT-101`).
+    app.state.text_generator, app.state.text_fallback = _generators(settings)
     errors.install(app)
     correlation.install(app)
     for module in (health, me, products, inventory, forecasts, recommendations, explanations, runs):

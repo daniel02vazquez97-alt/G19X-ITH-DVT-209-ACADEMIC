@@ -58,6 +58,12 @@ param entraSpaClientId string
 @description('Corte de la carga y de los cálculos del bootstrap (DT-058).')
 param runAsOf string = '2025-12-31'
 
+@description('U13 (DT-101): true cuando Azure OpenAI está desplegado y verificado con deploy-u13.ps1. La api lo usa para las explicaciones, con la plantilla como respaldo. Sin claves: solo identificadores.')
+param genaiEnabled bool = false
+
+@description('U13: nombre del despliegue del modelo en la cuenta de Azure OpenAI (campo model de las llamadas).')
+param genaiDeployment string = 'gpt-41-mini'
+
 var tags = {
   project: 'motor-predictivo-abastecimiento'
   environment: environment
@@ -75,6 +81,7 @@ var names = {
   api: 'ca-${projectName}-${environment}-api'
   frontend: 'ca-${projectName}-${environment}-frontend'
   bootstrap: 'caj-${projectName}-${environment}-bootstrap'
+  openai: 'oai-${projectName}-${environment}-${suffix}' // la crea U13 (infra/azure/u13), no este archivo
 }
 // Container Apps Contributor only covers Microsoft.App/containerApps/*: `az containerapp job update` failed with
 // AuthorizationFailed on Microsoft.App/jobs/write (Deploy dev #4). The built-in job roles (Container Apps Jobs
@@ -222,6 +229,10 @@ module apps 'modules/apps.bicep' = if (deployApps) {
     entraApiClientId: entraApiClientId
     entraSpaClientId: entraSpaClientId
     runAsOf: runAsOf
+    genaiEnabled: genaiEnabled
+    genaiEndpoint: 'https://${names.openai}.openai.azure.com'
+    genaiDeployment: genaiDeployment
+    runtimeClientId: runtimeIdentity.properties.clientId
   }
   dependsOn: [
     githubAssignRuntime

@@ -10,7 +10,7 @@ from __future__ import annotations
 import logging
 from typing import Protocol
 
-from .errors import ExplanationError, UnverifiedFigureError
+from .errors import ExplanationError, GeneratorUnavailable, UnverifiedFigureError
 from .templates import (
     FLAG_SENTENCES,
     LEAD_TIME_SOURCE_TEXTS,
@@ -32,13 +32,13 @@ from .types import (
     ExplanationContext,
     ReasonDetail,
 )
-from .verification import verify
+from .verification import verify, verify_no_number_words
 
 logger = logging.getLogger("app.genai")
 
 
 class TextGenerator(Protocol):
-    """Port of `docs/03` §16.5: the template now, Azure OpenAI in Fase 10 behind the same interface."""
+    """Port of `docs/03` §16.5: the template (U6) and Azure OpenAI (U13, `DT-101`) behind the same interface."""
 
     name: str
 
@@ -68,10 +68,16 @@ class TemplateGenerator:
             sentences += [sentence.substitute(values) for flag, sentence in FLAG_SENTENCES if flag in context.flags]
         except KeyError as exc:
             raise ExplanationError(f"missing fact {exc.args[0]} for the template") from exc
-        notices = frozenset(context.provenance.notices) & NOTICES
-        if notices:
-            sentences.append(PROVISIONAL_SENTENCES[notices])
+        provisional = provisional_sentence(context)
+        if provisional:
+            sentences.append(provisional)
         return " ".join(sentences)
+
+
+def provisional_sentence(context: ExplanationContext) -> str | None:
+    """The fixed provisional sentence of the notices (`DT-069` point 8), or ``None``."""
+    notices = frozenset(context.provenance.notices) & NOTICES
+    return PROVISIONAL_SENTENCES[notices] if notices else None
 
 
 def reason_details(context: ExplanationContext) -> tuple[ReasonDetail, ...]:
@@ -80,11 +86,34 @@ def reason_details(context: ExplanationContext) -> tuple[ReasonDetail, ...]:
 
 
 def explain(
-    context: ExplanationContext, generator: TextGenerator | None = None, correlation_id: str | None = None
+    context: ExplanationContext,
+    generator: TextGenerator | None = None,
+    correlation_id: str | None = None,
+    fallback: TextGenerator | None = None,
 ) -> Explanation:
+    """Without ``fallback`` (U6): render, verify and degrade (`DT-069`). With ``fallback`` (U13, `DT-101`
+    point 8): if ``generator`` fails, or its text has an unauthorized figure or a number written with words, the
+    explanation is the ``fallback`` one (the template), verified as in U6; the rejected text is never returned."""
     generator = TemplateGenerator() if generator is None else generator
     if context.outcome == NOT_CALCULABLE:
-        return Explanation(generator.name, NOT_APPLICABLE, None, None, reason_details(context))
+        return Explanation((fallback or generator).name, NOT_APPLICABLE, None, None, reason_details(context))
+    if fallback is not None:
+        try:
+            text = generator.generate(context)
+            verify(text, context.facts)
+            verify_no_number_words(text)
+            return Explanation(generator.name, VERIFIED, text, None, ())
+        except UnverifiedFigureError as exc:
+            cause = f"unverified ({len(exc.figures)})"
+        except GeneratorUnavailable as exc:
+            cause = f"unavailable ({exc})"
+        except Exception as exc:  # any failure of the remote generator keeps the API answering (RNF-010)
+            cause = f"error ({type(exc).__name__})"
+        logger.warning(
+            "explanation fallback to the template (correlation_id=%s, recommendation_id=%s, generator=%s, cause=%s)",
+            correlation_id, context.recommendation_id, generator.name, cause,
+        )
+        generator = fallback
     text = generator.generate(context)
     try:
         verify(text, context.facts)
