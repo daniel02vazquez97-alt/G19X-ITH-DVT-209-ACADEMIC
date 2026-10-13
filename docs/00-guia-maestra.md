@@ -452,7 +452,7 @@ Estimaciones, no cifras garantizadas: README de U12 §7.
 **Fuente única del estado:** [`docs/reports/u12-cierre-evidencias.md`](reports/u12-cierre-evidencias.md), con la
 matriz C01–C15 y el origen de cada evidencia. Esta sección solo resume; si difiere del informe, manda el informe.
 
-**Demostrado en Azure**, con evidencia aportada por el responsable el 2026-10-10 desde su PowerShell. **No** la
+**Demostrado en Azure**, con evidencia aportada por el responsable desde su PowerShell y registrada el 2026-10-10 (fecha de ejecución no aportada). **No** la
 ejecutó un agente y no está versionada:
 
 - despliegue `u12-dev` `Succeeded`;
@@ -466,10 +466,9 @@ ejecutó un agente y no está versionada:
 
 **Pendiente:**
 
-- ejecución completa de `-Stage Firewall` tras la corrección `dd2d45f`;
 - en el navegador: el caso sin sesión y la revisión de las vistas de datos (catálogo, detalle, pronóstico y
   recomendación con explicación). *(El inicio de sesión real y la matriz de los cuatro roles y sin rol ya constan:
-  **[AZ-U]** 2026-10-11, informe de U12 §2.1);*
+  **[AZ-U]**, registrados el 2026-10-11, informe de U12 §2.1; también `-Stage Firewall` completo, §2.2);*
 - redespliegue con `run_bootstrap=true`;
 - pruebas de fallo;
 - cierre documental.

@@ -4209,6 +4209,10 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
   en la aplicación desplegada con sesión real de Entra ID. Resultado: los cuatro roles y el usuario sin rol se ajustan a
   `docs/07` §7.2, con «Coincide» = `sí` en todas las filas. C10 pasa a `APROBADO`; C11 y C12 a `PARCIAL`. Resumen
   vigente: 9 `APROBADO`, 3 `PARCIAL`, 3 `PENDIENTE`; detalle solo en el informe. U12 sigue sin cerrar.
+- **Nota del 2026-10-11 (firewall, revisión 5 del informe):** el responsable ejecutó `-Stage Firewall` con el script
+  corregido (`dd2d45f`): 161 IP de salida, «Las reglas ya coinciden con las IP de salida.», código 0; y `-Stage Verify`
+  después, con «U12: dev verificado». C05 pasa a `APROBADO`. Resumen vigente: 10 `APROBADO` (C01–C10), 2 `PARCIAL`
+  (C11, C12) y 3 `PENDIENTE` (C13–C15). Las fechas de las evidencias del responsable son de registro, no de ejecución.
 
 ## Decisiones deliberadamente NO tomadas
 
