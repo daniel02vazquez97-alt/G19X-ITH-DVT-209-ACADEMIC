@@ -188,7 +188,7 @@ cumplido.
 | Categoría | Contenido |
 |---|---|
 | Completado | MVP-01 a MVP-09, con la evidencia de §6 |
-| Implementado, pendiente de evidencia | Nada dentro del MVP. Fuera de él: U12 en Azure (E2E, redespliegue, fallos y `-Stage Firewall` completo; ver informe de U12) |
+| Implementado, pendiente de evidencia | Nada dentro del MVP. Fuera de él: U12 en Azure (sin sesión en el navegador, revisión de vistas, redespliegue y fallos; ver informe de U12) |
 | Pruebas bloqueadas | Ninguna del MVP. Las de U12 en Azure no se pueden ejecutar desde Claude Code Cloud: sin Azure CLI ni credenciales, red bloqueada a `*.azurecontainerapps.io`, sin navegador. Las ejecuta el responsable |
 | Experimental | F5c (candidatos), SES sin promover; todo `SYNTHETIC` |
 | Decisiones pendientes | Aceptación del MVP y del PRD (MVP-10); RF-013/RF-014 y escrituras dentro o fuera del MVP (§1.3); `BR-X03`; `ASSUMPTION-010`; parámetros de política; `DT-P16` |
