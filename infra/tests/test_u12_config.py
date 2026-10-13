@@ -397,7 +397,8 @@ class ScriptSource(unittest.TestCase):
         # bug that made -Stage KeyVault report ALREADY_CONFIGURED while the vault still had to change). Always (As-Array x).
         self.assertNotRegex(self.SOURCE, r"@\(As-Array|\{ As-Array|As-Array [^()\n|]*\| ")
         self.assertNotRegex(self.SOURCE, r"keyvault secret (show|download)|--query value|Write-Host[^\n]*New-DbPassword")
-        allowed = ("-eq '0.0.0.0'", "'regla 0.0.0.0'", "Stop-U12 (", "sin 0.0.0.0")  # refusals, self-test, messages
+        allowed = ("-eq '0.0.0.0'", "-ne '0.0.0.0'", "'regla 0.0.0.0'", "nunca 0.0.0.0", "Stop-U12 (",
+                   "sin 0.0.0.0")  # refusals, self-test, messages
         for line in code(self.SOURCE).splitlines():
             if "0.0.0.0" in line:
                 self.assertTrue(any(mark in line for mark in allowed), line)
@@ -407,18 +408,34 @@ class ScriptSource(unittest.TestCase):
         # (Microsoft Learn, az postgres flexible-server firewall-rule). `list --name <server>` failed in the real
         # -Stage Apps run of 2026-10-10 with "unrecognized arguments"; --rule-name does not exist.
         calls = [line for line in self.SOURCE.splitlines() if "'firewall-rule'," in line and "Invoke-Az" in line]
-        self.assertEqual(len(calls), 3)  # list (Firewall), delete (stale rules), list (Verify)
+        # list + create (missing rules, same IPs), list (after), delete (stale rules), list (Verify)
+        self.assertEqual(len(calls), 5)
         for line in calls:
             self.assertRegex(line, r"'--server-name', \$(Outputs|out)\.postgresName")
             self.assertNotRegex(line, r"'--name', \$(Outputs|out)\.postgresName")
             self.assertNotIn("--rule-name", line)
         [delete] = [line for line in calls if "'delete'" in line]
         self.assertIn("'--name', $stale, '--yes'", delete)  # --name is the stale rule, never the server
+        [create] = [line for line in calls if "'create'" in line]  # az CLI source: --name is the rule, -s the server
+        self.assertIn("'--name', $rule, '--start-ip-address', $ip, '--end-ip-address', $ip", create)
         server_calls = [line for line in self.SOURCE.splitlines() if "Invoke-Az @('postgres', 'flexible-server', '" in line
                         and any(f"'flexible-server', '{verb}'" in line for verb in ("show", "stop", "start"))]
         self.assertEqual(len(server_calls), 4)  # state (Bootstrap), stop, start, show (Verify)
         for line in server_calls:  # the server commands themselves keep --name for the server
             self.assertIn("'--name', $out.postgresName", line)
+
+    def test_firewall_recreates_a_rule_deleted_by_hand(self) -> None:
+        # README 6, "firewall desactualizado": with the same outbound IPs as postgres-ips.json the stage used to say
+        # "Las reglas ya coinciden" and never noticed a rule deleted in the portal (C14, 2026-10-13).
+        body = self.SOURCE.split("function Update-Firewall")[1].split("\nfunction ")[0]
+        same_ips = body.split("} else {", 1)[1]
+        self.assertLess(same_ips.index("'firewall-rule', 'list'"), same_ips.index("Get-MissingRuleIps"))
+        self.assertLess(same_ips.index("Get-MissingRuleIps"), same_ips.index("'firewall-rule', 'create'"))
+        self.assertIn("Las reglas ya coinciden con las IP de salida.", same_ips)  # only when nothing is missing
+        self.assertIn('Stop-U12 ("siguen faltando reglas de firewall: "', body)  # checked again after the fix
+        helper = self.SOURCE.split("function Get-MissingRuleIps")[1].split("\n}\n")[0]
+        self.assertIn("-ne '0.0.0.0'", helper)  # never the "any Azure service" rule
+        self.assertIn(r"'^\d{1,3}(\.\d{1,3}){3}$'", helper)  # single IPv4 addresses only
 
     def test_verify_covers_the_acceptance_checks(self) -> None:
         verify = self.SOURCE.split("    'Verify' {")[1]
