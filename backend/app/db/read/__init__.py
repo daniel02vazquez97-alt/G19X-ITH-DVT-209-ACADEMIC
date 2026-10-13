@@ -13,10 +13,20 @@ from contextlib import contextmanager
 import psycopg
 from psycopg.rows import dict_row
 
+#: Seconds libpq may spend opening a connection (TCP, TLS and authentication; libpq's minimum is 2). Without it a
+#: PostgreSQL that accepts TCP but never answers (stopped in Azure, C14 2026-10-12) kept the request waiting until
+#: the frontend proxy gave up with its own 504 after ~60 s; now psycopg raises OperationalError and the API answers
+#: its 503 SERVICE_UNAVAILABLE (`docs/07` §7.4). Only the API's read connections: batch runs keep libpq's default.
+CONNECT_TIMEOUT_SECONDS = 5
+
+
+def _connect(url: str) -> psycopg.Connection:
+    return psycopg.connect(url, autocommit=False, row_factory=dict_row, connect_timeout=CONNECT_TIMEOUT_SECONDS)
+
 
 @contextmanager
 def read_only_connection(url: str) -> Iterator[psycopg.Connection]:
-    conn = psycopg.connect(url, autocommit=False, row_factory=dict_row)
+    conn = _connect(url)
     try:
         conn.read_only = True  # every transaction of this connection is READ ONLY
         yield conn
@@ -37,7 +47,7 @@ class LazyReadOnlyConnection:
 
     def execute(self, query, params=None):  # noqa: ANN001 — same signature as psycopg.Connection.execute
         if self._conn is None:
-            conn = psycopg.connect(self._url, autocommit=False, row_factory=dict_row)
+            conn = _connect(self._url)
             conn.read_only = True
             self._conn = conn
         return self._conn.execute(query, params)
