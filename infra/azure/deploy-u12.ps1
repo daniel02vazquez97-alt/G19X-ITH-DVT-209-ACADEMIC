@@ -451,6 +451,12 @@ function Get-StaleRules([string[]]$RuleNames, [string[]]$Ips) {
     return ,@($RuleNames | Where-Object { $_ -like 'aca-out-*' -and $_ -notin $wanted })
 }
 
+# Outbound IPs whose U12 rule does not exist in Azure: the IP list may match postgres-ips.json while a rule was
+# deleted by hand (README 6, "firewall desactualizado"). Never 0.0.0.0, and only single IPv4 addresses.
+function Get-MissingRuleIps([string[]]$RuleNames, [string[]]$Ips) {
+    return ,@($Ips | Where-Object { $_ -match '^\d{1,3}(\.\d{1,3}){3}$' -and $_ -ne '0.0.0.0' -and ('aca-out-' + ($_ -replace '\.', '-')) -notin @($RuleNames) })
+}
+
 # Adds the frontend URL to spa.redirectUris of the U11 desired state (text edit: the file keeps its layout).
 # Read-only allow list for -PreflightOnly: these az commands only read (or compile Bicep locally to stdout).
 function Test-ReadOnlyAz([string[]]$Arguments) {
@@ -724,6 +730,9 @@ if ($SelfTest) {
     Check 'ruido de reference(): otra propiedad modificada -> rechazado' ((Test-KeyVaultWhatIf (& $withNoise (& $noise 'p-gh' $ref $reader $reader @([ordered]@{ path = 'properties.condition'; propertyChangeType = 'Modify'; before = $null; after = 'x' }))) 'p-gh').Count -gt 0)
     Check 'ruido de reference(): valor literal distinto -> rechazado' ((Test-KeyVaultWhatIf (& $withNoise (& $noise 'p-gh' 'p-nuevo' $reader $reader @())) 'p-gh').Count -gt 0)
     Check 'reglas obsoletas: solo las aca-out-* que ya no son IP de salida' ((Test-SameList (Get-StaleRules @('aca-out-1-2-3-4', 'aca-out-5-6-7-8', 'otra') @('5.6.7.8')) @('aca-out-1-2-3-4')))
+    Check 'reglas que faltan: solo las IP de salida sin su aca-out-*' ((Test-SameList (Get-MissingRuleIps @('aca-out-5-6-7-8', 'otra') @('5.6.7.8', '20.1.2.3')) @('20.1.2.3')))
+    Check 'reglas que faltan: ninguna si estan todas' ((Get-MissingRuleIps @('aca-out-5-6-7-8', 'aca-out-20-1-2-3') @('5.6.7.8', '20.1.2.3')).Count -eq 0)
+    Check 'reglas que faltan: nunca 0.0.0.0 ni algo que no sea una IPv4' ((Get-MissingRuleIps @() @('0.0.0.0', '1.0.0.0/8', 'x')).Count -eq 0)
     $reads = @(@('account', 'show'), @('group', 'show', '--name', 'g'), @('resource', 'list', '--resource-group', 'g'), @('resource', 'show', '--ids', 'x'),
         @('role', 'assignment', 'list', '--all'), @('role', 'definition', 'list', '--name', 'x'), @('ad', 'signed-in-user', 'show'),
         @('identity', 'show', '--name', 'x'), @('identity', 'federated-credential', 'list', '--identity-name', 'x'), @('provider', 'show', '--namespace', 'x'),
@@ -1104,8 +1113,24 @@ function Update-Firewall($Outputs, [string]$Tag) {
         Step 'Reglas de firewall de PostgreSQL = IP de salida actuales'
         Invoke-U12Deployment @{ deployApps = $true; imageTag = $Tag; postgresAllowedIps = $ips } $true 'FIREWALL' | Out-Null
         Save-Evidence 'postgres-ips.json' ([ordered]@{ date = (Get-Date).ToUniversalTime().ToString('o'); ips = $ips })
-    } else { Write-Host 'Las reglas ya coinciden con las IP de salida.' }
+    } else {
+        # Same IPs as the last deployment: compare with the rules that really exist and recreate only the missing ones
+        # (the same rule the Bicep declares: aca-out-<ip>, start = end = ip). Redeploying all of them takes > 1 h.
+        $rules = Invoke-Az @('postgres', 'flexible-server', 'firewall-rule', 'list', '--resource-group', $ResourceGroup, '--server-name', $Outputs.postgresName, '--output', 'json') -Array -What 'firewall-rule list'
+        $missing = Get-MissingRuleIps @($rules | ForEach-Object { "$($_.name)" }) $ips
+        if ($missing.Count -eq 0) { Write-Host 'Las reglas ya coinciden con las IP de salida.' }
+        else {
+            Step "Reglas de firewall que faltan en PostgreSQL ($($missing.Count)): se recrean"
+            foreach ($ip in $missing) {
+                $rule = 'aca-out-' + ($ip -replace '\.', '-')
+                Invoke-Az @('postgres', 'flexible-server', 'firewall-rule', 'create', '--resource-group', $ResourceGroup, '--server-name', $Outputs.postgresName, '--name', $rule, '--start-ip-address', $ip, '--end-ip-address', $ip, '--output', 'none') -Raw -What "crear regla $rule" | Out-Null
+                Write-Host "  regla recreada: $rule"
+            }
+        }
+    }
     $rules = Invoke-Az @('postgres', 'flexible-server', 'firewall-rule', 'list', '--resource-group', $ResourceGroup, '--server-name', $Outputs.postgresName, '--output', 'json') -Array -What 'firewall-rule list'
+    $stillMissing = Get-MissingRuleIps @($rules | ForEach-Object { "$($_.name)" }) $ips
+    if ($stillMissing.Count) { Stop-U12 ("siguen faltando reglas de firewall: " + ($stillMissing -join ', ')) }
     foreach ($stale in (Get-StaleRules @($rules | ForEach-Object { $_.name }) $ips)) {
         Invoke-Az @('postgres', 'flexible-server', 'firewall-rule', 'delete', '--resource-group', $ResourceGroup, '--server-name', $Outputs.postgresName, '--name', $stale, '--yes') -Raw -What "borrar regla $stale" | Out-Null
         Write-Host "  regla obsoleta borrada: $stale"
