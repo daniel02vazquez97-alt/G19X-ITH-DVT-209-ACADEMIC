@@ -109,7 +109,7 @@ proyecto y la suscripción de U10 seleccionada. Cada etapa se detiene si algo no
 | 7 | GitHub → Actions → **Deploy dev** → *Run workflow* | construye y sube `inventory/backend`, `inventory/frontend` e `inventory/bootstrap` con la etiqueta = SHA del commit; aún no hay apps que actualizar | — |
 | 8 | `… -Stage Apps -ImageTag <sha>` | crea api, frontend y job con esa etiqueta; después ejecuta `Firewall` | escribir `DESPLEGAR` |
 | 9 | `… -Stage Bootstrap` | arranca el job y espera: dataset → migrate → ingest → forecast → recommend en una sola ejecución; debe terminar en `Succeeded` y `BOOTSTRAP OK` | — |
-| 10 | `… -Stage Verify` | 19 comprobaciones (Azure, aplicación y seguridad: ACR, PostgreSQL `Ready` y TLS, firewall, ingress, identidades y RBAC, Key Vault opción C, contraseñas solo como `secretRef`, última ejecución del job `Succeeded`, frontend 200, API viva tras el proxy) y `tmp/u12-evidence/u12-evidence.json` (solo identificadores) | — |
+| 10 | `… -Stage Verify` | 20 comprobaciones (Azure, aplicación y seguridad: ACR, PostgreSQL `Ready` y TLS, firewall, ingress, identidades y RBAC, incluido el rol mínimo de GitHub sobre el job, Key Vault opción C, contraseñas solo como `secretRef`, última ejecución del job `Succeeded`, frontend 200, API viva tras el proxy) y `tmp/u12-evidence/u12-evidence.json` (solo identificadores) | — |
 | 11 | smoke (lo imprime `Verify`) | `$env:SMOKE_FRONTEND_URL='<url>'; $env:SMOKE_API_URL='none'; $env:SMOKE_TIMEOUT='120'; python infra/docker/smoke.py --entra` | — |
 | 12 | navegador | abrir la URL del frontend, iniciar sesión, comprobar las vistas con el rol asignado (§6) | — |
 
@@ -209,7 +209,7 @@ datos vienen de la API real (catálogo, detalle), un pronóstico y una recomenda
 |---|---|---|---|
 | Base detenida | `-Stage Stop` | frontend carga; las vistas con datos reciben un 5xx de la API, sin traza ni secreto | `-Stage Start` |
 | Firewall desactualizado | borrar una regla `aca-out-*` en el portal | errores de conexión a la base | `-Stage Firewall` |
-| Imagen inexistente | `-Stage Apps -ImageTag noexiste` | la revisión nueva no arranca; la anterior sigue sirviendo | `-Stage Apps -ImageTag <sha bueno>` |
+| Imagen inexistente | `-Stage Apps -ImageTag 0000000` (SHA con formato válido que no existe en ACR; `noexiste` lo rechaza el script antes de desplegar) | la revisión nueva no arranca; la anterior sigue sirviendo | `-Stage Apps -ImageTag <sha bueno>` |
 | Token inválido | `curl` a `/api/...` con `Authorization: Bearer x` | 401 | — |
 | Job con fallo | ejecutar el job con la base detenida | `Failed`, se detiene en el primer paso que usa la base (2, migraciones; el 1 genera el dataset sin base), sin pasos siguientes | arrancar la base y repetir |
 | Key Vault inaccesible | `Core` o `Apps` sin la etapa 2 (bypass desactivado) | ARM rechaza `getSecret` en la validación y no cambia nada | etapa 2 |
