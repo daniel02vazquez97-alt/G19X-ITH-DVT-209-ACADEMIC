@@ -1,5 +1,7 @@
 # 09 — IA generativa (Azure OpenAI + Azure AI Search)
 
+> **Estado vigente (2026-10-13):** **Implementado:** explicación por plantilla (U6, §14.5) y Azure OpenAI tras el mismo puerto con verificación de cifras (U13, §14.4). Pendiente: Azure AI Search y RAG (U15). La línea siguiente es el historial de versiones del documento.
+
 **Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §14, punto de integración de la Etapa 2; §§1–13 no cambian · **Versión 1.3** (2026-10-04) — U6 autorizada, no implementada: §14.5 (concreción, `DT-068` y `DT-069`) y §14.6 (criterios de cierre); notas en §14 y §14.2 · **Versión 1.4** (2026-10-04) — U6 implementada y validada: estado en §14, §14.5 y §14.6; la frase de `ZERO_FORECAST_DEMAND` de §14.5 se corrigió antes de implementar («es cero» incumplía la regla de `DT-069` contra los números escritos con letras)
 
 > No se configura ningún recurso de Azure en esta etapa. Antes de implementar, verificar la

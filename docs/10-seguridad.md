@@ -1,5 +1,7 @@
 # 10 — Seguridad
 
+> **Estado vigente (2026-10-13):** **Implementado:** Microsoft Entra ID con cuatro roles (U11), Key Vault, identidades administradas y OIDC sin secretos (U10, U12). La línea siguiente es el historial de versiones del documento.
+
 **Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §15, seguridad local de la Etapa 2; §§1–14 no cambian · **Versión 1.3** (2026-10-03) — U5 autorizada: `APP_ENV` con `local` y `DEV_AUTH_IDENTITIES` en §6; concreción del validador de desarrollo en §15 (`DT-065`) · **Versión 1.4** (2026-10-07) — U11: Entra ID en `dev`; §6 y §15 (`DT-099`); la matriz no cambia
 
 > No se crean credenciales, aplicaciones de Entra ID ni recursos de Azure en esta etapa.

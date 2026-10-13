@@ -1,5 +1,7 @@
 # 11 — Diseño analítico en Power BI
 
+> **Estado vigente (2026-10-13):** Vistas analíticas **implementadas** (esquema `analytics`, migración `0004`, U9). Informes de Power BI: U16, en desarrollo. La línea siguiente es el historial de versiones del documento.
+
 **Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §9, fuentes de la Etapa 2; §§1–8 no cambian · **Versión 1.3** (2026-10-03) — §9: corrección de la fila de recomendaciones (`DT-P18` cerrada por `DT-059`) · **Versión 1.4** (2026-10-06) — §10: capa analítica de U9 implementada, pendiente de revisión (`DT-097`); ningún informe ni conexión de Power BI
 
 > **No se crea ningún dashboard en esta etapa.** Se define qué se va a medir y con qué estructura,

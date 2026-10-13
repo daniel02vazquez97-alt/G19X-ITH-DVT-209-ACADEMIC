@@ -1,5 +1,7 @@
 # 07 — Diseño inicial de la API
 
+> **Estado vigente (2026-10-13):** **Implementada:** 14 rutas de solo lectura (FastAPI, §7), desplegada en Azure Container Apps (U12). La línea siguiente es el historial de versiones del documento.
+
 **Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §7, contrato inicial de solo lectura de la Etapa 2; §§1–6 siguen siendo el catálogo completo previsto · **Versión 1.3** (2026-10-03) — §7.2 y §7.3: `DT-P18` cerrada por `DT-059`; las tres `outcome` se persisten y la resolución humana queda fuera de V1 · **Versión 1.4** (2026-10-03) — U5 autorizada, no implementada: §7.4 (concreción, `DT-064` a `DT-067`) y §7.5 (criterios de cierre); notas en §7.2 · **Versión 1.5** (2026-10-03) — U5 implementada y validada: estado en §7.4 y §7.5 · **Versión 1.6** (2026-10-04) — U6 autorizada, no implementada: endpoint 14 `GET /api/v1/recommendations/{recommendation_id}/explanation` en §7.2 (`DT-068`); notas en §2.12, §7.3, §7.4 y §7.5 · **Versión 1.7** (2026-10-04) — U6 implementada: endpoint 14 en servicio
 
 > Ningún endpoint está implementado. Este documento define el contrato previsto para que el frontend,

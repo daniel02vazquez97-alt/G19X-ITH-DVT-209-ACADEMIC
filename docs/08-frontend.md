@@ -1,5 +1,7 @@
 # 08 — Diseño del frontend
 
+> **Estado vigente (2026-10-13):** **Implementado** en `frontend/` (§12), con Microsoft Entra ID (U11) y desplegado en Azure (U12). La línea siguiente es el historial de versiones del documento.
+
 **Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-03 · **Versión 1.1** (2026-09-30) — §11, vistas frente a los contratos de la Etapa 2; §§1–10 no cambian · **Versión 1.2** (2026-10-05) — Fase 7 autorizada, no implementada: §12, concreción y diferencias con §1–§10 (`DT-070`); ruta de la explicación corregida en §11; notas en §4.1 y §8 · **Versión 1.3** (2026-10-05) — Fase 7 implementada: §12.1, implementación y notas
 
 > No se escribe código React en esta etapa. Este documento define vistas, componentes y flujos.
