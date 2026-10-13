@@ -4213,6 +4213,13 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
   corregido (`dd2d45f`): 161 IP de salida, «Las reglas ya coinciden con las IP de salida.», código 0; y `-Stage Verify`
   después, con «U12: dev verificado». C05 pasa a `APROBADO`. Resumen vigente: 10 `APROBADO` (C01–C10), 2 `PARCIAL`
   (C11, C12) y 3 `PENDIENTE` (C13–C15). Las fechas de las evidencias del responsable son de registro, no de ejecución.
+- **Nota del 2026-10-13 (cierre de U12, revisiones 6 y 7 del informe):** el responsable ejecutó el redespliegue con
+  `fd50c6b` (*bootstrap* `lshnjjx` `Succeeded`) y las pruebas de fallo: job sin base `Failed` con recuperación sin
+  duplicados, regla `aca-out-*` borrada y recreada por `-Stage Firewall`, PostgreSQL detenido (frontend 200, API 503) y
+  recuperado con Verify 20/20, y `Bearer x` → 401. Key Vault inaccesible: `NO APLICA` (exigiría revertir la opción C).
+  `-ImageTag noexiste` lo rechaza el script por formato; la prueba se documenta con `0000000`. **U12 queda cerrada con
+  verificaciones pendientes aceptadas por el responsable** (informe §4, P1–P5). Resumen: 12 `APROBADO`, 3 `PARCIAL`
+  con pendientes aceptados (C12–C14). Esta decisión no cambia; `staging` y producción siguen sin decidir (`DT-P01`).
 
 ## Decisiones deliberadamente NO tomadas
 

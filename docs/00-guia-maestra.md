@@ -199,7 +199,7 @@ Pruebas: `PYTHONPATH=backend python -m unittest discover -s ml/tests -t .` (CI p
 | **U9 — analítica** | Esquema `analytics` (13 vistas) y rol `analytics_reader` | migración `0004_analytics_views.sql` | Suite de integración ([`docs/11`](11-power-bi.md) §10, `DT-097`) | 🟢 Integrada (PR #14). Las vistas dependen de tablas operativas: una migración que las altere debe recrearlas. Sin Power BI |
 | **U10 — base de Azure** | Grupo `rg-motor-predictivo-dev` (`centralus`), Key Vault, identidad OIDC de GitHub (`id-mpa-dev-github`, Reader) | `infra/azure/main.bicep`, `infra/azure/modules/`, `infra/azure/deploy-dev.ps1` | [`infra/azure/README.md`](../infra/azure/README.md), `DT-098` | ✅ Completada el 2026-10-07 |
 | **U11 — Entra ID** | Registros de API y SPA, app roles `ADMIN`/`PLANNER`/`ANALYST`/`VIEWER`, MSAL (código + PKCE), validación de tokens con `APP_ENV=dev` | `backend/app/api/entra.py`, `frontend/src/`, `infra/azure/entra/`, `infra/azure/deploy-u11.ps1`, `infra/docker-compose.entra-dev.yml` | [`infra/azure/entra/README.md`](../infra/azure/entra/README.md), `DT-099` | ✅ Completada el 2026-10-07 (prueba real 5/5 en el entorno aislado `u11-entra-dev`) |
-| **U12 — `dev` en Azure** | Container Apps (Consumption, `WorkloadProfiles`): frontend externo HTTPS, api interna, job de *bootstrap*; ACR Basic; PostgreSQL 16 B1ms; CD por OIDC | `infra/azure/u12/`, `infra/azure/deploy-u12.ps1`, `infra/docker/bootstrap.py`, `.github/workflows/deploy-dev.yml` | [`infra/azure/u12/README.md`](../infra/azure/u12/README.md) §5–§6, `DT-100` | 🟡 **Desplegada y verificada; no cerrada** (§G) |
+| **U12 — `dev` en Azure** | Container Apps (Consumption, `WorkloadProfiles`): frontend externo HTTPS, api interna, job de *bootstrap*; ACR Basic; PostgreSQL 16 B1ms; CD por OIDC | `infra/azure/u12/`, `infra/azure/deploy-u12.ps1`, `infra/docker/bootstrap.py`, `.github/workflows/deploy-dev.yml` | [`infra/azure/u12/README.md`](../infra/azure/u12/README.md) §5–§6, `DT-100` | 🟢 **Cerrada (2026-10-13) con verificaciones pendientes aceptadas** (§G) |
 | U13–U16, QA, entrega | Azure OpenAI, Azure ML, AI Search, Power BI | — | `DT-094` | ⬜ Sin autorizar. U13 no se inicia hasta cerrar U12 |
 
 ---
@@ -406,12 +406,13 @@ Los `Modify` sobre asignaciones de rol con `reference()` sin evaluar son ruido c
 
 Pruebas de fallo de README §6:
 
-1. Anotar antes el estado de referencia: `-Stage Verify` 19/19 y la etiqueta viva de la api.
+1. Anotar antes el estado de referencia: `-Stage Verify` 20/20 (19 antes de `9d9c040`) y la etiqueta viva de la api.
 2. **PostgreSQL detenido:** `-Stage Stop`. Comprobar que el frontend carga y que las vistas con datos reciben 5xx sin
    traza ni secreto.
 3. **Recuperación:** `-Stage Start`, esperar a `Ready`. Si la API no conecta, `-Stage Firewall`. Después
-   `-Stage Verify` debe volver a dar 19/19.
-4. **Imagen inexistente:** `-Stage Apps -ImageTag noexiste`. La revisión nueva no arranca y la anterior sigue
+   `-Stage Verify` debe volver a dar 20/20.
+4. **Imagen inexistente:** `-Stage Apps -ImageTag 0000000` (formato de SHA válido que no existe en ACR; `noexiste` lo
+   rechaza el script antes de desplegar). La revisión nueva no arranca y la anterior sigue
    sirviendo. Restaurar con `-Stage Apps -ImageTag <sha bueno>` y verificar.
 5. **Token inválido:** `curl` a `/api/...` a través del frontend con `Authorization: Bearer x` → 401. Es de solo
    lectura.
@@ -452,26 +453,26 @@ Estimaciones, no cifras garantizadas: README de U12 §7.
 **Fuente única del estado:** [`docs/reports/u12-cierre-evidencias.md`](reports/u12-cierre-evidencias.md), con la
 matriz C01–C15 y el origen de cada evidencia. Esta sección solo resume; si difiere del informe, manda el informe.
 
-**Demostrado en Azure**, con evidencia aportada por el responsable desde su PowerShell y registrada el 2026-10-10 (fecha de ejecución no aportada). **No** la
+**Estado:** U12 **cerrada el 2026-10-13 con verificaciones pendientes aceptadas por el responsable** (informe,
+revisión 7). Matriz: 12 `APROBADO` (C01–C11, C15) y 3 `PARCIAL` con pendientes aceptados (C12–C14).
+
+**Demostrado en Azure**, con evidencia aportada por el responsable desde su PowerShell y su navegador. **No** la
 ejecutó un agente y no está versionada:
 
-- despliegue `u12-dev` `Succeeded`;
-- api y frontend `Succeeded`/`Running`;
-- entorno `cae-mpa-dev` convertido a `WorkloadProfiles` en el mismo recurso;
-- *bootstrap* `caj-mpa-dev-bootstrap-tbazfuc` con `BOOTSTRAP OK` (100 recomendaciones: 50/40/10);
-- `Verify` 19/19, «U12: dev verificado»;
-- `SMOKE OK (entra-dev)`.
+- despliegue `u12-dev` `Succeeded`; api y frontend `Running`; entorno `WorkloadProfiles`;
+- *bootstrap* `tbazfuc` con `BOOTSTRAP OK` (100 recomendaciones: 50/40/10);
+- `Verify` 20/20 (19/19 antes de `9d9c040`), «U12: dev verificado»; `SMOKE OK (entra-dev)`;
+- inicio de sesión real y matriz de los cuatro roles y sin rol; sin token → 401;
+- `-Stage Firewall` completo y recreación de una regla borrada;
+- redespliegue con `fd50c6b` y *bootstrap* `lshnjjx` `Succeeded`;
+- fallos: job sin base `Failed` y recuperación sin duplicados; PostgreSQL detenido (frontend 200, API 503) y
+  recuperación; `Bearer x` → 401.
 
 **Estas salidas no deben volver a pedirse.**
 
-**Pendiente:**
-
-- en el navegador: el caso sin sesión y la revisión de las vistas de datos (catálogo, detalle, pronóstico y
-  recomendación con explicación). *(El inicio de sesión real y la matriz de los cuatro roles y sin rol ya constan:
-  **[AZ-U]**, registrados el 2026-10-11, informe de U12 §2.1; también `-Stage Firewall` completo, §2.2);*
-- redespliegue con `run_bootstrap=true`;
-- pruebas de fallo;
-- cierre documental.
+**Verificaciones pendientes aceptadas** (informe §4, P1–P5): revisión de las vistas en el navegador, idempotencia
+detallada del redespliegue, paso de parada del job fallido, imagen inexistente con SHA válido y el efecto de la regla
+borrada. No bloquean; si alguna falla al ejecutarse, se abre una incidencia sobre `dev`.
 
 ### G.2 Cómo registrar una prueba
 
@@ -510,7 +511,7 @@ están marcadas como tales.
 | K-05 | U8 «falta la primera ejecución real» y U7 «digest pendiente de verificación externa», pero CI se ha ejecutado en GitHub y está en verde en `main` `62f25ca` (run 38035570538, con el job `docker` que construye con las bases por digest) | `roadmap.md`, `docs/12` §3.4 frente a GitHub Actions | GitHub Actions ([CI]) | **Hecho registrado** aquí; las etiquetas de estado las actualiza el responsable (K-04) |
 | K-06 | Roadmap, fila U11: «código pendiente de commit y PR», pero está en `main` (commits `329da12`, `70e6887` y `71dd044`, PR #14) | `roadmap.md` frente a Git | Git | **Hecho registrado**; sin cambio de estado |
 | K-07 | `docs/12` §5: `dev` «automático desde `main`», frente a `DT-100`: despliegue manual (`workflow_dispatch`) | `docs/12` §5 tabla frente a `DT-100` | `DT-100` (`ACEPTADA`, posterior); la propia `docs/12` §5 lo anota | Ya anotada en `docs/12`; no requiere cambio |
-| K-08 | Número de comprobaciones de `Verify`: 18 (fila de `status.md` del 2026-10-08) frente a 19 (script, README y evidencia real) | `status.md` frente a `deploy-u12.ps1` | Script | La fila es historial anterior a la comprobación `WorkloadProfiles`; vale 19 |
+| K-08 | Número de comprobaciones de `Verify`: 18 (fila de `status.md` del 2026-10-08) frente a 19 (script, README y evidencia real) | `status.md` frente a `deploy-u12.ps1` | Script | La fila es historial anterior a la comprobación `WorkloadProfiles`; vale 19 hasta `9d9c040` y **20** desde entonces (rol de GitHub sobre el job) |
 | K-09 | `DT-100` dice que U12 no se cierra hasta cumplir «los 15 criterios», pero ningún documento los enumera | `DT-100` | `DT-100` (exige 15), sin lista | Matriz **derivada** C01–C15, en estado `PROPUESTA` hasta su validación, en el informe de cierre |
 | K-10 | El *Estado* de `DT-100` dice «nada creado todavía» | `DT-100` frente a sus notas posteriores y la evidencia real | Notas posteriores y evidencia | Texto histórico; el estado vigente está en las notas del 2026-10-10 |
 | K-11 | Varios requisitos «Debe» aprobados en `docs/01` (RF-013, RF-014, RNF-012 y las escrituras de RF-001, RF-004, RF-005 y RF-008) no están en la V1, porque decisiones aceptadas los aplazan (`BR-X03`, `docs/07` §7.3, `DT-059`). Ninguna fuente enumera qué exige formalmente el MVP | `docs/01` frente a `DT-094` y los contratos de V1 | Decisiones aceptadas para la V1; `docs/01` para la necesidad | **Sin cambio:** se clasifican como *pendientes*, no se eliminan. Pregunta abierta al propietario en `docs/00b-mvp.md` §1.3 y en `docs/00a-prd.md` §12.2 |

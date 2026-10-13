@@ -30,7 +30,7 @@
 | Alcance de la Etapa 2 y clasificación del MVP | `DT-094` en [`docs/15-decisiones-tecnicas.md`](15-decisiones-tecnicas.md) | `ACEPTADA` (2026-10-06) |
 | Contratos de U1–U6 e interfaz | `DT-043`–`DT-070`; `docs/04` §9, `docs/05` §19, `docs/06` §16, `docs/07` §7, `docs/08` §12, `docs/09` §14 | `ACEPTADA` |
 | Modelo oficial y evaluación | `DT-089`–`DT-093`; [`docs/05`](05-motor-predictivo.md) §20 | `ACEPTADA`, solo con datos `SYNTHETIC` |
-| Despliegue de `dev` | `DT-098`–`DT-100` | `ACEPTADA`; U12 no cerrada |
+| Despliegue de `dev` | `DT-098`–`DT-100` | `ACEPTADA`; U12 cerrada el 2026-10-13 con verificaciones pendientes aceptadas por el responsable |
 | Reglas y parámetros de negocio | [`knowledge/business-rules.md`](../knowledge/business-rules.md), [`knowledge/assumptions.md`](../knowledge/assumptions.md) | Muchos parámetros **pendientes del negocio** |
 | Estado y evidencia | [`project/status.md`](../project/status.md), [`docs/reports/`](reports/README.md) | Vivo |
 
@@ -45,7 +45,7 @@
 | Aplicar `V1_PROVISIONAL` a datos reales | `DT-P16` (`DT-063` lo impide mientras tanto) | Sin datos reales en el motor (RF-023 parcial) |
 | Tratamiento del desabasto en el forecast | `DT-011` | Limitación declarada de V1 |
 | Promoción de un modelo y validación de la banda | F5d, G2, G3 (sin autorizar; `DT-094` punto 9) | MA13 sigue como baseline oficial |
-| Validación de la matriz C01–C15 de U12 | [`docs/reports/u12-cierre-evidencias.md`](reports/u12-cierre-evidencias.md) §1 | U12 no se cierra |
+| Validación de la matriz C01–C15 de U12 | [`docs/reports/u12-cierre-evidencias.md`](reports/u12-cierre-evidencias.md) §1 | Usada por el responsable para cerrar U12 el 2026-10-13 (revisión 7) |
 
 ---
 
@@ -140,7 +140,7 @@ jerarquía: cada endpoint enumera los roles que admite (`docs/07` §7.1.3).
 | Historial de consumo: `ANALYST`, `PLANNER`, `ADMIN` | `docs/07` §7.2 | Ídem |
 | Detalle de ejecución (`/runs/{id}`): `PLANNER`, `ADMIN` | `docs/07` §7.2 | Ídem |
 | Sin rol → 403 en todo salvo `/me` | `docs/10` §3.2 | Prueba real local de U11 (caso 4) |
-| **Matriz completa en el entorno desplegado de Azure** | README de U12 §6 | **[AZ-U]** (registrado el 2026-10-11): los cuatro roles y el usuario sin rol, con «Coincide» = `sí` en todas las filas (informe de U12 §2.1). Pendiente el caso sin sesión en el navegador (C11) |
+| **Matriz completa en el entorno desplegado de Azure** | README de U12 §6 | **[AZ-U]** (registrado el 2026-10-11): los cuatro roles y el usuario sin rol, con «Coincide» = `sí` en todas las filas (informe de U12 §2.1). Sin sesión: 401 `AUTHENTICATION_REQUIRED`, aceptado por el responsable para C11 (2026-10-13) |
 | Permisos de escritura (registrar, resolver, recalcular) | `docs/10` §3.1 | **No existen**: V1 es de solo lectura (`docs/07` §7.3) |
 
 ---
@@ -213,7 +213,7 @@ en `docs/01`; aquí se resumen el criterio verificable y el **estado en el produ
 | RF-014 | Riesgo de sobreinventario | A · Debe | — | Productos con cobertura sobre un umbral | **Pendiente**: necesita un umbral de política (`BR-X03`) | `docs/06` §16.7 |
 | RF-015 | Recomendaciones de compra | A · Debe | U1, U4, U5 | Explicable término a término; mismo resultado con los mismos insumos | **Implementado** (`V1_PROVISIONAL`) | `docs/06` §16.13.4; 100 evaluaciones en local y en Azure **[AZ-U]** |
 | RF-016 | Desempeño de proveedores | D · Podría | — | Entregas a tiempo, desviación y variabilidad | **Propuesto**; no implementado (`BR-X05`) | — |
-| RF-017 | Interfaz web | A · Debe | Fase 7 | Vistas navegables con datos de la API; permisos según el rol | **Implementado** en local; Entra ID validado en local (U11) y, en Azure, inicio de sesión y matriz de autorización (**[AZ-U]**, registrado el 2026-10-11). **Pendiente** la revisión de las vistas desplegadas (C12) | `docs/08` §12.1; informe de U12 (C10–C12) |
+| RF-017 | Interfaz web | A · Debe | Fase 7 | Vistas navegables con datos de la API; permisos según el rol | **Implementado** en local; Entra ID validado en local (U11) y, en Azure, inicio de sesión y matriz de autorización (**[AZ-U]**, registrado el 2026-10-11). La revisión de las vistas desplegadas (C12) queda como **pendiente aceptado** en el cierre de U12 (P1) | `docs/08` §12.1; informe de U12 (C10–C12) |
 | RF-018 | Indicadores en Power BI | A · Debería | U9, U16 | Objetos de datos documentados que permiten los KPIs sin lógica duplicada | **Parcial**: vistas de U9; Power BI (U16) sin autorizar | `docs/11` §10 |
 | RF-019 | Explicaciones con IA generativa | A · Debería | U6, U13 | Coherente con los valores, sin cifras nuevas, con origen indicado | **Parcial**: el criterio lo cumple la plantilla determinista de U6; Azure OpenAI (U13) sin autorizar | `docs/09` §14.6 |
 | RF-020 | Recuperación documental (AI Search) | A + C · Podría | U15 | Fragmentos con cita del documento de origen | **Pendiente** (U15 sin autorizar; corpus sintético, `DT-094` punto 7) | — |

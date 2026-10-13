@@ -175,7 +175,7 @@ Estados distintos, no equivalentes (`DT-094` punto 11 y guía §G.2):
 | Pruebas automatizadas aprobadas | Suites en verde (local o CI) | `tests/api` 95 OK |
 | Prueba de integración local | Contra PostgreSQL real o Docker | `tests/db`; smoke de U7 |
 | Despliegue realizado | El sistema corre en un entorno desplegado | U12: `u12-dev` `Succeeded` **[AZ-U]** |
-| Validación real del entorno desplegado | Pruebas reales en ese entorno: Verify, E2E, redespliegue y fallos | U12: Verify 19/19 y matriz de autorización E2E **[AZ-U]**; sin sesión en el navegador, vistas, redespliegue y fallos **pendientes** |
+| Validación real del entorno desplegado | Pruebas reales en ese entorno: Verify, E2E, redespliegue y fallos | U12 **cerrada el 2026-10-13** con pendientes aceptados: Verify 20/20, matriz de autorización E2E, sin token → 401, redespliegue y pruebas de fallo **[AZ-U]**; pendientes P1–P5 del informe de U12 §4 (vistas, idempotencia detallada, imagen inexistente) |
 | Documentación y evidencia de aceptación | Criterios con evidencia y estado documentados y aceptados | MVP-01…09 documentados; **MVP-10 pendiente** |
 
 **El MVP está «terminado»** cuando MVP-01…MVP-09 están cumplidos **y** MVP-10 (aceptación del propietario) está
@@ -188,11 +188,11 @@ cumplido.
 | Categoría | Contenido |
 |---|---|
 | Completado | MVP-01 a MVP-09, con la evidencia de §6 |
-| Implementado, pendiente de evidencia | Nada dentro del MVP. Fuera de él: U12 en Azure (sin sesión en el navegador, revisión de vistas, redespliegue y fallos; ver informe de U12) |
+| Implementado, pendiente de evidencia | Nada dentro del MVP. Fuera de él: verificaciones pendientes aceptadas de U12 (informe de U12 §4, P1–P5) |
 | Pruebas bloqueadas | Ninguna del MVP. Las de U12 en Azure no se pueden ejecutar desde Claude Code Cloud: sin Azure CLI ni credenciales, red bloqueada a `*.azurecontainerapps.io`, sin navegador. Las ejecuta el responsable |
 | Experimental | F5c (candidatos), SES sin promover; todo `SYNTHETIC` |
 | Decisiones pendientes | Aceptación del MVP y del PRD (MVP-10); RF-013/RF-014 y escrituras dentro o fuera del MVP (§1.3); `BR-X03`; `ASSUMPTION-010`; parámetros de política; `DT-P16` |
-| Próximo hito concreto | **Revisión del propietario** de este documento y del PRD (MVP-10). En paralelo, y fuera del MVP, cerrar U12 según el informe de U12 §4 |
+| Próximo hito concreto | **Revisión del propietario** de este documento y del PRD (MVP-10). Fuera del MVP, U12 está cerrada (2026-10-13); U13 necesita su propia autorización |
 
 **El MVP no se declara terminado** mientras MVP-10 siga pendiente.
 

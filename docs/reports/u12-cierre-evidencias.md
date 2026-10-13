@@ -1,11 +1,14 @@
 # U12: matriz de cierre y evidencias (`DT-100`)
 
-**Revisión 5 (2026-10-11).** Incorpora la evidencia real de `-Stage Firewall` aportada por el responsable (C05 →
-`APROBADO`) y corrige la datación de las evidencias [AZ-U]: las fechas indicadas son de **registro** en el repositorio, no
+**Revisión 7 (2026-10-13). U12 cerrada con verificaciones pendientes aceptadas por el responsable** (§4). Incorpora el
+redespliegue con `fd50c6b`, PostgreSQL detenido con su recuperación y el 401 sin token aceptado para C11 (§2.4). El
+responsable decidió no ejecutar más pruebas y dejar registradas como pendientes las que faltan. La revisión 6 incorporó
+las pruebas de fallo de §2.3 (firewall desactualizado, job con fallo, token inválido; Key Vault inaccesible
+`NO APLICA`). La revisión 5 incorporó la evidencia real de `-Stage Firewall` (C05 → `APROBADO`) y corrigió la datación de las evidencias [AZ-U]: las fechas indicadas son de **registro** en el repositorio, no
 de ejecución, salvo que el responsable la aporte. La revisión 4 incorporó la matriz de autorización; la 3 formalizó la matriz.
 
-- **Base revisada:** `main` en `51a702c` (PR #6).
-- **Estado de U12:** **desplegada y verificada en `dev`; no cerrada.**
+- **Base revisada:** `main` en `fd50c6b` (PR #11).
+- **Estado de U12:** **cerrada (2026-10-13) con verificaciones pendientes aceptadas por el responsable** (§4). Desplegada y verificada en `dev`.
 - **Fuente única del estado de U12:** este informe. `DT-100`, `project/status.md`, `project/roadmap.md`, `CLAUDE.md`
   y [`docs/00-guia-maestra.md`](../00-guia-maestra.md) §G **enlazan aquí** y no mantienen copias de la matriz.
 
@@ -173,8 +176,8 @@ Responsable de toda ejecución en Azure y en el navegador: **el responsable del 
 | Entorno | Navegador con la URL real |
 | Evidencia requerida | Tabla de `/acceso` por rol, que no contiene tokens |
 | Resultado | **[AZ-U, E2E; registrada en el repositorio el 2026-10-11 (commit `8026a2e`); fecha de ejecución no aportada]** «Comprobación de acceso» en la aplicación desplegada, «Coincide» = `sí` en todas las filas (detalle en §2.1): `VIEWER` 11 × 200 y 2 × 403 (`/products/1/history`, `/runs/1`); `ANALYST` 12 × 200 y 1 × 403 (`/runs/1`); `PLANNER` 13 × 200; `ADMIN` 13 × 200; sin ningún rol `/me` 200 y los otros 12 → 403. Supera lo exigido: también se comprobaron `ANALYST` y `ADMIN`. **[AZ-U, smoke; registrado el 2026-10-10]**, prueba distinta e independiente, **de API**: peticiones **sin token** → 401 a través del proxy, incluido `/api/v1/runs/1`. **[PEND]** No consta el recorrido **sin sesión en el navegador** (abrir la URL sin iniciar sesión o tras cerrarla). La prueba con usuario sin rol **no** lo sustituye: ese usuario sí tiene sesión. **[CC]** `test_entra.test_role_matrix` |
-| Estado | **PARCIAL**: matriz de roles y caso sin rol demostrados; caso sin sesión demostrado solo a nivel de API (smoke) |
-| Motivo y responsable | Falta el caso sin sesión en el navegador: el responsable. **Decisión posible del responsable:** README §6 formula este caso como un código HTTP («Sin sesión → 401»), que el smoke ya demostró a nivel de API. Si se acepta esa lectura, C11 pasa a `APROBADO` sin repetir pruebas |
+| Estado | **APROBADO** (2026-10-13) |
+| Motivo y responsable | **Decisión del responsable (2026-10-13):** README §6 formula el caso como un código HTTP («Sin sesión → 401»). El responsable volvió a comprobarlo tras el redespliegue: la API de productos sin token → **401 `AUTHENTICATION_REQUIRED`** (§2.4), y lo aceptó como cumplimiento de C11. El recorrido sin sesión en la interfaz no se ejecutó y no se exige |
 | Ambigüedad | **Resuelta (2026-10-11):** las filas permitidas respondieron 200, no solo «no 403», así que no hay que interpretar un posible 404 |
 
 ### C12 — Datos reales en el navegador
@@ -187,8 +190,8 @@ Responsable de toda ejecución en Azure y en el navegador: **el responsable del 
 | Entorno | Navegador |
 | Evidencia requerida | Lista de vistas comprobadas con su identificador (sin tokens) |
 | Resultado | **[AZ-U, E2E; registrada en el repositorio el 2026-10-11 (commit `8026a2e`); fecha de ejecución no aportada]** Con sesión real y `VIEWER`, las peticiones de datos de «Comprobación de acceso» respondieron 200 desde la API real: `/products`, `/products/1`, `/products/1/forecast`, `/products/1/recommendation`, `/inventory`, `/inventory/1`, `/forecasts`, `/recommendations`, `/recommendations/1` y `/recommendations/1/explanation`. **Los códigos HTTP demuestran que las peticiones se atendieron, no el contenido:** no hay evidencia de que se revisaran las vistas de catálogo, detalle, pronóstico y recomendación con su explicación, ni el contenido de las respuestas |
-| Estado | **PARCIAL**: la API sirve esos recursos con sesión real; falta la revisión de las vistas |
-| Motivo y responsable | Recorrer en la interfaz desplegada catálogo, detalle de un producto, su pronóstico y una recomendación con su explicación, y anotar los identificadores vistos (sin tokens ni identificador de sesión): el responsable |
+| Estado | **PARCIAL — pendiente aceptado** (§4, P1) |
+| Motivo y responsable | Recorrer en la interfaz desplegada catálogo, detalle de un producto, su pronóstico y una recomendación con su explicación, y anotar los identificadores vistos (sin tokens ni identificador de sesión): el responsable. El 2026-10-13 decidió dejarlo pendiente y cerrar U12 |
 
 ### C13 — Redespliegue idempotente
 
@@ -199,9 +202,9 @@ Responsable de toda ejecución en Azure y en el navegador: **el responsable del 
 | Procedimiento | Cambio inocuo integrado en `main` → *Deploy dev* con `run_bootstrap=true` → `az containerapp show … --query properties.template.containers[0].image` (×3) → registros del job (portal, *Console logs*: sin Log Analytics no hay registros por CLI) → interfaz |
 | Entorno | GitHub Actions, Azure y navegador |
 | Evidencia requerida | Run de *Deploy dev*, las tres etiquetas, líneas `ALREADY_*`, recuentos y 404 |
-| Resultado | **[PEND]**. **[CC]** dos ejecuciones locales de `bootstrap.py` idempotentes (§3.1): **no** aprueban el criterio |
-| Estado | **PENDIENTE** |
-| Motivo y responsable | El responsable dispara *Deploy dev* o autoriza expresamente al agente a dispararlo (§3.2). La verificación de registros y del 404 requiere portal y navegador |
+| Resultado | **[AZ-U, 2026-10-13]** (§2.4) *Deploy dev* sobre `main` `fd50c6b`: «Imágenes `fd50c6b77e40715a2fae8b1bfc5f4eaac545aa55` desplegadas en dev»; *bootstrap* `caj-mpa-dev-bootstrap-lshnjjx` `Succeeded`. **No constan** las líneas `ALREADY_*`, los recuentos de esa ejecución, las etiquetas de cada app por separado ni el 404 de `/ejecuciones/<n+1>`. **[CC]** dos ejecuciones locales de `bootstrap.py` idempotentes (§3.1) |
+| Estado | **PARCIAL — pendiente aceptado** (§4, P2): redespliegue y *bootstrap* repetido sin error demostrados; la idempotencia detallada no consta |
+| Motivo y responsable | Registros del job (portal, *Console logs* de `lshnjjx`) y comprobación del 404 en el navegador: el responsable, si decide completarlo |
 
 ### C14 — Pruebas de fallo
 
@@ -211,11 +214,11 @@ Responsable de toda ejecución en Azure y en el navegador: **el responsable del 
 | Aceptación | Por cada prueba: el efecto esperado de la tabla y su recuperación, sin pérdida de datos |
 | Procedimiento | [`docs/00-guia-maestra.md`](../00-guia-maestra.md) §F.4 |
 | Entorno | Azure |
-| Evidencia requerida | Resultado y recuperación de cada prueba, con Verify 19/19 al final |
-| Resultado | **[PEND]** en Azure. **[AZ-U]** relacionado: el smoke mostró rechazo (401) de tokens de desarrollo y RS256 falsificados, pero no es el caso literal `Bearer x`. **[CC]** con la base detenida, `bootstrap.py` se para en el paso 2 y se recupera; `Bearer x` → 401 en `tests/api` |
-| Estado | **PENDIENTE** |
-| Alcance | Exigidas por el responsable (2026-10-10): **PostgreSQL detenido y recuperación**, **token inválido** e **imagen inexistente**. Las otras tres filas de README §6 (firewall desactualizado, job con fallo y Key Vault inaccesible) quedan **pendientes de decisión de alcance**; no se marcan `NO APLICA` sin esa decisión |
-| Motivo y responsable | El responsable. El token inválido es de solo lectura y podría ejecutarlo un agente si tuviera red hacia la URL (§3.2) |
+| Evidencia requerida | Resultado y recuperación de cada prueba, con Verify en `OK` al final (20/20 desde `9d9c040`, que añadió la comprobación del rol de GitHub sobre el job; antes 19/19) |
+| Resultado | **[AZ-U, 2026-10-13]** (§2.4): **PostgreSQL detenido** → efecto demostrado (servidor `Stopped`, frontend 200, API de productos 503); recuperación con `-Stage Start` y Verify 20/20, sin confirmar en la interfaz que Productos vuelve a mostrar datos. **Imagen inexistente**: `-Stage Apps -ImageTag noexiste` lo **rechazó el propio script** antes de desplegar (la etiqueta debe cumplir `^[0-9a-f]{7,40}$`), sin cambios en Azure; la prueba real, con un SHA de formato válido que no existe en ACR, no se ejecutó. **[AZ-U, 2026-10-13]** (§2.3): **firewall desactualizado** → `APROBADO` (regla borrada, recreada por `-Stage Firewall`, Verify 20/20); **job con fallo** → `PARCIAL` (`ymp96io` en `Failed` y recuperación con `pqexm4z` sin duplicados; no consta el paso en que se detuvo); **token inválido** → `APROBADO` (`Bearer x` → 401 a través del frontend). **Key Vault inaccesible** → `NO APLICA` (decisión del responsable, 2026-10-13). **[CC]** con la base detenida, `bootstrap.py` se para en el paso 2 y se recupera; `Bearer x` → 401 en `tests/api` |
+| Estado | **PARCIAL — pendientes aceptados** (§4, P3–P5). Aprobadas: firewall desactualizado y token inválido; PostgreSQL detenido demostrado en su efecto; `NO APLICA`: Key Vault inaccesible |
+| Alcance | Exigidas por el responsable (2026-10-10): **PostgreSQL detenido y recuperación**, **token inválido** e **imagen inexistente**. El 2026-10-13 el responsable ejecutó además **firewall desactualizado** y **job con fallo**, que quedan dentro del alcance, y aceptó **Key Vault inaccesible** como `NO APLICA`: reproducirla exige desactivar `bypass`/`enabledForTemplateDeployment`, es decir, revertir la configuración de seguridad aprobada (opción C) solo para observar un rechazo nativo de ARM; el Preflight ya comprueba esa condición antes de cada despliegue |
+| Motivo y responsable | El responsable decidió el 2026-10-13 no ejecutar más pruebas y registrar como pendientes las que faltan (§4) |
 
 ### C15 — Cierre documental
 
@@ -226,17 +229,17 @@ Responsable de toda ejecución en Azure y en el navegador: **el responsable del 
 | Procedimiento | `docs/00-guia-maestra.md` §G.2 |
 | Entorno | Repositorio |
 | Evidencia requerida | PR con los cambios |
-| Resultado | **[PEND]** |
-| Estado | **PENDIENTE**, hasta completar o aprobar explícitamente las excepciones de C11–C14 |
+| Resultado | Revisión 7 de este informe; `DT-100`, `project/status.md`, `project/roadmap.md`, guía maestra §F.4/§G, README de U12, PRD y MVP actualizados; `secret_scan` sin hallazgos. **Excepciones de C12–C14 aceptadas expresamente por el responsable el 2026-10-13** (§4). La matriz C01–C15 queda como lista de cierre usada por el responsable. Se integra por PR |
+| Estado | **APROBADO** (cierre con excepciones) |
 
 ### Resumen
 
 | Estado | Criterios |
 |---|---|
-| APROBADO (10) | C01–C10 |
-| PARCIAL (2) | C11, C12 |
-| PENDIENTE (3) | C13, C14, C15 |
-| BLOQUEADO / NO APLICA | — (los bloqueos de §3.2 afectan al agente, no al criterio) |
+| APROBADO (12) | C01–C11, C15 |
+| PARCIAL, pendiente aceptado (3) | C12, C13, C14 (detalle en §4) |
+| PENDIENTE | — |
+| BLOQUEADO / NO APLICA | — en criterios (los bloqueos de §3.2 afectan al agente, no al criterio). Dentro de C14, la prueba «Key Vault inaccesible» es `NO APLICA` |
 
 ## 2. Fuentes de la evidencia [AZ-U]
 
@@ -317,6 +320,49 @@ falla) y que las reglas coinciden con las IP de salida actuales, sin `0.0.0.0` (
 
 - la rama del *what-if* con la palabra `FIREWALL`, que no hizo falta porque las IP no habían cambiado;
 - el borrado de reglas obsoletas, porque no había ninguna.
+
+### 2.3 Pruebas de fallo de C14 (ejecutadas el 2026-10-13)
+
+Ejecutadas por el responsable desde PowerShell con el script de `main` (`fd50c6b`, que incluye `838c9ec`: si las IP no
+cambian, `-Stage Firewall` lista las reglas reales y recrea las que faltan). Las horas proceden de Azure o del fichero
+local de evidencias (`tmp/u12-evidence/`, fuera de Git).
+
+| Prueba (README §6) | Ejecución | Efecto observado | Recuperación | Estado |
+|---|---|---|---|---|
+| Job con fallo | `az containerapp job start` con la base detenida → `caj-mpa-dev-bootstrap-ymp96io`, iniciada 2026-10-13T14:33:14Z | `az containerapp job execution show`: `Failed` (la consulta no devolvió hora de fin). El paso en que se detuvo **no consta**: sin Log Analytics los registros solo están en el portal | `-Stage Start` → `-Stage Bootstrap`: `caj-mpa-dev-bootstrap-pqexm4z` `Succeeded`, `BOOTSTRAP OK`, recuentos idénticos a C07 (sin duplicados) → `-Stage Verify` 20/20 | `PARCIAL` |
+| Firewall desactualizado | Borrado manual de `aca-out-135-233-67-231` | No observable de forma determinista: la API sale por una de 161 IP compartidas y solo falla si usa la IP borrada | `-Stage Firewall`: «Reglas de firewall que faltan en PostgreSQL (1): se recrean», «regla recreada: aca-out-135-233-67-231», sin *what-if* → `-Stage Verify` 20/20, «U12: dev verificado» (2026-10-13T14:51:24Z). Evidencia local: 161 reglas para 161 IP, ninguna falta ni sobra | `APROBADO` |
+| Token inválido | `curl.exe` a `https://<frontend>/api/v1/me` con `Authorization: Bearer x` | `401` | — (solo lectura) | `APROBADO` |
+| Key Vault inaccesible | No ejecutada | — | — | `NO APLICA` (C14, *Alcance*) |
+| PostgreSQL detenido | — | — | — | `PENDIENTE` |
+| Imagen inexistente | — | — | — | `PENDIENTE` |
+
+**Qué demuestra:**
+
+- que un job sin base termina en `Failed` y que el *bootstrap* posterior se recupera sin duplicar datos;
+- que una regla `aca-out-*` borrada se detecta y se recrea sin tocar las demás ni abrir `0.0.0.0`;
+- que la API desplegada rechaza un token mal formado a través del proxy del frontend.
+
+**Qué no demuestra:**
+
+- el paso exacto en que se detuvo `ymp96io` (debería ser el 2, migraciones);
+- los errores de conexión tras borrar la regla;
+- el comportamiento con PostgreSQL detenido visto desde el frontend, ni la imagen inexistente.
+
+### 2.4 Redespliegue, PostgreSQL detenido y 401 sin token (ejecutados el 2026-10-13)
+
+Resumen aportado por el responsable; no lo ejecutó ningún agente.
+
+| Paso | Salida relevante | Estado |
+|---|---|---|
+| *Deploy dev* con *bootstrap* | «Imágenes `fd50c6b77e40715a2fae8b1bfc5f4eaac545aa55` desplegadas en dev»; `caj-mpa-dev-bootstrap-lshnjjx` `Succeeded`; frontend en la URL de siempre | C13 parcial |
+| `-Stage Stop` | Servidor `Stopped`; frontend HTTP 200; API de productos HTTP 503 | Efecto demostrado (C14) |
+| `-Stage Start` y `-Stage Verify` | Las 20 comprobaciones en `OK` | Recuperación demostrada salvo la vista de Productos (C14) |
+| API sin token | HTTP 401 `AUTHENTICATION_REQUIRED` | C11 aprobado por decisión del responsable |
+| `-Stage Apps -ImageTag noexiste` | Rechazado por el script antes de desplegar; imágenes sin cambios | Guardia del script demostrada; la prueba de README §6 sigue pendiente (C14) |
+
+**Corrección derivada:** README §6 y la guía §F.4 indicaban `-ImageTag noexiste`, que el script rechaza por formato. Ahora
+indican un SHA con formato válido que no existe en ACR (`0000000`).
+
 ## 3. Pruebas y bloqueos de la sesión de Claude Code Cloud (2026-10-10)
 
 ### 3.1 Ejecutado [CC]
@@ -349,21 +395,35 @@ en `main` `62f25ca` (run 38035570538) **[CI]**.
 | Prueba | Bloqueo | Qué lo levantaría |
 |---|---|---|
 | Fallos con `Stop`/`Start` e imagen inexistente (C14) *(`-Stage Firewall`, C05, ya lo ejecutó el responsable)* | El contenedor no tiene Azure CLI ni credenciales de Azure (`~/.azure` no existe, ninguna variable `AZURE_*`). `CLAUDE.md` §17: el agente nunca recibe credenciales | Ejecución por el responsable |
-| Token inválido (C14) y smoke contra la URL real | El proxy de salida de la sesión **rechaza** `ca-mpa-dev-frontend.greensmoke-cfd723ad.centralus.azurecontainerapps.io:443` (`connect_rejected`, política de red del entorno) | Ejecución por el responsable, o añadir ese dominio a los permitidos del entorno de Claude Code Cloud |
+| Token inválido (C14) y smoke contra la URL real *(ambos ya ejecutados por el responsable: §2 y §2.3)* | El proxy de salida de la sesión **rechaza** `ca-mpa-dev-frontend.greensmoke-cfd723ad.centralus.azurecontainerapps.io:443` (`connect_rejected`, política de red del entorno) | Ejecución por el responsable, o añadir ese dominio a los permitidos del entorno de Claude Code Cloud |
 | E2E (C11 sin sesión, C12 vistas) | Sin navegador interactivo ni cuenta del tenant. *(La matriz de roles ya la ejecutó el responsable; registrada el 2026-10-11)* | El responsable |
 | Redespliegue (C13) | El agente podría disparar *Deploy dev* (`workflow_dispatch`) desde las herramientas de GitHub, pero eso **crea revisiones nuevas en Azure** y **no lo ha autorizado expresamente** el responsable. Además, verificar `ALREADY_*`, los recuentos y el 404 requiere el portal y el navegador | Autorización explícita para disparar el workflow, más la verificación por el responsable |
 
-## 4. Plan mínimo para lo pendiente
+## 4. Verificaciones pendientes aceptadas en el cierre
 
-Lo ejecuta el responsable. No repite Apps, Bootstrap, Verify ni el smoke.
+El 2026-10-13 el responsable decidió cerrar U12 sin ejecutar más pruebas y dejar registradas estas verificaciones.
+**No son fallos detectados**: son comprobaciones que no se hicieron. Si alguna se ejecuta y falla, se abre una
+incidencia sobre `dev`; no reabre la decisión de `DT-100`.
+
+| # | Verificación pendiente | Criterio | Cómo se haría |
+|---|---|---|---|
+| P1 | Recorrer en la interfaz catálogo, detalle, pronóstico y recomendación con su explicación; incluye ver que Productos muestra datos tras recuperar PostgreSQL | C12, C14 | Navegador con `VIEWER` |
+| P2 | Idempotencia detallada del redespliegue: líneas `ALREADY_*` y recuentos de `lshnjjx`, etiquetas de cada app, `/ejecuciones/<n+1>` → 404 | C13 | Portal (*Console logs*) y navegador |
+| P3 | Paso en que se detuvo `ymp96io` (esperado: 2, migraciones) | C14 | Portal (*Console logs*), si aún lo conserva |
+| P4 | Imagen inexistente con SHA de formato válido: `-Stage Apps -ImageTag 0000000`, la revisión anterior sigue sirviendo, restaurar con `-ImageTag fd50c6b77e40715a2fae8b1bfc5f4eaac545aa55` y Verify | C14 | PowerShell; modifica `dev` |
+| P5 | Efecto «errores de conexión» al borrar una regla `aca-out-*` | C14 | No reproducible de forma determinista (161 IP compartidas); se acepta solo la recuperación |
+
+### 4.1 Plan que se siguió (histórico)
+
+Lo ejecutó el responsable. No repitió Apps, Bootstrap, Verify ni el smoke.
 
 | # | Acción | Cierra |
 |---|---|---|
 | 1 | ~~`deploy-u12.ps1 -Stage Firewall`, y después `-Stage Verify`~~ **Hecho** (§2.2) | C05 |
-| 2 | En el navegador, sobre la URL desplegada: (a) abrirla **sin sesión** y comprobar que no se muestran datos (o decidir que el 401 sin token del smoke, prueba de API, basta, C11 «Motivo»); (b) con `VIEWER`, recorrer catálogo, detalle, pronóstico y una recomendación con su explicación. *(Ya hecho, registrado el 2026-10-11: inicio de sesión real y matriz de los cuatro roles y sin rol)* | C11, C12 |
-| 3 | *Deploy dev* con `run_bootstrap=true` sobre `main` actual. El último commit de `main` es solo documental, así que sirve como cambio inocuo. Después las comprobaciones de C13 | C13 |
-| 4 | Fallos de `docs/00-guia-maestra.md` §F.4, en este orden: token inválido, imagen inexistente con su restauración, PostgreSQL detenido con su recuperación, y Verify al final | C14 |
-| 5 | Validar C01–C15, actualizar este informe y cerrar U12 en `DT-100`, `status.md` y `roadmap.md` | C15 |
+| 2 | *(Parcial: C11 aprobado por decisión del responsable; las vistas quedan en P1.)* En el navegador, sobre la URL desplegada: (a) abrirla **sin sesión** y comprobar que no se muestran datos (o decidir que el 401 sin token del smoke, prueba de API, basta, C11 «Motivo»); (b) con `VIEWER`, recorrer catálogo, detalle, pronóstico y una recomendación con su explicación. *(Ya hecho, registrado el 2026-10-11: inicio de sesión real y matriz de los cuatro roles y sin rol)* | C11, C12 |
+| 3 | *(Hecho en parte, §2.4; el resto en P2.)* *Deploy dev* con `run_bootstrap=true` sobre `main` actual. El último commit de `main` es solo documental, así que sirve como cambio inocuo. Después las comprobaciones de C13 | C13 |
+| 4 | ~~Token inválido, firewall desactualizado y job con fallo~~ **Hecho** (§2.3). PostgreSQL detenido y recuperación: **hecho** (§2.4). Imagen inexistente: pendiente (P4) | C14 |
+| 5 | ~~Validar C01–C15, actualizar este informe y cerrar U12 en `DT-100`, `status.md` y `roadmap.md`~~ **Hecho** (revisión 7) | C15 |
 
 ## 5. Registro de evidencias reales
 
@@ -375,11 +435,16 @@ Lo ejecuta el responsable. No repite Apps, Bootstrap, Verify ni el smoke.
 | Smoke Entra | [AZ-U] | `SMOKE OK (entra-dev)` | APROBADO (C08, C09); parcial para C10 |
 | Firewall completo (`-Stage Firewall` + Verify) | [AZ-U] | Registrado el 2026-10-11: 161 IP, «Las reglas ya coinciden con las IP de salida.», código 0; Verify «U12: dev verificado» | APROBADO (C05) |
 | E2E: matriz de autorización (`/acceso`) | [AZ-U] | Registrado el 2026-10-11 (ejecución sin fecha aportada): `VIEWER` 11/2, `ANALYST` 12/1, `PLANNER` 13/0, `ADMIN` 13/0, sin rol 1/12; «Coincide» = `sí` en todas | APROBADO (C10); C11 parcial |
-| E2E: sin sesión en el navegador | — | | PENDIENTE (prueba de API independiente: 401 sin token, smoke registrado el 2026-10-10) |
-| E2E: revisión de las vistas de datos | — | | PENDIENTE (las peticiones de datos respondieron 200) |
-| Redespliegue | — | | PENDIENTE |
-| Fallos ×3 (+3 por decidir) | — | | PENDIENTE |
-| Cierre documental | — | | PENDIENTE |
+| E2E: sin sesión | [AZ-U] | 2026-10-13: API sin token → 401 `AUTHENTICATION_REQUIRED`, aceptado por el responsable | APROBADO (C11) |
+| E2E: revisión de las vistas de datos | — | | Pendiente aceptado (P1) |
+| Redespliegue | [AZ-U] | 2026-10-13: imágenes `fd50c6b…` en dev; `lshnjjx` `Succeeded` | PARCIAL (C13; resto en P2) |
+| Fallo: job con la base detenida | [AZ-U] | 2026-10-13: `ymp96io` `Failed`; recuperación `pqexm4z` `Succeeded`, recuentos de C07; paso de parada sin registrar | PARCIAL (C14) |
+| Fallo: firewall desactualizado | [AZ-U] | 2026-10-13: regla `aca-out-135-233-67-231` recreada por `-Stage Firewall`; Verify 20/20 | APROBADO (C14) |
+| Fallo: token inválido | [AZ-U] | 2026-10-13: `Bearer x` → 401 | APROBADO (C14) |
+| Fallo: Key Vault inaccesible | — | Decisión del responsable, 2026-10-13 | NO APLICA (C14) |
+| Fallo: PostgreSQL detenido | [AZ-U] | 2026-10-13: `Stopped`, frontend 200, productos 503; `-Stage Start` y Verify 20/20 | APROBADO en el efecto; vista de Productos en P1 (C14) |
+| Fallo: imagen inexistente | [AZ-U] | 2026-10-13: `noexiste` rechazada por el script, sin cambios | Pendiente aceptado (P4) |
+| Cierre documental | — | Revisión 7 | APROBADO (C15) |
 
 ## Historial del informe
 
@@ -390,3 +455,5 @@ Lo ejecuta el responsable. No repite Apps, Bootstrap, Verify ni el smoke.
 | 3 (2026-10-10) | Matriz formal por criterio (requisito, aceptación, procedimiento, entorno, evidencia, resultado, estado y responsable); pruebas y bloqueos de Claude Code Cloud; fuente única del estado de U12 |
 | 4 (2026-10-11) | Evidencia E2E [AZ-U] de la matriz de autorización (§2.1): C10 → `APROBADO`; C11 `PENDIENTE` → `PARCIAL` (falta el caso sin sesión en el navegador); C12 `PENDIENTE` → `PARCIAL` (200 en los datos, sin revisión de vistas) |
 | 5 (2026-10-11) | Evidencia [AZ-U] de `-Stage Firewall` y Verify posterior (§2.2): C05 `PARCIAL` → `APROBADO`. Resumen: 10 `APROBADO`, 2 `PARCIAL` (C11, C12), 3 `PENDIENTE`. Corrección de datación: las fechas de las evidencias [AZ-U] eran de registro (commits `527c3f7` y `8026a2e`), no de ejecución; ahora se dice explícitamente |
+| 6 (2026-10-13) | Pruebas de fallo [AZ-U] (§2.3): firewall desactualizado y token inválido `APROBADO`; job con fallo `PARCIAL` (falta el paso de parada); Key Vault inaccesible `NO APLICA` por decisión del responsable. C14 `PENDIENTE` → `PARCIAL`. Verify pasa a 20 comprobaciones desde `9d9c040`. Base revisada: `fd50c6b`. Resumen: 10 `APROBADO`, 3 `PARCIAL` (C11, C12, C14), 2 `PENDIENTE` (C13, C15) |
+| 7 (2026-10-13) | Redespliegue con `fd50c6b`, PostgreSQL detenido y recuperación, 401 sin token (§2.4). C11 → `APROBADO` por decisión del responsable; C13 → `PARCIAL`; C15 → `APROBADO`. **U12 cerrada con verificaciones pendientes aceptadas** (§4, P1–P5). Corrección: la prueba de imagen inexistente usa `0000000`, no `noexiste`. Resumen: 12 `APROBADO`, 3 `PARCIAL` con pendientes aceptados (C12–C14) |
