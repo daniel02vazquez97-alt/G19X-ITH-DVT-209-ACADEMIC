@@ -1,5 +1,7 @@
 # 14 — Plan preliminar de mantenimiento
 
+> **Estado vigente (2026-10-13):** Operación real de `dev`: `infra/azure/u12/README.md` y `docs/00-guia-maestra.md` §F. La línea siguiente es el historial de versiones del documento.
+
 **Estado:** Versión 1.0 — Etapa 0 (plan preliminar) · **Fecha:** 2026-09-03
 
 > Plan **preliminar**. Los objetivos de servicio, los responsables y las ventanas de mantenimiento

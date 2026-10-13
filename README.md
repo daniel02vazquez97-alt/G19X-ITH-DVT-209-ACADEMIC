@@ -1,193 +1,224 @@
 # Motor Predictivo de Abastecimiento de Inventarios
 
-> **Aviso (2026-10-10):** el resumen de estado de este README es del 2026-09-30 y está desactualizado. El sistema
-> principal (U1–U6, interfaz React, Docker, CI, Entra ID y `dev` en Azure) **está implementado**. Punto de entrada:
-> [`docs/00-guia-maestra.md`](docs/00-guia-maestra.md); estado vigente:
-> [`project/status.md`](project/status.md) (`docs/00-guia-maestra.md` §H, K-01).
->
-> **Estado actual (2026-09-30): ETAPA 2 — Sistema principal, iniciada** (arquitectura y fundación).
-> La Etapa 1 — Datos está completada: generador de datos sintéticos 0.4.0 y dataset
-> `ds-6c8ad65b4999` validado. El sistema principal todavía **no está implementado**: sus contratos y su
-> orden de construcción están documentados. Estado detallado en [`project/status.md`](project/status.md).
+[![CI](https://github.com/daniel02vazquez97-alt/G19X-ITH-DVT-209-ACADEMIC/actions/workflows/ci.yml/badge.svg)](https://github.com/daniel02vazquez97-alt/G19X-ITH-DVT-209-ACADEMIC/actions/workflows/ci.yml)
 
----
+Sistema de apoyo a la decisión de compras. A partir del histórico de consumo, el inventario, los plazos de entrega y
+el comportamiento de los proveedores, **pronostica la demanda** de cada producto y **recomienda qué comprar, cuánto y
+cuándo**. Cada recomendación es determinista, se explica cifra a cifra y se puede reconstruir meses después.
 
-## Qué es
+> **Estado (2026-10-13):** MVP **implementado y funcionando** en local con un solo comando, y **desplegado en Azure**
+> (entorno `dev`, Azure Container Apps) con Microsoft Entra ID. Datos 100 % sintéticos (generador propio 0.4.0).
+> Detalle por componente en [Estado de implementación](#estado-de-implementación).
 
-Un sistema de apoyo a la decisión de abastecimiento. Analiza el histórico de consumo, el inventario,
-los tiempos de entrega y el comportamiento de los proveedores para **predecir la demanda futura** y,
-a partir de esa predicción, **recomendar qué comprar, cuánto y cuándo**.
+## Contenido
 
-No es un chatbot ni un tablero de indicadores. Es un motor de decisión: cada recomendación es
-determinística, explicable término a término y reconstruible meses después.
+- [Qué problema resuelve](#qué-problema-resuelve)
+- [Demo en 3 minutos (local, sin Azure)](#demo-en-3-minutos-local-sin-azure)
+- [Qué hace la aplicación](#qué-hace-la-aplicación)
+- [Arquitectura](#arquitectura)
+- [Estado de implementación](#estado-de-implementación)
+- [Pruebas y calidad](#pruebas-y-calidad)
+- [Despliegue en Azure](#despliegue-en-azure)
+- [Estructura del repositorio](#estructura-del-repositorio)
+- [Documentación](#documentación)
+- [Limitaciones conocidas](#limitaciones-conocidas)
 
-## Objetivo
+## Qué problema resuelve
 
-Reducir simultáneamente tres costos que suelen tratarse por separado:
+Las compras de reposición suelen decidirse por intuición. El resultado es desabasto (venta perdida, compras urgentes)
+o sobreinventario (capital inmovilizado, obsolescencia). El sistema sustituye la intuición por evidencia cuantitativa
+auditable **sin quitarle la decisión a la persona que compra**:
 
-- el **desabasto** —venta perdida, paro operativo, compras urgentes—,
-- el **sobreinventario** —capital inmovilizado, obsolescencia—,
-- el **costo logístico** de comprar de forma reactiva.
+1. **Pronóstico** semanal por SKU con banda de incertidumbre (baseline oficial: media móvil de 13 semanas, evaluada
+   por *backtesting* frente a otros métodos en el módulo `ml/`).
+2. **Motor de abastecimiento** con reglas deterministas: stock de seguridad, nivel objetivo, posición de inventario,
+   tránsito efectivo, pedido mínimo y múltiplo de compra. Aritmética exacta (fracciones y `Decimal`, sin `float`).
+3. **Explicación** en lenguaje natural de cada recomendación, con verificación automática de que toda cifra del texto
+   sale del cálculo. La IA generativa **redacta, nunca calcula**.
 
-Sustituyendo la intuición por evidencia cuantitativa auditable, sin quitarle la decisión a la persona
-que compra.
+## Demo en 3 minutos (local, sin Azure)
+
+**Requisito:** Docker con Compose v2. No hacen falta Python, Node ni credenciales.
+
+```bash
+git clone https://github.com/daniel02vazquez97-alt/G19X-ITH-DVT-209-ACADEMIC.git
+cd G19X-ITH-DVT-209-ACADEMIC
+docker compose -f infra/docker-compose.yml --profile app up --build -d
+```
+
+El arranque genera el dataset sintético, crea la base, carga los datos, calcula el pronóstico y las 100
+recomendaciones (corte 2025-12-31). Después:
+
+| Qué | Dónde |
+|---|---|
+| Interfaz web | <http://127.0.0.1:8080> |
+| API y su documentación OpenAPI | <http://127.0.0.1:8000/docs> |
+| Comprobación automática de punta a punta | `python infra/docker/smoke.py` |
+| Parar (y borrar datos con `-v`) | `docker compose -f infra/docker-compose.yml --profile app down` |
+
+Para entrar en la interfaz se pega un token ficticio de [`.env.example`](.env.example), uno por rol:
+
+| Rol | Token | Puede ver |
+|---|---|---|
+| `VIEWER` | `dev-example-viewer-0000000000` | Catálogo, inventario, pronósticos y recomendaciones |
+| `ANALYST` | `dev-example-analyst-000000000` | Lo anterior y el histórico de consumo |
+| `PLANNER` | `dev-example-planner-000000000` | Todo, incluidas las ejecuciones de cálculo |
+| `ADMIN` | `dev-example-admin-00000000000` | Todo |
+
+Los tokens solo se aceptan con `APP_ENV=local`; con `APP_ENV=dev` la API exige Microsoft Entra ID.
+
+## Qué hace la aplicación
+
+API REST de solo lectura (14 rutas, FastAPI) e interfaz React:
+
+| Función | Ruta de la API | Vista |
+|---|---|---|
+| Catálogo con filtros y paginación | `GET /api/v1/products` | Productos |
+| Detalle de producto, histórico de consumo | `GET /api/v1/products/{id}`, `/history` | Detalle |
+| Pronóstico semanal con banda de incertidumbre | `GET /api/v1/products/{id}/forecast`, `/api/v1/forecasts` | Pronóstico (gráfica) |
+| Inventario por producto | `GET /api/v1/inventory`, `/{id}` | Inventario |
+| Recomendación con desglose del cálculo | `GET /api/v1/recommendations`, `/{id}`, `/products/{id}/recommendation` | Recomendaciones |
+| Explicación verificada de la recomendación | `GET /api/v1/recommendations/{id}/explanation` | Recomendación |
+| Ejecución de cálculo y su procedencia | `GET /api/v1/runs/{id}` | Ejecuciones |
+| Identidad y roles; comprobación de la matriz de acceso | `GET /api/v1/me` | Comprobación de acceso |
+
+Resultado sobre el dataset 0.4.0: 100 productos evaluados → 50 `RECOMMEND`, 40 `NO_NEED` y 10 `NOT_CALCULABLE`
+(cada uno con su motivo). Cada respuesta lleva su **procedencia**: dataset, carga, ejecución, versión del motor y
+avisos de datos sintéticos y política provisional.
 
 ## Arquitectura
 
-Tres capas con responsabilidades **estrictamente separadas**:
-
 ```mermaid
 flowchart LR
-    H[(Históricos)] --> A[A · Predicción ML<br/>estima demanda + incertidumbre]
-    A -->|forecast| B[B · Motor de abastecimiento<br/>reglas determinísticas]
-    I[(Inventario, lead times,<br/>proveedores, políticas)] --> B
-    B -->|recomendaciones| U[Interfaz web · Power BI]
-    B -->|cifras ya calculadas| C[C · IA generativa<br/>explica, no calcula]
-    C --> U
+    subgraph Lotes["Procesos por lotes (Python)"]
+        G[Generador sintético 0.4.0] --> I[Ingesta validada<br/>e idempotente]
+        I --> F[Pronóstico<br/>media móvil 13 + banda]
+        F --> R[Motor de abastecimiento<br/>reglas deterministas]
+    end
+    I --> DB[(PostgreSQL 16)]
+    F --> DB
+    R --> DB
+    DB --> API[API FastAPI<br/>solo lectura, 14 rutas]
+    API --> X[Explicación<br/>plantilla o Azure OpenAI<br/>+ verificación de cifras]
+    UI[React + Vite<br/>nginx] -->|/api, mismo origen| API
+    E[Microsoft Entra ID] -.->|tokens y roles| UI
+    E -.-> API
+    DB --> BI[Vistas analíticas<br/>esquema analytics]
 ```
 
 | Capa | Responsabilidad | Frontera |
 |---|---|---|
-| **A — Predicción** | Estimar demanda futura por SKU con su incertidumbre | No decide cuánto comprar |
-| **B — Abastecimiento** | Calcular stock de seguridad, punto de reorden, cantidad y riesgos | No predice |
-| **C — IA generativa** | Explicar resultados y responder en lenguaje natural | **No calcula ninguna cifra** |
+| **Predicción** (`backend/app/forecasting`, `ml/`) | Demanda futura por SKU con su incertidumbre | No decide cuánto comprar |
+| **Abastecimiento** (`backend/app/supply_engine`, `backend/app/runs`) | Stock de seguridad, nivel objetivo, cantidad y motivos | No predice |
+| **Explicación** (`backend/app/genai`) | Texto en lenguaje natural de un cálculo ya hecho | **No calcula ninguna cifra**: un verificador rechaza cualquier número que no salga del cálculo |
 
-La regla que sostiene el diseño: **Azure OpenAI nunca produce, altera ni recalcula una cifra de
-inventario.** Recibe cifras ya calculadas y las explica. Las cantidades deben ser exactas,
-reproducibles y defendibles; un modelo de lenguaje no ofrece ninguna de las tres cosas.
+Diseño completo en [`docs/03-arquitectura.md`](docs/03-arquitectura.md); decisiones en
+[`docs/15-decisiones-tecnicas.md`](docs/15-decisiones-tecnicas.md) (registro de decisiones técnicas, de `DT-001` a `DT-101`).
 
-Detalle en [`docs/03-arquitectura.md`](docs/03-arquitectura.md).
+## Estado de implementación
 
-## Tecnologías
+| Tecnología | Uso en el proyecto | Estado | Evidencia |
+|---|---|---|---|
+| Python 3.11 · FastAPI | API de solo lectura, motor, pronóstico, ingesta | ✅ Implementado y desplegado | `backend/`, [`docs/07-api.md`](docs/07-api.md) |
+| PostgreSQL 16 | Modelo de datos, migraciones `0001`–`0004`, vistas analíticas | ✅ Implementado y desplegado (Azure Flexible Server) | `backend/db/migrations` |
+| React 19 · TypeScript · Vite | Interfaz por roles, gráficas con Recharts | ✅ Implementado y desplegado | `frontend/`, [`docs/08-frontend.md`](docs/08-frontend.md) |
+| Machine Learning (Python) | Backtesting, métricas (MASE), candidatos y simulador de inventario | ✅ Implementado (estudio sintético) | `ml/`, [`docs/reports/`](docs/reports/README.md) |
+| Docker · Docker Compose | Sistema completo en local con un comando | ✅ Implementado | `infra/docker/`, `infra/docker-compose.yml` |
+| GitHub Actions | CI (8 jobs) y CD a Azure por OIDC, sin secretos | ✅ Implementado | `.github/workflows/` |
+| Microsoft Entra ID | Inicio de sesión MSAL y cuatro roles de aplicación | ✅ Implementado y desplegado | `infra/azure/entra/`, `backend/app/api/entra.py` |
+| Azure (Bicep) | Container Apps, ACR, PostgreSQL, Key Vault, identidades administradas | ✅ Desplegado y verificado en `dev` | `infra/azure/`, [informe de U12](docs/reports/u12-cierre-evidencias.md) |
+| Azure OpenAI | Explicaciones con `gpt-4.1-mini`, sin claves, con plantilla de respaldo | 🟡 Implementado, despliegue en curso | `backend/app/genai/chat.py`, `infra/azure/u13/` |
+| Azure Machine Learning | Ejecución y registro del baseline | ⏳ En desarrollo (U14) | [`docs/05-motor-predictivo.md`](docs/05-motor-predictivo.md) |
+| Azure AI Search | Búsqueda sobre un corpus documental sintético | ⏳ En desarrollo (U15) | [`docs/09-ia-generativa.md`](docs/09-ia-generativa.md) |
+| Power BI | Informes sobre las vistas del esquema `analytics` | ⏳ En desarrollo (U16); las vistas ya existen | [`docs/11-power-bi.md`](docs/11-power-bi.md) |
 
-| Capa | Tecnología |
-|---|---|
-| Backend | Python · FastAPI |
-| Frontend | React.js |
-| Datos | PostgreSQL |
-| Machine Learning | Python · Azure Machine Learning |
-| IA generativa | Azure OpenAI Service · Azure AI Search |
-| Analítica | Power BI |
-| Identidad | Microsoft Entra ID |
-| Empaquetado | Docker |
-| CI/CD | GitHub · GitHub Actions |
-| Gestión | Scrum |
+## Pruebas y calidad
 
-La justificación de cada elección está en [`docs/02-propuesta-tecnica.md`](docs/02-propuesta-tecnica.md) §12.
+Todas las suites corren en CI en cada *push* y *pull request* ([`ci.yml`](.github/workflows/ci.yml)):
+
+| Suite | Qué cubre | Comando (desde la carpeta indicada) |
+|---|---|---|
+| Backend por defecto | Motor (casos límite de `CLAUDE.md` §12), pronóstico, ingesta, explicación | `backend/`: `python -m unittest discover -s tests -t .` |
+| API sin base | Contrato OpenAPI, autenticación, matriz de roles, Entra ID, Azure OpenAI simulado | `backend/`: `python -m unittest discover -s tests/api -t tests/api` |
+| Integración | Migraciones y API contra PostgreSQL 16 efímero | `backend/`: `python -m unittest discover -s tests/db -t tests/db` (exige `U2_TEST_ADMIN_DSN`) |
+| ML | Backtesting, métricas, candidatos | raíz: `python -m unittest discover -s ml/tests -t .` |
+| Generador | Dataset sintético y sus 51 validaciones | raíz: `python -m unittest discover -s data/synthetic/tests -t .` |
+| Frontend | ESLint, `tsc`, Prettier, Vitest (176 pruebas) y build | `frontend/`: `npm ci`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run build` |
+| Infraestructura | Bicep, workflows, scripts de despliegue con Azure CLI simulado | raíz: `python -m unittest discover -s infra/tests -t infra/tests` |
+| Seguridad | Detección de secretos y archivos prohibidos | raíz: `python infra/ci/secret_scan.py` |
+
+Principios que aplican las pruebas: aritmética exacta y determinista en el motor, ninguna llamada de red en pruebas
+unitarias (Azure se sustituye por dobles), y verificación de que el sistema funciona completo sin Azure (RNF-006).
+
+## Despliegue en Azure
+
+Entorno `dev` en `centralus`, desplegado con Bicep y scripts PowerShell con *what-if* comprobado antes de cada cambio:
+
+- **Cómputo:** Azure Container Apps (Consumption). Frontend con ingress HTTPS externo; API interna, accesible solo a
+  través del frontend con TLS verificado.
+- **Datos:** PostgreSQL 16 Flexible Server (B1ms), firewall limitado a las IP de salida del entorno.
+- **Secretos:** Key Vault; las contraseñas solo llegan como `secretRef`. Ninguna clave en el repositorio ni en GitHub.
+- **CD:** GitHub Actions con OIDC (identidad federada, sin secretos de larga vida) publica las imágenes en ACR.
+- **Verificación:** 20 comprobaciones automáticas (`deploy-u12.ps1 -Stage Verify`), pruebas de fallo y recuperación.
+
+Procedimiento: [`infra/azure/u12/README.md`](infra/azure/u12/README.md). Evidencias y criterios de cierre:
+[`docs/reports/u12-cierre-evidencias.md`](docs/reports/u12-cierre-evidencias.md).
 
 ## Estructura del repositorio
 
 ```
 .
-├── CLAUDE.md                    # Guía permanente para agentes de IA — leer primero
-├── AGENTS.md                    # Protocolo de trabajo de los agentes
-├── README.md
-├── .gitignore
-├── docs/                        # Documentación técnica
-│   ├── 00-guia-maestra.md           Punto de entrada técnico y operativo (2026-10-10)
-│   ├── 00a-prd.md                   PRD: qué producto, para quién y estado de cada requisito (borrador)
-│   ├── 00b-mvp.md                   MVP: límites de la primera versión y criterios de aceptación (borrador)
-│   ├── 01-requerimientos.md         Requisitos funcionales, no funcionales, seguridad y ML
-│   ├── 02-propuesta-tecnica.md      Problema, solución, estrategias, riesgos
-│   ├── 03-arquitectura.md           Componentes, flujos, interfaces, observabilidad
-│   ├── 04-modelo-datos.md           Entidades, relaciones, restricciones
-│   ├── 05-motor-predictivo.md       Estrategia de Machine Learning
-│   ├── 06-motor-abastecimiento.md   Reglas determinísticas de reposición
-│   ├── 07-api.md                    Diseño de la API REST
-│   ├── 08-frontend.md               Vistas, componentes y flujos de usuario
-│   ├── 09-ia-generativa.md          Azure OpenAI, Azure AI Search y RAG
-│   ├── 10-seguridad.md              Entra ID, roles, secretos, auditoría
-│   ├── 11-power-bi.md               KPIs y modelo dimensional
-│   ├── 12-devops.md                 Git, Docker, GitHub Actions
-│   ├── 13-testing.md                Estrategia de pruebas
-│   ├── 14-mantenimiento.md          Operación, monitoreo del modelo, incidentes
-│   ├── 15-decisiones-tecnicas.md    Registro de decisiones (ADR)
-│   ├── architecture/                Diagramas y vistas de detalle
-│   ├── decisions/                   ADRs individuales y plantilla
-│   └── reports/                     Reportes de cierre de etapa
-├── knowledge/                   # Conocimiento de dominio
-│   ├── glossary.md                  Definiciones únicas y compartidas
-│   ├── assumptions.md               Supuestos, con validación e impacto
-│   ├── business-rules.md            Reglas confirmadas, propuestas y pendientes
-│   └── sources.md                   Fuentes externas consultadas
-├── project/                     # Gestión
-│   ├── roadmap.md                   16 fases con criterios de finalización
-│   ├── backlog.md                   Épicas, historias y tareas
-│   └── status.md                    Estado actual del proyecto
-└── tests/                       # Estrategia y pruebas transversales
+├── backend/                 API FastAPI, motor, pronóstico, ingesta y explicación (Python 3.11)
+│   ├── app/                     api · supply_engine · forecasting · runs · ingestion · db · genai
+│   ├── db/migrations/           SQL 0001–0004 (incluye las vistas analíticas)
+│   └── tests/                   suite por defecto, tests/api y tests/db (integración)
+├── frontend/                React 19 + TypeScript + Vite (vistas por rol, MSAL para Entra ID)
+├── ml/                      Backtesting, métricas, candidatos y simulador (solo biblioteca estándar)
+├── data/synthetic/          Generador del dataset sintético 0.4.0 y su validador
+├── infra/
+│   ├── docker/                  Dockerfiles, nginx, bootstrap y smoke
+│   ├── docker-compose.yml       Sistema completo en local
+│   ├── azure/                   Bicep y scripts de despliegue (U10–U13) con su README
+│   └── tests/                   Pruebas de la infraestructura
+├── .github/workflows/       CI (8 jobs) y Deploy dev (OIDC)
+├── docs/                    Documentación técnica (ver abajo)
+├── knowledge/               Glosario, supuestos y reglas de negocio
+└── project/                 Roadmap, backlog y estado
 ```
 
-Las carpetas `backend/`, `frontend/`, `ml/`, `data/`, `infra/` y `.github/workflows/` **aún no
-existen**: se crearán cuando comience la fase correspondiente.
+## Documentación
 
-## Estado actual
+| Para… | Leer |
+|---|---|
+| Entender el producto y su alcance | [`docs/00a-prd.md`](docs/00a-prd.md), [`docs/00b-mvp.md`](docs/00b-mvp.md) |
+| Orientarse en el proyecto (punto de entrada técnico) | [`docs/00-guia-maestra.md`](docs/00-guia-maestra.md) |
+| Requisitos | [`docs/01-requerimientos.md`](docs/01-requerimientos.md) |
+| Arquitectura y modelo de datos | [`docs/03-arquitectura.md`](docs/03-arquitectura.md), [`docs/04-modelo-datos.md`](docs/04-modelo-datos.md) |
+| Pronóstico y ML | [`docs/05-motor-predictivo.md`](docs/05-motor-predictivo.md) y los informes de [`docs/reports/`](docs/reports/README.md) |
+| Reglas de abastecimiento | [`docs/06-motor-abastecimiento.md`](docs/06-motor-abastecimiento.md) |
+| API | [`docs/07-api.md`](docs/07-api.md) y `/docs` (OpenAPI) en la API en marcha |
+| Interfaz | [`docs/08-frontend.md`](docs/08-frontend.md) |
+| IA generativa | [`docs/09-ia-generativa.md`](docs/09-ia-generativa.md) |
+| Seguridad | [`docs/10-seguridad.md`](docs/10-seguridad.md) |
+| DevOps, Docker y CI/CD | [`docs/12-devops.md`](docs/12-devops.md) |
+| Pruebas | [`docs/13-testing.md`](docs/13-testing.md) |
+| Decisiones técnicas (ADR) | [`docs/15-decisiones-tecnicas.md`](docs/15-decisiones-tecnicas.md) |
+| Estado y siguiente trabajo | [`project/status.md`](project/status.md), [`project/roadmap.md`](project/roadmap.md) |
 
-**Etapa 2 iniciada (2026-09-30)** · Etapa 1 completada (2026-09-29). El resumen de esta sección
-describe el cierre de la Etapa 0 y se conserva como historial; el estado vigente está en
-[`project/status.md`](project/status.md).
+## Limitaciones conocidas
 
-**ETAPA 0.1 — AUDITORÍA COMPLETADA.** Documentación base creada, auditada y corregida.
-Resultado: **APROBADA CON OBSERVACIONES**; pendiente de aprobación del responsable.
+- **Datos sintéticos.** Todo el sistema trabaja con un dataset generado (`ds-6c8ad65b4999`); no hay datos reales de
+  ninguna empresa. Las respuestas lo indican con el aviso `SYNTHETIC_DATA`.
+- **Política provisional.** Los parámetros de negocio (nivel de servicio, revisión, costos) no los ha aportado ningún
+  negocio real; se usa la política `V1_PROVISIONAL`, documentada y marcada en cada respuesta.
+- **Solo lectura.** La V1 consulta y explica; no crea órdenes de compra ni escribe en la base desde la API.
+- **Modelo de pronóstico.** El baseline oficial es la media móvil de 13 semanas; los candidatos estudiados (SES, Holt,
+  Croston, TSB…) no se promueven sin datos reales.
+- **Acceso a `dev` en Azure.** La URL desplegada exige una cuenta del tenant con un rol asignado; para evaluar sin
+  cuenta, usa la [demo local](#demo-en-3-minutos-local-sin-azure).
 
-- ✅ Requisitos, arquitectura, modelo de datos y estrategias documentados
-- ✅ Decisiones técnicas registradas, distinguiendo lo decidido de lo hipotético
-- ✅ Supuestos marcados como tales, con su validación y su impacto
-- ✅ Roadmap y backlog listos
-- ⬜ Sin código de aplicación (es lo correcto en esta etapa)
-- ✅ Auditada en la revisión 0.1: arquitectura proporcional, requisitos clasificados por origen,
-  trazabilidad verificada campo a campo, evaluación de dos niveles añadida
-- ⏳ Pendiente: parámetros de política que debe aportar el negocio, y tres decisiones técnicas que
-  requieren datos (`DT-010`, `DT-019`, `DT-021`)
+## Proceso de desarrollo
 
-Detalle en [`project/status.md`](project/status.md).
-
-### Lo que hace falta del negocio
-
-El proyecto no inventa información empresarial. Estos datos están pendientes y condicionan la
-parametrización del motor:
-
-1. Nivel de servicio objetivo (y **qué definición** de nivel de servicio se usa).
-2. Política de revisión: continua o periódica, y con qué frecuencia.
-3. Umbrales de clasificación de riesgo de desabasto y de sobreinventario.
-4. Costos de faltante y de mantener inventario.
-5. Criterio de selección entre proveedores alternativos.
-6. Calendario laboral y estacionalidades conocidas.
-7. Volúmenes reales de catálogo e histórico.
-8. Confirmación de si existe documentación interna indexable.
-
-Los siete primeros son parámetros de política: lista completa (trece) en
-[`knowledge/business-rules.md`](knowledge/business-rules.md) §3. El punto 8 corresponde a
-`ASSUMPTION-008` en [`knowledge/assumptions.md`](knowledge/assumptions.md).
-
-## Cómo continuará el desarrollo
-
-Dieciséis fases, cada una con objetivo, entradas, actividades, entregables, dependencias y criterio
-de finalización explícito ([`project/roadmap.md`](project/roadmap.md)):
-
-```
-0 Preparación → 1 Datos → 2 PostgreSQL → 3 FastAPI → 4 Motor de abastecimiento
-→ 5 Machine Learning → 6 Azure ML → 7 React → 8 Entra ID → 9 Azure AI Search
-→ 10 Azure OpenAI → 11 Power BI → 12 Docker → 13 GitHub Actions → 14 QA → 15 Entrega
-```
-
-Dos decisiones de secuenciación merecen explicación:
-
-- **El motor de abastecimiento (Fase 4) va antes que el Machine Learning (Fase 5).** El motor consume
-  un forecast, y ese forecast puede ser un baseline estadístico. Así el sistema entrega recomendaciones
-  útiles y auditables desde temprano; cuando llegue el modelo, solo mejora una entrada de un motor ya
-  probado. Al revés, todo el valor esperaría a que el ML funcione.
-- **Azure se integra al final.** Primero se construye un sistema completo y ejecutable en local. Los
-  servicios en la nube se incorporan cuando hay algo que integrar y una razón para pagarlo.
-
-Principios de trabajo: incremental, verificable, documentado y sin sobreingeniería. Las reglas
-completas están en [`CLAUDE.md`](CLAUDE.md).
-
-## Para agentes de IA
-
-Antes de tocar este repositorio, leer en este orden: [`CLAUDE.md`](CLAUDE.md) →
-[`docs/00-guia-maestra.md`](docs/00-guia-maestra.md) → [`AGENTS.md`](AGENTS.md) → [`project/status.md`](project/status.md).
-
-Reglas que no se negocian: no inventar requisitos ni datos de negocio; verificar la documentación
-oficial antes de implementar una integración de Azure; mantener separadas la predicción y las reglas
-determinísticas; nunca almacenar secretos; ejecutar las pruebas tras cada cambio; no hacer commit sin
-autorización.
+El proyecto se construyó por unidades (U1–U16), cada una con decisión registrada, pruebas y evidencia. Las reglas de
+trabajo están en [`CLAUDE.md`](CLAUDE.md) y [`AGENTS.md`](AGENTS.md); el desarrollo se apoyó en agentes de IA bajo
+esas reglas, con cada despliegue real ejecutado y verificado por el responsable del proyecto.
