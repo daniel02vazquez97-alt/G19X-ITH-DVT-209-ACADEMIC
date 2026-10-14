@@ -129,7 +129,7 @@ Diseño completo en [`docs/03-arquitectura.md`](docs/03-arquitectura.md); decisi
 | Microsoft Entra ID | Inicio de sesión MSAL y cuatro roles de aplicación | ✅ Implementado y desplegado | `infra/azure/entra/`, `backend/app/api/entra.py` |
 | Azure (Bicep) | Container Apps, ACR, PostgreSQL, Key Vault, identidades administradas | ✅ Desplegado y verificado en `dev` | `infra/azure/`, [informe de U12](docs/reports/u12-cierre-evidencias.md) |
 | Azure OpenAI | Explicaciones con `gpt-4.1-mini`, sin claves, con verificación de cifras y plantilla de respaldo | ✅ Implementado, desplegado y activo en `dev` | `backend/app/genai/chat.py`, `infra/azure/u13/` |
-| Azure Machine Learning | Ejecución y registro del baseline | ⏳ En desarrollo (U14) | [`docs/05-motor-predictivo.md`](docs/05-motor-predictivo.md) |
+| Azure Machine Learning | Reproducción del *backtesting* del baseline con MLflow y registro de `baseline-ma13` | 🟡 Implementado; despliegue pendiente (U14) | `infra/azure/u14/`, `infra/azure/deploy-u14.ps1` |
 | Azure AI Search | Búsqueda sobre un corpus documental sintético | ⏳ En desarrollo (U15) | [`docs/09-ia-generativa.md`](docs/09-ia-generativa.md) |
 | Power BI | Informes sobre las vistas del esquema `analytics` | ⏳ En desarrollo (U16); las vistas ya existen | [`docs/11-power-bi.md`](docs/11-power-bi.md) |
 

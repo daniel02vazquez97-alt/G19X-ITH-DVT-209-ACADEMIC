@@ -4440,8 +4440,24 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
       - `Microsoft.Compute` no se había registrado hasta U14: es la primera vez que la suscripción usa VM.
 - **Fuera de U14:** *endpoints* online o por lotes; entrenamiento o promoción de otros modelos (SES no se promueve,
   `DT-094` punto 9); pipelines de Azure ML; integración en CI; G2, G3 y el *holdout*.
-- **Estado:** `PROPUESTA` (2026-10-14). No hay cambios en Azure ni en el código. Se implementa cuando el responsable la
-  acepte.
+- **Aceptación e implementación (2026-10-14):** el responsable aceptó la propuesta («continúa con tu propuesta»). Al
+  implementar se fijaron tres puntos, todos dentro del alcance aceptado:
+  - **entorno (punto 6):** en vez de un entorno *curated*, cuyo nombre y versión de Python cambian, el job usa la misma
+    imagen base que la API, `python:3.11.17-slim-trixie` fijada por digest (`DT-095`), solo como imagen: no se construye
+    nada y no hace falta registro de contenedores. Instala `PyYAML==6.0.3`, `mlflow-skinny==3.15.0` y
+    `azureml-mlflow==1.62.0.post6` (este exige `mlflow-skinny <= 3.15.0`);
+  - **almacenes del sistema (punto 4):** modo de autenticación por defecto (clave de cuenta, que gestiona el servicio) en
+    lugar de `Identity`, para que la sesión del responsable no necesite roles de datos sobre el almacenamiento. Key
+    Vault con directivas de acceso vacías, como la plantilla oficial de inicio rápido;
+  - **instantánea del código:** `deploy-u14.ps1 -Stage Submit` monta en `tmp/u14-job` solo `backend/app`, `ml/` (sin
+    `out` ni pruebas), el generador y su configuración, el resumen versionado y `infra/azure/u14/job` (123 archivos).
+  - **archivos:** `infra/azure/u14/` (Bicep, README, `job/job.yml`, `job/requirements.txt`, `job/run_backtest.py`) y
+    `infra/azure/deploy-u14.ps1` (Preflight de solo lectura, Deploy con *what-if* comprobado y `AZUREML`, Submit,
+    Verify, Remove con `BORRAR`, `-SelfTest` con 7 casos). El modelo solo se registra si la huella coincide;
+  - **pruebas [CC]:** `infra/tests/test_u14_config.py` (12); Bicep 0.48.1 sin avisos; el envoltorio, ejecutado en
+    local desde la instantánea, da `reproduces_versioned_report: true` (`67608e95…`).
+- **Estado:** `ACEPTADA` (2026-10-14). Implementada; **no desplegada**: la despliega el responsable con
+  `infra/azure/u14/README.md` §2.
 
 ## Decisiones deliberadamente NO tomadas
 

@@ -1,0 +1,24 @@
+# U14 (DT-102): command job de Azure ML que reproduce el backtesting F5a del baseline oficial.
+# deploy-u14.ps1 -Stage Submit lo envia con `--set code=<instantanea>`: la instantanea minima (backend/app, ml/,
+# data/synthetic sin salida, el resumen versionado de F5a e infra/azure/u14/job) la monta el script.
+$schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
+type: command
+display_name: u14-f5a-backtest
+experiment_name: u14-baseline-ma13
+description: Reproduce python -m ml backtest (F5a, SYNTHETIC) y compara results_sha256 con el informe versionado.
+code: ../../../..
+command: >-
+  python -m pip install --no-cache-dir --disable-pip-version-check -r infra/azure/u14/job/requirements.txt &&
+  python infra/azure/u14/job/run_backtest.py --model-dir ${{outputs.model}}
+environment:
+  # La misma base que la API (DT-095, U7): Python 3.11.17, fijada por digest. Solo imagen: no se construye nada.
+  image: python:3.11.17-slim-trixie@sha256:0dd364ba7e10242f07755449e3a3d0e35f9efd987952737b90def6709ab0c5ce
+outputs:
+  model:
+    type: uri_folder
+resources:
+  # Serverless: 2 vCPU (familia DSv2, cuota de 4). Solo existe mientras dura el job.
+  instance_type: Standard_DS2_v2
+  instance_count: 1
+limits:
+  timeout: 1800
