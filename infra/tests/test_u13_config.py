@@ -71,9 +71,10 @@ class U12WiringTest(unittest.TestCase):
         self.assertIn("], genaiEnv)", apps)
         self.assertNotRegex(apps, r"(?i)OPENAI_API_KEY|AZURE_OPENAI_KEY")
 
-    def test_disabled_by_default_until_u13_is_verified(self) -> None:
+    def test_disabled_by_default_and_enabled_in_dev_after_verification(self) -> None:
         self.assertIn("param genaiEnabled bool = false", read(U12 / "main.bicep"))
-        self.assertIn("param genaiEnabled = false", read(U12 / "dev.bicepparam"))
+        # Activated in dev after deploy-u13.ps1 -Stage Verify (9/9) and the owner's authorization (DT-101, 2026-10-14).
+        self.assertIn("param genaiEnabled = true", read(U12 / "dev.bicepparam"))
         # U12 itself never creates the account: its what-if guard still rejects openai/cognitive resources.
         self.assertNotIn("Microsoft.CognitiveServices", read(U12 / "main.bicep"))
         self.assertIn("openai|cognitive", read(ROOT / "infra" / "azure" / "deploy-u12.ps1"))

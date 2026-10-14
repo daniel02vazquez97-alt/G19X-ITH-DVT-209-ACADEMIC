@@ -613,7 +613,7 @@ class PreflightOnly(unittest.TestCase):
         for line in ("acrmpadevx: usuario administrador deshabilitado", "psql-mpa-dev-x: SKU Standard_B1ms",
                      "ca-mpa-dev-api: ingress interno, solo HTTPS", "caj-mpa-dev-bootstrap: job manual",
                      "cae-mpa-dev: modo WorkloadProfiles (admite el job de bootstrap)",
-                     "id-mpa-dev-runtime: roles AcrPull (solo AcrPull)"):
+                     "id-mpa-dev-runtime: roles AcrPull (AcrPull; con U13, OpenAI User solo sobre su cuenta)"):
             self.assertIn(line, result.stdout)
         self.assert_only_reads(state)
 

@@ -4360,10 +4360,15 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
   - `-Stage Verify`: 9 comprobaciones `OK` (OpenAI S0, `disableLocalAuth`, `centralus`, cuenta y despliegue
     `Succeeded`, un único despliegue con el modelo y la versión previstos, *Global Standard* con capacidad 10, solo
     `id-mpa-dev-runtime` con *Cognitive Services OpenAI User* sobre la cuenta);
-  - **no activada en la API:** `genaiEnabled` sigue en `false`. La activación (README de U13 §2, pasos 4–7) requiere
-    autorización del responsable para integrarla con la API.
+  - **activación en la API autorizada por el responsable (2026-10-14):** `genaiEnabled = true` en
+    `infra/azure/u12/dev.bicepparam`. Se aplica con *Deploy dev* y `deploy-u12.ps1 -Stage Apps` (README de U13 §2,
+    pasos 5–7); hasta entonces la API sigue con la plantilla;
+  - **corrección necesaria en U12:** el Preflight y el Verify de `deploy-u12.ps1` exigían que `id-mpa-dev-runtime` tuviera
+    solo `AcrPull`, y habrían fallado con el rol de U13. `Test-RuntimeRoles` admite ahora `AcrPull` sobre el ACR y, como
+    mucho, un *Cognitive Services OpenAI User* sobre la cuenta `oai-mpa-dev-*`, nunca sobre el grupo (5 casos nuevos en
+    `-SelfTest`).
 - **Estado:** `ACEPTADA` (2026-10-13). Implementada e integrada en `main` (PR #13); **desplegada y verificada en `dev`
-  (2026-10-14)**; pendiente de activar en la API.
+  (2026-10-14)**; activación en la API autorizada, pendiente de aplicar con *Deploy dev* y `-Stage Apps`.
 
 ## Decisiones deliberadamente NO tomadas
 
