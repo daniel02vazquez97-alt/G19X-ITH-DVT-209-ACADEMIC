@@ -8,15 +8,17 @@
 # Stages (infra/azure/u14/README.md):
 #   -PreflightOnly (= -Stage Preflight, the default): STRICTLY read-only (allow list). Session, group, providers, the
 #              `ml` extension, existing workspaces and the versioned F5a summary. PREFLIGHT OK or PREFLIGHT BLOQUEADO.
-#   Deploy     validate -> what-if checked automatically (one workspace without container registry or Application
-#              Insights, one Standard_LRS storage account without public blobs, one Key Vault; nothing else, no Delete)
+#   Deploy     validate -> what-if checked automatically (one workspace without container registry, one Standard_LRS
+#              storage account without public blobs, one Key Vault, and the Application Insights the service requires on
+#              a Log Analytics workspace with 30-day retention and a daily ingestion cap; nothing else, no Delete)
 #              -> AZUREML -> create.
 #   Submit     builds the minimal code snapshot in tmp/u14-job, sends infra/azure/u14/job/job.yml (serverless,
 #              Standard_DS2_v2), waits, downloads the model output to tmp/u14-evidence and, only if results_sha256
 #              equals the versioned report, registers the model baseline-ma13.
 #   Verify     workspace, last job Completed, results_sha256 equal to the versioned one, model registered, no compute
 #              left and no endpoints; tmp/u14-evidence/u14-evidence.json (identifiers only).
-#   Remove     tear-down (BORRAR): workspace with all its dependent resources, permanently, and purge of the Key Vault.
+#   Remove     tear-down (BORRAR): workspace with all its dependent resources, permanently, purge of the Key Vault and
+#              deletion of the Log Analytics workspace.
 #   -SelfTest  offline checks of the what-if guard (no Azure call).
 # It never reads, asks for, stores or prints a key, a token or a connection string. ASCII only.
 
@@ -48,7 +50,9 @@ $JobFile = 'infra/azure/u14/job/job.yml'
 $SnapshotDir = 'tmp/u14-job'
 $EvidenceDir = 'tmp/u14-evidence'
 $VersionedReport = 'docs/reports/fase5-f5a-backtest-sintetico.json'
-$AllowedTypes = @('Microsoft.MachineLearningServices/workspaces', 'Microsoft.Storage/storageAccounts', 'Microsoft.KeyVault/vaults')
+$AllowedTypes = @('Microsoft.MachineLearningServices/workspaces', 'Microsoft.Storage/storageAccounts', 'Microsoft.KeyVault/vaults',
+    'Microsoft.Insights/components', 'Microsoft.OperationalInsights/workspaces')
+$MaxDailyQuotaGb = 1
 $TerminalStates = @('Completed', 'Failed', 'Canceled', 'NotResponding')
 
 function Step([string]$Text) { Write-Host ''; Write-Host "== $Text" -ForegroundColor Cyan }
@@ -143,7 +147,17 @@ function Test-U14WhatIf($WhatIf, [string]$RgId) {
             'Microsoft.MachineLearningServices/workspaces' {
                 if ("$(Get-Prop $a 'kind')" -notin @('', 'Default')) { $problems.Add("workspace de tipo $(Get-Prop $a 'kind'), no Default") }
                 if ("$(Get-Prop $p 'containerRegistry')") { $problems.Add('workspace con registro de contenedores (DT-102: sin ACR)') }
-                if ("$(Get-Prop $p 'applicationInsights')") { $problems.Add('workspace con Application Insights (DT-102: sin Application Insights)') }
+                if (-not "$(Get-Prop $p 'applicationInsights')") { $problems.Add('workspace sin Application Insights (el servicio lo exige)') }
+            }
+            'Microsoft.OperationalInsights/workspaces' {
+                if ("$(Get-Prop (Get-Prop $p 'sku') 'name')" -ne 'PerGB2018') { $problems.Add("Log Analytics con SKU $(Get-Prop (Get-Prop $p 'sku') 'name')") }
+                $days = 0; [void][int]::TryParse("$(Get-Prop $p 'retentionInDays')", [ref]$days)
+                if ($days -lt 1 -or $days -gt 30) { $problems.Add("Log Analytics con retencion de $days dias (maximo 30)") }
+                $cap = 0.0; [void][double]::TryParse("$(Get-Prop (Get-Prop $p 'workspaceCapping') 'dailyQuotaGb')", [System.Globalization.NumberStyles]::Float, [System.Globalization.CultureInfo]::InvariantCulture, [ref]$cap)
+                if ($cap -le 0 -or $cap -gt $MaxDailyQuotaGb) { $problems.Add("Log Analytics sin limite diario de ingesta de 0 a $MaxDailyQuotaGb GB ($cap)") }
+            }
+            'Microsoft.Insights/components' {
+                if (-not "$(Get-Prop $p 'WorkspaceResourceId')") { $problems.Add('Application Insights sin area de trabajo de Log Analytics') }
             }
         }
     }
@@ -151,12 +165,15 @@ function Test-U14WhatIf($WhatIf, [string]$RgId) {
     return ,$problems.ToArray()
 }
 
-function New-SelfTestCase([string]$Rg, $WorkspaceProps, $StorageProps, [string]$Extra) {
+function New-SelfTestCase([string]$Rg, $WorkspaceProps, $StorageProps, [string]$Extra, $LogProps = $null) {
+    if ($null -eq $LogProps) { $LogProps = @{ sku = @{ name = 'PerGB2018' }; retentionInDays = 30; workspaceCapping = @{ dailyQuotaGb = 0.1 } } }
     $p = "$Rg/providers"
     $changes = @(
         @{ changeType = 'Create'; resourceId = "$p/Microsoft.Storage/storageAccounts/stmpamlx"; after = @{ type = 'Microsoft.Storage/storageAccounts'; location = 'centralus'; sku = @{ name = 'Standard_LRS' }; properties = $StorageProps } },
         @{ changeType = 'Create'; resourceId = "$p/Microsoft.KeyVault/vaults/kv-mpaml-x"; after = @{ type = 'Microsoft.KeyVault/vaults'; location = 'centralus'; properties = @{ sku = @{ family = 'A'; name = 'standard' } } } },
-        @{ changeType = 'Create'; resourceId = "$p/Microsoft.MachineLearningServices/workspaces/mlw-mpa-dev"; after = @{ type = 'Microsoft.MachineLearningServices/workspaces'; location = 'centralus'; kind = 'Default'; properties = $WorkspaceProps } }
+        @{ changeType = 'Create'; resourceId = "$p/Microsoft.MachineLearningServices/workspaces/mlw-mpa-dev"; after = @{ type = 'Microsoft.MachineLearningServices/workspaces'; location = 'centralus'; kind = 'Default'; properties = $WorkspaceProps } },
+        @{ changeType = 'Create'; resourceId = "$p/Microsoft.OperationalInsights/workspaces/log-mpa-ml-dev"; after = @{ type = 'Microsoft.OperationalInsights/workspaces'; location = 'centralus'; properties = $LogProps } },
+        @{ changeType = 'Create'; resourceId = "$p/Microsoft.Insights/components/appi-mpa-ml-dev"; after = @{ type = 'Microsoft.Insights/components'; location = 'centralus'; kind = 'web'; properties = @{ Application_Type = 'web'; WorkspaceResourceId = "$p/Microsoft.OperationalInsights/workspaces/log-mpa-ml-dev" } } }
     )
     if ($Extra) { $changes += @{ changeType = $Extra; resourceId = "$p/Microsoft.ContainerRegistry/registries/crx"; after = @{ type = 'Microsoft.ContainerRegistry/registries' } } }
     return (ConvertTo-Json -InputObject @{ changes = $changes } -Depth 20 | ConvertFrom-Json)
@@ -164,12 +181,14 @@ function New-SelfTestCase([string]$Rg, $WorkspaceProps, $StorageProps, [string]$
 
 function Invoke-SelfTest {
     $rg = '/subscriptions/s/resourceGroups/rg'
-    $ws = @{ storageAccount = 'st'; keyVault = 'kv'; publicNetworkAccess = 'Enabled' }
+    $ws = @{ storageAccount = 'st'; keyVault = 'kv'; applicationInsights = 'ai'; publicNetworkAccess = 'Enabled' }
     $st = @{ allowBlobPublicAccess = $false; minimumTlsVersion = 'TLS1_2'; supportsHttpsTrafficOnly = $true }
     $cases = @(
         @('conforme', (New-SelfTestCase $rg $ws $st ''), 0),
-        @('workspace con ACR', (New-SelfTestCase $rg @{ storageAccount = 'st'; keyVault = 'kv'; containerRegistry = 'cr' } $st ''), 1),
-        @('workspace con Application Insights', (New-SelfTestCase $rg @{ storageAccount = 'st'; keyVault = 'kv'; applicationInsights = 'ai' } $st ''), 1),
+        @('workspace con ACR', (New-SelfTestCase $rg @{ storageAccount = 'st'; keyVault = 'kv'; applicationInsights = 'ai'; containerRegistry = 'cr' } $st ''), 1),
+        @('workspace sin Application Insights', (New-SelfTestCase $rg @{ storageAccount = 'st'; keyVault = 'kv' } $st ''), 1),
+        @('Log Analytics sin limite diario', (New-SelfTestCase $rg $ws $st '' @{ sku = @{ name = 'PerGB2018' }; retentionInDays = 30 }), 1),
+        @('Log Analytics con 90 dias', (New-SelfTestCase $rg $ws $st '' @{ sku = @{ name = 'PerGB2018' }; retentionInDays = 90; workspaceCapping = @{ dailyQuotaGb = 0.1 } }), 1),
         @('blobs publicos', (New-SelfTestCase $rg $ws @{ allowBlobPublicAccess = $true; minimumTlsVersion = 'TLS1_2' } ''), 1),
         @('TLS 1.0', (New-SelfTestCase $rg $ws @{ allowBlobPublicAccess = $false; minimumTlsVersion = 'TLS1_0' } ''), 1),
         @('recurso ajeno (ACR)', (New-SelfTestCase $rg $ws $st 'Create'), 1),
@@ -241,7 +260,7 @@ switch ($Stage) {
         $ctx = Get-Context
         Write-Host "  OK     grupo $ResourceGroup en $Location"
         Step '2. Proveedores y extension ml'
-        foreach ($ns in @('Microsoft.MachineLearningServices', 'Microsoft.Compute', 'Microsoft.Storage', 'Microsoft.KeyVault')) {
+        foreach ($ns in @('Microsoft.MachineLearningServices', 'Microsoft.Compute', 'Microsoft.Storage', 'Microsoft.KeyVault', 'Microsoft.Insights', 'Microsoft.OperationalInsights')) {
             $state = "$(Invoke-Az @('provider', 'show', '--namespace', $ns, '--query', 'registrationState', '--output', 'tsv') -Raw)".Trim()
             if ($state -ne 'Registered') { Stop-U14 "$ns esta $state (az provider register --namespace $ns --wait)" }
             Write-Host "  OK     $ns Registered"
@@ -265,14 +284,16 @@ switch ($Stage) {
         foreach ($c in (To-List (Get-Prop $whatIf 'changes'))) { if ("$($c.changeType)" -ne 'Ignore') { Write-Host "  $($c.changeType)  $($c.resourceId)" } }
         $problems = Test-U14WhatIf $whatIf $ctx.rgId
         if ($problems.Count) { foreach ($p in $problems) { Write-Host "  PROBLEMA $p" -ForegroundColor Red }; Stop-U14 'el what-if no es el esperado' }
-        Write-Host '  what-if conforme: workspace sin ACR ni Application Insights, almacenamiento Standard_LRS privado y Key Vault'
-        Confirm-Or-Stop 'AZUREML' 'crear el workspace de Azure ML y sus dos recursos'
+        Write-Host '  what-if conforme: workspace sin ACR, almacenamiento Standard_LRS privado, Key Vault y Application Insights con Log Analytics limitado'
+        Confirm-Or-Stop 'AZUREML' 'crear el workspace de Azure ML y sus recursos dependientes'
         Invoke-Az @('deployment', 'group', 'create', '--resource-group', $ResourceGroup, '--name', $DeploymentName, '--template-file', $Template, '--parameters', $Parameters, '--output', 'none') -Raw -What 'create' | Out-Null
         Write-Host 'Desplegado. Siguiente: -Stage Submit.' -ForegroundColor Green
     }
     'Submit' {
         $ctx = Get-Context
         $versioned = Get-VersionedSha
+        $existing = Invoke-Az @('ml', 'workspace', 'show', '--name', $WorkspaceName, '--resource-group', $ResourceGroup, '--output', 'json') -What 'workspace' -AllowFailure
+        if ($null -eq $existing) { Stop-U14 "no existe el workspace ${WorkspaceName}: ejecuta antes -Stage Deploy" }
         Step 'Instantanea minima del codigo'
         $snapshot = New-Snapshot
         Write-Host "  $snapshot"
@@ -338,10 +359,11 @@ switch ($Stage) {
         $ctx = Get-Context
         $out = Invoke-Az @('deployment', 'group', 'show', '--resource-group', $ResourceGroup, '--name', $DeploymentName, '--query', 'properties.outputs', '--output', 'json') -What 'salidas de u14-dev'
         $kv = "$(Get-Prop (Get-Prop $out 'keyVaultName') 'value')"
-        Write-Host "Se borraran de forma permanente el workspace $WorkspaceName y sus recursos dependientes, y se purgara el Key Vault $kv."
+        Write-Host "Se borraran de forma permanente el workspace $WorkspaceName, sus recursos dependientes y Log Analytics, y se purgara el Key Vault $kv."
         Confirm-Or-Stop 'BORRAR' "borrar el workspace $WorkspaceName"
         Invoke-Az @('ml', 'workspace', 'delete', '--name', $WorkspaceName, '--resource-group', $ResourceGroup, '--all-resources', '--permanently-delete', '--yes') -Raw -What 'borrar el workspace' | Out-Null
         if ($kv) { Invoke-Az @('keyvault', 'purge', '--name', $kv, '--location', $Location) -Raw -What 'purgar el Key Vault' -AllowFailure | Out-Null }
+        Invoke-Az @('monitor', 'log-analytics', 'workspace', 'delete', '--resource-group', $ResourceGroup, '--workspace-name', 'log-mpa-ml-dev', '--force', '--yes') -Raw -What 'borrar Log Analytics' -AllowFailure | Out-Null
         Write-Host 'U14 desmontada.' -ForegroundColor Green
     }
 }
