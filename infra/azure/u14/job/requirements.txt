@@ -1,0 +1,6 @@
+# U14 (DT-102): dependencias del job de Azure ML, instaladas dentro del contenedor. No son de la aplicacion.
+# PyYAML: la del generador (data/synthetic/requirements.txt, DT-024). MLflow: la del cliente de Azure ML
+# (azureml-mlflow 1.62.0.post6 exige mlflow-skinny <= 3.15.0).
+PyYAML==6.0.3
+mlflow-skinny==3.15.0
+azureml-mlflow==1.62.0.post6
