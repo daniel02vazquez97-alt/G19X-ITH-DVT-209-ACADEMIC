@@ -1,6 +1,12 @@
 import type { RecommendationExplanation } from '../../api/types';
 
-/** Explanation of U6 (DT-068, DT-070 point 14). Not a chat and not an assistant. */
+/** Template generators of U6 (DT-068 point 10): `template/<version>`. Any other generator is a language model
+ * (U13, DT-101: `azure-openai/<deployment>`) whose text passed the same figure verification (DT-069). */
+export function isTemplateGenerator(generator: string): boolean {
+  return generator.startsWith('template/');
+}
+
+/** Explanation of U6 and U13 (DT-068, DT-101, DT-070 point 14). Not a chat and not an assistant. */
 export function ExplanationPanel({ explanation }: { explanation: RecommendationExplanation }) {
   const body = explanation.explanation;
   return (
@@ -12,8 +18,18 @@ export function ExplanationPanel({ explanation }: { explanation: RecommendationE
         <>
           <p className="narrative">{body.narrative}</p>
           <p className="page__note">
-            Texto generado por plantilla determinista (<code>{body.generator}</code>); cada cifra
-            coincide con el desglose.
+            {isTemplateGenerator(body.generator) ? (
+              <>
+                Texto generado por plantilla determinista (<code>{body.generator}</code>); cada
+                cifra coincide con el desglose.
+              </>
+            ) : (
+              <>
+                Texto redactado por un modelo de lenguaje (<code>{body.generator}</code>) a partir
+                de las cifras ya calculadas; el sistema comprobó que cada cifra coincide con el
+                desglose.
+              </>
+            )}
           </p>
         </>
       ) : null}

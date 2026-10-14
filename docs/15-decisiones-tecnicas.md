@@ -4367,8 +4367,14 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
     solo `AcrPull`, y habrían fallado con el rol de U13. `Test-RuntimeRoles` admite ahora `AcrPull` sobre el ACR y, como
     mucho, un *Cognitive Services OpenAI User* sobre la cuenta `oai-mpa-dev-*`, nunca sobre el grupo (5 casos nuevos en
     `-SelfTest`).
-- **Estado:** `ACEPTADA` (2026-10-13). Implementada e integrada en `main` (PR #13); **desplegada y verificada en `dev`
-  (2026-10-14)**; activación en la API autorizada, pendiente de aplicar con *Deploy dev* y `-Stage Apps`.
+- **Activación en `dev` (2026-10-14, [AZ-U]):** con `main` en `79bc937` (PR #16), `deploy-u12.ps1 -Stage Apps -ImageTag
+  4cf5f66…` y `-Stage Verify` **20/20** («identidad de ejecución: AcrPull sobre el ACR y, con U13, OpenAI User solo
+  sobre su cuenta» en `OK`; «U12: dev verificado»). En el navegador, la explicación de una recomendación mostró
+  `generator = azure-openai/gpt-41-mini` con `status = VERIFIED`: el modelo redactó el texto y pasó la verificación de
+  cifras. La nota de la interfaz seguía diciendo «plantilla determinista» para cualquier generador; se corrige para
+  nombrar el generador real.
+- **Estado:** `ACEPTADA` (2026-10-13). Implementada e integrada en `main` (PR #13); desplegada y verificada (2026-10-14);
+  **activa en la API de `dev` (2026-10-14)**.
 
 ## DT-102 — U14: Azure Machine Learning mínimo (reproducción del backtesting del baseline con MLflow)
 
