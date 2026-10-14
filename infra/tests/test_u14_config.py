@@ -42,10 +42,15 @@ class BicepTest(unittest.TestCase):
                        "type: 'SystemAssigned'", "name: 'Standard_LRS'", "allowBlobPublicAccess: false",
                        "minimumTlsVersion: 'TLS1_2'", "supportsHttpsTrafficOnly: true", "softDeleteRetentionInDays: 7"):
             self.assertIn(needle, main)
-        for absent in ("containerRegistry", "applicationInsights", "Microsoft.Insights", "Microsoft.ContainerRegistry",
-                       "computes", "onlineEndpoints", "enablePurgeProtection: true", "listKeys", "@secure"):
+        for absent in ("containerRegistry", "Microsoft.ContainerRegistry", "computes", "onlineEndpoints",
+                       "enablePurgeProtection: true", "listKeys", "@secure"):
             self.assertNotIn(absent, main)
-        self.assertEqual(len(re.findall(r"^resource ", main, re.M)), 3)
+        # Application Insights is required by the service (first deployment, 2026-10-14): on Log Analytics with the
+        # minimum retention and a daily ingestion cap, so it cannot run up costs.
+        for needle in ("applicationInsights: appInsights.id", "WorkspaceResourceId: logAnalytics.id",
+                       "retentionInDays: 30", "dailyQuotaGb: json('0.1')"):
+            self.assertIn(needle, main)
+        self.assertEqual(len(re.findall(r"^resource ", main, re.M)), 5)
 
     @unittest.skipUnless(BICEP, "Bicep CLI not available")
     def test_build_and_lint(self) -> None:
@@ -131,7 +136,7 @@ class ScriptTest(unittest.TestCase):
         result = subprocess.run([PWSH, "-NoProfile", "-File", str(SCRIPT), "-SelfTest"], capture_output=True,
                                 text=True, timeout=300)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertIn("SELFTEST OK (7 casos)", result.stdout)
+        self.assertIn("SELFTEST OK (9 casos)", result.stdout)
 
 
 if __name__ == "__main__":

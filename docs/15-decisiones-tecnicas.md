@@ -4456,8 +4456,18 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
     Verify, Remove con `BORRAR`, `-SelfTest` con 7 casos). El modelo solo se registra si la huella coincide;
   - **pruebas [CC]:** `infra/tests/test_u14_config.py` (12); Bicep 0.48.1 sin avisos; el envoltorio, ejecutado en
     local desde la instantánea, da `reproduces_versioned_report: true` (`67608e95…`).
-- **Estado:** `ACEPTADA` (2026-10-14). Implementada; **no desplegada**: la despliega el responsable con
-  `infra/azure/u14/README.md` §2.
+- **Primer despliegue (2026-10-14, [AZ-U]):**
+  - el Preflight se detuvo porque `Microsoft.Storage` no estaba registrado;
+  - aun así se ejecutó `-Stage Deploy`. El *what-if* fue conforme (tres `Create`), pero la creación del workspace falló
+    con `ValidationError: Missing dependent resources in workspace json`: **el servicio exige Application Insights**,
+    contra lo supuesto en el punto 4;
+  - `-Stage Submit` falló después con `ParentResourceNotFound`, porque el workspace no existía. No se ejecutó ningún job.
+- **Corrección:** Application Insights sobre un área de trabajo de Log Analytics (`PerGB2018`, retención de 30 días y
+  límite de ingesta de 0,1 GB/día), que el *what-if* exige con esos límites. El Preflight comprueba también
+  `Microsoft.Insights` y `Microsoft.OperationalInsights`, y `Submit` se detiene si el workspace no existe. `Remove`
+  borra además Log Analytics. `-SelfTest` pasa a 9 casos.
+- **Estado:** `ACEPTADA` (2026-10-14). Implementada; **primer despliegue fallido sin coste de cómputo**, pendiente de
+  repetir con la corrección (`infra/azure/u14/README.md` §2).
 
 ## Decisiones deliberadamente NO tomadas
 
