@@ -121,6 +121,30 @@ describe('RecommendationDetailPage (F7c, US-074 and US-048)', () => {
     );
   });
 
+  it('VERIFIED by the template or by a language model: the note names the real generator', async () => {
+    installFetch(detailApi());
+    const first = renderApp('/recomendaciones/4');
+    await loginAs(first.user, 'VIEWER');
+    expect(
+      await screen.findByText(/Texto generado por plantilla determinista/),
+    ).toBeInTheDocument();
+    expect(screen.getByText('template/1.0.0')).toBeInTheDocument();
+    first.unmount();
+
+    const model = {
+      ...EXPLANATION_4,
+      explanation: { ...EXPLANATION_4.explanation, generator: 'azure-openai/gpt-41-mini' },
+    };
+    installFetch(detailApi(() => jsonResponse(200, model)));
+    const second = renderApp('/recomendaciones/4');
+    await loginAs(second.user, 'VIEWER');
+    expect(
+      await screen.findByText(/Texto redactado por un modelo de lenguaje/),
+    ).toBeInTheDocument();
+    expect(screen.getByText('azure-openai/gpt-41-mini')).toBeInTheDocument();
+    expect(screen.queryByText(/plantilla determinista/)).toBeNull();
+  });
+
   it('DEGRADED: "Explicación no disponible" keeps facts and breakdown', async () => {
     const degraded = {
       ...EXPLANATION_4,
