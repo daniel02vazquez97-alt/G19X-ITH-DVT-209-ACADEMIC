@@ -3660,6 +3660,23 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
   - **No ejecutado:** una ejecución real en GitHub Actions, que confirmará también los digests de `DT-095`.
 - **Estado:** autorización `ACEPTADA` (2026-10-06, decisión del responsable con el prompt «U8 CI + verificación final de
   U7»); implementación pendiente de revisión.
+- **Enmienda acotada (2026-10-14, directiva del responsable «Directiva de arquitectura, calidad y cierre académico»
+  §5, prioridad 2):** se reconsidera «ningún linter de Python» y «sin cobertura»:
+  - **Ruff** solo con errores reales: `F` (pyflakes) y `E9` (sintaxis), configuración en `ruff.toml`, job `lint`. El
+    estilo no se impone y el código no se reformatea. Medición previa: 11 hallazgos `F401` (importaciones sin uso),
+    10 en pruebas, que se corrigen, y 1 en el generador 0.4.0, congelado, que se excluye por archivo. Con las reglas
+    por defecto de Ruff 0.17.0 saldrían 587 avisos de estilo preexistentes: no se corrigen ni se imponen;
+  - **cobertura** de `backend/app` con `coverage` en los jobs `backend` y `api`, publicada en el resumen de cada job.
+    *(Primera ejecución, PR #33: con cobertura, la suite de integración superó el límite de 20 minutos del job y se
+    canceló; la integración sigue sin cobertura.)* **Sin umbral**: es informativa, y un umbral fijado ahora sería arbitrario. Medición local
+    (2026-10-14), suite por defecto más la de la API, sin la de integración: 79 % global; `supply_engine` 99 %,
+    `forecasting` 98 %, `genai` 96 %, `api` 91 %; `runs`, `ingestion` y `db` entre 41 % y 61 %, porque las cubre la suite
+    de integración;
+  - versiones exactas en `infra/ci/requirements-quality.txt` (`ruff==0.17.0`, `coverage==7.16.2`); no son
+    dependencias de la aplicación ni entran en las imágenes;
+  - `scripts/test.py`: un solo comando (Windows y Linux) que ejecuta las mismas suites que CI y marca como omitida,
+    nunca como aprobada, la que no tiene sus requisitos;
+  - U1–U4 no cambian: la corrección toca solo importaciones de pruebas.
 
 ## DT-097 — U9: capa analítica de solo lectura en PostgreSQL (migración `0004`)
 
@@ -4335,8 +4352,18 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
     (`genaiEnabled`, `false` hasta verificar U13) y su *what-if* sigue rechazando recursos OpenAI;
   - pruebas: backend 365 (suite por defecto) y 109 (`tests/api`); `infra/tests` con `test_u13_config.py`; Bicep 0.48.1
     sin avisos.
-- **Estado:** `ACEPTADA` (2026-10-13). Implementada en la rama `feature/u13-azure-openai`; **no desplegada**. El
-  despliegue lo ejecuta el responsable con `infra/azure/u13/README.md` §2.
+- **Despliegue (2026-10-14, [AZ-U], ejecutado por el responsable con `deploy-u13.ps1`):**
+  - `-PreflightOnly`: `PREFLIGHT OK` (`gpt-4.1-mini` `2025-04-14` en *Global Standard*, retirada 2027-04-14; cuota
+    libre 200, se usan 10; ninguna cuenta previa en el grupo);
+  - `-Stage Deploy`: *what-if* con exactamente tres `Create` (la cuenta `oai-mpa-dev-a73qz3afqj7no`, el despliegue
+    `gpt-41-mini` y la asignación de rol sobre la cuenta) y el resto `Ignore`; confirmado con `OPENAI`;
+  - `-Stage Verify`: 9 comprobaciones `OK` (OpenAI S0, `disableLocalAuth`, `centralus`, cuenta y despliegue
+    `Succeeded`, un único despliegue con el modelo y la versión previstos, *Global Standard* con capacidad 10, solo
+    `id-mpa-dev-runtime` con *Cognitive Services OpenAI User* sobre la cuenta);
+  - **no activada en la API:** `genaiEnabled` sigue en `false`. La activación (README de U13 §2, pasos 4–7) requiere
+    autorización del responsable para integrarla con la API.
+- **Estado:** `ACEPTADA` (2026-10-13). Implementada e integrada en `main` (PR #13); **desplegada y verificada en `dev`
+  (2026-10-14)**; pendiente de activar en la API.
 
 ## Decisiones deliberadamente NO tomadas
 

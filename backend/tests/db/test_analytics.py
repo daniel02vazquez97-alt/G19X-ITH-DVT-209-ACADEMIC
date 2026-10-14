@@ -25,7 +25,7 @@ from psycopg import errors as pg_errors
 from psycopg.rows import dict_row
 from _db_support import DATASET_DIR, DatabaseTestCase, TemporaryDatabase
 
-from app.db.migrations import MIGRATIONS_DIR, apply_migrations, discover
+from app.db.migrations import MIGRATIONS_DIR, apply_migrations
 from app.db.read.inventory import list_inventory
 from app.ingestion.loader import load_dataset
 from app.runs.forecast import run_forecast

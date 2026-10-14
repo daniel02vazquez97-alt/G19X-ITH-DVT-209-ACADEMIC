@@ -9,7 +9,6 @@ import tempfile
 import unittest
 from pathlib import Path
 
-import psycopg
 from psycopg import errors as pg_errors
 from psycopg.types.json import Jsonb
 from _db_support import DATASET_DIR, DatabaseTestCase, TemporaryDatabase

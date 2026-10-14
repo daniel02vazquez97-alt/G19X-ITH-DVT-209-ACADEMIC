@@ -1,0 +1,14 @@
+# Ruff (DT-096, enmienda del 2026-10-14): solo errores reales, no estilo.
+# - F: pyflakes (nombres no definidos, importaciones sin uso, variables sin uso...).
+# - E9: errores de sintaxis y de compilacion.
+# El estilo no se impone: el codigo existente no se reformatea ni se reescribe para el linter (U1-U4 intactos).
+target-version = "py311"
+line-length = 120
+extend-exclude = ["frontend", "data/synthetic/output", "ml/out", "tmp"]
+
+[lint]
+select = ["F", "E9"]
+
+[lint.per-file-ignores]
+# Generador de la Etapa 1 (0.4.0), congelado: no se modifica por el linter (DT-095 punto 1).
+"data/synthetic/generator/catalog.py" = ["F401"]

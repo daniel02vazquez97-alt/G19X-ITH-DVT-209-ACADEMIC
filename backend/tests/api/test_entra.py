@@ -10,7 +10,6 @@ import logging
 import sys
 import time
 import unittest
-import uuid
 
 import jwt
 from _api_support import ENDPOINTS, UNREACHABLE_DB

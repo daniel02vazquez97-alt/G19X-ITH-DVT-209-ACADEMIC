@@ -1,0 +1,5 @@
+# Herramientas de calidad de Python (DT-096, enmienda del 2026-10-14). Versiones exactas: las usan el job `lint`, la
+# medicion de cobertura de los jobs `backend`, `api` e `integration` y scripts/test.py. No son dependencias de la
+# aplicacion: no entran en backend/pyproject.toml ni en las imagenes.
+ruff==0.17.0
+coverage==7.16.2

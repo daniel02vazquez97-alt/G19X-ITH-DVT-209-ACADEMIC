@@ -12,7 +12,7 @@ from decimal import Decimal
 from pathlib import Path
 from unittest import mock
 
-from _api_support import BACKEND_DIR, ENDPOINTS, TOKENS, auth, client, settings
+from _api_support import BACKEND_DIR, ENDPOINTS, auth, client, settings
 
 import app.api as api_package
 from app.api.app import create_app

@@ -5,7 +5,6 @@ Every expected value is computed by hand in the test.
 
 from __future__ import annotations
 
-import datetime as dt
 import unittest
 from decimal import Decimal
 from fractions import Fraction

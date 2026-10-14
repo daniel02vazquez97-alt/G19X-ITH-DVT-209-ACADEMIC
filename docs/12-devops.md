@@ -1,6 +1,6 @@
 # 12 — Estrategia DevOps
 
-> **Estado vigente (2026-10-13):** **Implementado:** Docker (§3.4), CI con 8 jobs (§4.5) y CD a `dev` en Azure por OIDC (U12). La línea siguiente es el historial de versiones del documento.
+> **Estado vigente (2026-10-13):** **Implementado:** Docker (§3.4), CI con 9 jobs (§4.5) y CD a `dev` en Azure por OIDC (U12). La línea siguiente es el historial de versiones del documento.
 
 **Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-10-03) — §5: correspondencia entre los entornos y `APP_ENV` para la API de U5 (`DT-065`) · **Versión 1.3** (2026-10-05) — §2.2: excepción de merge commit para la integración inicial de U1–U6; §3.1: imagen `frontend` en el mismo origen que `/api` (`DT-070`) · **Versión 1.4** (2026-10-05) — §2.2: merge commit para las unidades de la Fase 5 (`DT-085`) · **Versión 1.5** (2026-10-06) — §3.4: U7 implementada, pendiente de revisión (`DT-095`): imágenes, `docker compose` del sistema completo y verificación; el resto de este documento sigue siendo diseño · **Versión 1.6** (2026-10-06) — §4.5: U8 implementada, pendiente de revisión (`DT-096`); §3.4: bases de U7 fijadas por digest, pendiente de verificación externa · **Versión 1.7** (2026-10-06) — §4.3: identidad administrada con credencial federada OIDC de U10 (`DT-098`)
 
@@ -211,15 +211,17 @@ variables con identificadores. La infraestructura la despliega el responsable co
 
 ### 4.5 Implementación de U8 (`DT-096`, 2026-10-06, pendiente de revisión)
 
-`.github/workflows/ci.yml` implementa la parte de CI de `ci.yml` de §4.2, sin cobertura (el proyecto no define
-herramienta) ni linter de Python (decisión del responsable). Se ejecuta en cada PR, en cada push a `main` y a mano.
+`.github/workflows/ci.yml` implementa la parte de CI de `ci.yml` de §4.2. Se ejecuta en cada PR, en cada push a `main` y
+a mano. *(Enmienda de `DT-096`, 2026-10-14: job `lint` con Ruff solo para errores reales y cobertura informativa de
+`backend/app`, sin umbral, en `backend` y `api` (en `integration` excedía el límite de 20 minutos). Antes decía: sin cobertura ni linter de Python.)*
 
 | Job | Comprobación |
 |---|---|
 | `secret-scan` | `python infra/ci/secret_scan.py`: archivos prohibidos y patrones de secretos, sin imprimir valores |
+| `lint` | Ruff 0.17.0 con `ruff.toml` (`F`, `E9`): solo errores reales |
 | `ml` | Suite de `ml/` (solo biblioteca estándar) con el dataset publicado en el job |
-| `backend` | Suite por defecto, sin dependencias opcionales |
-| `api` | Suite de la API sin base, con los grupos `db`, `api` y `test` |
+| `backend` | Suite por defecto, sin dependencias opcionales de la aplicación; cobertura de `backend/app` en el resumen |
+| `api` | Suite de la API sin base, con los grupos `db`, `api` y `test`; cobertura en el resumen |
 | `integration` | PostgreSQL 16 efímero (contenedor de servicio): migraciones y suite de integración |
 | `generator` | Suite del generador |
 | `frontend` | `npm ci`, ESLint, `tsc`, Prettier, Vitest y build con Node 24.21.0 y npm 11.19.0 |
