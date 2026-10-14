@@ -128,7 +128,7 @@ Diseño completo en [`docs/03-arquitectura.md`](docs/03-arquitectura.md); decisi
 | GitHub Actions | CI (9 jobs) y CD a Azure por OIDC, sin secretos | ✅ Implementado | `.github/workflows/` |
 | Microsoft Entra ID | Inicio de sesión MSAL y cuatro roles de aplicación | ✅ Implementado y desplegado | `infra/azure/entra/`, `backend/app/api/entra.py` |
 | Azure (Bicep) | Container Apps, ACR, PostgreSQL, Key Vault, identidades administradas | ✅ Desplegado y verificado en `dev` | `infra/azure/`, [informe de U12](docs/reports/u12-cierre-evidencias.md) |
-| Azure OpenAI | Explicaciones con `gpt-4.1-mini`, sin claves, con plantilla de respaldo | 🟡 Implementado; recurso desplegado y verificado en `dev` (9/9); activación en la API pendiente | `backend/app/genai/chat.py`, `infra/azure/u13/` |
+| Azure OpenAI | Explicaciones con `gpt-4.1-mini`, sin claves, con plantilla de respaldo | 🟡 Implementado; recurso desplegado y verificado en `dev` (9/9); activación en la API autorizada, pendiente de aplicar | `backend/app/genai/chat.py`, `infra/azure/u13/` |
 | Azure Machine Learning | Ejecución y registro del baseline | ⏳ En desarrollo (U14) | [`docs/05-motor-predictivo.md`](docs/05-motor-predictivo.md) |
 | Azure AI Search | Búsqueda sobre un corpus documental sintético | ⏳ En desarrollo (U15) | [`docs/09-ia-generativa.md`](docs/09-ia-generativa.md) |
 | Power BI | Informes sobre las vistas del esquema `analytics` | ⏳ En desarrollo (U16); las vistas ya existen | [`docs/11-power-bi.md`](docs/11-power-bi.md) |

@@ -17,6 +17,7 @@ param entraTenantId = '6ce4b1ba-ae4f-4887-bd6b-acb3c72039ad'
 param entraApiClientId = 'a9c9ec35-cd73-4ce6-8efd-46755ac86cbe'
 param entraSpaClientId = '1ce46703-15f3-4f3d-8668-431e43b813ac'
 param runAsOf = '2025-12-31'
-// U13 (DT-101): pasa a true solo después de deploy-u13.ps1 -Stage Verify; después -Stage Apps.
-param genaiEnabled = false
+// U13 (DT-101): true desde el 2026-10-14 (deploy-u13.ps1 -Stage Verify 9/9 y activación autorizada por el
+// responsable). Se aplica con Deploy dev y deploy-u12.ps1 -Stage Apps; para volver a la plantilla, false y -Stage Apps.
+param genaiEnabled = true
 param genaiDeployment = 'gpt-41-mini'
