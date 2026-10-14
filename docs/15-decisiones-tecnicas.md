@@ -4370,6 +4370,73 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
 - **Estado:** `ACEPTADA` (2026-10-13). Implementada e integrada en `main` (PR #13); **desplegada y verificada en `dev`
   (2026-10-14)**; activación en la API autorizada, pendiente de aplicar con *Deploy dev* y `-Stage Apps`.
 
+## DT-102 — U14: Azure Machine Learning mínimo (reproducción del backtesting del baseline con MLflow)
+
+- **Contexto:** `DT-094` fija U14 como «Azure ML: workspace, *command job* sobre `ml/` sin cambios, MLflow, registro
+  versionado de la media móvil 13». El responsable autorizó el 2026-10-14 redactar esta decisión en su versión
+  mínima, con un coste objetivo inferior a 2 USD, dentro de los 100 USD de Azure for Students (`DT-098`).
+- **Evidencia previa:**
+  - **[CC] (2026-10-14):** `PYTHONPATH=backend python -m ml backtest --data data/synthetic/output --out <tmp> --report
+    <tmp>/report.md --generated-on 2026-10-05` reproduce en local `results_sha256 = 67608e95…be433a`, el mismo de
+    `docs/reports/fase5-f5a-backtest-sintetico.json`: 17 cortes, 13 112 observaciones, 98,8 s y 135 MB de memoria.
+    El trabajo cabe en una máquina de 2 vCPU y dura minutos;
+  - **[AZ-U] (2026-10-14):** proveedores `Microsoft.MachineLearningServices` y `Microsoft.Compute` registrados por el
+    responsable. Cuotas de VM en `centralus`: 6 vCPU regionales, 3 de baja prioridad, 4 por familia (DSv2, Dv3, DSv3,
+    FSv2, entre otras). La cuota propia de Azure ML solo se puede consultar con un workspace creado.
+- **Propuesta (`PROPUESTA`):**
+  1. **Alcance:** un *command job* que publica el dataset 0.4.0 con el generador sin cambios y ejecuta
+     `python -m ml backtest` sin cambios. Un envoltorio **fuera de `ml/`** (`infra/azure/u14/job/run_backtest.py`,
+     `DT-094` punto 9) registra con MLflow:
+     - parámetros: `dataset_version`, regla de población, versión de `ml/` y commit;
+     - métricas agregadas de cada baseline (MASE, WAPE, sesgo, cobertura de la banda) tal como las calcula `ml/`;
+     - etiqueta `results_sha256` y los artefactos `report.md` y `report.json`.
+  2. **Criterio de aceptación:** el job termina en `Completed` y su `results_sha256` es **igual** al del informe
+     versionado (`67608e95…`). Si difiere, es un hallazgo que se registra; no se ajusta nada para forzar la igualdad.
+  3. **Registro del baseline:** modelo `baseline-ma13`, versión 1, de tipo `custom_model`, cuyo artefacto es la
+     configuración del baseline oficial (`baseline.moving_average` 1.0.0, `k = 13`, banda empírica 10/90, `DT-056` y
+     `DT-089`) con el informe del job y la etiqueta `results_sha256`. Sin *endpoint* de inferencia: el pronóstico de la
+     aplicación sigue calculándose en `backend/app/forecasting` (U3), sin cambios.
+  4. **Recursos** (Bicep en `infra/azure/u14/`, grupo `rg-motor-predictivo-dev`, `centralus`):
+     - workspace `Microsoft.MachineLearningServices/workspaces@2026-07-01`, `kind: Default`, identidad asignada por el
+       sistema y acceso a los almacenes por identidad (`systemDatastoresAuthMode: Identity`);
+     - cuenta de almacenamiento `Standard_LRS`, sin acceso público a blobs;
+     - Key Vault Standard con RBAC, nuevo y propio del workspace. El de U10 es privado (opción C) y no se reutiliza;
+     - **sin** registro de contenedores (entorno *curated*, sin construir imágenes), **sin** instancia de cómputo, **sin**
+       *endpoints* y **sin** Application Insights, salvo que el *what-if* demuestre que el servicio lo exige.
+     (Bicep 0.48.1 compila `workspaces@2026-07-01` sin avisos.)
+  5. **Cómputo:** *serverless* con una VM de 2 vCPU (`Standard_DS2_v2` o `Standard_D2s_v3`, dentro de la cuota de 4 por
+     familia), una instancia y un límite de 30 minutos. Sin clúster permanente, nada queda encendido.
+  6. **Entorno:** un entorno *curated* del registro `azureml` con Python 3.11 o posterior, `mlflow` y
+     `azureml-mlflow`; el nombre exacto se verifica al implementar. En el comando se instala PyYAML con la versión fijada
+     del generador. `ml/` sigue con solo la biblioteca estándar.
+  7. **Identidad y ejecución:** el responsable envía el job con su sesión (`az ml job create`, extensión `ml`). Ni
+     GitHub ni la API reciben permisos nuevos, y CI no cambia.
+  8. **Script `infra/azure/deploy-u14.ps1`**, con el mismo esquema que U12 y U13:
+     - **Preflight** de solo lectura: proveedores, extensión `ml`, cuotas y recursos existentes;
+     - **Deploy:** *what-if* comprobado (solo el workspace, el almacenamiento, el Key Vault y las asignaciones de rol de
+       la identidad del workspace sobre ellos) y palabra `AZUREML`;
+     - **Submit:** envía el job, espera y descarga las salidas a `tmp/u14-evidence/`;
+     - **Verify:** job `Completed`, `results_sha256` igual al versionado y modelo registrado;
+     - **Remove:** borra el workspace con sus recursos dependientes y purga los que quedan en borrado temporal.
+  9. **Coste estimado:**
+     - workspace: 0 USD;
+     - almacenamiento y Key Vault: céntimos al mes;
+     - cómputo: una VM de 2 vCPU cuesta del orden de 0,1–0,3 USD/h (`Standard_DS3_v2`, de 4 vCPU, 0,29 USD/h en
+       `eastus`), y cada ejecución dura unos 10–15 minutos con el aprovisionamiento.
+     **Total: inferior a 1 USD** con varias ejecuciones. Se comprueba en el portal de Sponsorships antes y después, y
+     `Remove` desmonta todo al terminar si el responsable lo decide.
+  10. **Riesgos:**
+      - la cuota propia de Azure ML para *serverless* puede ser 0 en Azure for Students. Lo revela el primer `Submit`;
+        la alternativa es la baja prioridad (cuota de 3 vCPU) y, si tampoco hay cuota, U14 queda `BLOQUEADA` por causa
+        externa;
+      - el nombre de los entornos *curated* cambia con el tiempo;
+      - un workspace borrado queda 14 días en borrado temporal: los nombres llevan sufijo y `Remove` lo purga;
+      - `Microsoft.Compute` no se había registrado hasta U14: es la primera vez que la suscripción usa VM.
+- **Fuera de U14:** *endpoints* online o por lotes; entrenamiento o promoción de otros modelos (SES no se promueve,
+  `DT-094` punto 9); pipelines de Azure ML; integración en CI; G2, G3 y el *holdout*.
+- **Estado:** `PROPUESTA` (2026-10-14). No hay cambios en Azure ni en el código. Se implementa cuando el responsable la
+  acepte.
+
 ## Decisiones deliberadamente NO tomadas
 
 | ID | Tema | Se decidirá en | Por qué no ahora |
