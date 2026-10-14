@@ -25,7 +25,7 @@ from app.runs.recommendation_inputs import (
 )
 from app.supply_engine import V1_PROVISIONAL_PARAMETERS, EvaluationInput, MethodUsed
 
-from ._u4_fixtures import A, DAY, UTC, WEEK, at, consumption, forecast, inventory, line, observations, product, relation
+from ._u4_fixtures import A, DAY, consumption, forecast, inventory, line, observations, product, relation
 
 
 class PurityTest(unittest.TestCase):

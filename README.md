@@ -22,6 +22,7 @@ cuándo**. Cada recomendación es determinista, se explica cifra a cifra y se pu
 - [Estructura del repositorio](#estructura-del-repositorio)
 - [Documentación](#documentación)
 - [Limitaciones conocidas](#limitaciones-conocidas)
+- [Licencia](#licencia)
 
 ## Qué problema resuelve
 
@@ -124,16 +125,25 @@ Diseño completo en [`docs/03-arquitectura.md`](docs/03-arquitectura.md); decisi
 | React 19 · TypeScript · Vite | Interfaz por roles, gráficas con Recharts | ✅ Implementado y desplegado | `frontend/`, [`docs/08-frontend.md`](docs/08-frontend.md) |
 | Machine Learning (Python) | Backtesting, métricas (MASE), candidatos y simulador de inventario | ✅ Implementado (estudio sintético) | `ml/`, [`docs/reports/`](docs/reports/README.md) |
 | Docker · Docker Compose | Sistema completo en local con un comando | ✅ Implementado | `infra/docker/`, `infra/docker-compose.yml` |
-| GitHub Actions | CI (8 jobs) y CD a Azure por OIDC, sin secretos | ✅ Implementado | `.github/workflows/` |
+| GitHub Actions | CI (9 jobs) y CD a Azure por OIDC, sin secretos | ✅ Implementado | `.github/workflows/` |
 | Microsoft Entra ID | Inicio de sesión MSAL y cuatro roles de aplicación | ✅ Implementado y desplegado | `infra/azure/entra/`, `backend/app/api/entra.py` |
 | Azure (Bicep) | Container Apps, ACR, PostgreSQL, Key Vault, identidades administradas | ✅ Desplegado y verificado en `dev` | `infra/azure/`, [informe de U12](docs/reports/u12-cierre-evidencias.md) |
-| Azure OpenAI | Explicaciones con `gpt-4.1-mini`, sin claves, con plantilla de respaldo | 🟡 Implementado, despliegue en curso | `backend/app/genai/chat.py`, `infra/azure/u13/` |
+| Azure OpenAI | Explicaciones con `gpt-4.1-mini`, sin claves, con plantilla de respaldo | 🟡 Implementado; recurso desplegado y verificado en `dev` (9/9); activación en la API pendiente | `backend/app/genai/chat.py`, `infra/azure/u13/` |
 | Azure Machine Learning | Ejecución y registro del baseline | ⏳ En desarrollo (U14) | [`docs/05-motor-predictivo.md`](docs/05-motor-predictivo.md) |
 | Azure AI Search | Búsqueda sobre un corpus documental sintético | ⏳ En desarrollo (U15) | [`docs/09-ia-generativa.md`](docs/09-ia-generativa.md) |
 | Power BI | Informes sobre las vistas del esquema `analytics` | ⏳ En desarrollo (U16); las vistas ya existen | [`docs/11-power-bi.md`](docs/11-power-bi.md) |
 
 ## Pruebas y calidad
 
+**Un solo comando**, en PowerShell o en bash, desde la raíz:
+
+```bash
+python scripts/test.py            # todas las suites cuyos requisitos tengas instalados
+python scripts/test.py --list     # qué necesita cada suite
+python scripts/test.py --coverage # añade la cobertura de backend/app
+```
+
+Usa los mismos comandos que CI y marca como **omitida** (nunca como aprobada) la suite a la que le falta un requisito.
 Todas las suites corren en CI en cada *push* y *pull request* ([`ci.yml`](.github/workflows/ci.yml)):
 
 | Suite | Qué cubre | Comando (desde la carpeta indicada) |
@@ -146,6 +156,11 @@ Todas las suites corren en CI en cada *push* y *pull request* ([`ci.yml`](.githu
 | Frontend | ESLint, `tsc`, Prettier, Vitest (176 pruebas) y build | `frontend/`: `npm ci`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run build` |
 | Infraestructura | Bicep, workflows, scripts de despliegue con Azure CLI simulado | raíz: `python -m unittest discover -s infra/tests -t infra/tests` |
 | Seguridad | Detección de secretos y archivos prohibidos | raíz: `python infra/ci/secret_scan.py` |
+| Lint de Python | Ruff con errores reales (`F`, `E9`), sin imponer estilo ([`ruff.toml`](ruff.toml)) | raíz: `python -m ruff check .` |
+
+**Cobertura** de `backend/app` (informativa, sin umbral; cada job de CI la publica en su resumen). Medición local del
+2026-10-14 con la suite por defecto y la de la API: 79 % global; motor 99 %, pronóstico 98 %, explicación 96 %,
+API 91 %. Las capas que dependen de la base se cubren además con la suite de integración.
 
 Principios que aplican las pruebas: aritmética exacta y determinista en el motor, ninguna llamada de red en pruebas
 unitarias (Azure se sustituye por dobles), y verificación de que el sistema funciona completo sin Azure (RNF-006).
@@ -180,7 +195,8 @@ Procedimiento: [`infra/azure/u12/README.md`](infra/azure/u12/README.md). Evidenc
 │   ├── docker-compose.yml       Sistema completo en local
 │   ├── azure/                   Bicep y scripts de despliegue (U10–U13) con su README
 │   └── tests/                   Pruebas de la infraestructura
-├── .github/workflows/       CI (8 jobs) y Deploy dev (OIDC)
+├── .github/workflows/       CI (9 jobs) y Deploy dev (OIDC)
+├── scripts/test.py          Un solo comando para todas las pruebas (Windows y Linux)
 ├── docs/                    Documentación técnica (ver abajo)
 ├── knowledge/               Glosario, supuestos y reglas de negocio
 └── project/                 Roadmap, backlog y estado
@@ -216,6 +232,11 @@ Procedimiento: [`infra/azure/u12/README.md`](infra/azure/u12/README.md). Evidenc
   Croston, TSB…) no se promueven sin datos reales.
 - **Acceso a `dev` en Azure.** La URL desplegada exige una cuenta del tenant con un rol asignado; para evaluar sin
   cuenta, usa la [demo local](#demo-en-3-minutos-local-sin-azure).
+
+## Licencia
+
+**Todos los derechos reservados** ([`LICENSE`](LICENSE)). El repositorio se publica solo para su revisión y evaluación
+académica; cualquier otro uso requiere autorización escrita del titular.
 
 ## Proceso de desarrollo
 

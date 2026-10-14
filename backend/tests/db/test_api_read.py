@@ -12,7 +12,6 @@ import time
 import unittest
 from decimal import Decimal
 
-import psycopg
 from psycopg import errors as pg_errors
 from _db_support import DATASET_DIR, TemporaryDatabase
 from starlette.testclient import TestClient

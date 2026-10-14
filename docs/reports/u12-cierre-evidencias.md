@@ -1,6 +1,9 @@
 # U12: matriz de cierre y evidencias (`DT-100`)
 
-**Revisión 7 (2026-10-13). U12 cerrada con verificaciones pendientes aceptadas por el responsable** (§4). Incorpora el
+**Revisión 8 (2026-10-14).** Añade una evidencia [AZ-U] de C13 (`GET /api/v1/runs/3` → 404 con `PLANNER`) y precisa
+lo que no consta: los marcadores `ALREADY_*` no se observaron y la recuperación de PostgreSQL exige ver consultas
+autenticadas con datos, no solo `Ready`. No cambia ningún estado. **Revisión 7 (2026-10-13). U12 cerrada con
+verificaciones pendientes aceptadas por el responsable** (§4). Incorpora el
 redespliegue con `fd50c6b`, PostgreSQL detenido con su recuperación y el 401 sin token aceptado para C11 (§2.4). El
 responsable decidió no ejecutar más pruebas y dejar registradas como pendientes las que faltan. La revisión 6 incorporó
 las pruebas de fallo de §2.3 (firewall desactualizado, job con fallo, token inválido; Key Vault inaccesible
@@ -202,7 +205,7 @@ Responsable de toda ejecución en Azure y en el navegador: **el responsable del 
 | Procedimiento | Cambio inocuo integrado en `main` → *Deploy dev* con `run_bootstrap=true` → `az containerapp show … --query properties.template.containers[0].image` (×3) → registros del job (portal, *Console logs*: sin Log Analytics no hay registros por CLI) → interfaz |
 | Entorno | GitHub Actions, Azure y navegador |
 | Evidencia requerida | Run de *Deploy dev*, las tres etiquetas, líneas `ALREADY_*`, recuentos y 404 |
-| Resultado | **[AZ-U, 2026-10-13]** (§2.4) *Deploy dev* sobre `main` `fd50c6b`: «Imágenes `fd50c6b77e40715a2fae8b1bfc5f4eaac545aa55` desplegadas en dev»; *bootstrap* `caj-mpa-dev-bootstrap-lshnjjx` `Succeeded`. **No constan** las líneas `ALREADY_*`, los recuentos de esa ejecución, las etiquetas de cada app por separado ni el 404 de `/ejecuciones/<n+1>`. **[CC]** dos ejecuciones locales de `bootstrap.py` idempotentes (§3.1) |
+| Resultado | **[AZ-U, 2026-10-13]** (§2.4) *Deploy dev* sobre `main` `fd50c6b`: «Imágenes `fd50c6b77e40715a2fae8b1bfc5f4eaac545aa55` desplegadas en dev»; *bootstrap* `caj-mpa-dev-bootstrap-lshnjjx` `Succeeded`. **[AZ-U, revisión 8]** `GET /api/v1/runs/3` con sesión `PLANNER` → **404**: tras el redespliegue sigue habiendo dos ejecuciones de cálculo, así que el *bootstrap* repetido no creó una tercera. El responsable informa recuentos estables en la segunda ejecución de *bootstrap*; en este registro constan con detalle para `pqexm4z` (C14), no para `lshnjjx`. **No constan** las líneas `ALREADY_*` (no se observaron literalmente y no se presentan como evidencia) ni las etiquetas de cada app por separado. **[CC]** dos ejecuciones locales de `bootstrap.py` idempotentes (§3.1) |
 | Estado | **PARCIAL — pendiente aceptado** (§4, P2): redespliegue y *bootstrap* repetido sin error demostrados; la idempotencia detallada no consta |
 | Motivo y responsable | Registros del job (portal, *Console logs* de `lshnjjx`) y comprobación del 404 en el navegador: el responsable, si decide completarlo |
 
@@ -407,8 +410,8 @@ incidencia sobre `dev`; no reabre la decisión de `DT-100`.
 
 | # | Verificación pendiente | Criterio | Cómo se haría |
 |---|---|---|---|
-| P1 | Recorrer en la interfaz catálogo, detalle, pronóstico y recomendación con su explicación; incluye ver que Productos muestra datos tras recuperar PostgreSQL | C12, C14 | Navegador con `VIEWER` |
-| P2 | Idempotencia detallada del redespliegue: líneas `ALREADY_*` y recuentos de `lshnjjx`, etiquetas de cada app, `/ejecuciones/<n+1>` → 404 | C13 | Portal (*Console logs*) y navegador |
+| P1 | Recorrer en la interfaz catálogo, detalle, pronóstico y recomendación con su explicación; incluye ver que Productos muestra datos tras recuperar PostgreSQL (una consulta autenticada con 200 y datos: `Ready` y Verify no bastan) | C12, C14 | Navegador con `VIEWER` |
+| P2 | Idempotencia detallada del redespliegue: líneas `ALREADY_*` y recuentos de `lshnjjx`, etiquetas de cada app. *(El 404 de `/runs/3` ya consta, revisión 8)* | C13 | Portal (*Console logs*) |
 | P3 | Paso en que se detuvo `ymp96io` (esperado: 2, migraciones) | C14 | Portal (*Console logs*), si aún lo conserva |
 | P4 | Imagen inexistente con SHA de formato válido: `-Stage Apps -ImageTag 0000000`, la revisión anterior sigue sirviendo, restaurar con `-ImageTag fd50c6b77e40715a2fae8b1bfc5f4eaac545aa55` y Verify | C14 | PowerShell; modifica `dev` |
 | P5 | Efecto «errores de conexión» al borrar una regla `aca-out-*` | C14 | No reproducible de forma determinista (161 IP compartidas); se acepta solo la recuperación |
@@ -457,3 +460,4 @@ Lo ejecutó el responsable. No repitió Apps, Bootstrap, Verify ni el smoke.
 | 5 (2026-10-11) | Evidencia [AZ-U] de `-Stage Firewall` y Verify posterior (§2.2): C05 `PARCIAL` → `APROBADO`. Resumen: 10 `APROBADO`, 2 `PARCIAL` (C11, C12), 3 `PENDIENTE`. Corrección de datación: las fechas de las evidencias [AZ-U] eran de registro (commits `527c3f7` y `8026a2e`), no de ejecución; ahora se dice explícitamente |
 | 6 (2026-10-13) | Pruebas de fallo [AZ-U] (§2.3): firewall desactualizado y token inválido `APROBADO`; job con fallo `PARCIAL` (falta el paso de parada); Key Vault inaccesible `NO APLICA` por decisión del responsable. C14 `PENDIENTE` → `PARCIAL`. Verify pasa a 20 comprobaciones desde `9d9c040`. Base revisada: `fd50c6b`. Resumen: 10 `APROBADO`, 3 `PARCIAL` (C11, C12, C14), 2 `PENDIENTE` (C13, C15) |
 | 7 (2026-10-13) | Redespliegue con `fd50c6b`, PostgreSQL detenido y recuperación, 401 sin token (§2.4). C11 → `APROBADO` por decisión del responsable; C13 → `PARCIAL`; C15 → `APROBADO`. **U12 cerrada con verificaciones pendientes aceptadas** (§4, P1–P5). Corrección: la prueba de imagen inexistente usa `0000000`, no `noexiste`. Resumen: 12 `APROBADO`, 3 `PARCIAL` con pendientes aceptados (C12–C14) |
+| 8 (2026-10-14) | C13: evidencia [AZ-U] `GET /api/v1/runs/3` → 404 con `PLANNER` (no se creó una tercera ejecución). Precisiones: `ALREADY_*` no observados; los recuentos estables constan para `pqexm4z`, no para `lshnjjx`; la recuperación de PostgreSQL exige una consulta autenticada con datos (P1). Sin cambios de estado |
