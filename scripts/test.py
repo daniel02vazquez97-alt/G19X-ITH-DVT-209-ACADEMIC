@@ -75,7 +75,7 @@ def suites() -> list[Suite]:
               hint=backend_api),
         Suite("integration", "Migraciones y API contra PostgreSQL 16",
               [PY, "-m", "unittest", "discover", "-s", "tests/db", "-t", "tests/db"], cwd=BACKEND,
-              needs=("psycopg", "fastapi"), condition="U2_TEST_ADMIN_DSN", dataset=True, coverable=True,
+              needs=("psycopg", "fastapi"), condition="U2_TEST_ADMIN_DSN", dataset=True,
               hint=backend_api),
         Suite("ml", "Backtesting, métricas y candidatos (ml/)",
               [PY, "-m", "unittest", "discover", "-s", "ml/tests", "-t", "."], env={"PYTHONPATH": str(BACKEND)},

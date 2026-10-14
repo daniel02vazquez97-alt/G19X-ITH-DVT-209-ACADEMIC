@@ -3666,8 +3666,9 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
     estilo no se impone y el código no se reformatea. Medición previa: 11 hallazgos `F401` (importaciones sin uso),
     10 en pruebas, que se corrigen, y 1 en el generador 0.4.0, congelado, que se excluye por archivo. Con las reglas
     por defecto de Ruff 0.17.0 saldrían 587 avisos de estilo preexistentes: no se corrigen ni se imponen;
-  - **cobertura** de `backend/app` con `coverage` en los jobs `backend`, `api` e `integration`, publicada en el resumen
-    de cada job. **Sin umbral**: es informativa, y un umbral fijado ahora sería arbitrario. Medición local
+  - **cobertura** de `backend/app` con `coverage` en los jobs `backend` y `api`, publicada en el resumen de cada job.
+    *(Primera ejecución, PR #33: con cobertura, la suite de integración superó el límite de 20 minutos del job y se
+    canceló; la integración sigue sin cobertura.)* **Sin umbral**: es informativa, y un umbral fijado ahora sería arbitrario. Medición local
     (2026-10-14), suite por defecto más la de la API, sin la de integración: 79 % global; `supply_engine` 99 %,
     `forecasting` 98 %, `genai` 96 %, `api` 91 %; `runs`, `ingestion` y `db` entre 41 % y 61 %, porque las cubre la suite
     de integración;

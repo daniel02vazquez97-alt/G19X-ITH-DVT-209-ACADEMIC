@@ -213,7 +213,7 @@ variables con identificadores. La infraestructura la despliega el responsable co
 
 `.github/workflows/ci.yml` implementa la parte de CI de `ci.yml` de §4.2. Se ejecuta en cada PR, en cada push a `main` y
 a mano. *(Enmienda de `DT-096`, 2026-10-14: job `lint` con Ruff solo para errores reales y cobertura informativa de
-`backend/app`, sin umbral, en `backend`, `api` e `integration`. Antes decía: sin cobertura ni linter de Python.)*
+`backend/app`, sin umbral, en `backend` y `api` (en `integration` excedía el límite de 20 minutos). Antes decía: sin cobertura ni linter de Python.)*
 
 | Job | Comprobación |
 |---|---|
