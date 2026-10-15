@@ -147,6 +147,30 @@ Consultada como referencia general; se verificará la versión vigente al implem
 | Docker | https://docs.docker.com |
 | MSAL para React | Documentación de la plataforma de identidad de Microsoft |
 
+## 9. Azure AI Search — U15 (consulta: 2026-10-15)
+
+| Fuente | URL | Qué sustenta |
+|---|---|---|
+| Versiones estables de Search Service REST API | https://learn.microsoft.com/en-us/rest/api/searchservice/search-service-api-versions | `2026-04-01` es una versión estable de la API de plano de datos usada por el adaptador |
+| Referencia REST de Azure OpenAI Embeddings | https://learn.microsoft.com/en-us/rest/api/aifoundry/azureopenai/embeddings | `POST /openai/v1/embeddings`, autenticación OAuth2/Entra ID y esquema de respuesta del vector |
+| Modelos de embeddings | https://learn.microsoft.com/en-us/azure/foundry/openai/how-to/embeddings | `text-embedding-3-small`, límites de entrada y dimensiones máximas (1536) |
+| Crear una consulta híbrida | https://learn.microsoft.com/en-us/azure/search/hybrid-search-how-to-query | Combinar búsqueda léxica y vectorial en una solicitud y devolver resultados fusionados |
+| Agregar un filtro a una consulta vectorial | https://learn.microsoft.com/en-us/azure/search/vector-search-filters | Aplicar filtros no vectoriales y `preFilter` a la consulta vectorial |
+| Acceso RBAC de clientes | https://learn.microsoft.com/en-us/azure/search/search-security-rbac-client-code | Uso de Microsoft Entra ID y roles de plano de datos; `Search Index Data Reader` para lectura |
+| Límites por nivel de servicio | https://learn.microsoft.com/en-us/azure/search/search-limits-quotas-capacity | Límites de Free/Basic, capacidad, tamaño y cuota vectorial; los niveles dedicados generan unidades de capacidad |
+| Probar Azure AI Search sin costo | https://learn.microsoft.com/en-us/azure/search/search-try-for-free | Basic dedicado consume aproximadamente un tercio de USD 200 durante 30 días; indicación orientativa, no cotización regional |
+| Roles integrados de Azure para IA y ML | https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles/ai-machine-learning | GUID `1407120a-92aa-4202-b7e9-c0e197c71c8f` y DataAction de `Search Index Data Reader` |
+| Referencia Bicep de Microsoft.Search/searchServices | https://learn.microsoft.com/en-us/azure/templates/microsoft.search/2025-05-01/searchservices | API ARM `2025-05-01`, SKU, autenticación Entra y deshabilitación de autenticación local |
+| Referencia Bicep de Microsoft.Search/searchServices (consulta: 2026-10-15) | https://learn.microsoft.com/en-us/azure/templates/microsoft.search/2025-05-01/searchservices | `hostingMode` acepta `Default` o `HighDensity`; para SKU distintos de `standard3`, debe ser `Default` |
+| Autorización de acceso en tiempo de consulta | https://learn.microsoft.com/en-us/azure/search/search-query-access-control-rbac-enforcement | ACL automatizada en tiempo de consulta está en preview; U15 usa filtro explícito de grupos preconsulta hasta que esa función deje preview |
+| Vector search overview | https://learn.microsoft.com/en-us/azure/search/vector-search-overview | Azure AI Search admite consultas vectoriales e híbridas |
+| Search SKU tiers (consulta: 2026-10-15) | https://learn.microsoft.com/en-us/azure/search/search-sku-tier | Free y Serverless Developer; preview y facturación por capacidad/almacenamiento; Basic dedicado |
+| Keyless connections (consulta: 2026-10-15) | https://learn.microsoft.com/en-us/azure/search/keyless-connections | La guía keyless enumera Basic o superior como prerrequisito facturable |
+| Search RBAC (consulta: 2026-10-15) | https://learn.microsoft.com/en-us/azure/search/search-security-rbac | La guía general indica RBAC para cualquier nivel; discrepancia con la guía keyless |
+| Azure for Students FAQ (consulta: 2026-10-15) | https://learn.microsoft.com/en-us/azure/education-hub/faq | USD 100 de crédito por 12 meses; servicios se deshabilitan al agotar o expirar el crédito salvo cambio de oferta |
+
+**Consecuencia U15:** las llamadas de búsqueda usan REST estable, Entra ID y un filtro OData por grupos y vigencia con `vectorFilterMode=preFilter`. El adaptador no usa el control ACL en preview. La selección y despliegue del nivel facturable se mantiene sujeto a la decisión de costo y no se ejecutó durante esta implementación.
+
 ---
 
 ## Regla de mantenimiento

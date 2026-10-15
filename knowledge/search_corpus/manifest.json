@@ -1,0 +1,32 @@
+{
+  "source_type": "SYNTHETIC",
+  "documents": [
+    {
+      "id": "U15-SYN-001",
+      "path": "politica-v1.md",
+      "title": "Resumen de la política provisional de inventario",
+      "document_type": "demo-policy",
+      "effective_date": "2026-10-14",
+      "expiry_date": null,
+      "security_groups": ["U15-DEMO-READERS"]
+    },
+    {
+      "id": "U15-SYN-002",
+      "path": "datos-y-recomendaciones.md",
+      "title": "Guía de datos y recomendaciones",
+      "document_type": "demo-guide",
+      "effective_date": "2026-10-14",
+      "expiry_date": null,
+      "security_groups": ["U15-DEMO-READERS"]
+    },
+    {
+      "id": "U15-SYN-003",
+      "path": "preguntas-frecuentes.md",
+      "title": "Preguntas frecuentes de demostración",
+      "document_type": "demo-faq",
+      "effective_date": "2026-10-14",
+      "expiry_date": null,
+      "security_groups": ["U15-DEMO-READERS"]
+    }
+  ]
+}

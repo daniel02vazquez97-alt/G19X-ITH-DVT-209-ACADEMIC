@@ -1,6 +1,6 @@
 # 03 — Arquitectura
 
-> **Estado vigente (2026-10-13):** API, motor, pronóstico, ingesta, explicación, interfaz, Docker, CI/CD y entorno `dev` en Azure **implementados** (contratos del sistema principal en §16). Pendientes: Azure Machine Learning (U14), Azure AI Search (U15) y Power BI (U16). La línea siguiente es el historial de versiones del documento.
+> **Estado vigente (2026-10-15):** API, motor, pronóstico, ingesta, explicación, interfaz, Docker, CI/CD, U13 y U14 implementados y verificados en `dev`. U15 tiene puerto local y adaptador Azure implementados; el despliegue y la autorización de grupos permanecen pendientes. Power BI (U16) pendiente. La línea siguiente es el historial de versiones del documento.
 
 **Estado:** Versión 1.0 — Etapa 0 (diseño, no implementado) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §16, arquitectura de implementación de la Etapa 2 (`DT-043`, `DT-047`); §§1–15 no cambian · **Versión 1.3** (2026-10-01) — §16.6: migraciones en `backend/db/migrations/` (`DT-055`) · **Versión 1.4** (2026-10-02) — notas en §4 y §5.1: frontera de `forecasting` y `runs` (`DT-046` `ACEPTADA`); estado de §16 · **Versión 1.5** (2026-10-03) — U4 autorizada, no implementada: §16.7, subcomando `recommend` explícito (`DT-058`); estado de §16 · **Versión 1.6** (2026-10-03) — U5 autorizada, no implementada: `app/db/read/` en §16.2 y §16.6, `python -m app.api` en §16.7; estado de §16 · **Versión 1.7** (2026-10-04) — U6 autorizada, no implementada: `genai` (`DT-068`, `DT-069`) en §16.2, §16.4, §16.5 y §16.7; `DocumentRetriever` fuera de U6 · **Versión 1.8** (2026-10-04) — U6 implementada: estado en §16 y §16.7 · **Versión 1.9** (2026-10-05) — Fase 7 autorizada, no implementada: interfaz en §16.2 y CORS/proxy en la tabla de integraciones (`DT-070`) · **Versión 1.10** (2026-10-05) — Fase 7 implementada: estado de la interfaz en §16.2 · **Versión 1.11** (2026-10-05) — §16.2: `ml/` según el cierre documental de la Fase 5 (`DT-071` a `DT-085`), no autorizada · **Versión 1.12** (2026-10-06) — §16.2: estado de `ml/` con F5c (`DT-092`)
 
@@ -406,7 +406,7 @@ manifiesto), nunca su código.
 | `forecast_service` | `backend/app/forecasting/` | `ForecastProvider` y baselines (`docs/05` §19) | Biblioteca estándar | U3 |
 | Servicios de aplicación (batch) | `backend/app/runs/` | Ejecuciones de forecast y de recomendaciones: leer, llamar, persistir con trazabilidad | `db`, `forecasting`, `supply_engine` | U3–U4 |
 | Routers + Auth | `backend/app/api/` | Contrato HTTP de solo lectura en V1 (`docs/07` §7), autenticación y roles | `db` | U5 |
-| `genai_service` | `backend/app/genai/` | Contexto de explicación, `TextGenerator` (plantilla primero), verificación de cifras (`docs/09` §14 y §14.5). U6: `ExplanationContext`, `Fact`, plantilla `template/1.0.0`, verificador y degradación (`DT-068`, `DT-069`) | **Solo la biblioteca estándar**: no importa `api`, `db`, `psycopg`, `supply_engine`, `forecasting` ni `runs`; no recibe conexiones. `api` → `genai` | U6 |
+| `genai_service` | `backend/app/genai/` | Explicación y puerto `DocumentRetriever`; contexto, plantillas y verificación U6; recuperación documental U15 (`docs/09` §§14.5, 14.7) | **Solo biblioteca estándar**, sin red ni conexiones; `api` aloja adaptadores Azure e invoca el puerto | U6, U15 |
 | Interfaz | `frontend/` | Vistas de `docs/08` §11 y §12 (`DT-070`): React + TypeScript + Vite, cliente fino con tipos generados del OpenAPI, sin reglas de negocio | API (`/api`), nunca la base | Fase 7 (implementada, 2026-10-05) |
 | Entrenamiento y evaluación | `ml/` | Backtesting, Nivel 1 y Nivel 2 | `app.forecasting`, `app.supply_engine` | Fase 5 (decisiones `DT-071` a `DT-086`; solo F5a autorizada; `float` solo aquí y en el proveedor de modelo, `DT-074`) *(2026-10-06: F5a, F5b y F5c autorizadas (`DT-086`, `DT-088`, `DT-092`); F5c añade `ml/candidates.py` y `ml/f5c/`)* |
 
@@ -458,7 +458,7 @@ sin red y sin credenciales (`DT-003`, RNF-006).
 |---|---|---|---|
 | `ForecastProvider` | `forecasting` | Baselines en proceso | Endpoint de Azure ML (6) |
 | `TextGenerator` | `genai` | Plantilla determinista (`DT-018`) | Azure OpenAI (10) |
-| `DocumentRetriever` | `genai` | Índice en memoria para pruebas; **no forma parte de U6** (`DT-068`): llega con la Fase 9 | Azure AI Search (9), **si existe corpus** |
+| `DocumentRetriever` | `genai` | `InMemoryDocumentRetriever` y corpus sintético local | Adaptador Azure AI Search en `api` (U15); deployment sujeto a tier/costo |
 | `TokenValidator` *(nuevo, `DT-043`)* | `api` | Validador de desarrollo con identidades de prueba; solo en local y en pruebas, **se niega a arrancar en cualquier entorno desplegado** | Microsoft Entra ID (8) |
 | `SecretProvider` | configuración | Variables de entorno | Almacén gestionado (`DT-022`) |
 | `DataSource` | `ingestion` | Directorio de un dataset publicado | Archivos reales / ERP (futuro) |

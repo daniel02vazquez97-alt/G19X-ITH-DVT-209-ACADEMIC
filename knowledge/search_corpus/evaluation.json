@@ -1,0 +1,11 @@
+{
+  "source_type": "SYNTHETIC",
+  "cases": [
+    {"query": "¿El asistente puede decidir qué comprar?", "expected_document_ids": ["U15-SYN-001", "U15-SYN-003"]},
+    {"query": "¿Qué fuente se usa para las cifras de inventario?", "expected_document_ids": ["U15-SYN-002"]},
+    {"query": "¿Qué significa que una recomendación sea provisional?", "expected_document_ids": ["U15-SYN-001"]},
+    {"query": "¿Los documentos son reales o sintéticos?", "expected_document_ids": ["U15-SYN-003", "U15-SYN-002"]},
+    {"query": "¿Se ejecutan compras automáticas?", "expected_document_ids": ["U15-SYN-001", "U15-SYN-003"]},
+    {"query": "¿La explicación recalcula una cantidad?", "expected_document_ids": ["U15-SYN-002", "U15-SYN-001"]}
+  ]
+}
