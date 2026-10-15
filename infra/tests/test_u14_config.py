@@ -65,7 +65,9 @@ class JobTest(unittest.TestCase):
     def test_serverless_job_with_the_pinned_api_base_image(self) -> None:
         job = read(JOB / "job.yml")
         image = re.search(r"^\s*image: (\S+)", job, re.M).group(1)
-        self.assertIn(f"FROM {image}", read(ROOT / "infra" / "docker" / "backend.Dockerfile"))
+        # Azure ML exige el prefijo docker.io/library/; la imagen base y el digest son los mismos de backend.Dockerfile
+        base_image = image.removeprefix("docker.io/library/")
+        self.assertIn(f"FROM {base_image}", read(ROOT / "infra" / "docker" / "backend.Dockerfile"))
         self.assertRegex(image, r"@sha256:[0-9a-f]{64}$")
         self.assertIn("instance_type: Standard_DS2_v2", job)
         self.assertNotRegex(job, r"(?m)^compute:")  # serverless: no compute target

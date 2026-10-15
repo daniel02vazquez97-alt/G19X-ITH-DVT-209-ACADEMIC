@@ -18,7 +18,7 @@
 | [`docs/00a-prd.md`](00a-prd.md) | **Qué producto** se construye, para quién, con qué capacidades y restricciones; estado de cada requisito oficial (`RF`, `RNF`, `RS`, `RML`) y su trazabilidad | Antes de proponer o interpretar una funcionalidad |
 | [`docs/00b-mvp.md`](00b-mvp.md) | **Hasta dónde llega** la primera versión (`DT-094` punto 10), qué queda fuera y **cómo se acepta** (MVP-01…MVP-10) | Antes de decidir si algo entra en la versión actual, o al registrar una prueba de aceptación |
 
-Los dos están en **borrador** (2026-10-10) hasta que el propietario los apruebe (MVP-10).
+El propietario aprobó ambos el **2026-10-14** (MVP-10); sus límites vigentes están en `docs/00b-mvp.md` §1 y §4.
 
 ## Índice
 
@@ -113,9 +113,9 @@ Reglas verificables por prueba: [`docs/03`](03-arquitectura.md) §16.4.
 **Corte temporal:** forecast y recomendación usan `as_of_date` explícito. El corte de referencia es `2025-12-31`
 (`DT-058`). `recommend --as-of t` consume el forecast con el **mismo** corte y no lo lanza.
 
-### A.4 Alcance actual (MVP) y lo que queda fuera
+### A.4 Alcance actual del MVP y lo que queda fuera
 
-Dentro (implementado):
+**MVP local funcional aprobado** (recorrido funcional):
 
 - dataset sintético 0.4.0;
 - ingesta;
@@ -125,10 +125,10 @@ Dentro (implementado):
 - API de solo lectura (14 endpoints);
 - explicación por plantilla;
 - interfaz React de solo lectura;
-- capa analítica (vistas);
-- contenedores;
-- CI;
-- Entra ID y despliegue de `dev` en Azure.
+
+**Soporte del sistema, fuera de las capacidades funcionales del MVP:** U7 (Docker) proporciona el medio verificable de ejecución local de MVP-08; U8 (CI) y U9 (vistas analíticas) son soporte. El propietario aceptó esta clasificación el 2026-10-14.
+
+**Fuera del MVP, implementado en `dev`:** Entra ID y despliegue U10–U12; Azure OpenAI U13 y Azure ML U14. U15 (AI Search) y U16 (Power BI) aún no están autorizadas.
 
 **Fuera del MVP o diferido** (`CLAUDE.md` §3 y §17, `DT-094`):
 
@@ -136,10 +136,7 @@ Dentro (implementado):
 - ERP, WMS, rutas, *pricing*, MRP y finanzas;
 - clasificación de riesgo y urgencia (bloqueada por `BR-X03`);
 - escritura en la API;
-- LLM real (U13);
-- Azure ML (U14);
-- AI Search (U15);
-- Power BI (U16);
+- Servicios U13–U16: Azure OpenAI y Azure ML (U13/U14) están desplegados fuera del MVP; AI Search y Power BI (U15/U16) siguen sin autorizar;
 - `staging` y `prod`;
 - modelos promovidos (F5d, G2 y G3 sin autorizar).
 
@@ -190,7 +187,7 @@ Pruebas: `PYTHONPATH=backend python -m unittest discover -s ml/tests -t .` (CI p
 - U1 no cambia;
 - **no se cambia el baseline oficial ni se promueve un modelo sin una DT explícita.**
 
-### B.3 Infraestructura, CI, analítica, autenticación y Azure (U7–U12, `DT-094`)
+### B.3 Infraestructura, CI, analítica, autenticación y Azure (U7–U14, `DT-094`)
 
 | Unidad | Responsabilidad | Archivos | Comando o verificación | Estado |
 |---|---|---|---|---|
@@ -200,7 +197,9 @@ Pruebas: `PYTHONPATH=backend python -m unittest discover -s ml/tests -t .` (CI p
 | **U10 — base de Azure** | Grupo `rg-motor-predictivo-dev` (`centralus`), Key Vault, identidad OIDC de GitHub (`id-mpa-dev-github`, Reader) | `infra/azure/main.bicep`, `infra/azure/modules/`, `infra/azure/deploy-dev.ps1` | [`infra/azure/README.md`](../infra/azure/README.md), `DT-098` | ✅ Completada el 2026-10-07 |
 | **U11 — Entra ID** | Registros de API y SPA, app roles `ADMIN`/`PLANNER`/`ANALYST`/`VIEWER`, MSAL (código + PKCE), validación de tokens con `APP_ENV=dev` | `backend/app/api/entra.py`, `frontend/src/`, `infra/azure/entra/`, `infra/azure/deploy-u11.ps1`, `infra/docker-compose.entra-dev.yml` | [`infra/azure/entra/README.md`](../infra/azure/entra/README.md), `DT-099` | ✅ Completada el 2026-10-07 (prueba real 5/5 en el entorno aislado `u11-entra-dev`) |
 | **U12 — `dev` en Azure** | Container Apps (Consumption, `WorkloadProfiles`): frontend externo HTTPS, api interna, job de *bootstrap*; ACR Basic; PostgreSQL 16 B1ms; CD por OIDC | `infra/azure/u12/`, `infra/azure/deploy-u12.ps1`, `infra/docker/bootstrap.py`, `.github/workflows/deploy-dev.yml` | [`infra/azure/u12/README.md`](../infra/azure/u12/README.md) §5–§6, `DT-100` | 🟢 **Cerrada (2026-10-13) con verificaciones pendientes aceptadas** (§G) |
-| U13–U16, QA, entrega | Azure OpenAI, Azure ML, AI Search, Power BI | — | `DT-094` | ⬜ Sin autorizar. U13 no se inicia hasta cerrar U12 |
+| **U13 — Azure OpenAI** | Explicación generativa tras `TextGenerator`, con plantilla de respaldo | `backend/app/genai/`, `infra/azure/u13/` | [`infra/azure/README.md`](../infra/azure/u13/README.md), `DT-101` | ✅ Desplegada y verificada en `dev` el 2026-10-14; activa en la API |
+| **U14 — Azure ML** | Backtesting serverless reproducible y registro de `baseline-ma13`, sin endpoint | `ml/`, `infra/azure/u14/` | [`infra/azure/u14/README.md`](../infra/azure/u14/README.md), `DT-102` | ✅ Desplegada y verificada en `dev` el 2026-10-14; Verify 7/7 |
+| U15–U16, QA, entrega | AI Search, Power BI, QA integral y entrega | — | `DT-094` | ⬜ U15 y U16 sin autorizar; U15 necesita confirmar corpus (`ASSUMPTION-008`) |
 
 ---
 
@@ -223,7 +222,7 @@ alternativas, está en [`docs/15-decisiones-tecnicas.md`](15-decisiones-tecnicas
 | Fase 5 | `DT-071`–`DT-093` | Protocolo de evaluación; **MA13 oficial** (`DT-089`), MASE (`DT-090`), umbrales provisionales (`DT-091`), todo `SYNTHETIC` | [`docs/05`](05-motor-predictivo.md) §20 |
 | Contenedores y CI | `DT-095`, `DT-096` | Imágenes por digest, usuario sin privilegios, CI sin Azure ni credenciales, Bicep 0.48.1 fijado | [`docs/12`](12-devops.md) §3.4 y §4.5 |
 | Analítica | `DT-097` | Esquema `analytics` y rol de solo lectura | [`docs/11`](11-power-bi.md) §10 |
-| Azure `dev` | `DT-098`, `DT-099`, `DT-100` | Base Bicep y OIDC; Entra ID; Container Apps, ACR, PostgreSQL B1ms, Key Vault opción C (solo MVP/`dev`) | READMEs de `infra/azure/` |
+| Azure `dev` | `DT-098`–`DT-102` | Base Bicep y OIDC; Entra ID; Container Apps, ACR, PostgreSQL B1ms, Key Vault opción C; Azure OpenAI y Azure ML ya desplegados en `dev` | READMEs de `infra/azure/` |
 
 Decisiones abiertas que **no** deben tomarse sin el responsable:
 
@@ -439,7 +438,7 @@ Estimaciones, no cifras garantizadas: README de U12 §7.
 - Crear o rotar credenciales, o leer secretos.
 - Cambiar la configuración de `main` o hacer *merge*.
 - *Push* fuera de la rama de trabajo.
-- Ampliar U12 (`staging` o `prod`) o iniciar U13–U16.
+- Ampliar U12 (`staging` o `prod`) o iniciar unidades sin autorización (actualmente U15–U16).
 - Modificar el generador o el dataset 0.4.0.
 - Promover un modelo o cambiar el baseline oficial MA13.
 - Tomar decisiones de negocio.

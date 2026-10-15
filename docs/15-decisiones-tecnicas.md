@@ -4462,12 +4462,23 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
     con `ValidationError: Missing dependent resources in workspace json`: **el servicio exige Application Insights**,
     contra lo supuesto en el punto 4;
   - `-Stage Submit` falló después con `ParentResourceNotFound`, porque el workspace no existía. No se ejecutó ningún job.
-- **Corrección:** Application Insights sobre un área de trabajo de Log Analytics (`PerGB2018`, retención de 30 días y
+- **Corrección 1 (workspace):** Application Insights sobre un área de trabajo de Log Analytics (`PerGB2018`, retención de 30 días y
   límite de ingesta de 0,1 GB/día), que el *what-if* exige con esos límites. El Preflight comprueba también
   `Microsoft.Insights` y `Microsoft.OperationalInsights`, y `Submit` se detiene si el workspace no existe. `Remove`
   borra además Log Analytics. `-SelfTest` pasa a 9 casos.
-- **Estado:** `ACEPTADA` (2026-10-14). Implementada; **primer despliegue fallido sin coste de cómputo**, pendiente de
-  repetir con la corrección (`infra/azure/u14/README.md` §2).
+- **Segundo despliegue y corrección de URI (2026-10-14, [AZ-U]):** el workspace `mlw-mpa-dev` se desplegó correctamente (`-Stage Deploy`).
+  Al ejecutar `-Stage Submit`, `az ml job create` falló con `Invalid dockerImageUri configuration value` para
+  `python:3.11.17-slim-trixie@sha256:...`: el validador de ARM de Azure ML en `centralus` exige el prefijo canónico de
+  registro/namespace (`docker.io/library/`) para imágenes de Docker Hub.
+- **Corrección 2 (job.yml):** `docker.io/library/python:3.11.17-slim-trixie@sha256:0dd364ba7e10242f07755449e3a3d0e35f9efd987952737b90def6709ab0c5ce`,
+  verificada contra el validador de ARM de Azure ML. `infra/tests/test_u14_config.py` actualizado (12/12).
+- **Ejecución y verificación exitosa (2026-10-14, [AZ-U]):** el responsable ejecutó `-Stage Submit` con la corrección:
+  job serverless `frank_skin_7lcq5hn0hj` ejecutado en `Standard_DS2_v2` hasta `Completed`, registrando el modelo
+  `baseline-ma13` (versión 1). La verificación posterior con `-Stage Verify` confirmó las 7 comprobaciones en `OK`:
+  workspace conforme en `centralus`, sin ACR, job `Completed`, huella `results_sha256` idéntica a
+  `67608e958eb87ad5cb02e40532b47b6a54940e3b153d56fbd266b32d6bbe433a`, modelo `baseline-ma13` registrado, sin
+  instancias ni clústeres de cómputo persistente y sin endpoints de inferencia.
+- **Estado:** `ACEPTADA` (2026-10-14). **Desplegada y verificada en `dev`** (`infra/azure/u14/README.md`).
 
 ## Decisiones deliberadamente NO tomadas
 
