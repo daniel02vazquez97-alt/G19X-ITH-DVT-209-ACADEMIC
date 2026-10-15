@@ -215,7 +215,7 @@ en `docs/01`; aquí se resumen el criterio verificable y el **estado en el produ
 | RF-017 | Interfaz web | A · Debe | Fase 7 | Vistas navegables con datos de la API; permisos según el rol | **Implementado** en local; Entra ID validado en local (U11) y, en Azure, inicio de sesión y matriz de autorización (**[AZ-U]**, registrado el 2026-10-11). La revisión de las vistas desplegadas (C12) queda como **pendiente aceptado** en el cierre de U12 (P1) | `docs/08` §12.1; informe de U12 (C10–C12) |
 | RF-018 | Indicadores en Power BI | A · Debería | U9, U16 | Objetos de datos documentados que permiten los KPIs sin lógica duplicada | **Parcial**: vistas de U9; Power BI (U16) sin autorizar | `docs/11` §10 |
 | RF-019 | Explicaciones con IA generativa | A · Debería | U6, U13 | Coherente con los valores, sin cifras nuevas, con origen indicado | **Parcial**: el criterio lo cumple la plantilla determinista de U6; Azure OpenAI (U13) sin autorizar | `docs/09` §14.6 |
-| RF-020 | Recuperación documental (AI Search) | A + C · Podría | U15 | Fragmentos con cita del documento de origen | **Parcial**: recuperación y corpus de demostración sintético implementados; despliegue Search y corpus empresarial pendientes de costo y validación (`DT-094`, punto 7) | [`docs/09`](09-ia-generativa.md) §14.7; `feature/u15-ai-search` |
+| RF-020 | Recuperación documental (AI Search) | A + C · Podría | U15 | Fragmentos con cita del documento de origen | **Parcial**: recuperación y corpus de demostración sintético implementados; despliegue Search y corpus empresarial pendientes de costo y validación (`DT-094`, punto 7) | [`docs/09`](09-ia-generativa.md) §14.7; `main` (PR #22) |
 | RF-021 | Asistente conversacional | D · Podría | — | Responde solo con fuentes del sistema | **Propuesto**; no implementado | — |
 | RF-022 | Ingesta de datos | B · Debe | U2 | Reporta filas rechazadas y no deja estado inconsistente | **Implementado** | `docs/04` §9.9; `backend/tests/ingestion`, `tests/db` |
 | RF-023 | Sustitución por datos reales | B · Debe | U2, U4 | Origen marcado por carga; ninguna regla depende de que los datos sean sintéticos | **Parcial**: `data_origin` por carga; `DT-063` impide `V1_PROVISIONAL` sobre datos no sintéticos hasta decidir `DT-P16`; no hay datos reales (`ASSUMPTION-001`) | `DT-063` |
@@ -304,7 +304,7 @@ Vista funcional. El detalle técnico está en [`docs/03`](03-arquitectura.md) §
 **Dependencias externas.** Están encapsuladas tras puertos (`docs/03` §16.5, `DT-094` punto 2):
 
 - **Desplegadas en `dev`:** PostgreSQL, Entra ID, Azure OpenAI (U13) y Azure ML (U14).
-- **Implementada en rama:** Azure AI Search (U15), sin despliegue mientras se evalúa la opción compatible de menor costo; el corpus empresarial sigue bajo `ASSUMPTION-008`.
+- **Integrada en `main` (PR #22):** Azure AI Search (U15), sin despliegue mientras se evalúa la opción compatible de menor costo; el corpus empresarial sigue bajo `ASSUMPTION-008`.
 
 ---
 
@@ -323,7 +323,7 @@ Vista funcional. El detalle técnico está en [`docs/03`](03-arquitectura.md) §
 **Dentro del alcance de la Etapa 2** (`DT-094`, cada unidad requiere su propia autorización):
 
 - **Implementadas y verificadas en `dev`:** U13 Azure OpenAI tras `TextGenerator`; U14 Azure ML (registro versionado de MA13).
-- **U15 AI Search:** implementación sintética en rama; despliegue pendiente de evaluar la opción compatible de menor costo y obtener decisión. **Pendiente de autorización:** U16 Power BI.
+- **U15 AI Search:** implementación integrada en `main` por PR #22; despliegue pendiente de evaluar la opción compatible de menor costo y obtener decisión. **Pendiente de autorización:** U16 Power BI.
 - **Posteriores:** QA y entrega.
 
 `DT-094` punto 1 los mantiene **dentro** del alcance de la Etapa 2. **No** forman parte del MVP local funcional (punto

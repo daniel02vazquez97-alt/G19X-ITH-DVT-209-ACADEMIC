@@ -128,7 +128,7 @@ Reglas verificables por prueba: [`docs/03`](03-arquitectura.md) §16.4.
 
 **Soporte del sistema, fuera de las capacidades funcionales del MVP:** U7 (Docker) proporciona el medio verificable de ejecución local de MVP-08; U8 (CI) y U9 (vistas analíticas) son soporte. El propietario aceptó esta clasificación el 2026-10-14.
 
-**Fuera del MVP:** Entra ID y despliegue U10–U12, Azure OpenAI U13 y Azure ML U14 están implementados en `dev`. U15 (AI Search) está implementada en `feature/u15-ai-search` con corpus sintético y plantilla Basic; no se desplegó. La cuenta tiene USD 100 de crédito total, se conserva el umbral de planificación de USD 50 y se evaluará primero la alternativa compatible más económica. U16 (Power BI) no está autorizada.
+**Fuera del MVP:** Entra ID y despliegue U10–U12, Azure OpenAI U13 y Azure ML U14 están implementados en `dev`. U15 (AI Search) está integrada en `main` por el PR #22; incluye corpus sintético y plantilla Basic, pero no se desplegó. La cuenta tiene USD 100 de crédito total, se conserva el umbral de planificación de USD 50 y se evaluará primero la alternativa compatible más económica. U16 (Power BI) no está autorizada.
 
 **Fuera del MVP o diferido** (`CLAUDE.md` §3 y §17, `DT-094`):
 
@@ -136,7 +136,7 @@ Reglas verificables por prueba: [`docs/03`](03-arquitectura.md) §16.4.
 - ERP, WMS, rutas, *pricing*, MRP y finanzas;
 - clasificación de riesgo y urgencia (bloqueada por `BR-X03`);
 - escritura en la API;
-- Servicios U13–U16: Azure OpenAI y Azure ML (U13/U14) están desplegados fuera del MVP; U15 está implementada pero sin desplegar, y U16 sigue sin autorización;
+- Servicios U13–U16: Azure OpenAI y Azure ML (U13/U14) están desplegados fuera del MVP; U15 está integrada en `main` (PR #22), sin despliegue de Search; U16 sigue sin autorización;
 - `staging` y `prod`;
 - modelos promovidos (F5d, G2 y G3 sin autorizar).
 
