@@ -412,7 +412,7 @@ PostgreSQL 16 B1ms, job único de bootstrap; el despliegue real lo ejecuta el re
 *(2026-10-13: U12 cerrada con verificaciones pendientes aceptadas. **U13 autorizada**, `DT-101`: Azure OpenAI
 (`gpt-4.1-mini`, sin claves, identidad de ejecución) tras `TextGenerator` para CU-1, con la plantilla como respaldo;
 desplegada y verificada en `dev` el 2026-10-14. **U14 autorizada y completada**, `DT-102`: Azure ML reprodujo el backtest
-versionado y registró `baseline-ma13` v1; job serverless `Completed`, Verify 7/7 [AZ-U]. **U15 autorizada e implementada** con corpus sintético; Search Basic preparado sin desplegar por el costo pendiente. U16 sigue sin autorizar.)*
+versionado y registró `baseline-ma13` v1; job serverless `Completed`, Verify 7/7 [AZ-U]. **U15 autorizada e implementada** con corpus sintético; Search Basic preparado, sin despliegue. Azure for Students tiene USD 100 de crédito total; se prioriza costo mínimo, se conserva el umbral de planificación de USD 50 y falta validar la opción Search más barata compatible con Entra sin claves. U16 sigue sin autorizar.)*
 Restricciones vigentes, que se levantan solo por instrucción explícita:
 
 - **No escribir código de aplicación fuera de una unidad autorizada.** Cada unidad (U1 a U6 de `DT-047`,

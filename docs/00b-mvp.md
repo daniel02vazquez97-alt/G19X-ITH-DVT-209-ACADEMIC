@@ -185,8 +185,8 @@ cumplido.
 | Implementado, pendiente de evidencia | Nada dentro del MVP. Fuera de él: verificaciones pendientes aceptadas de U12 (informe de U12 §4, P1–P5) |
 | Pruebas bloqueadas | Ninguna del MVP. Las de U12 en Azure no se pueden ejecutar desde Claude Code Cloud: sin Azure CLI ni credenciales, red bloqueada a `*.azurecontainerapps.io`, sin navegador. Las ejecuta el responsable |
 | Experimental | F5c (candidatos), SES sin promover; todo `SYNTHETIC` |
-| Decisiones pendientes | `BR-X03`; validación de roles (`ASSUMPTION-010`); parámetros de política; `DT-P16`; cotización y decisión de despliegue para U15; corpus empresarial (`ASSUMPTION-008`) |
-| Próximo hito concreto | El MVP y el PRD están aceptados. U15 está implementada con corpus sintético; resolver costo Basic antes de desplegar. U16 requiere autorización propia |
+| Decisiones pendientes | `BR-X03`; validación de roles (`ASSUMPTION-010`); parámetros de política; `DT-P16`; evaluación de alternativa de menor costo y decisión de despliegue para U15; corpus empresarial (`ASSUMPTION-008`) |
+| Próximo hito concreto | El MVP y el PRD están aceptados. U15 está implementada con corpus sintético; evaluar primero una opción de costo mínimo compatible con la autenticación requerida antes de desplegar. U16 requiere autorización propia |
 
 **El MVP está aceptado**: MVP-01…MVP-09 tienen evidencia documentada y MVP-10 fue aprobado por el propietario el 2026-10-14.
 
@@ -199,7 +199,7 @@ cumplido.
 **Plan mínimo:**
 
 1. Conservar esta decisión de alcance en `project/status.md` y `project/roadmap.md`.
-2. Antes de desplegar U15, revisar la cotización regional de Search Basic frente al presupuesto. Validar el corpus empresarial requerido por `ASSUMPTION-008` antes de usar documentos reales.
+2. Antes de desplegar U15, comparar Free, Serverless Developer (preview) y Basic con precios de la región y confirmar Entra ID sin claves; no provisionar hasta decidir y autorizar el costo. Validar el corpus empresarial requerido por `ASSUMPTION-008` antes de usar documentos reales.
 
 **Lo que no debe ampliar el MVP:**
 

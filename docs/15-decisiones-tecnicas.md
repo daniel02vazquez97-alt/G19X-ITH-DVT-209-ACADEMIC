@@ -3484,6 +3484,7 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
      automatización explícita y segura. Cada unidad de Azure declara qué recursos crea, si generan costo, el costo
      estimado, si tienen consumo continuo, cómo se desmontan y cómo se verifica que quedaron desmontados. No se activan
      cargas permanentes, entrenamiento, modelos generativos ni recursos premium sin una autorización explícita posterior.
+     **Actualización del responsable (2026-10-15, U15):** la cuenta disponible tiene USD 100 de crédito total; se prioriza la alternativa compatible de menor costo y se evita Search con cargo continuo hasta comparar opciones y recibir autorización explícita. No cambia el umbral de planificación de USD 50. Microsoft Learn discrepa sobre si Free admite el flujo Entra sin claves (ver `knowledge/sources.md` §9); no se declara compatibilidad ni se elige SKU.
   5. **Infraestructura como código: Bicep**, parametrizado al menos por `environment` (`dev`), región, nombre del
      proyecto, etiquetas, presupuesto e identificadores. Sin contraseñas, claves, secretos, tokens ni cadenas de
      conexión con secretos.

@@ -304,7 +304,7 @@ Vista funcional. El detalle técnico está en [`docs/03`](03-arquitectura.md) §
 **Dependencias externas.** Están encapsuladas tras puertos (`docs/03` §16.5, `DT-094` punto 2):
 
 - **Desplegadas en `dev`:** PostgreSQL, Entra ID, Azure OpenAI (U13) y Azure ML (U14).
-- **Implementada en rama:** Azure AI Search (U15), sin despliegue por costo pendiente; el corpus empresarial sigue bajo `ASSUMPTION-008`.
+- **Implementada en rama:** Azure AI Search (U15), sin despliegue mientras se evalúa la opción compatible de menor costo; el corpus empresarial sigue bajo `ASSUMPTION-008`.
 
 ---
 
@@ -323,7 +323,7 @@ Vista funcional. El detalle técnico está en [`docs/03`](03-arquitectura.md) §
 **Dentro del alcance de la Etapa 2** (`DT-094`, cada unidad requiere su propia autorización):
 
 - **Implementadas y verificadas en `dev`:** U13 Azure OpenAI tras `TextGenerator`; U14 Azure ML (registro versionado de MA13).
-- **U15 AI Search:** implementación sintética en rama; despliegue pendiente de costo y decisión. **Pendiente de autorización:** U16 Power BI.
+- **U15 AI Search:** implementación sintética en rama; despliegue pendiente de evaluar la opción compatible de menor costo y obtener decisión. **Pendiente de autorización:** U16 Power BI.
 - **Posteriores:** QA y entrega.
 
 `DT-094` punto 1 los mantiene **dentro** del alcance de la Etapa 2. **No** forman parte del MVP local funcional (punto
@@ -353,7 +353,7 @@ Vista funcional. El detalle técnico está en [`docs/03`](03-arquitectura.md) §
 | Sobreajuste al generador | `docs/02` R-02 | Mitigado: MA13 como baseline y sin promoción |
 | Faltan parámetros de negocio | `docs/02` R-03 | Abierto: `V1_PROVISIONAL` |
 | LLM usado como calculadora | `docs/02` R-04 | Mitigado: RS-010 y U6 sin LLM |
-| Costes de Azure | `docs/02` R-05, `DT-094` punto 4 | Controlado: presupuesto de planificación de 50 USD y estimaciones del README de U12 §7 |
+| Costes de Azure | `docs/02` R-05, `DT-094` punto 4 | Azure for Students: USD 100 de crédito total; se conserva el umbral de planificación de USD 50 y se priorizan opciones sin costo o de consumo controlado. Search U15 aún requiere validar compatibilidad y precio regional |
 | El planificador no confía en la recomendación | `docs/02` R-08 | Mitigado: desglose y explicación |
 | La evidencia de Azure la aporta el responsable y no está versionada | Informe de U12 §0 | Aceptado y etiquetado como [AZ-U] |
 

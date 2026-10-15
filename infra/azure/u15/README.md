@@ -1,4 +1,4 @@
-# U15 — Azure AI Search Basic (`DT-094`)
+# U15 — Azure AI Search (`DT-094`)
 
 Esta plantilla deja preparado un servicio Azure AI Search **Basic** en `centralus`, con autenticación Entra ID sin
 claves locales. `id-mpa-dev-runtime` recibe únicamente `Search Index Data Reader` en el ámbito del servicio. El índice
@@ -6,12 +6,18 @@ se crea por separado con el esquema de [`index.json`](index.json), y solo el res
 
 ## Estado y coste
 
-La plantilla y el adaptador están implementados, pero **no se ha desplegado ningún recurso**. Basic es un nivel
-dedicado con cargo continuo mientras exista, aunque esté inactivo. Microsoft indica que en una prueba de 30 días puede
-consumir aproximadamente un tercio de los USD 200 de crédito (aprox. USD 67 como orden de magnitud), no como cotización
-de `centralus`. Esto supera el presupuesto de planificación de USD 50 de `DT-094`; el precio real depende de región y
-capacidad. Por eso el despliegue queda pendiente de cotización y autorización explícita del responsable. No ejecutar los
-comandos siguientes hasta resolver ese límite.
+La plantilla Basic y el adaptador están implementados, pero **no se ha desplegado ningún recurso**. Basic es un nivel
+dedicado con cargo continuo mientras exista, aunque esté inactivo. Microsoft publica una referencia aproximada de USD 67
+por 30 días, basada en un tercio de USD 200; no es cotización de `centralus`. La cuenta Azure for Students disponible
+tiene USD 100 de crédito total y se mantiene el umbral de planificación de USD 50 de `DT-094`. La instrucción vigente es
+minimizar el gasto y evitar recursos facturables continuos.
+
+Antes de Basic, evaluar: (1) el nivel Free para el demo pequeño, sujeto a confirmar compatibilidad con Entra ID sin claves;
+Microsoft Learn tiene una discrepancia: la guía RBAC indica cualquier nivel, mientras que la guía de conexiones sin claves
+exige Basic o superior; (2) Serverless Developer, que es preview, factura por consumo y depende de disponibilidad regional
+y precio mostrado en el portal. Ninguna opción está aprobada ni verificada en la suscripción. Mantener el uso local con
+`InMemoryDocumentRetriever` mientras se resuelve. No ejecutar los comandos de despliegue siguientes hasta elegir opción,
+revisar su costo efectivo y obtener autorización explícita del responsable.
 
 ## Validación previa (no despliega)
 
@@ -22,8 +28,8 @@ az deployment group validate --resource-group rg-motor-predictivo-dev --name u15
 az deployment group what-if --resource-group rg-motor-predictivo-dev --name u15-dev --template-file infra/azure/u15/main.bicep --parameters infra/azure/u15/dev.bicepparam
 ```
 
-El `what-if` esperado contiene solo el servicio Search Basic y su asignación RBAC a `id-mpa-dev-runtime`. No debe
-aprobarse ni ejecutarse el despliegue real hasta aceptar el gasto mensual.
+El `what-if` de la plantilla actual contiene solo el servicio Search Basic y su asignación RBAC a `id-mpa-dev-runtime`.
+No debe ejecutarse el despliegue real hasta resolver nivel, costo efectivo y autorización explícita.
 
 ## Despliegue futuro
 

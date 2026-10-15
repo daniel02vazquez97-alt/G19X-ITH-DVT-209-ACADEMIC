@@ -1,6 +1,6 @@
 # 09 — IA generativa (Azure OpenAI + Azure AI Search)
 
-> **Estado vigente (2026-10-14):** explicación por plantilla (U6) y Azure OpenAI para CU-1 (U13) implementados; U15 implementa el corpus sintético, `DocumentRetriever`, fragmentación, adaptadores local/Azure e índice de evaluación. El despliegue Azure queda pendiente de la decisión del tier facturable y de verificaciones con identidad/grupos reales. RAG conversacional y endpoint de asistente no forman parte de U15.
+> **Estado vigente (2026-10-15):** explicación por plantilla (U6) y Azure OpenAI para CU-1 (U13) implementados; U15 implementa el corpus sintético, `DocumentRetriever`, fragmentación, adaptadores local/Azure e índice de evaluación. El despliegue Azure queda pendiente de la decisión del tier facturable y de verificaciones con identidad/grupos reales. RAG conversacional y endpoint de asistente no forman parte de U15.
 
 **Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §14, punto de integración de la Etapa 2; §§1–13 no cambian · **Versión 1.3** (2026-10-04) — U6 autorizada, no implementada: §14.5 (concreción, `DT-068` y `DT-069`) y §14.6 (criterios de cierre); notas en §14 y §14.2 · **Versión 1.4** (2026-10-04) — U6 implementada y validada: estado en §14, §14.5 y §14.6; la frase de `ZERO_FORECAST_DEMAND` de §14.5 se corrigió antes de implementar («es cero» incumplía la regla de `DT-069` contra los números escritos con letras)
 
@@ -463,6 +463,9 @@ Docker. Pruebas: 353 pruebas en la suite por defecto (295 + 58 de `tests/genai`)
 - No se conecta a la API ni al frontend. No se crea un endpoint conversacional. No se han aprovisionado Search
   ni un deployment de embeddings. `infra/azure/u15/main.bicep` prepara Search Basic con autenticación Entra ID sin
   claves y `Search Index Data Reader` para la identidad runtime. El nivel dedicado mantiene cargos mientras exista.
-  Microsoft da como referencia aproximadamente USD 67 por 30 días frente al presupuesto de planificación de USD 50
-  de `DT-094`; no es una cotización de `centralus`, por lo que el despliegue sigue pendiente de revisar el costo real y
-  autorizarlo. Los grupos reales y el umbral de relevancia siguen pendientes.
+  Microsoft da como referencia aproximadamente USD 67 por 30 días, no como cotización de `centralus`. La cuenta Azure for
+  Students dispone de USD 100 en total; se conserva el umbral de planificación de USD 50 de `DT-094` y se prioriza no
+  mantener servicios facturables activos. Se debe evaluar primero una opción gratuita compatible con Entra ID sin claves.
+  Microsoft Learn describe RBAC en cualquier nivel, pero la guía de conexiones sin claves exige Basic o superior; esta
+  discrepancia deja Free sin validar para U15. Serverless Developer es una opción de consumo en preview, sujeta a región y
+  costo efectivo. No se ha elegido un nivel ni desplegado recursos. Los grupos reales y el umbral de relevancia siguen pendientes.
