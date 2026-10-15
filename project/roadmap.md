@@ -52,6 +52,7 @@ requiere su propia autorización.
 | **U12** | Despliegue de `dev` en Azure Container Apps (Consumption): frontend externo HTTPS, api interna, job manual de bootstrap, ACR Basic, PostgreSQL 16 B1ms, CD por OIDC (`infra/azure/u12/README.md`, `deploy-u12.ps1`, `deploy-dev.yml`) | 13 | — | Autorizada el 2026-10-07 (`DT-100`, cierra `DT-P01` para `dev`); implementada; **desplegada y verificada en `dev` el 2026-10-10**; ✅ **cerrada el 2026-10-13 con verificaciones pendientes aceptadas por el responsable** (redespliegue `fd50c6b`, pruebas de fallo, Verify 20/20; pendientes P1–P5 del informe §4). Estado de los criterios: **solo** en la matriz C01–C15 de [`docs/reports/u12-cierre-evidencias.md`](../docs/reports/u12-cierre-evidencias.md) |
 | **U13** | Azure OpenAI tras `TextGenerator` para CU-1: `gpt-4.1-mini` *Global Standard*, cuenta sin claves, identidad de ejecución con *Cognitive Services OpenAI User* sobre la cuenta, plantilla de U6 como respaldo (`infra/azure/u13/README.md`, `deploy-u13.ps1`) | 10 | — (biblioteca estándar) | Autorizada el 2026-10-13 (`DT-101`); implementada (PR #13); **desplegada, verificada (9/9) y activa en la API de `dev` el 2026-10-14** (Verify de U12 20/20; explicación con `azure-openai/gpt-41-mini`) |
 | **U14** | Azure Machine Learning mínimo: *command job serverless* que reproduce el *backtesting* F5a del baseline oficial con MLflow (aceptación: `results_sha256` igual al informe versionado) y registra `baseline-ma13`, sin *endpoints* (`infra/azure/u14/README.md`, `deploy-u14.ps1`) | 6 | — (MLflow solo en el job) | Aceptada el 2026-10-14 (`DT-102`); implementada; **no desplegada**: la despliega el responsable |
+| **U15** | Recuperación documental por Azure AI Search: corpus sintético, búsqueda híbrida con filtros de seguridad/vigencia, evaluación fija y adaptador Entra ID (`docs/09` §14.7) | 9 | — (biblioteca estándar) | Autorizada por `DT-094`; recuperador local, corpus, adaptador Search/embeddings, evaluación, índice e IaC Basic implementados; pruebas backend 381/381. **No desplegada**: Basic cuesta mientras exista y la referencia orientativa (~USD 67/30 días) supera el presupuesto de planificación de USD 50; requiere cotización y autorización del responsable. Sin conexión a API/frontend ni grupo real |
 | Después | Unidades de `DT-094`, cada una con su autorización: U15 AI Search con corpus sintético (9) · U16 Power BI (11) · QA (14) · Entrega (15). En la Fase 5, F5d, G2 y G3 siguen sin autorizar | — | — | Sus bloqueos de la tabla final y los límites de gasto de `DT-094` |
 
 **Por qué el motor va primero** aunque el mapa ponga la Fase 4 después de las Fases 2 y 3: la parte
@@ -263,13 +264,14 @@ sus endpoints, que van después— y no requiere dependencias nuevas. Sus **regl
 
 - **Objetivo:** recuperación de conocimiento documental.
 - **Entradas:** `docs/09-ia-generativa.md`, corpus documental.
-- **Actividades:** **confirmar primero que el corpus existe** (ASSUMPTION-008); definir el índice;
-  fragmentación; búsqueda híbrida; filtro de permisos en la consulta; implementación de
-  `DocumentRetriever`; evaluación de relevancia.
-- **Entregables:** índice, integración, conjunto de evaluación.
-- **Dependencias:** Fase 8 (permisos). **Bloqueada si no existe corpus documental.**
-- **Criterio de finalización:** las consultas devuelven fragmentos relevantes con cita; los permisos
-  se aplican en la consulta; la evaluación de relevancia alcanza el nivel acordado.
+  - **Estado (2026-10-14):** U15 en implementación. DT-094 punto 7 autoriza corpus de demostración sintético;
+    `ASSUMPTION-008` sigue vigente para corpus empresarial real.
+  - **Actividades:** crear índice; fragmentar por secciones; búsqueda híbrida; filtro de grupos en consulta;
+    implementar `DocumentRetriever`; medir relevancia con el conjunto fijo de evaluación.
+  - **Entregables:** esquema de índice, integración local/Azure y conjunto de evaluación.
+  - **Dependencias:** Fase 8 (permisos). El mapeo de grupos reales y el umbral de relevancia requieren validación.
+  - **Criterio de finalización:** resultados con citas relevantes, filtros de permisos aplicados en la consulta,
+    evaluación aceptada y despliegue verificado. Ningún recurso Azure se aprovisiona sin decisión de costo.
 
 ## FASE 10 — Azure OpenAI
 
