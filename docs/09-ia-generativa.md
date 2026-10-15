@@ -466,6 +466,8 @@ Docker. Pruebas: 353 pruebas en la suite por defecto (295 + 58 de `tests/genai`)
   Microsoft da como referencia aproximadamente USD 67 por 30 días, no como cotización de `centralus`. La cuenta Azure for
   Students dispone de USD 100 en total; se conserva el umbral de planificación de USD 50 de `DT-094` y se prioriza no
   mantener servicios facturables activos. Se debe evaluar primero una opción gratuita compatible con Entra ID sin claves.
-  Microsoft Learn describe RBAC en cualquier nivel, pero la guía de conexiones sin claves exige Basic o superior; esta
-  discrepancia deja Free sin validar para U15. Serverless Developer es una opción de consumo en preview, sujeta a región y
-  costo efectivo. No se ha elegido un nivel ni desplegado recursos. Los grupos reales y el umbral de relevancia siguen pendientes.
+  El quickstart REST de Microsoft muestra autenticación Entra ID en Free, pero la guía keyless para aplicaciones exige Basic
+  o superior; Free queda pendiente de validación específica para este adaptador. Serverless Developer escala a cero en reposo,
+  pero factura CU-hora y GB-mes, está en preview y el precio regional/oferta debe comprobarse en el portal. Basic conserva
+  costo continuo. Recomendación: mantener `InMemoryDocumentRetriever` sin costo mientras no haya cotización y autorización.
+  No se ha elegido nivel ni desplegado recursos. Los grupos reales y el umbral de relevancia siguen pendientes.
