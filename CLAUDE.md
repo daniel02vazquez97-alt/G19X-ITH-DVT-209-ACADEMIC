@@ -2,7 +2,7 @@
 
 > Este archivo es la **fuente de verdad operativa** para cualquier agente de IA que trabaje sobre este repositorio.
 > Debe leerse **completo** al inicio de cada sesión, antes de cualquier modificación.
-> Última actualización: 2026-10-10 (guía maestra y enlace a la matriz de cierre de U12) · 2026-10-06 · Etapa vigente: **ETAPA 2 — Sistema principal** (iniciada: arquitectura y fundación) · Etapa 1 — Datos: **completada**
+> Última actualización: 2026-10-14 (aprobación del PRD/MVP y actualización de estados U13/U14) · 2026-10-10 (guía maestra y enlace a la matriz de cierre de U12) · 2026-10-06 · Etapa vigente: **ETAPA 2 — Sistema principal** (iniciada: arquitectura y fundación) · Etapa 1 — Datos: **completada**
 >
 > **Antes de trabajar en cualquier unidad:**
 >
@@ -411,7 +411,8 @@ PostgreSQL 16 B1ms, job único de bootstrap; el despliegue real lo ejecuta el re
 `infra/azure/deploy-u12.ps1` (`infra/azure/u12/README.md`). U13–U16 siguen sin autorizar.)*
 *(2026-10-13: U12 cerrada con verificaciones pendientes aceptadas. **U13 autorizada**, `DT-101`: Azure OpenAI
 (`gpt-4.1-mini`, sin claves, identidad de ejecución) tras `TextGenerator` para CU-1, con la plantilla como respaldo;
-el despliegue lo ejecuta el responsable con `infra/azure/deploy-u13.ps1`. U14–U16 siguen sin autorizar.)*
+desplegada y verificada en `dev` el 2026-10-14. **U14 autorizada y completada**, `DT-102`: Azure ML reprodujo el backtest
+versionado y registró `baseline-ma13` v1; job serverless `Completed`, Verify 7/7 [AZ-U]. **U15 autorizada e implementada** con corpus sintético; Search Basic preparado sin desplegar por el costo pendiente. U16 sigue sin autorizar.)*
 Restricciones vigentes, que se levantan solo por instrucción explícita:
 
 - **No escribir código de aplicación fuera de una unidad autorizada.** Cada unidad (U1 a U6 de `DT-047`,
