@@ -5,8 +5,8 @@
 | Campo | Valor |
 |---|---|
 | Propósito | Describir **qué producto** se construye, qué problema resuelve, para quién, con qué capacidades y bajo qué restricciones, con trazabilidad a los requisitos oficiales, las decisiones, los módulos y las pruebas |
-| Estado | **Borrador** (2026-10-10). Redactado por un agente a partir de las fuentes del repositorio; **no revisado ni aprobado** por el propietario |
-| Última actualización | 2026-10-10, sobre `main` `5460fd9` más la rama `claude/nifty-noether-jsajrh` (`dd1469a`, guía maestra) |
+| Estado | **Aprobado por el propietario** (2026-10-14), con los límites del MVP registrados en `docs/00b-mvp.md` §1 y §4 |
+| Última actualización | 2026-10-14: revisión y aprobación del propietario |
 | Documento hermano | [`docs/00b-mvp.md`](00b-mvp.md): límites de la primera versión y cómo se acepta |
 | Ubicación | `docs/00a-prd.md`, y no `docs/01-prd.md`: los prefijos `01` y `02` ya pertenecen a `01-requerimientos.md` y `02-propuesta-tecnica.md`. El sufijo `a` lo sitúa justo después de la guía maestra y antes de los requisitos |
 
@@ -34,11 +34,10 @@
 | Reglas y parámetros de negocio | [`knowledge/business-rules.md`](../knowledge/business-rules.md), [`knowledge/assumptions.md`](../knowledge/assumptions.md) | Muchos parámetros **pendientes del negocio** |
 | Estado y evidencia | [`project/status.md`](../project/status.md), [`docs/reports/`](reports/README.md) | Vivo |
 
-### 1.2 Decisiones pendientes de aprobación que afectan al producto
+### 1.2 Decisiones pendientes que afectan al producto
 
 | Tema | Referencia | Efecto si sigue abierto |
 |---|---|---|
-| Aprobación de este PRD y del documento MVP | — | Siguen como borrador |
 | Umbrales de clasificación de riesgo y urgencia | `BR-X03` | RF-013, RF-014 y RNF-012 no se pueden construir |
 | Parámetros de política del negocio (nivel de servicio, revisión, costos, horizonte de cobertura, selección de proveedor) | `docs/01` §7; `knowledge/business-rules.md` §3 | Las recomendaciones siguen siendo `V1_PROVISIONAL` (`DT-031`) |
 | Validación de los cuatro roles | `ASSUMPTION-010`, RS-002 | Los roles funcionan, pero su significado de negocio no está confirmado |
@@ -302,11 +301,10 @@ Vista funcional. El detalle técnico está en [`docs/03`](03-arquitectura.md) §
 | Ejecución reproducible | — | U7 (Docker), U8 (CI) |
 | Entorno desplegado | — | U10 (base de Azure), U11 (Entra), U12 (Container Apps, ACR, PostgreSQL gestionado) |
 
-**Dependencias externas.** Todas están encapsuladas tras puertos con una implementación local (`docs/03` §16.5,
-`DT-094` punto 2):
+**Dependencias externas.** Están encapsuladas tras puertos (`docs/03` §16.5, `DT-094` punto 2):
 
-- **Hoy:** PostgreSQL y Entra ID (en `dev`).
-- **Futuras:** Azure OpenAI, Azure ML y AI Search.
+- **Desplegadas en `dev`:** PostgreSQL, Entra ID, Azure OpenAI (U13) y Azure ML (U14).
+- **Futura:** Azure AI Search (U15; requiere autorización propia y confirmar el corpus documental).
 
 ---
 
@@ -322,13 +320,11 @@ Vista funcional. El detalle técnico está en [`docs/03`](03-arquitectura.md) §
 - MRP multinivel;
 - finanzas y contabilidad.
 
-**Dentro del alcance de la Etapa 2, sin implementar** (`DT-094`, cada unidad con su propia autorización):
+**Dentro del alcance de la Etapa 2** (`DT-094`, cada unidad requiere su propia autorización):
 
-- U13 Azure OpenAI tras `TextGenerator`;
-- U14 Azure ML (registro versionado de MA13);
-- U15 AI Search con corpus sintético;
-- U16 Power BI;
-- QA y entrega.
+- **Implementadas y verificadas en `dev`:** U13 Azure OpenAI tras `TextGenerator`; U14 Azure ML (registro versionado de MA13).
+- **Pendientes de autorización:** U15 AI Search con corpus sintético y U16 Power BI.
+- **Posteriores:** QA y entrega.
 
 `DT-094` punto 1 los mantiene **dentro** del alcance de la Etapa 2. **No** forman parte del MVP local funcional (punto
 10); ver [`docs/00b-mvp.md`](00b-mvp.md) §1.
@@ -406,10 +402,8 @@ Los criterios del MVP (MVP-01…) están en [`docs/00b-mvp.md`](00b-mvp.md) §6.
 
 ### 12.2 Preguntas abiertas que afectan al producto
 
-1. ¿La primera versión aceptable incluye RF-013 y RF-014 (riesgo y sobreinventario), hoy bloqueados por `BR-X03`, o
-   pueden quedar fuera del MVP por decisión explícita? (ver `00b-mvp` §4)
-2. ¿Las escrituras de RF-001, RF-004, RF-005 y RF-008 (administración y registro) pertenecen al MVP, o basta la ingesta
-   batch?
+1. **Resuelto (2026-10-14):** RF-013/RF-014, urgencia y la vista priorizada quedan fuera del MVP mientras siga abierto `BR-X03`; permanecen como requisitos pendientes del producto.
+2. **Resuelto (2026-10-14):** las escrituras de RF-001, RF-004, RF-005 y RF-008 quedan fuera del MVP; para esta versión basta la ingesta batch.
 3. ¿Se confirman los cuatro roles y su alcance (`ASSUMPTION-010`)?
 4. ¿Qué parámetros de política aporta el negocio para dejar de ser `V1_PROVISIONAL` (`docs/01` §7)?
-5. ¿Se aprueban este PRD y el MVP como base para futuras sesiones?
+5. **Resuelto (2026-10-14):** el propietario aprobó este PRD y el MVP como base para futuras sesiones, con los límites descritos en `docs/00b-mvp.md`.

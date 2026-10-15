@@ -5,7 +5,7 @@
 | Campo | Valor |
 |---|---|
 | Propósito | Delimitar la **primera versión funcional** y fijar **cómo se acepta**. El «qué producto y por qué» está en el PRD ([`docs/00a-prd.md`](00a-prd.md)) |
-| Estado | **Borrador** (2026-10-10), redactado por un agente a partir de las fuentes; **no aprobado** por el propietario |
+| Estado | **Aprobado por el propietario** (2026-10-14), con el alcance vigente de §1 y §4 |
 | Fuente principal del alcance | `DT-094` (`ACEPTADA`, 2026-10-06), puntos 2, 9, 10 y 11 |
 | Fuentes de los criterios | Criterios de cierre ya existentes: [`docs/05`](05-motor-predictivo.md) §19.9 (U3), [`docs/06`](06-motor-abastecimiento.md) §16.13.4 (U4), [`docs/07`](07-api.md) §7.5 (U5), [`docs/09`](09-ia-generativa.md) §14.6 (U6), [`docs/08`](08-frontend.md) §12.1 (Fase 7), `DT-095` (U7) |
 | Estado vivo | [`project/status.md`](../project/status.md). Si este documento lo contradice, manda `status.md` y este documento se corrige |
@@ -32,7 +32,7 @@ alcance de la Etapa 2**, pero el punto 10 los clasifica **aparte** del MVP local
   en Azure. Es un hito propio, con su matriz de cierre en
   [`docs/reports/u12-cierre-evidencias.md`](reports/u12-cierre-evidencias.md).
 - **Las unidades de servicio** U13 (Azure OpenAI), U14 (Azure ML), U15 (AI Search) y U16 (Power BI) no forman parte del
-  MVP. Tampoco están autorizadas.
+  MVP. U13 y U14 están implementadas y verificadas en `dev`; U15 y U16 siguen sin autorización.
 
 ### 1.2 Definición operativa
 
@@ -40,20 +40,14 @@ alcance de la Etapa 2**, pero el punto 10 los clasifica **aparte** del MVP local
 interfaz. Funciona en local con un solo comando, sin Azure ni credenciales, sobre el dataset `SYNTHETIC` 0.4.0 y con
 reglas `V1_PROVISIONAL`, y es reproducible, trazable y de solo lectura.
 
-### 1.3 Lo que no está decidido
+### 1.3 Decisiones de alcance del propietario (2026-10-14)
 
-**Punto pendiente del propietario:**
+El propietario revisó y aceptó la definición operativa y los límites de este MVP:
 
-- **Ninguna fuente enumera formalmente** qué requisitos «Debe» de `docs/01` exige el MVP. Esta definición deriva de
-  `DT-094`.
-- Varios requisitos «Debe» **aprobados** quedan fuera de V1 por decisiones aceptadas:
-  - riesgo y sobreinventario (`BR-X03`);
-  - escrituras y administración (`docs/07` §7.3).
-
-  No se eliminan: se clasifican como **pendientes** (§4).
-- **U7–U9 sin Azure.** U7 (Docker) es el medio aceptado para demostrar RNF-006 y se usa en los criterios. U8 (CI) y U9
-  (vistas analíticas) son soporte; `DT-094` los sitúa en el «Bloque A — Base sin Azure», no en la «base» del punto 2.
-  Su pertenencia al MVP es **propuesta pendiente de aprobación**.
+- RF-013/RF-014, urgencia y la vista priorizada quedan fuera del MVP mientras los umbrales de negocio `BR-X03` sigan pendientes. Son requisitos pendientes del producto, no requisitos eliminados.
+- Las escrituras de RF-001, RF-004, RF-005 y RF-008 quedan fuera del MVP; el recorrido usa ingesta batch.
+- U7–U9 se clasifican como soporte del sistema, no como capacidades funcionales adicionales del MVP. U7 sigue siendo el medio de ejecución verificable del criterio MVP-08; CI (U8) y analítica (U9) no amplían el alcance funcional.
+- El alcance aceptado es el recorrido y los criterios MVP-01…MVP-09 descritos aquí. Los parámetros de negocio y la validación de los roles siguen abiertos en el producto y no se convierten por esta aprobación en valores confirmados.
 
 ---
 
@@ -101,7 +95,7 @@ reglas `V1_PROVISIONAL`, y es reproducible, trazable y de solo lectura.
 | Alta, edición y registro de maestros, movimientos, órdenes y recepciones (escrituras de RF-001, RF-004, RF-005 y RF-008) | **Aprobado, aplazado** en V1 | `docs/07` §7.3 |
 | Resolución humana de recomendaciones (atender, descartar o convertir) | Aplazado | `DT-059` |
 | Desempeño de proveedores (RF-016) | Propuesta no vinculante | `docs/01` §5, `BR-X05` |
-| Azure OpenAI, Azure ML, AI Search, Power BI (U13–U16) | Stack de Azure, **fuera del MVP**, sin autorizar | `DT-094` puntos 3 y 10 |
+| Azure OpenAI, Azure ML, AI Search, Power BI (U13–U16) | Stack de Azure, **fuera del MVP**. U13 y U14 están desplegadas/verificadas; U15 y U16 siguen sin autorizar | `DT-094` puntos 3 y 10; `DT-101`, `DT-102` |
 | Despliegue en Azure `dev` (U10–U12) | **Objetivo separado** del MVP funcional | `DT-094` punto 10; informe de U12 |
 | Modelos experimentales (SES y los candidatos de F5c), F5d, G2, G3, promoción y uso del *holdout* | Experimental o posterior | `DT-094` puntos 9 y 10 |
 | Estrategia (b) de `DT-011` | Sin autorizar | `DT-094` punto 9 |
@@ -158,7 +152,7 @@ disponibilidad. Las etiquetas de evidencia son las de [`docs/00-guia-maestra.md`
 | MVP-07 | RF-017 | `npm run lint`, `typecheck`, `format:check`, `test` y `build`; navegación sobre la API local | Vistas de `docs/08` §12 con datos de la API y avisos `SYNTHETIC_DATA` / `V1_PROVISIONAL_POLICY` visibles | `docs/08` §12.1, `DT-070` | Fase 7 integrada (PR #2–#5); Vitest 176 OK **[CC]** 2026-10-10 | **Cumplido** |
 | MVP-08 | RNF-006, RNF-005 | `docker compose -f infra/docker-compose.yml --profile app up --build -d` y `python infra/docker/smoke.py` | Servicios `healthy`; smoke frontend → API → PostgreSQL correcto, sin credenciales | `DT-095`, `docs/12` §3.4 | Job `docker` de CI en verde en `main` `62f25ca` **[CI]**, con las bases oficiales por digest; verificación de U7 con imágenes base sustitutas (`DT-095`) | **Cumplido** |
 | MVP-09 | Manejo de errores (RF-010, RF-015, `DT-066`) | Casos `INSUFFICIENT_HISTORY`, `NOT_CALCULABLE`, ejecución inexistente y entrada inválida | Resultado explícito con `reasons`, nunca un 404 para `NO_NEED`/`NOT_CALCULABLE`; errores con formato uniforme y `X-Correlation-ID` | `docs/07` §7.5 (criterios 7, 10 y 11); `DT-053` | Cubierto por los criterios de U4 y U5 | **Cumplido** |
-| MVP-10 | Aceptación formal del MVP | Revisión del propietario de este documento y del PRD, y decisión sobre §1.3 y §4 | MVP aceptado, o lista de cambios | — | — | **Pendiente** |
+| MVP-10 | Aceptación formal del MVP | Revisión del propietario de este documento y del PRD, y decisión sobre §1.3 y §4 | MVP aceptado, o lista de cambios | Decisión explícita del propietario en esta sesión: límites actuales aceptados; riesgos/urgencia y escrituras fuera; U7–U9 como soporte | Respuesta del propietario del 2026-10-14 | **Cumplido** |
 
 **Matriz C01–C15 de U12.** Es una matriz de **seguimiento derivada** del objetivo separado de despliegue, en estado
 `PROPUESTA`. **No es un criterio del MVP** ni un requisito preexistente.
@@ -176,41 +170,36 @@ Estados distintos, no equivalentes (`DT-094` punto 11 y guía §G.2):
 | Prueba de integración local | Contra PostgreSQL real o Docker | `tests/db`; smoke de U7 |
 | Despliegue realizado | El sistema corre en un entorno desplegado | U12: `u12-dev` `Succeeded` **[AZ-U]** |
 | Validación real del entorno desplegado | Pruebas reales en ese entorno: Verify, E2E, redespliegue y fallos | U12 **cerrada el 2026-10-13** con pendientes aceptados: Verify 20/20, matriz de autorización E2E, sin token → 401, redespliegue y pruebas de fallo **[AZ-U]**; pendientes P1–P5 del informe de U12 §4 (vistas, idempotencia detallada, imagen inexistente) |
-| Documentación y evidencia de aceptación | Criterios con evidencia y estado documentados y aceptados | MVP-01…09 documentados; **MVP-10 pendiente** |
+| Documentación y evidencia de aceptación | Criterios con evidencia y estado documentados y aceptados | MVP-01…09 documentados; MVP-10 aceptado por el propietario el 2026-10-14 |
 
 **El MVP está «terminado»** cuando MVP-01…MVP-09 están cumplidos **y** MVP-10 (aceptación del propietario) está
 cumplido.
 
 ---
 
-## 8. Estado del MVP a 2026-10-10
+## 8. Estado del MVP a 2026-10-14
 
 | Categoría | Contenido |
 |---|---|
-| Completado | MVP-01 a MVP-09, con la evidencia de §6 |
+| Completado | MVP-01 a MVP-10, con la evidencia de §6 y la aprobación del propietario |
 | Implementado, pendiente de evidencia | Nada dentro del MVP. Fuera de él: verificaciones pendientes aceptadas de U12 (informe de U12 §4, P1–P5) |
 | Pruebas bloqueadas | Ninguna del MVP. Las de U12 en Azure no se pueden ejecutar desde Claude Code Cloud: sin Azure CLI ni credenciales, red bloqueada a `*.azurecontainerapps.io`, sin navegador. Las ejecuta el responsable |
 | Experimental | F5c (candidatos), SES sin promover; todo `SYNTHETIC` |
-| Decisiones pendientes | Aceptación del MVP y del PRD (MVP-10); RF-013/RF-014 y escrituras dentro o fuera del MVP (§1.3); `BR-X03`; `ASSUMPTION-010`; parámetros de política; `DT-P16` |
-| Próximo hito concreto | **Revisión del propietario** de este documento y del PRD (MVP-10). Fuera del MVP, U12 está cerrada (2026-10-13); U13 necesita su propia autorización |
+| Decisiones pendientes | `BR-X03`; validación de roles (`ASSUMPTION-010`); parámetros de política; `DT-P16`; autorización propia de U15 y confirmación del corpus (`ASSUMPTION-008`) |
+| Próximo hito concreto | El MVP y el PRD están aceptados. U15 (AI Search) es la siguiente unidad candidata del roadmap, pero requiere autorización expresa y confirmar el corpus antes de implementarla |
 
-**El MVP no se declara terminado** mientras MVP-10 siga pendiente.
+**El MVP está aceptado**: MVP-01…MVP-09 tienen evidencia documentada y MVP-10 fue aprobado por el propietario el 2026-10-14.
 
 ---
 
 ## 9. Riesgos y plan mínimo de cierre
 
-**Bloqueos para aceptar el MVP:** solo la decisión del propietario (MVP-10) y la respuesta a §1.3:
-
-- si RF-013/RF-014 y las escrituras quedan fuera del MVP;
-- si U7–U9 cuentan como parte del MVP.
+**Aceptación:** MVP-10 está cumplido. El propietario resolvió las decisiones de alcance de §1.3; `BR-X03`, los parámetros de negocio y la validación de roles siguen abiertos para el producto, pero no bloquean la aceptación de este MVP.
 
 **Plan mínimo:**
 
-1. El propietario revisa `docs/00a-prd.md` y este documento.
-2. Decide los puntos de §1.3. Si alguna decisión cambia el alcance, se registra en `docs/15` como DT nueva o como nota
-   de `DT-094`.
-3. Se marca MVP-10 y se actualizan `project/status.md` y `project/roadmap.md`.
+1. Conservar esta decisión de alcance en `project/status.md` y `project/roadmap.md`.
+2. Antes de U15, obtener su autorización específica y confirmar el corpus documental requerido por `ASSUMPTION-008`.
 
 **Lo que no debe ampliar el MVP:**
 
