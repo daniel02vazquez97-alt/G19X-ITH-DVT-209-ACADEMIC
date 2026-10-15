@@ -10,6 +10,7 @@ from .chat import ChatGenerator, build_messages, message_list
 from .context import build_context
 from .errors import ExplanationError, GeneratorUnavailable, UnverifiedFigureError
 from .explanation import TemplateGenerator, TextGenerator, explain, provisional_sentence
+from .retrieval import DocumentChunk, DocumentRetriever, InMemoryDocumentRetriever, RetrievedChunk, RetrievalFilters
 from .types import (
     DEGRADED,
     GENERATOR,
@@ -32,11 +33,16 @@ __all__ = [
     "VERIFIED",
     "Explanation",
     "ExplanationContext",
+    "DocumentChunk",
+    "DocumentRetriever",
     "ExplanationError",
     "Fact",
     "GeneratorUnavailable",
+    "InMemoryDocumentRetriever",
     "Provenance",
     "ReasonDetail",
+    "RetrievedChunk",
+    "RetrievalFilters",
     "TemplateGenerator",
     "TextGenerator",
     "UnverifiedFigureError",

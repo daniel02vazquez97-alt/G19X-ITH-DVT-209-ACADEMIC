@@ -32,7 +32,7 @@ alcance de la Etapa 2**, pero el punto 10 los clasifica **aparte** del MVP local
   en Azure. Es un hito propio, con su matriz de cierre en
   [`docs/reports/u12-cierre-evidencias.md`](reports/u12-cierre-evidencias.md).
 - **Las unidades de servicio** U13 (Azure OpenAI), U14 (Azure ML), U15 (AI Search) y U16 (Power BI) no forman parte del
-  MVP. U13 y U14 están implementadas y verificadas en `dev`; U15 y U16 siguen sin autorización.
+  MVP. U13 y U14 están implementadas y verificadas en `dev`; U15 está implementada con corpus sintético, sin despliegue por costo pendiente; U16 sigue sin autorización.
 
 ### 1.2 Definición operativa
 
@@ -95,7 +95,7 @@ El propietario revisó y aceptó la definición operativa y los límites de este
 | Alta, edición y registro de maestros, movimientos, órdenes y recepciones (escrituras de RF-001, RF-004, RF-005 y RF-008) | **Aprobado, aplazado** en V1 | `docs/07` §7.3 |
 | Resolución humana de recomendaciones (atender, descartar o convertir) | Aplazado | `DT-059` |
 | Desempeño de proveedores (RF-016) | Propuesta no vinculante | `docs/01` §5, `BR-X05` |
-| Azure OpenAI, Azure ML, AI Search, Power BI (U13–U16) | Stack de Azure, **fuera del MVP**. U13 y U14 están desplegadas/verificadas; U15 y U16 siguen sin autorizar | `DT-094` puntos 3 y 10; `DT-101`, `DT-102` |
+| Azure OpenAI, Azure ML, AI Search, Power BI (U13–U16) | Stack de Azure, **fuera del MVP**. U13/U14 desplegadas; U15 implementada sin desplegar por costo pendiente; U16 sin autorizar | `DT-094` puntos 3 y 10; `DT-101`, `DT-102` |
 | Despliegue en Azure `dev` (U10–U12) | **Objetivo separado** del MVP funcional | `DT-094` punto 10; informe de U12 |
 | Modelos experimentales (SES y los candidatos de F5c), F5d, G2, G3, promoción y uso del *holdout* | Experimental o posterior | `DT-094` puntos 9 y 10 |
 | Estrategia (b) de `DT-011` | Sin autorizar | `DT-094` punto 9 |
@@ -185,8 +185,8 @@ cumplido.
 | Implementado, pendiente de evidencia | Nada dentro del MVP. Fuera de él: verificaciones pendientes aceptadas de U12 (informe de U12 §4, P1–P5) |
 | Pruebas bloqueadas | Ninguna del MVP. Las de U12 en Azure no se pueden ejecutar desde Claude Code Cloud: sin Azure CLI ni credenciales, red bloqueada a `*.azurecontainerapps.io`, sin navegador. Las ejecuta el responsable |
 | Experimental | F5c (candidatos), SES sin promover; todo `SYNTHETIC` |
-| Decisiones pendientes | `BR-X03`; validación de roles (`ASSUMPTION-010`); parámetros de política; `DT-P16`; autorización propia de U15 y confirmación del corpus (`ASSUMPTION-008`) |
-| Próximo hito concreto | El MVP y el PRD están aceptados. U15 (AI Search) es la siguiente unidad candidata del roadmap, pero requiere autorización expresa y confirmar el corpus antes de implementarla |
+| Decisiones pendientes | `BR-X03`; validación de roles (`ASSUMPTION-010`); parámetros de política; `DT-P16`; cotización y decisión de despliegue para U15; corpus empresarial (`ASSUMPTION-008`) |
+| Próximo hito concreto | El MVP y el PRD están aceptados. U15 está implementada con corpus sintético; resolver costo Basic antes de desplegar. U16 requiere autorización propia |
 
 **El MVP está aceptado**: MVP-01…MVP-09 tienen evidencia documentada y MVP-10 fue aprobado por el propietario el 2026-10-14.
 
@@ -199,7 +199,7 @@ cumplido.
 **Plan mínimo:**
 
 1. Conservar esta decisión de alcance en `project/status.md` y `project/roadmap.md`.
-2. Antes de U15, obtener su autorización específica y confirmar el corpus documental requerido por `ASSUMPTION-008`.
+2. Antes de desplegar U15, revisar la cotización regional de Search Basic frente al presupuesto. Validar el corpus empresarial requerido por `ASSUMPTION-008` antes de usar documentos reales.
 
 **Lo que no debe ampliar el MVP:**
 

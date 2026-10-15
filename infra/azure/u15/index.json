@@ -1,0 +1,25 @@
+{
+  "name": "u15-demo-documents",
+  "fields": [
+    {"name": "id", "type": "Edm.String", "key": true, "filterable": true},
+    {"name": "content", "type": "Edm.String", "searchable": true, "retrievable": true},
+    {"name": "content_vector", "type": "Collection(Edm.Single)", "searchable": true, "retrievable": false,
+     "dimensions": 1536, "vectorSearchProfile": "u15-vector-profile"},
+    {"name": "title", "type": "Edm.String", "searchable": true, "retrievable": true},
+    {"name": "document_id", "type": "Edm.String", "filterable": true, "retrievable": true},
+    {"name": "section", "type": "Edm.String", "searchable": true, "retrievable": true},
+    {"name": "document_type", "type": "Edm.String", "filterable": true, "retrievable": true},
+    {"name": "effective_date", "type": "Edm.DateTimeOffset", "filterable": true, "retrievable": true},
+    {"name": "expiry_date", "type": "Edm.DateTimeOffset", "filterable": true, "retrievable": true},
+    {"name": "security_groups", "type": "Collection(Edm.String)", "filterable": true, "retrievable": false},
+    {"name": "source_url", "type": "Edm.String", "retrievable": true},
+    {"name": "source_type", "type": "Edm.String", "filterable": true, "retrievable": true}
+  ],
+  "vectorSearch": {
+    "algorithms": [
+      {"name": "u15-hnsw", "kind": "hnsw", "hnswParameters": {"m": 4, "efConstruction": 400,
+       "efSearch": 500, "metric": "cosine"}}
+    ],
+    "profiles": [{"name": "u15-vector-profile", "algorithm": "u15-hnsw"}]
+  }
+}

@@ -1,6 +1,6 @@
 # 09 — IA generativa (Azure OpenAI + Azure AI Search)
 
-> **Estado vigente (2026-10-13):** **Implementado:** explicación por plantilla (U6, §14.5) y Azure OpenAI tras el mismo puerto con verificación de cifras (U13, §14.4). Pendiente: Azure AI Search y RAG (U15). La línea siguiente es el historial de versiones del documento.
+> **Estado vigente (2026-10-14):** explicación por plantilla (U6) y Azure OpenAI para CU-1 (U13) implementados; U15 implementa el corpus sintético, `DocumentRetriever`, fragmentación, adaptadores local/Azure e índice de evaluación. El despliegue Azure queda pendiente de la decisión del tier facturable y de verificaciones con identidad/grupos reales. RAG conversacional y endpoint de asistente no forman parte de U15.
 
 **Estado:** Versión 1.0 — Etapa 0 (diseño, **no implementado**) · **Fecha:** 2026-09-04 · **Versión 1.1** — revisada en la auditoría de Etapa 0.1 · **Versión 1.2** (2026-09-30) — §14, punto de integración de la Etapa 2; §§1–13 no cambian · **Versión 1.3** (2026-10-04) — U6 autorizada, no implementada: §14.5 (concreción, `DT-068` y `DT-069`) y §14.6 (criterios de cierre); notas en §14 y §14.2 · **Versión 1.4** (2026-10-04) — U6 implementada y validada: estado en §14, §14.5 y §14.6; la frase de `ZERO_FORECAST_DEMAND` de §14.5 se corrigió antes de implementar («es cero» incumplía la regla de `DT-069` contra los números escritos con letras)
 
@@ -96,8 +96,10 @@ Narrativa breve del estado del abastecimiento a partir de indicadores ya calcula
 
 **Contenido previsto:** políticas de compra e inventario, contratos y condiciones con proveedores,
 manuales y procedimientos, fichas técnicas de producto, actas de decisiones relevantes.
-**Estado:** el corpus documental **aún no está confirmado** (ASSUMPTION-008). Si no existe
-documentación interna estructurada, CU-4 no es viable y debe reevaluarse.
+**Corpus U15:** `knowledge/search_corpus/` contiene documentos de demostración marcados `SYNTHETIC`,
+derivados de las reglas documentadas, sin datos reales ni reglas nuevas. `U15-DEMO-READERS` es una
+etiqueta de fixture, no un grupo real de Entra ID. Esto habilita la evaluación técnica del puerto; no
+confirma que exista corpus empresarial. `ASSUMPTION-008` sigue vigente para la puesta en uso real.
 
 **Estructura conceptual del índice:**
 
@@ -295,8 +297,9 @@ conexión con la base ni recibe ninguna función del motor.
 (`gpt-4.1-mini`, Entra ID sin claves) detrás del mismo puerto para CU-1, con la verificación de §14.3 más el rechazo
 de números escritos con letras y la plantilla como respaldo. El resto de esta sección sigue vigente.)*
 
-Asistente conversacional (`RF-021`, clase D), consultas predefinidas (CU-3), RAG (CU-4, bloqueado por
-ASSUMPTION-008), elección de modelo y región (`DT-P08`) y cualquier costo de Azure.
+Asistente conversacional (`RF-021`, clase D), consultas predefinidas (CU-3), respuestas RAG para CU-4,
+elección de modelo y región (`DT-P08`) y despliegue con costo de Azure. U15 entrega solo recuperación
+documental y referencias; la existencia de un corpus empresarial y sus grupos sigue pendiente.
 
 ### 14.5 Concreción de U6 (`DT-068`, `DT-069`)
 
@@ -445,3 +448,21 @@ con `narrative = null`.
 lectura `explanation_source` en `backend/app/db/read/recommendations.py`. Las 100 evaluaciones reales dan 50
 `RECOMMEND` y 40 `NO_NEED` `VERIFIED` y 10 `NOT_CALCULABLE` `NOT_APPLICABLE`, ninguna `DEGRADED`, en local y en
 Docker. Pruebas: 353 pruebas en la suite por defecto (295 + 58 de `tests/genai`), 56 de la API sin base, 151 de integración (142 + 9 de `test_api_explanation.py`), 146 de U1 y 582 del generador en verde.*
+
+### 14.7 U15 — recuperación documental (DT-094)
+
+- `backend/app/genai/retrieval.py` define `DocumentChunk`, `RetrievedChunk`, `RetrievalFilters` y el puerto
+  `DocumentRetriever`. `InMemoryDocumentRetriever` combina ranking léxico/vectorial y funciona sin red; el vectorizer se inyecta.
+- `backend/app/genai/corpus.py` carga Markdown desde un manifiesto explícitamente `SYNTHETIC`, separa
+  secciones y fragmentos con solapamiento configurable y conserva documento, sección y referencia de cita.
+- `backend/app/api/azure_search.py` integra embeddings Azure OpenAI v1 y Azure AI Search REST estable
+  `2026-04-01`, con Entra ID. Los filtros de grupo y vigencia se envían a Search con `vectorFilterMode=preFilter`;
+  una lista vacía de grupos no llama al servicio.
+- `knowledge/search_corpus/evaluation.json` fija seis consultas y documentos esperados. `evaluate_retriever`
+  mide aciertos en top-k; el umbral de relevancia no se inventa y sigue pendiente de aceptación.
+- No se conecta a la API ni al frontend. No se crea un endpoint conversacional. No se han aprovisionado Search
+  ni un deployment de embeddings. `infra/azure/u15/main.bicep` prepara Search Basic con autenticación Entra ID sin
+  claves y `Search Index Data Reader` para la identidad runtime. El nivel dedicado mantiene cargos mientras exista.
+  Microsoft da como referencia aproximadamente USD 67 por 30 días frente al presupuesto de planificación de USD 50
+  de `DT-094`; no es una cotización de `centralus`, por lo que el despliegue sigue pendiente de revisar el costo real y
+  autorizarlo. Los grupos reales y el umbral de relevancia siguen pendientes.
