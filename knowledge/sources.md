@@ -161,6 +161,7 @@ Consultada como referencia general; se verificará la versión vigente al implem
 | Probar Azure AI Search sin costo | https://learn.microsoft.com/en-us/azure/search/search-try-for-free | Basic dedicado consume aproximadamente un tercio de USD 200 durante 30 días; indicación orientativa, no cotización regional |
 | Roles integrados de Azure para IA y ML | https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles/ai-machine-learning | GUID `1407120a-92aa-4202-b7e9-c0e197c71c8f` y DataAction de `Search Index Data Reader` |
 | Referencia Bicep de Microsoft.Search/searchServices | https://learn.microsoft.com/en-us/azure/templates/microsoft.search/2025-05-01/searchservices | API ARM `2025-05-01`, SKU, autenticación Entra y deshabilitación de autenticación local |
+| Referencia Bicep de Microsoft.Search/searchServices (consulta: 2026-10-15) | https://learn.microsoft.com/en-us/azure/templates/microsoft.search/2025-05-01/searchservices | `hostingMode` acepta `Default` o `HighDensity`; para SKU distintos de `standard3`, debe ser `Default` |
 | Autorización de acceso en tiempo de consulta | https://learn.microsoft.com/en-us/azure/search/search-query-access-control-rbac-enforcement | ACL automatizada en tiempo de consulta está en preview; U15 usa filtro explícito de grupos preconsulta hasta que esa función deje preview |
 | Vector search overview | https://learn.microsoft.com/en-us/azure/search/vector-search-overview | Azure AI Search admite consultas vectoriales e híbridas |
 
