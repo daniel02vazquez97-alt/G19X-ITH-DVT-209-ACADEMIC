@@ -12,12 +12,19 @@ por 30 días, basada en un tercio de USD 200; no es cotización de `centralus`. 
 tiene USD 100 de crédito total y se mantiene el umbral de planificación de USD 50 de `DT-094`. La instrucción vigente es
 minimizar el gasto y evitar recursos facturables continuos.
 
-Antes de Basic, evaluar: (1) el nivel Free para el demo pequeño, sujeto a confirmar compatibilidad con Entra ID sin claves;
-Microsoft Learn tiene una discrepancia: la guía RBAC indica cualquier nivel, mientras que la guía de conexiones sin claves
-exige Basic o superior; (2) Serverless Developer, que es preview, factura por consumo y depende de disponibilidad regional
-y precio mostrado en el portal. Ninguna opción está aprobada ni verificada en la suscripción. Mantener el uso local con
-`InMemoryDocumentRetriever` mientras se resuelve. No ejecutar los comandos de despliegue siguientes hasta elegir opción,
-revisar su costo efectivo y obtener autorización explícita del responsable.
+**Resultado de la evaluación documental (2026-10-15):**
+
+- **Free:** cuesta cero, pero tiene 50 MB, comparte infraestructura y podría eliminarse por inactividad. El quickstart REST
+  oficial muestra Free con Microsoft Entra ID; la guía keyless de aplicaciones pide un nivel facturable (Basic o superior).
+  Se requiere una validación específica para este adaptador antes de considerarlo compatible.
+- **Serverless Developer:** escala a cero cuando está inactivo, pero factura CU-hora y almacenamiento GB-mes, y está en
+  preview sin SLA. Microsoft no expone aquí una cifra regional verificable para la oferta Azure for Students.
+- **Basic:** mantiene costo fijo continuo. La referencia de ~USD 67 por 30 días no es cotización regional y excede el umbral
+  de planificación de USD 50.
+
+**Recomendación actual:** conservar `InMemoryDocumentRetriever` para uso sin costo y no aprovisionar Search hasta validar en
+la suscripción el precio de Serverless y la autenticación de Free, o recibir autorización para Basic. La página pública de
+precios remite a la calculadora/portal para estimar según región y oferta. Ninguna opción facturable está aprobada.
 
 ## Validación previa (no despliega)
 

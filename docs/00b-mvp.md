@@ -32,7 +32,7 @@ alcance de la Etapa 2**, pero el punto 10 los clasifica **aparte** del MVP local
   en Azure. Es un hito propio, con su matriz de cierre en
   [`docs/reports/u12-cierre-evidencias.md`](reports/u12-cierre-evidencias.md).
 - **Las unidades de servicio** U13 (Azure OpenAI), U14 (Azure ML), U15 (AI Search) y U16 (Power BI) no forman parte del
-  MVP. U13 y U14 están implementadas y verificadas en `dev`; U15 está implementada con corpus sintético, sin despliegue por costo pendiente; U16 sigue sin autorización.
+  MVP. U13 y U14 están implementadas y verificadas en `dev`; U15 está integrada en `main` con corpus sintético y sin despliegue; U16 sigue sin autorización.
 
 ### 1.2 Definición operativa
 
@@ -95,7 +95,7 @@ El propietario revisó y aceptó la definición operativa y los límites de este
 | Alta, edición y registro de maestros, movimientos, órdenes y recepciones (escrituras de RF-001, RF-004, RF-005 y RF-008) | **Aprobado, aplazado** en V1 | `docs/07` §7.3 |
 | Resolución humana de recomendaciones (atender, descartar o convertir) | Aplazado | `DT-059` |
 | Desempeño de proveedores (RF-016) | Propuesta no vinculante | `docs/01` §5, `BR-X05` |
-| Azure OpenAI, Azure ML, AI Search, Power BI (U13–U16) | Stack de Azure, **fuera del MVP**. U13/U14 desplegadas; U15 implementada sin desplegar por costo pendiente; U16 sin autorizar | `DT-094` puntos 3 y 10; `DT-101`, `DT-102` |
+| Azure OpenAI, Azure ML, AI Search, Power BI (U13–U16) | Stack de Azure, **fuera del MVP**. U13/U14 desplegadas; U15 integrada en `main` sin desplegar; U16 sin autorizar | `DT-094` puntos 3 y 10; `DT-101`, `DT-102` |
 | Despliegue en Azure `dev` (U10–U12) | **Objetivo separado** del MVP funcional | `DT-094` punto 10; informe de U12 |
 | Modelos experimentales (SES y los candidatos de F5c), F5d, G2, G3, promoción y uso del *holdout* | Experimental o posterior | `DT-094` puntos 9 y 10 |
 | Estrategia (b) de `DT-011` | Sin autorizar | `DT-094` punto 9 |
