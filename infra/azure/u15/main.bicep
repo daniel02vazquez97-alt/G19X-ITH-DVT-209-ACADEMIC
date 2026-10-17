@@ -1,5 +1,7 @@
-// U15 (DT-094): Azure AI Search Basic, preparado pero sin desplegar.
-// La identidad de U12 solo recibe lectura de documentos; el aprovisionamiento del índice usa el responsable.
+// U15 (DT-094): Azure AI Search. Describe el servicio Free que el responsable creo en el portal el 2026-10-16
+// (motor-predictivo-search-dev, centralus) y el rol de lectura de la identidad de U12. No se despliega con esta
+// plantilla: deploy-u15.ps1 -Stage WhatIf la compara con el servicio real (deriva) y -Stage Roles asigna el rol con az.
+// El indice y los documentos los crea el responsable con search_setup.py (roles de datos propios), no la plantilla.
 
 targetScope = 'resourceGroup'
 
@@ -16,41 +18,61 @@ param ownerTag string = 'responsable-del-proyecto'
 @description('Identidad de ejecucion de U12 que consulta el indice.')
 param runtimeIdentityName string = 'id-${projectName}-${environment}-runtime'
 
+@description('Nombre del servicio de Search existente (creado en el portal).')
+param serviceName string = 'motor-predictivo-search-dev'
+
+@description('Nivel del servicio: free no tiene cargo continuo (50 MB, infraestructura compartida). Basic queda como opcion documentada, no autorizada.')
+@allowed([
+  'free'
+  'basic'
+])
+param searchSku string = 'free'
+
+@description('true: solo Entra ID (sin claves de API). false: Entra ID y claves, el estado actual del servicio hasta verificar la API con Entra ID.')
+param disableLocalAuth bool = false
+
+@description('Plan de busqueda semantica; el servicio real tiene free. U15 no la usa.')
+@allowed([
+  'disabled'
+  'free'
+])
+param semanticSearch string = 'free'
+
 var tags = {
   project: 'motor-predictivo-abastecimiento'
   environment: environment
   owner: ownerTag
   purpose: 'u15-azure-ai-search'
-  managedBy: 'bicep'
+  managedBy: 'portal-y-bicep'
   costControl: 'azure-for-students-planning-50usd'
 }
-var suffix = uniqueString(resourceGroup().id)
-var serviceName = take('srch-${projectName}-${environment}-${suffix}', 60)
 var searchIndexDataReaderRoleId = '1407120a-92aa-4202-b7e9-c0e197c71c8f'
 
 resource runtimeIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
   name: runtimeIdentityName
 }
 
+// authOptions no puede definirse cuando disableLocalAuth es true (referencia de Microsoft.Search/searchServices):
+// con claves desactivadas se omite; con claves activas, aadOrApiKey acepta tambien tokens de Entra ID.
 resource searchService 'Microsoft.Search/searchServices@2025-05-01' = {
   name: serviceName
   location: location
   tags: tags
   sku: {
-    name: 'basic'
+    name: searchSku
   }
   properties: {
-    authOptions: {
+    authOptions: disableLocalAuth ? null : {
       aadOrApiKey: {
         aadAuthFailureMode: 'http401WithBearerChallenge'
       }
     }
-    disableLocalAuth: true
+    disableLocalAuth: disableLocalAuth
     hostingMode: 'Default'
     partitionCount: 1
     replicaCount: 1
     publicNetworkAccess: 'Enabled'
-    semanticSearch: 'disabled'
+    semanticSearch: semanticSearch
   }
 }
 

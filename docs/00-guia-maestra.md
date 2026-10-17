@@ -128,7 +128,7 @@ Reglas verificables por prueba: [`docs/03`](03-arquitectura.md) §16.4.
 
 **Soporte del sistema, fuera de las capacidades funcionales del MVP:** U7 (Docker) proporciona el medio verificable de ejecución local de MVP-08; U8 (CI) y U9 (vistas analíticas) son soporte. El propietario aceptó esta clasificación el 2026-10-14.
 
-**Fuera del MVP:** Entra ID y despliegue U10–U12, Azure OpenAI U13 y Azure ML U14 están implementados en `dev`. U15 (AI Search) está integrada en `main` por el PR #22; incluye corpus sintético y plantilla Basic, pero no se desplegó. La cuenta tiene USD 100 de crédito total, se conserva el umbral de planificación de USD 50 y se evaluará primero la alternativa compatible más económica. U16 (Power BI) no está autorizada.
+**Fuera del MVP:** Entra ID y despliegue U10–U12, Azure OpenAI U13 y Azure ML U14 están implementados en `dev`. U15 (AI Search) está integrada en `main` por el PR #22, con corpus sintético; el responsable creó el servicio en nivel Free (2026-10-16) y desplegó los embeddings `text-embedding-3-small` (2026-10-17), y el 2026-10-17 cargó y verificó el índice con su identidad; la conexión con la API sigue pendiente. La cuenta tiene USD 100 de crédito total, se conserva el umbral de planificación de USD 50 y se evaluará primero la alternativa compatible más económica. U16 (Power BI) no está autorizada.
 
 **Fuera del MVP o diferido** (`CLAUDE.md` §3 y §17, `DT-094`):
 
@@ -136,7 +136,7 @@ Reglas verificables por prueba: [`docs/03`](03-arquitectura.md) §16.4.
 - ERP, WMS, rutas, *pricing*, MRP y finanzas;
 - clasificación de riesgo y urgencia (bloqueada por `BR-X03`);
 - escritura en la API;
-- Servicios U13–U16: Azure OpenAI y Azure ML (U13/U14) están desplegados fuera del MVP; U15 está integrada en `main` (PR #22), sin despliegue de Search; U16 sigue sin autorización;
+- Servicios U13–U16: Azure OpenAI y Azure ML (U13/U14) están desplegados fuera del MVP; U15 está integrada en `main` (PR #22), con Search Free cargado y verificado con la identidad del responsable, sin conexión con la API; U16 sigue sin autorización;
 - `staging` y `prod`;
 - modelos promovidos (F5d, G2 y G3 sin autorizar).
 
@@ -199,7 +199,7 @@ Pruebas: `PYTHONPATH=backend python -m unittest discover -s ml/tests -t .` (CI p
 | **U12 — `dev` en Azure** | Container Apps (Consumption, `WorkloadProfiles`): frontend externo HTTPS, api interna, job de *bootstrap*; ACR Basic; PostgreSQL 16 B1ms; CD por OIDC | `infra/azure/u12/`, `infra/azure/deploy-u12.ps1`, `infra/docker/bootstrap.py`, `.github/workflows/deploy-dev.yml` | [`infra/azure/u12/README.md`](../infra/azure/u12/README.md) §5–§6, `DT-100` | 🟢 **Cerrada (2026-10-13) con verificaciones pendientes aceptadas** (§G) |
 | **U13 — Azure OpenAI** | Explicación generativa tras `TextGenerator`, con plantilla de respaldo | `backend/app/genai/`, `infra/azure/u13/` | [`infra/azure/README.md`](../infra/azure/u13/README.md), `DT-101` | ✅ Desplegada y verificada en `dev` el 2026-10-14; activa en la API |
 | **U14 — Azure ML** | Backtesting serverless reproducible y registro de `baseline-ma13`, sin endpoint | `ml/`, `infra/azure/u14/` | [`infra/azure/u14/README.md`](../infra/azure/u14/README.md), `DT-102` | ✅ Desplegada y verificada en `dev` el 2026-10-14; Verify 7/7 |
-| U15–U16, QA, entrega | AI Search, Power BI, QA integral y entrega | — | `DT-094` | U15 implementada con corpus sintético, sin despliegue; comparación de costo/compatibilidad entre Free, Serverless Developer (preview) y Basic pendiente. El corpus empresarial sigue bajo `ASSUMPTION-008`. U16 sin autorización |
+| U15–U16, QA, entrega | AI Search, Power BI, QA integral y entrega | — | `DT-094` | U15 implementada con corpus sintético. Servicio Free `motor-predictivo-search-dev` (2026-10-16) y embeddings `text-embedding-3-small` (2026-10-17) creados por el responsable; índice con 9 fragmentos, rol de lectura de `id-mpa-dev-runtime` y `deploy-u15.ps1 -Stage Verify` en verde con su identidad (2026-10-17). Conexión con la API pendiente (`infra/azure/u15/README.md`). El corpus empresarial sigue bajo `ASSUMPTION-008`. U16 sin autorización |
 
 ---
 
@@ -438,7 +438,7 @@ Estimaciones, no cifras garantizadas: README de U12 §7.
 - Crear o rotar credenciales, o leer secretos.
 - Cambiar la configuración de `main` o hacer *merge*.
 - *Push* fuera de la rama de trabajo.
-- Ampliar U12 (`staging` o `prod`), iniciar unidades sin autorización (actualmente U16) o desplegar U15 antes de resolver la opción de menor costo compatible y autorizar su gasto.
+- Ampliar U12 (`staging` o `prod`), iniciar unidades sin autorización (actualmente U16) o pasar U15 a un nivel con cargo continuo (Basic o superior) sin autorizar su gasto.
 - Modificar el generador o el dataset 0.4.0.
 - Promover un modelo o cambiar el baseline oficial MA13.
 - Tomar decisiones de negocio.

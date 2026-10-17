@@ -18,8 +18,13 @@ export function renderApp(path = '/') {
   return { ...view, router, user, queryClient };
 }
 
-export async function loginAs(user: ReturnType<typeof userEvent.setup>, role: Role) {
+/** Types the role's token and submits the login form, without waiting for the result. */
+export async function submitLogin(user: ReturnType<typeof userEvent.setup>, role: Role) {
   await user.type(screen.getByLabelText('Token de desarrollo'), TEST_TOKENS[role]);
   await user.click(screen.getByRole('button', { name: 'Entrar' }));
+}
+
+export async function loginAs(user: ReturnType<typeof userEvent.setup>, role: Role) {
+  await submitLogin(user, role);
   await screen.findByRole('navigation', { name: 'Navegación principal' });
 }

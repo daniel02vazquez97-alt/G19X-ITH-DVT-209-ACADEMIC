@@ -3485,6 +3485,7 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
      estimado, si tienen consumo continuo, cómo se desmontan y cómo se verifica que quedaron desmontados. No se activan
      cargas permanentes, entrenamiento, modelos generativos ni recursos premium sin una autorización explícita posterior.
      **Actualización del responsable (2026-10-15, U15):** la cuenta disponible tiene USD 100 de crédito total; se prioriza la alternativa compatible de menor costo y se evita Search con cargo continuo hasta comparar opciones y recibir autorización explícita. No cambia el umbral de planificación de USD 50. Microsoft Learn discrepa sobre si Free admite el flujo Entra sin claves (ver `knowledge/sources.md` §9); no se declara compatibilidad ni se elige SKU.
+     **Actualización (2026-10-17, U15):** el responsable creó el servicio en nivel **Free** el 2026-10-16 (sin cargo continuo) y comprobó con su propia identidad que acepta un token de Entra ID sin clave ([AZ-U]); la discrepancia queda resuelta para esa identidad, no todavía para la identidad administrada de la API. Los embeddings `text-embedding-3-small` se desplegaron en la cuenta de U13 (cobro por token); el índice se cargó y verificó con `deploy-u15.ps1` ese mismo día. Basic sigue sin autorizar.
   5. **Infraestructura como código: Bicep**, parametrizado al menos por `environment` (`dev`), región, nombre del
      proyecto, etiquetas, presupuesto e identificadores. Sin contraseñas, claves, secretos, tokens ni cadenas de
      conexión con secretos.

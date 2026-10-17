@@ -458,22 +458,28 @@ function Get-MissingRuleIps([string[]]$RuleNames, [string[]]$Ips) {
 }
 
 # Roles of id-mpa-dev-runtime: AcrPull on the ACR of U12 and, once U13 is deployed (DT-101), "Cognitive Services OpenAI
-# User" on the U13 Azure OpenAI account only (oai-mpa-dev-*, never on the group). Empty result = conforming.
+# User" on the U13 Azure OpenAI account only (oai-mpa-dev-*, never on the group); once U15 grants it (deploy-u15.ps1
+# -Stage Roles), "Search Index Data Reader" on an Azure AI Search service of the group only (never on the group, never a
+# contributor role). Empty result = conforming.
 # $RequireAcrPull: Verify (dev deployed) needs exactly one AcrPull on $AcrId; the preflight only checks role names.
 function Test-RuntimeRoles($Roles, [string]$AcrId, [string]$RgId, [bool]$RequireAcrPull) {
     $problems = New-Object System.Collections.Generic.List[string]
     $acrPull = 0
     $openAi = 0
+    $search = 0
+    $searchPattern = '^' + [regex]::Escape("$RgId/providers/Microsoft.Search/searchServices/") + '[a-z0-9-]+$'
     $accountPrefix = '^' + [regex]::Escape("$RgId/providers/Microsoft.CognitiveServices/accounts/") + 'oai-mpa-dev-[a-z0-9]+$'
     foreach ($r in (As-Array $Roles)) {
         $name = "$(Get-Prop $r 'roleDefinitionName')"
         $scope = "$(Get-Prop $r 'scope')"
         if ($name -eq 'AcrPull' -and (-not $AcrId -or $scope -eq $AcrId)) { $acrPull++ }
         elseif ($name -eq 'Cognitive Services OpenAI User' -and $scope -match $accountPrefix) { $openAi++ }
+        elseif ($name -eq 'Search Index Data Reader' -and $scope -match $searchPattern) { $search++ }
         else { $problems.Add("rol no permitido: $name en $scope") }
     }
     if ($RequireAcrPull -and $acrPull -ne 1) { $problems.Add("se esperaba 1 AcrPull sobre el ACR y hay $acrPull") }
     if ($openAi -gt 1) { $problems.Add("se esperaba como mucho 1 Cognitive Services OpenAI User y hay $openAi") }
+    if ($search -gt 1) { $problems.Add("se esperaba como mucho 1 Search Index Data Reader y hay $search") }
     return ,$problems.ToArray()
 }
 
@@ -614,6 +620,10 @@ if ($SelfTest) {
     Check 'identidad de ejecucion: solo AcrPull -> conforme' ((Test-RuntimeRoles @($pull) $acrX '/subscriptions/s/resourceGroups/rg' $true).Count -eq 0)
     Check 'identidad de ejecucion: AcrPull + OpenAI User sobre la cuenta de U13 -> conforme' ((Test-RuntimeRoles @($pull, @{ roleDefinitionName = 'Cognitive Services OpenAI User'; scope = $oaiX }) $acrX '/subscriptions/s/resourcegroups/rg' $true).Count -eq 0)
     Check 'identidad de ejecucion: OpenAI User sobre el grupo -> rechazado' ((Test-RuntimeRoles @($pull, @{ roleDefinitionName = 'Cognitive Services OpenAI User'; scope = '/subscriptions/s/resourceGroups/rg' }) $acrX '/subscriptions/s/resourceGroups/rg' $true).Count -gt 0)
+    $srchX = '/subscriptions/s/resourceGroups/rg/providers/Microsoft.Search/searchServices/motor-predictivo-search-dev'
+    Check 'identidad de ejecucion: AcrPull + Search Index Data Reader sobre el servicio de U15 -> conforme' ((Test-RuntimeRoles @($pull, @{ roleDefinitionName = 'Search Index Data Reader'; scope = $srchX }) $acrX '/subscriptions/s/resourceGroups/rg' $true).Count -eq 0)
+    Check 'identidad de ejecucion: Search Index Data Reader sobre el grupo -> rechazado' ((Test-RuntimeRoles @($pull, @{ roleDefinitionName = 'Search Index Data Reader'; scope = '/subscriptions/s/resourceGroups/rg' }) $acrX '/subscriptions/s/resourceGroups/rg' $true).Count -gt 0)
+    Check 'identidad de ejecucion: Search Index Data Contributor sobre el servicio -> rechazado' ((Test-RuntimeRoles @($pull, @{ roleDefinitionName = 'Search Index Data Contributor'; scope = $srchX }) $acrX '/subscriptions/s/resourceGroups/rg' $true).Count -gt 0)
     Check 'identidad de ejecucion: Contributor -> rechazado' ((Test-RuntimeRoles @($pull, @{ roleDefinitionName = 'Contributor'; scope = $acrX }) $acrX '/subscriptions/s/resourceGroups/rg' $true).Count -gt 0)
     Check 'identidad de ejecucion: sin AcrPull en Verify -> rechazado' ((Test-RuntimeRoles @() $acrX '/subscriptions/s/resourceGroups/rg' $true).Count -gt 0)
     Check 'lista JSON vacia -> 0 y de uno -> 1' (((ConvertFrom-AzJsonArray '[]').Count -eq 0) -and ((ConvertFrom-AzJsonArray '[{"a":1}]').Count -eq 1))
@@ -931,7 +941,7 @@ function Invoke-Preflight {
     if ($null -eq $rt) { Note 'id-mpa-dev-runtime no existe todavia (la crea Core)' }
     else {
         $rtAll = Invoke-Az @('role', 'assignment', 'list', '--all', '--assignee', $rt.principalId, '--output', 'json') -Array -What 'roles de ejecucion'
-        Expect ((Test-RuntimeRoles $rtAll '' $rgId $false).Count -eq 0) ("id-mpa-dev-runtime: roles " + ((@($rtAll | ForEach-Object { $_.roleDefinitionName }) -join ', ')) + ' (AcrPull; con U13, OpenAI User solo sobre su cuenta)')
+        Expect ((Test-RuntimeRoles $rtAll '' $rgId $false).Count -eq 0) ("id-mpa-dev-runtime: roles " + ((@($rtAll | ForEach-Object { $_.roleDefinitionName }) -join ', ')) + ' (AcrPull; con U13, OpenAI User solo sobre su cuenta; con U15, Search Index Data Reader solo sobre el servicio)')
     }
     $myRg = Invoke-Az @('role', 'assignment', 'list', '--assignee', $me, '--scope', $rgId, '--include-inherited', '--include-groups', '--output', 'json') -Array -What 'tus roles en el grupo'
     Note ("tu sesion, roles en el grupo: " + (@($myRg | ForEach-Object { $_.roleDefinitionName } | Sort-Object -Unique) -join ', '))
@@ -1377,7 +1387,7 @@ switch ($Stage) {
             'job de bootstrap manual'                            = ($job.properties.configuration.triggerType -eq 'Manual')
             'GitHub: 4 roles minimos, todos dentro del grupo'     = ($ghBuiltIn.Count -eq 4 -and (Test-SameList @($ghBuiltIn | ForEach-Object { $_.roleDefinitionName }) $GithubAllowedRoles) -and @($ghBuiltIn | Where-Object { -not "$($_.scope)".StartsWith($rgId, [System.StringComparison]::OrdinalIgnoreCase) }).Count -eq 0)
             'GitHub: rol del job (5 acciones, sin comodines, listSecrets ni delete) solo sobre el job de bootstrap' = ($ghRoles.Count -eq 5 -and $ghProblems.Count -eq 0)
-            'identidad de ejecucion: AcrPull sobre el ACR y, con U13, OpenAI User solo sobre su cuenta' = ((Test-RuntimeRoles $rtRoles $acr.id $rgId $true).Count -eq 0)
+            'identidad de ejecucion: AcrPull sobre el ACR; OpenAI User (U13) y Search Index Data Reader (U15) solo sobre su recurso' = ((Test-RuntimeRoles $rtRoles $acr.id $rgId $true).Count -eq 0)
             'Key Vault opcion C: privado, plantillas=true, bypass=AzureServices' = ($kv.properties.publicNetworkAccess -eq 'Disabled' -and $kv.properties.enabledForTemplateDeployment -eq $true -and $kv.properties.networkAcls.bypass -eq 'AzureServices')
             'tu sesion puede usar getSecret (deploy/action)'     = (Test-ActionAllowed (Get-RoleDefinitionsAt $me $kv.id).definitions $DeployAction)
             'GitHub sin deploy/action'                           = (-not (Test-ActionAllowed (Get-RoleDefinitionsAt $gh.principalId $kv.id).definitions $DeployAction))

@@ -11,7 +11,7 @@ import {
   TEST_TOKENS,
   withMe,
 } from '../test/api';
-import { loginAs, renderApp } from '../test/renderApp';
+import { loginAs, renderApp, submitLogin } from '../test/renderApp';
 
 // A probe page that queries one path, to exercise the session against API answers.
 function Probe({ path }: { path: string }) {
@@ -98,7 +98,9 @@ describe('AuthProvider (DT-070 point 3)', () => {
   it('a 401 on any request ends the session and goes back to login', async () => {
     probeApi();
     const { user, router } = renderApp('/prueba-401');
-    await loginAs(user, 'PLANNER');
+    // Not loginAs: the 401 can end the session before the navigation is ever observed, so waiting for it was a race
+    // (CI run of 2026-10-17). The test waits for the outcome it checks instead.
+    await submitLogin(user, 'PLANNER');
     expect(await screen.findByRole('status')).toHaveTextContent('La sesión ya no es válida');
     expect(screen.getByLabelText('Token de desarrollo')).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/prueba-401');
