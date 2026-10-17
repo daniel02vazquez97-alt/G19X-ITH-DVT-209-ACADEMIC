@@ -12,6 +12,8 @@ from app.api.azure_search import (
     AzureSearchRetriever,
     SearchUnavailable,
     build_filter,
+    chunk_id_from_key,
+    search_document_key,
 )
 from app.genai import DocumentChunk, RetrievalFilters
 
@@ -78,6 +80,18 @@ class AzureSearchTest(unittest.TestCase):
         self.assertEqual(action["content_vector"], [0.5, 0.25])
         self.assertEqual(action["security_groups"], ["PLANNER"])
         self.assertEqual(action["source_url"], "demo.md#section")
+        self.assertEqual(action["id"], search_document_key("c1"))
+
+    def test_document_keys_only_use_characters_search_accepts_and_round_trip(self) -> None:
+        # Real chunk ids carry ':' (U15-SYN-001:seccion:1); Search rejects it in keys with HTTP 400 (2026-10-17).
+        for chunk_id in ("U15-SYN-001:resumen-de-la-politica:1", "c1", "Introducción:ñ:2"):
+            key = search_document_key(chunk_id)
+            self.assertRegex(key, r"^[A-Za-z0-9][A-Za-z0-9_=-]{0,1023}$")
+            self.assertEqual(chunk_id_from_key(key), chunk_id)
+        self.assertEqual(search_document_key("c1"), search_document_key("c1"))
+        for bad in ("c1", "k%%%", ""):
+            with self.assertRaises(ValueError):
+                chunk_id_from_key(bad)
 
     def test_indexer_rejects_documents_without_group_metadata(self) -> None:
         indexer = AzureSearchIndexer("https://search.example.net", "u15-demo", lambda: "token", lambda _: (1.0,))
@@ -109,7 +123,7 @@ class AzureSearchTest(unittest.TestCase):
         def opener(request: Any, *, timeout: float) -> Response:
             captured.append((request, timeout))
             return Response({"value": [{
-                "id": "c1", "content": "demostración", "title": "Manual", "document_id": "d1",
+                "id": search_document_key("c1"), "content": "demostración", "title": "Manual", "document_id": "d1",
                 "section": "Uso", "document_type": "demo-guide", "effective_date": "2026-10-14T00:00:00Z",
                 "expiry_date": None, "security_groups": ["PLANNER"], "source_url": "demo.md#uso",
                 "source_type": "SYNTHETIC", "@search.score": 0.8,
@@ -127,6 +141,9 @@ class AzureSearchTest(unittest.TestCase):
         self.assertEqual(payload["top"], 3)
         self.assertEqual(payload["vectorQueries"][0]["fields"], "content_vector")
         self.assertEqual(results[0].chunk.document_id, "d1")
+        self.assertEqual(results[0].chunk.id, "c1")
+        self.assertNotIn("security_groups", payload["select"])  # not retrievable: never returned
+        self.assertEqual(results[0].chunk.security_groups, ())
         self.assertEqual(results[0].chunk.source_type, "SYNTHETIC")
 
     def test_empty_groups_do_not_make_a_network_request(self) -> None:

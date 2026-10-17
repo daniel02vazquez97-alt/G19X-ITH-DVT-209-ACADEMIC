@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import json
 import re
 import threading
@@ -21,6 +22,25 @@ SEARCH_TOKEN_RESOURCE = "https://search.azure.com"
 IDENTITY_API_VERSION = "2019-08-01"
 Opener = Callable[..., Any]
 Vectorizer = Callable[[str], Sequence[float]]
+#: Fields read back from the index; all are retrievable in infra/azure/u15/index.json. ``security_groups`` and
+#: ``content_vector`` are not retrievable: the group filter is applied by Search before retrieval and the ACL is never
+#: returned to the caller (2026-10-17, Search answered HTTP 400 when it was selected).
+SEARCH_SELECT = ("id", "content", "title", "document_id", "section", "document_type", "effective_date", "expiry_date",
+                 "source_url", "source_type")
+
+
+def search_document_key(chunk_id: str) -> str:
+    """Search document key of a chunk. Keys only admit letters, digits, '-', '_' and '=' (Microsoft Learn, naming
+    rules) and chunk ids use ':' separators, so the key is the URL-safe Base64 of the id, prefixed with 'k' so that it
+    never starts with '_'. Deterministic: uploading the corpus again replaces the same documents."""
+    return "k" + base64.urlsafe_b64encode(chunk_id.encode("utf-8")).decode("ascii")
+
+
+def chunk_id_from_key(key: str) -> str:
+    """Inverse of ``search_document_key``; ``ValueError`` for any other key."""
+    if not isinstance(key, str) or not key.startswith("k"):
+        raise ValueError("unexpected document key")
+    return base64.b64decode(key[1:].encode("ascii"), altchars=b"-_", validate=True).decode("utf-8")
 
 
 class SearchUnavailable(RuntimeError):
@@ -124,7 +144,7 @@ class AzureSearchRetriever:
             "vectorFilterMode": "preFilter",
             "filter": build_filter(filters),
             "top": top_k,
-            "select": "id,content,title,document_id,section,document_type,effective_date,expiry_date,security_groups,source_url,source_type",
+            "select": ",".join(SEARCH_SELECT),
             "vectorQueries": [{"kind": "vector", "vector": list(vector), "fields": "content_vector", "k": max(50, top_k)}],
         }
         request = urllib.request.Request(
@@ -141,10 +161,10 @@ class AzureSearchRetriever:
         for item in values:
             try:
                 chunk = DocumentChunk(
-                    id=item["id"], content=item["content"], title=item["title"], document_id=item["document_id"],
+                    id=chunk_id_from_key(item["id"]), content=item["content"], title=item["title"], document_id=item["document_id"],
                     section=item["section"], document_type=item["document_type"],
                     effective_date=_date(item.get("effective_date")), expiry_date=_date(item.get("expiry_date")),
-                    security_groups=tuple(item["security_groups"]), source_url=item["source_url"],
+                    security_groups=(), source_url=item["source_url"],
                     source_type=item["source_type"],
                 )
                 results.append(RetrievedChunk(chunk, float(item["@search.score"])))
@@ -211,7 +231,7 @@ class AzureSearchIndexer:
             if not vector:
                 raise SearchUnavailable("embedding provider returned an empty vector")
             actions.append({
-                "@search.action": "upload", "id": chunk.id, "content": chunk.content,
+                "@search.action": "upload", "id": search_document_key(chunk.id), "content": chunk.content,
                 "content_vector": list(vector), "title": chunk.title, "document_id": chunk.document_id,
                 "section": chunk.section, "document_type": chunk.document_type,
                 "effective_date": _iso_date(chunk.effective_date), "expiry_date": _iso_date(chunk.expiry_date),
