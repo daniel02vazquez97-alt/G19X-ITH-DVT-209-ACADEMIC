@@ -9,7 +9,7 @@ embeddings y solo el corpus sintético de [`knowledge/search_corpus/`](../../../
 
 | Pieza | Estado | Evidencia |
 |---|---|---|
-| Servicio `motor-predictivo-search-dev` | Creado por el responsable en el portal el 2026-10-16: Free (50 MB), Central US, `running`, Entra ID **y** claves de API (`aadOrApiKey`, `disableLocalAuth: false`), acceso público | `az search service show` [AZ-U] |
+| Servicio `motor-predictivo-search-dev` | Creado por el responsable en el portal el 2026-10-16: Free (50 MB), Central US, `running`, acceso público. **Claves de API desactivadas el 2026-10-18** (`-Stage DisableKeys`): solo Entra ID | `az search service show` y `-Stage Verify` [AZ-U] |
 | Embeddings `text-embedding-3-small` | Desplegado el 2026-10-17 en `oai-mpa-dev-a73qz3afqj7no` (versión 1, GlobalStandard, capacidad 10 = 10 000 tokens/min, 10 solicitudes cada 10 s); responde con vectores de 1536 dimensiones | `az cognitiveservices account deployment create` y llamada de prueba [AZ-U] |
 | Roles de datos del responsable | `Search Service Contributor` y `Search Index Data Contributor` sobre el servicio; `Cognitive Services OpenAI User` sobre la cuenta de U13 | `az role assignment create` [AZ-U] |
 | Entra ID en el nivel Free | El servicio aceptó el token de Entra ID del responsable sin clave (`GET /indexes` → lista vacía) | Prueba C [AZ-U] |
@@ -97,8 +97,8 @@ activas.
 
 ## Pendiente
 
-1. Ejecutar `-Stage DisableKeys` (la API ya funciona con Entra ID desde el 2026-10-18), después `-Stage Verify` y una
-   pregunta en «Asistente».
+Nada en `dev` (2026-10-18): servicio solo con Entra ID, índice verificado y asistente funcionando. Antes de usar datos
+reales hay que sustituir el corpus sintético y los grupos de demostración (`ASSUMPTION-008`).
 
 ## Límites
 

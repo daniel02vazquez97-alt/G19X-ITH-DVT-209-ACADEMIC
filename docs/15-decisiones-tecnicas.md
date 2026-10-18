@@ -4519,7 +4519,8 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
 - **Verificación:** [CC] pruebas sin red de backend, API, frontend e infraestructura. **[AZ-U] (2026-10-18):** PR #25
   (`118fe06`) en `main`, imagen `118fe06dc06fcbe2abf28ea71f2fc8f27acf318c` desplegada; `deploy-u12.ps1 -Stage Verify` 20/20; con sesión real de Entra ID (`PLANNER`), una pregunta en
   «Asistente» devolvió `ANSWERED` con `retriever = azure-ai-search`, `generator = azure-openai/gpt-41-mini` y citas a
-  3 de los 4 fragmentos recuperados.
+  3 de los 4 fragmentos recuperados. El mismo día se desactivaron las claves de API del servicio (`deploy-u15.ps1 -Stage
+  DisableKeys`) y el asistente siguió respondiendo con `azure-ai-search`: solo se usa Entra ID.
 - **Estado:** `ACEPTADA` (2026-10-17). **Desplegada y verificada en `dev`** (2026-10-18).
 
 ## Decisiones deliberadamente NO tomadas
