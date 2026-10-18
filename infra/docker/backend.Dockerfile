@@ -29,6 +29,8 @@ COPY --from=deps /opt/venv /opt/venv
 WORKDIR /srv/backend
 COPY backend/app ./app
 COPY backend/db ./db
+# U15b (DT-103): corpus sintético del asistente documental (recuperador local y respaldo de Azure AI Search).
+COPY knowledge/search_corpus /srv/knowledge/search_corpus
 COPY infra/docker/serve_api.py ./serve_api.py
 USER app
 EXPOSE 8000

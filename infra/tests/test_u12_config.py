@@ -82,7 +82,10 @@ class Infrastructure(unittest.TestCase):
         self.assertIn("resource keyVault 'Microsoft.KeyVault/vaults@2024-11-01' existing", MAIN)  # U10's, read only
         # U13 (`DT-101`) only wires the api to its Azure OpenAI account (environment variables and the computed
         # endpoint); U12 never declares that account: those wiring lines are the only exception.
-        wiring = re.compile(r"genai|AZURE_OPENAI|openai\.azure\.com|U13", re.IGNORECASE)
+        # U15b (`DT-103`) adds the same kind of wiring to the Azure AI Search service created for U15.
+        wiring = re.compile(r"genai|AZURE_OPENAI|openai\.azure\.com|U13|searchEnabled|searchEnv|searchEndpoint|"
+                            r"searchIndex|searchServiceName|AZURE_SEARCH|SEARCH_PROVIDER|search\.windows\.net|U15b|"
+                            r"embeddingDeployment", re.IGNORECASE)
         joined = "\n".join(line for text in ALL.values() for line in text.splitlines()
                            if not wiring.search(line)).lower()
         for forbidden in ("staging", "prod'", "openai", "cognitive", "search", "machinelearning", "insights",

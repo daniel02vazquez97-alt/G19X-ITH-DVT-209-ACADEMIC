@@ -33,7 +33,8 @@ TOKENS = {
 }
 IDENTITIES = {token: Identity(f"dev-{role.lower()}", frozenset({role})) for role, token in TOKENS.items()}
 
-#: The fourteen endpoints of `docs/07` §7.2 (13 of U5 + the explanation of U6, `DT-068`) with sample paths and
+#: The fifteen endpoints of `docs/07` §7.2 (13 of U5 + the explanation of U6, `DT-068`, + the assistant of U15b,
+#: `DT-103`) with sample paths and
 #: their explicit roles (None: public).
 ALL4 = frozenset({VIEWER, ANALYST, PLANNER, ADMIN})
 ENDPOINTS = [
@@ -51,6 +52,7 @@ ENDPOINTS = [
     ("/api/v1/products/1/recommendation", ALL4),
     ("/api/v1/runs/1", frozenset({PLANNER, ADMIN})),
     ("/api/v1/recommendations/1/explanation", ALL4),
+    ("/api/v1/assistant/answer?q=prueba", ALL4),
 ]
 
 

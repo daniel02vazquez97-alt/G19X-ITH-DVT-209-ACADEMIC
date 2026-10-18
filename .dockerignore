@@ -7,6 +7,7 @@
 !backend/pyproject.toml
 !backend/app/
 !backend/db/
+!knowledge/search_corpus/
 !frontend/
 !data/__init__.py
 !data/synthetic/__init__.py

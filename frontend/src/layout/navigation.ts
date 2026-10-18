@@ -8,11 +8,13 @@ export interface NavigationItem {
   resource: Resource | null;
 }
 
-// Only what V1 offers (DT-070 point 5). The product history lives inside the product detail.
+// Only what V1 offers (DT-070 point 5) plus the documentary assistant (U15b, DT-103). The product history lives
+// inside the product detail.
 export const NAVIGATION: readonly NavigationItem[] = [
   { label: 'Inicio', to: PATHS.home, resource: null },
   { label: 'Productos', to: PATHS.products, resource: 'products' },
   { label: 'Inventario', to: PATHS.inventory, resource: 'inventory' },
   { label: 'Recomendaciones', to: PATHS.recommendations, resource: 'recommendations' },
   { label: 'Predicciones', to: PATHS.forecasts, resource: 'forecasts' },
+  { label: 'Asistente', to: PATHS.assistant, resource: 'assistant' },
 ];

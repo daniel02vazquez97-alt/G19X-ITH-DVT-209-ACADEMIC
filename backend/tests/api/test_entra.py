@@ -314,6 +314,8 @@ class EntraApiTest(unittest.TestCase):
                         self.assertEqual(status, 200)
                     elif roles is None or roles[0] not in allowed:
                         self.assertEqual(status, 403)
+                    elif path.startswith("/api/v1/assistant/"):
+                        self.assertEqual(status, 200)  # the assistant reads the shipped corpus, not the database
                     else:
                         self.assertEqual(status, 503)  # authorized: it tried to read the (closed) database
 

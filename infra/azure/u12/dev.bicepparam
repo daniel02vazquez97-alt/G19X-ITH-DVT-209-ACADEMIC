@@ -21,3 +21,9 @@ param runAsOf = '2025-12-31'
 // responsable). Se aplica con Deploy dev y deploy-u12.ps1 -Stage Apps; para volver a la plantilla, false y -Stage Apps.
 param genaiEnabled = true
 param genaiDeployment = 'gpt-41-mini'
+// U15b (DT-103): true desde el 2026-10-17 (deploy-u15.ps1 -Stage Verify en verde y asistente autorizado por el
+// responsable). Se aplica con deploy-u12.ps1 -Stage Apps; para volver al corpus local, false y -Stage Apps.
+param searchEnabled = true
+param searchServiceName = 'motor-predictivo-search-dev'
+param searchIndex = 'u15-demo-documents'
+param embeddingDeployment = 'text-embedding-3-small'

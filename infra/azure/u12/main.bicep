@@ -64,6 +64,14 @@ param genaiEnabled bool = false
 @description('U13: nombre del despliegue del modelo en la cuenta de Azure OpenAI (campo model de las llamadas).')
 param genaiDeployment string = 'gpt-41-mini'
 
+@description('U15b (DT-103): true cuando Azure AI Search está cargado y verificado con deploy-u15.ps1 y U13 está activo. La api responde el asistente documental con Search (identidad de ejecución, sin claves) y el corpus local de respaldo. Sin U13 no se aplica.')
+param searchEnabled bool = false
+
+@description('U15b: servicio de Azure AI Search (creado en el portal, nivel Free), índice y despliegue de embeddings de la cuenta de U13.')
+param searchServiceName string = 'motor-predictivo-search-dev'
+param searchIndex string = 'u15-demo-documents'
+param embeddingDeployment string = 'text-embedding-3-small'
+
 var tags = {
   project: 'motor-predictivo-abastecimiento'
   environment: environment
@@ -232,6 +240,10 @@ module apps 'modules/apps.bicep' = if (deployApps) {
     genaiEnabled: genaiEnabled
     genaiEndpoint: 'https://${names.openai}.openai.azure.com'
     genaiDeployment: genaiDeployment
+    searchEnabled: searchEnabled && genaiEnabled
+    searchEndpoint: 'https://${searchServiceName}.search.windows.net'
+    searchIndex: searchIndex
+    embeddingDeployment: embeddingDeployment
     runtimeClientId: runtimeIdentity.properties.clientId
   }
   dependsOn: [

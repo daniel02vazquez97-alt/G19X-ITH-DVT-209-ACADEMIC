@@ -101,12 +101,33 @@ class BicepTest(unittest.TestCase):
         self.assertIn("if(parameters('disableLocalAuth'), null()", result.stdout.replace('"', "'"))
 
 
+class U12WiringTest(unittest.TestCase):
+    """U15b (`DT-103`): the api of U12 gets the Search identifiers only with U13 active and never a key."""
+
+    def test_api_gets_search_variables_only_with_genai_and_without_keys(self) -> None:
+        u12 = ROOT / "infra" / "azure" / "u12"
+        apps, main, params = read(u12 / "modules" / "apps.bicep"), read(u12 / "main.bicep"), read(u12 / "dev.bicepparam")
+        self.assertIn("var searchEnv = searchEnabled ? [", apps)
+        for name in ("SEARCH_PROVIDER", "AZURE_SEARCH_ENDPOINT", "AZURE_SEARCH_INDEX", "AZURE_OPENAI_EMBEDDING_DEPLOYMENT"):
+            self.assertIn(f"name: '{name}'", apps)
+        self.assertIn("], genaiEnv, searchEnv)", apps)
+        self.assertNotRegex(apps, r"(?i)SEARCH_(API_)?KEY|adminKey|queryKey")
+        self.assertIn("param searchEnabled bool = false", main)
+        self.assertIn("searchEnabled: searchEnabled && genaiEnabled", main)
+        self.assertIn("searchEndpoint: 'https://${searchServiceName}.search.windows.net'", main)
+        self.assertNotIn("Microsoft.Search", main)  # U12 never declares the service
+        for needle in ("param searchEnabled = true", "param searchServiceName = 'motor-predictivo-search-dev'",
+                       "param searchIndex = 'u15-demo-documents'", "param embeddingDeployment = 'text-embedding-3-small'"):
+            self.assertIn(needle, params)
+        self.assertEqual(json.loads(read(U15 / "index.json"))["name"], "u15-demo-documents")
+
+
 class DocumentationTest(unittest.TestCase):
     def test_readme_states_what_is_verified_and_what_is_pending(self) -> None:
         readme = read(U15 / "README.md")
         for needle in ("motor-predictivo-search-dev", "Free", "text-embedding-3-small", "[AZ-U]", "deploy-u15.ps1",
-                       "-Stage Roles", "deploy-u12.ps1 -Stage Verify", "**Pendiente**", "No está autorizado",
-                       "USD 50", "la API sigue con el recuperador local"):
+                       "-Stage Roles", "deploy-u12.ps1 -Stage Verify", "## Pendiente", "No está autorizado",
+                       "USD 50", "Implementada, no desplegada", "DT-103"):
             self.assertIn(needle, readme)
         self.assertNotRegex(readme, r"(?i)integraci[oó]n (probada|funcional|verificada)")
 

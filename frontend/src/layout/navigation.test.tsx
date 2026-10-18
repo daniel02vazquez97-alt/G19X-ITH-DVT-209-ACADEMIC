@@ -5,7 +5,7 @@ import { installFetch, jsonResponse, routeApi, withMe } from '../test/api';
 import RUN_2 from '../test/responses/run-2.json';
 import { loginAs, renderApp } from '../test/renderApp';
 
-const MENU = ['Inicio', 'Productos', 'Inventario', 'Recomendaciones', 'Predicciones'];
+const MENU = ['Inicio', 'Productos', 'Inventario', 'Recomendaciones', 'Predicciones', 'Asistente'];
 
 describe('navigation by role', () => {
   it.each(ROLES)('%s sees the V1 views and nothing deferred', async (role) => {
@@ -17,9 +17,7 @@ describe('navigation by role', () => {
       .getAllByRole('link')
       .map((link) => link.textContent);
     expect(labels).toEqual(MENU);
-    expect(
-      within(nav).queryByText(/Dashboard|Riesgos|Proveedores|Administración|Asistente/),
-    ).toBeNull();
+    expect(within(nav).queryByText(/Dashboard|Riesgos|Proveedores|Administración/)).toBeNull();
   });
 
   it('the home page mentions once that the dashboard and risks are not in V1', async () => {

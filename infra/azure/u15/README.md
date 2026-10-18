@@ -17,7 +17,7 @@ embeddings y solo el corpus sintético de [`knowledge/search_corpus/`](../../../
 | Corpus | 9 fragmentos sintéticos cargados el 2026-10-17 con `-Stage Load` (el primer intento falló con HTTP 400 por las claves con `:`, corregido) | [AZ-U] |
 | Rol de `id-mpa-dev-runtime` | Asignado: `Verify` confirma exactamente 1 `Search Index Data Reader` sobre el servicio (2026-10-17) | [AZ-U] |
 | Comprobación con tu identidad | `-Stage Verify` en verde el 2026-10-17: 9 documentos, las 6 consultas con resultados (aciertos 6/6, informativo) y filtro de grupos aplicado por Search; `deploy-u12.ps1 -Stage Verify` 20/20 | [AZ-U] |
-| Consulta desde la API | **Pendiente**: la API sigue con el recuperador local; `azure_search.py` no está conectado a ningún endpoint | — |
+| Consulta desde la API | **Implementada, no desplegada** (`DT-103`): `GET /api/v1/assistant/answer` usa `AzureSearchRetriever` con la identidad de la API y `gpt-41-mini`, con el corpus local de respaldo | [CC] |
 
 La validación del nivel Free con Entra ID se hizo con la identidad del responsable. La identidad administrada de la API
 solo quedará probada cuando la API consulte Search.
@@ -94,8 +94,8 @@ activas.
 
 ## Pendiente
 
-1. Conectar la API: variables de entorno en Container Apps, `AzureSearchRetriever` con la identidad administrada cuando
-   esté configurado y el recuperador local en caso contrario. Decidir si los fragmentos se pasan a `gpt-41-mini` (RAG).
+1. Desplegar el asistente documental de `DT-103` (ya implementado): publicar la imagen, `deploy-u12.ps1 -Stage Apps`
+   (aplica `searchEnabled`) y comprobar en la vista «Asistente» que responde con `azure-ai-search` y `gpt-41-mini`.
 2. Desactivar las claves de API del servicio (`disableLocalAuth = true`) cuando la API funcione con Entra ID.
 
 ## Límites

@@ -349,3 +349,28 @@ class RecommendationExplanation(Schema):
     reason_details: list[ReasonDetail]
     missing_policy_parameters: list[str]
     provenance: RecommendationProvenance
+
+
+# --- assistant (U15b, `DT-103`) ----------------------------------------------------------------
+
+
+class AssistantCitation(Schema):
+    number: int
+    document_id: str
+    title: str
+    section: str
+    source_url: str
+    excerpt: str
+    cited: bool
+
+
+class AssistantAnswer(Schema):
+    question: str
+    answer: str
+    status: Literal["ANSWERED", "RETRIEVAL_ONLY", "NO_DOCUMENTS"]
+    warning: Literal["GENERATOR_UNAVAILABLE", "UNCITED"] | None
+    generator: str | None
+    retriever: str
+    citations: list[AssistantCitation]
+    data_origin: Literal["SYNTHETIC"]
+    notices: list[str]

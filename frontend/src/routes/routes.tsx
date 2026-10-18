@@ -14,6 +14,7 @@ import { InventoryItemPage } from '../views/inventory/InventoryItemPage';
 import { InventoryPage } from '../views/inventory/InventoryPage';
 import { ProductDetailPage } from '../views/products/ProductDetailPage';
 import { ProductsPage } from '../views/products/ProductsPage';
+import { AssistantPage } from '../views/assistant/AssistantPage';
 import { PATHS } from './paths';
 
 const relative = (path: string) => path.slice(1);
@@ -64,6 +65,7 @@ export const routes: RouteObject[] = [
           </RoleGate>
         ),
       },
+      { path: relative(PATHS.assistant), element: <AssistantPage /> },
       { path: relative(PATHS.accessCheck), element: <AccessCheckPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
