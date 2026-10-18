@@ -43,6 +43,7 @@ powershell -ExecutionPolicy Bypass -File infra\azure\deploy-u15.ps1 -Stage Index
 powershell -ExecutionPolicy Bypass -File infra\azure\deploy-u15.ps1 -Stage Load      # vectoriza y carga el corpus (CARGAR)
 powershell -ExecutionPolicy Bypass -File infra\azure\deploy-u15.ps1 -Stage Roles     # lector para id-mpa-dev-runtime (ROL)
 powershell -ExecutionPolicy Bypass -File infra\azure\deploy-u12.ps1 -Stage Verify    # U12 debe seguir en verde
+powershell -ExecutionPolicy Bypass -File infra\azure\deploy-u15.ps1 -Stage DisableKeys  # solo Entra ID (SINCLAVES)
 powershell -ExecutionPolicy Bypass -File infra\azure\deploy-u15.ps1 -Stage Verify    # comprobaciones y evidencia
 ```
 
@@ -53,7 +54,8 @@ powershell -ExecutionPolicy Bypass -File infra\azure\deploy-u15.ps1 -Stage Verif
 | `Index` | Crea o actualiza `u15-demo-documents` desde `index.json` | Sí: el índice |
 | `Load` | Trocea el corpus, pide un embedding por fragmento (pausa de 1,2 s y reintentos ante HTTP 429) y lo sube; la clave de cada documento es el identificador del fragmento en Base64 URL-safe con prefijo `k`, porque Search solo admite letras, dígitos, `-`, `_` y `=` en las claves | Sí: documentos sintéticos |
 | `Roles` | Asigna `Search Index Data Reader` a `id-mpa-dev-runtime` solo sobre el servicio; si ya existe, no hace nada | Sí: un rol |
-| `Verify` | Servicio, embeddings, rol de ejecución (exactamente uno, nada más sobre Search) y, con **tu** identidad: número de documentos, consultas de [`evaluation.json`](../../../knowledge/search_corpus/evaluation.json) y filtro de grupos; escribe `tmp/u15-evidence/` | No |
+| `DisableKeys` | Desactiva las claves de API del servicio (`disableLocalAuth = true`, sin `authOptions`) con un `PATCH` de ARM; si ya lo están, no hace nada. Para volver atrás: portal, Configuración > Claves > Ambos | Sí: la autenticación del servicio |
+| `Verify` | Servicio (claves desactivadas), embeddings, rol de ejecución (exactamente uno, nada más sobre Search) y, con **tu** identidad: número de documentos, consultas de [`evaluation.json`](../../../knowledge/search_corpus/evaluation.json) y filtro de grupos; escribe `tmp/u15-evidence/` | No |
 
 `-Stage Roles` necesita el `deploy-u12.ps1` de este mismo cambio: su comprobación de roles de la identidad de ejecución
 acepta ahora `Search Index Data Reader` solo sobre un servicio de Search del grupo. Con la versión anterior,
@@ -83,7 +85,8 @@ Owner no basta: no incluye acciones de datos. Las asignaciones tardan unos minut
 
 ## Plantilla
 
-[`main.bicep`](main.bicep) describe el servicio real (`serviceName`, `searchSku = 'free'`, `disableLocalAuth = false`,
+[`main.bicep`](main.bicep) describe el servicio real (`serviceName`, `searchSku = 'free'`, `disableLocalAuth = true` tras
+`-Stage DisableKeys`,
 `semanticSearch = 'free'`) y el rol de lectura. **No se usa para desplegar**: el servicio se creó en el portal y el rol lo
 asigna `-Stage Roles`. `-Stage WhatIf` muestra la diferencia; se espera al menos el alta de etiquetas, que el servicio
 real no tiene.
@@ -94,7 +97,8 @@ activas.
 
 ## Pendiente
 
-1. Desactivar las claves de API del servicio (`disableLocalAuth = true`) cuando la API funcione con Entra ID.
+1. Ejecutar `-Stage DisableKeys` (la API ya funciona con Entra ID desde el 2026-10-18), después `-Stage Verify` y una
+   pregunta en «Asistente».
 
 ## Límites
 

@@ -14,16 +14,19 @@
 #   Load       vectorizes knowledge/search_corpus/ (synthetic) with text-embedding-3-small and uploads it (CARGAR).
 #   Roles      Search Index Data Reader to id-mpa-dev-runtime on the service only (ROL); idempotent. Needs the
 #              deploy-u12.ps1 of this same change, whose Verify accepts that role.
-#   Verify     service, embeddings, runtime role (exactly one reader, nothing else on the service) and, with YOUR
-#              identity, document count, fixed evaluation set and group filter; tmp/u15-evidence/u15-evidence.json.
+#   Verify     service (API keys disabled), embeddings, runtime role (exactly one reader, nothing else on the service)
+#              and, with YOUR identity, document count, fixed evaluation set and group filter;
+#              tmp/u15-evidence/u15-evidence.json.
+#   DisableKeys turns the API keys of the service off (SINCLAVES): disableLocalAuth=true and authOptions removed, so
+#              only Microsoft Entra ID is accepted. Idempotent. Back with the portal: Configuracion > Claves > Ambos.
 #   -SelfTest  offline checks of the guards (no Azure call).
 # It never reads, asks for, stores or prints a key or a connection string; the Entra ID tokens of your session are
 # requested by search_setup.py and stay in its memory. It does not touch the API, Container Apps or the settings of the
-# service (API keys stay enabled until the API is verified with Entra ID). ASCII only.
+# service, except DisableKeys (the API uses Entra ID since 2026-10-18, DT-103). ASCII only.
 
 [CmdletBinding()]
 param(
-    [ValidateSet('Preflight', 'WhatIf', 'Index', 'Load', 'Roles', 'Verify')]
+    [ValidateSet('Preflight', 'WhatIf', 'Index', 'Load', 'Roles', 'Verify', 'DisableKeys')]
     [string]$Stage = 'Preflight',
     [switch]$Yes,
     [switch]$SelfTest,
@@ -50,6 +53,7 @@ $Parameters = 'infra/azure/u15/dev.bicepparam'
 $DeploymentName = 'u15-dev'
 $Setup = 'infra/azure/u15/search_setup.py'
 $EvidenceDir = 'tmp/u15-evidence'
+$SearchArmApiVersion = '2025-05-01'  # the one of infra/azure/u15/main.bicep
 # Built-in role ids (Microsoft Learn, "Azure built-in roles"); the three roles of the owner were confirmed by the
 # assignments created on 2026-10-17.
 $SearchReaderRoleId = '1407120a-92aa-4202-b7e9-c0e197c71c8f'
@@ -143,6 +147,9 @@ function Test-SearchService($Service) {
     }
     return ,$problems.ToArray()
 }
+
+# ARM PATCH of DisableKeys: authOptions cannot be defined when disableLocalAuth is true (Microsoft.Search reference).
+function New-DisableLocalAuthBody { return '{"properties":{"disableLocalAuth":true,"authOptions":null}}' }
 
 function Get-AuthMode($Service) {
     if ((Get-SvcProp $Service 'disableLocalAuth') -eq $true) { return 'solo Entra ID (claves desactivadas)' }
@@ -244,7 +251,9 @@ function Invoke-SelfTest {
         @('solo lectura: what-if', (Test-ReadOnlyAz @('deployment', 'group', 'what-if', '--resource-group', 'rg'))),
         @('solo lectura: search service update -> rechazado', (-not (Test-ReadOnlyAz @('search', 'service', 'update', '--name', 'x')))),
         @('solo lectura: role assignment create -> rechazado', (-not (Test-ReadOnlyAz @('role', 'assignment', 'create', '--role', 'x')))),
-        @('solo lectura: deployment group create -> rechazado', (-not (Test-ReadOnlyAz @('deployment', 'group', 'create', '--name', 'x'))))
+        @('solo lectura: deployment group create -> rechazado', (-not (Test-ReadOnlyAz @('deployment', 'group', 'create', '--name', 'x')))),
+        @('solo lectura: rest -> rechazado', (-not (Test-ReadOnlyAz @('rest', '--method', 'patch', '--url', 'x')))),
+        @('DisableKeys: claves desactivadas y sin authOptions', ((New-DisableLocalAuthBody | ConvertFrom-Json).properties.disableLocalAuth -eq $true -and $null -eq (New-DisableLocalAuthBody | ConvertFrom-Json).properties.authOptions -and (New-DisableLocalAuthBody).Contains('"authOptions":null')))
     )
     $failed = 0
     foreach ($case in $cases) {
@@ -360,7 +369,7 @@ switch ($Stage) {
         $svc = Get-CheckedService
         Write-Host "  OK     ${SearchName}: SKU $ExpectedSku, running, $($script:SearchEndpoint)"
         Write-Host "  OK     autenticacion: $(Get-AuthMode $svc)"
-        if ((Get-SvcProp $svc 'disableLocalAuth') -ne $true) { Write-Host '  AVISO  las claves de API siguen activas: desactivarlas cuando la API use Search con Entra ID (este script no lo hace)' -ForegroundColor Yellow }
+        if ((Get-SvcProp $svc 'disableLocalAuth') -ne $true) { Write-Host '  AVISO  las claves de API siguen activas: la API ya usa Entra ID; desactivalas con -Stage DisableKeys' -ForegroundColor Yellow }
         Step '3. Embeddings (cuenta de U13)'
         $oai = Get-OpenAIAccount
         Assert-Embeddings $oai
@@ -434,7 +443,8 @@ switch ($Stage) {
     'Verify' {
         $ctx = Get-Context
         $svc = Get-CheckedService
-        Check $true "servicio ${SearchName}: SKU $ExpectedSku, running, $(Get-AuthMode $svc)"
+        Check $true "servicio ${SearchName}: SKU $ExpectedSku, running"
+        Check ((Get-SvcProp $svc 'disableLocalAuth') -eq $true) 'claves de API desactivadas: solo Entra ID (-Stage DisableKeys)'
         $oai = Get-OpenAIAccount
         Check ((Get-EmbeddingProblems $oai).Count -eq 0) "$EmbeddingDeployment desplegado en $($oai.name)"
         $rt = Get-RuntimeRoles
@@ -455,6 +465,30 @@ switch ($Stage) {
         Set-Content -Path (Join-Path $EvidenceDir 'u15-evidence.json') -Value (ConvertTo-Json $evidence) -Encoding ASCII
         if ($script:Failed) { Stop-U15 "$($script:Failed) comprobaciones fallidas" }
         Write-Host ''
-        Write-Host 'U15: Search verificado con tu identidad. La API todavia no consulta Search (pendiente de conectar).' -ForegroundColor Green
+        Write-Host 'U15: Search verificado con tu identidad y solo con Entra ID. La API lo consulta con su identidad (DT-103).' -ForegroundColor Green
+    }
+    'DisableKeys' {
+        $ctx = Get-Context
+        $svc = Get-CheckedService
+        if ((Get-SvcProp $svc 'disableLocalAuth') -eq $true) {
+            Write-Host 'Las claves de API ya estan desactivadas; nada que hacer.' -ForegroundColor Green
+        }
+        else {
+            Write-Host "Se desactivaran las claves de API de ${SearchName}: solo se aceptara Microsoft Entra ID. La API (identidad"
+            Write-Host 'administrada) y search_setup.py ya usan Entra ID; quien use una clave recibira 401/403.'
+            Confirm-Or-Stop 'SINCLAVES' 'desactivar las claves de API del servicio'
+            New-Item -ItemType Directory -Force -Path $EvidenceDir | Out-Null
+            $bodyFile = Join-Path $EvidenceDir 'u15-local-auth.json'
+            Set-Content -Path $bodyFile -Value (New-DisableLocalAuthBody) -Encoding ASCII
+            Invoke-Az @('rest', '--method', 'patch', '--url', "https://management.azure.com$($svc.id)?api-version=$SearchArmApiVersion", '--body', "@$bodyFile", '--output', 'none') -Raw -What 'desactivar las claves' | Out-Null
+            $off = $false
+            for ($i = 0; $i -lt 6 -and -not $off; $i++) {
+                if ($i) { Start-Sleep -Seconds 10 }
+                $now = Invoke-Az @('search', 'service', 'show', '--name', $SearchName, '--resource-group', $ResourceGroup, '--output', 'json') -What 'servicio de Search'
+                $off = ((Get-SvcProp $now 'disableLocalAuth') -eq $true)
+            }
+            if (-not $off) { Stop-U15 'el servicio sigue aceptando claves (revisa en el portal: Configuracion > Claves)' }
+            Write-Host 'Claves desactivadas. Siguiente: -Stage Verify y una pregunta en Asistente.' -ForegroundColor Green
+        }
     }
 }
