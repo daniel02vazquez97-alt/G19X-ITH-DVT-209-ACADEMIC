@@ -10,7 +10,8 @@ from app.genai import ChatGenerator, TemplateGenerator, TextGenerator
 
 from . import __version__, correlation, errors
 from .auth import DevTokenValidator, TokenValidator
-from .routers import explanations, forecasts, health, inventory, me, products, recommendations, runs
+from .assistant import Assistant, build_assistant
+from .routers import assistant, explanations, forecasts, health, inventory, me, products, recommendations, runs
 from .settings import Settings, load_settings
 
 TITLE = "Motor Predictivo de Abastecimiento — API V1 (solo lectura)"
@@ -36,6 +37,16 @@ def _generators(settings: Settings) -> tuple[TextGenerator, TextGenerator | None
     return ChatGenerator(chat, f"azure-openai/{settings.genai.deployment}"), TemplateGenerator()
 
 
+def _assistant(settings: Settings) -> Assistant | None:
+    """U15b (`DT-103`): the documentary assistant, with the U13 model when it is configured (own call budget)."""
+    if settings.genai is None:
+        return build_assistant(settings, None, None)
+    from .azure_openai import AzureOpenAIChat, ManagedIdentityToken
+
+    chat = AzureOpenAIChat(settings.genai, ManagedIdentityToken(settings.genai, os.environ).get)
+    return build_assistant(settings, chat, f"azure-openai/{settings.genai.deployment}")
+
+
 def create_app(settings: Settings | None = None, validator: TokenValidator | None = None) -> FastAPI:
     """``settings`` from the environment by default; only ``APP_ENV=local`` and ``dev`` build (`DT-065`, `DT-099`)."""
     settings = load_settings() if settings is None else settings
@@ -52,8 +63,9 @@ def create_app(settings: Settings | None = None, validator: TokenValidator | Non
     app.state.token_validator = validator if validator is not None else _validator(settings)
     # U6: deterministic template (`DT-068`); U13: Azure OpenAI with the template as fallback (`DT-101`).
     app.state.text_generator, app.state.text_fallback = _generators(settings)
+    app.state.assistant = _assistant(settings)  # U15b (`DT-103`); None -> 503
     errors.install(app)
     correlation.install(app)
-    for module in (health, me, products, inventory, forecasts, recommendations, explanations, runs):
+    for module in (health, me, products, inventory, forecasts, recommendations, explanations, runs, assistant):
         app.include_router(module.router)
     return app

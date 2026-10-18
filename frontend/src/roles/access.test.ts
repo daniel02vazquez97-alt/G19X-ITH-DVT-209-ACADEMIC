@@ -11,6 +11,7 @@ const EXPECTED: Record<Resource, string[]> = {
   recommendations: ['VIEWER', 'ANALYST', 'PLANNER', 'ADMIN'],
   explanation: ['VIEWER', 'ANALYST', 'PLANNER', 'ADMIN'],
   runs: ['PLANNER', 'ADMIN'],
+  assistant: ['VIEWER', 'ANALYST', 'PLANNER', 'ADMIN'],
 };
 
 describe('role matrix', () => {

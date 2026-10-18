@@ -34,6 +34,12 @@ param genaiEndpoint string = ''
 param genaiDeployment string = ''
 param runtimeClientId string = ''
 
+@description('U15b (DT-103): el asistente documental de la api consulta Azure AI Search (identidad de ejecución, sin claves); requiere las variables de U13.')
+param searchEnabled bool = false
+param searchEndpoint string = ''
+param searchIndex string = ''
+param embeddingDeployment string = ''
+
 @secure()
 param ownerPassword string
 
@@ -46,6 +52,12 @@ var genaiEnv = genaiEnabled ? [
   { name: 'AZURE_OPENAI_ENDPOINT', value: genaiEndpoint }
   { name: 'AZURE_OPENAI_DEPLOYMENT', value: genaiDeployment }
   { name: 'AZURE_CLIENT_ID', value: runtimeClientId }
+] : []
+var searchEnv = searchEnabled ? [
+  { name: 'SEARCH_PROVIDER', value: 'azure' }
+  { name: 'AZURE_SEARCH_ENDPOINT', value: searchEndpoint }
+  { name: 'AZURE_SEARCH_INDEX', value: searchIndex }
+  { name: 'AZURE_OPENAI_EMBEDDING_DEPLOYMENT', value: embeddingDeployment }
 ] : []
 var identity = {
   type: 'UserAssigned'
@@ -101,7 +113,7 @@ resource api 'Microsoft.App/containerApps@2025-01-01' = {
             { name: 'ENTRA_API_CLIENT_ID', value: entraApiClientId }
             { name: 'ENTRA_SPA_CLIENT_ID', value: entraSpaClientId }
             { name: 'LOG_LEVEL', value: 'INFO' }
-          ], genaiEnv)
+          ], genaiEnv, searchEnv)
           probes: [
             {
               type: 'Liveness'

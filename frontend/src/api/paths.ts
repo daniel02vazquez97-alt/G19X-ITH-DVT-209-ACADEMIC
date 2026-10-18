@@ -18,4 +18,6 @@ export const API_PATHS = {
   explanation: (recommendationId: string | number) =>
     `/v1/recommendations/${id(recommendationId)}/explanation`,
   run: (runId: string | number) => `/v1/runs/${id(runId)}`,
+  /** Documentary assistant (U15b, DT-103): `?q=` with the question. */
+  assistant: '/v1/assistant/answer',
 } as const;

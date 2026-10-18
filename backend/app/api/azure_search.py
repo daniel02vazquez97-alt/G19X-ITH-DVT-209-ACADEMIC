@@ -19,6 +19,7 @@ from app.genai.retrieval import _validate_search
 
 SEARCH_API_VERSION = "2026-04-01"
 SEARCH_TOKEN_RESOURCE = "https://search.azure.com"
+OPENAI_TOKEN_RESOURCE = "https://cognitiveservices.azure.com"
 IDENTITY_API_VERSION = "2019-08-01"
 Opener = Callable[..., Any]
 Vectorizer = Callable[[str], Sequence[float]]

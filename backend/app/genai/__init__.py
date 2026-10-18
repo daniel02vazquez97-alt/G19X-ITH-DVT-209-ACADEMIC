@@ -3,7 +3,8 @@
 Persisted recommendation → ``ExplanationContext`` → ``facts[]`` → fixed template → verification →
 ``VERIFIED`` / ``DEGRADED`` / ``NOT_APPLICABLE``. Standard library only: no RAG, no database connection, no call
 to the engine and no recalculation (`docs/03` §16.4). U13 (`DT-101`) adds ``ChatGenerator``: a chat model behind
-the same port, with the call injected by ``app.api`` and the template as fallback.
+the same port, with the call injected by ``app.api`` and the template as fallback. U15b (`DT-103`) adds the
+documentary assistant of ``app.genai.assistant`` (RAG over the synthetic corpus); explanations still use no RAG.
 """
 
 from .chat import ChatGenerator, build_messages, message_list

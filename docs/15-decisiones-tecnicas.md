@@ -4291,7 +4291,8 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
   1. **Alcance:** solo CU-1 (explicar una recomendación ya calculada) a través del endpoint 14 existente
      (`DT-068`). Sin chat, sin `/assistant/*`, sin RAG ni AI Search (U15), sin CU-2 a CU-5, sin persistir
      explicaciones. Ninguna respuesta de la API cambia de forma; solo `explanation.generator` puede valer el nombre del
-     despliegue.
+     despliegue. *(Enmienda del 2026-10-17: `DT-103` añade el asistente documental con RAG como endpoint 15; la
+     explicación sigue sin RAG.)*
   2. **Modelo y despliegue (`DT-P08`):** `gpt-5.4-mini` tiene cuota 0; la elección entre `gpt-4.1-mini` y `gpt-5-mini`
      en *Global Standard* (Puerta 0) la hace el responsable. En general: el modelo pequeño de OpenAI más barato que la Puerta 0 muestre disponible en
      `centralus` con cuota y **sin retirada anunciada en los próximos 6 meses**, en *Global Standard* (o *Data Zone
@@ -4481,6 +4482,44 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
   `67608e958eb87ad5cb02e40532b47b6a54940e3b153d56fbd266b32d6bbe433a`, modelo `baseline-ma13` registrado, sin
   instancias ni clústeres de cómputo persistente y sin endpoints de inferencia.
 - **Estado:** `ACEPTADA` (2026-10-14). **Desplegada y verificada en `dev`** (`infra/azure/u14/README.md`).
+
+## DT-103 — U15b: asistente documental mínimo (RAG con Azure AI Search y el modelo de U13)
+
+- **Contexto:** el responsable pidió el 2026-10-17 un prototipo en el que las tecnologías del proyecto funcionen
+  juntas, sin ampliar el alcance. Con U15 verificada en `dev` (2026-10-17, [AZ-U]), Azure AI Search seguía aislada: la
+  API no la consultaba. `DT-101` punto 1 excluía chat, `/assistant/*` y RAG.
+- **Decisión** (`ACEPTADA` el 2026-10-17 con la autorización del responsable de preparar la versión mínima de RAG):
+  1. **Endpoint 15:** `GET /api/v1/assistant/answer?q=` (3 a 300 caracteres), los cuatro roles, sin cuerpo de
+     petición ni escrituras, como el resto de la API (`docs/07` §7). No toca PostgreSQL, el motor ni las
+     recomendaciones.
+  2. **Flujo:** la pregunta se limpia; el recuperador devuelve hasta 4 fragmentos del corpus sintético filtrados por los
+     grupos de los roles y por vigencia; `app.genai.assistant` arma los mensajes (instrucciones, fragmentos numerados y
+     pregunta, delimitados como datos) y el modelo de U13 responde citando `[n]`. Sin fragmentos no hay llamada
+     (`NO_DOCUMENTS`); sin modelo, o si falla, la respuesta es la lista de fragmentos (`RETRIEVAL_ONLY`, con el aviso
+     `GENERATOR_UNAVAILABLE` cuando falló); una respuesta sin citas lleva el aviso `UNCITED`.
+  3. **Recuperador:** `SEARCH_PROVIDER=azure` (solo con `APP_ENV=dev`) usa Azure AI Search con la identidad
+     `id-mpa-dev-runtime` (`Search Index Data Reader`) y los embeddings `text-embedding-3-small`; si Search falla,
+     responde el recuperador léxico en memoria sobre el corpus incluido en la imagen (`local (respaldo)`).
+     `SEARCH_PROVIDER=local` (por defecto) usa solo el corpus local. Nunca hay claves.
+  4. **Grupos:** los cuatro roles leen el grupo de demostración `U15-DEMO-READERS`. Los grupos reales de Entra ID
+     esperan a un corpus real (`ASSUMPTION-008`).
+  5. **Modelo:** el mismo despliegue `gpt-41-mini` de U13, con su propio límite de llamadas por minuto
+     (`GENAI_MAX_CALLS_PER_MINUTE`) y su propia caché, independientes de las explicaciones.
+  6. **Interfaz:** vista «Asistente» (`/asistente?pregunta=`) para los cuatro roles, con la respuesta, el estado, el
+     modelo, el recuperador, las fuentes con su extracto y el aviso de datos sintéticos.
+  7. **Infraestructura:** `searchEnabled` en `infra/azure/u12/` añade a la api `SEARCH_PROVIDER`,
+     `AZURE_SEARCH_ENDPOINT`, `AZURE_SEARCH_INDEX` y `AZURE_OPENAI_EMBEDDING_DEPLOYMENT`, solo con `genaiEnabled`. La
+     imagen de la api incluye `knowledge/search_corpus` (`infra/docker/backend.Dockerfile`, `.dockerignore`).
+- **Alternativas descartadas:** un endpoint de solo búsqueda (Search seguiría aislada de Azure OpenAI); `POST` con
+  cuerpo (rompería la regla de una API sin cuerpos de petición); historial de conversación o persistencia de respuestas
+  (fuera del prototipo).
+- **Consecuencias:** coste por uso: una llamada de embeddings y una de chat por pregunta. La pregunta viaja en la URL y
+  puede quedar en registros de acceso, así que el asistente solo se usa con el corpus sintético. La explicación de
+  recomendaciones (`DT-101`) no cambia y sigue sin RAG.
+- **Verificación:** [CC] pruebas sin red de backend, API, frontend e infraestructura. **Pendiente [AZ-U]:** publicar la
+  imagen de este cambio, `deploy-u12.ps1 -Stage Apps` con su etiqueta y `-Stage Verify`, y una pregunta real en `dev` que
+  muestre `retriever = azure-ai-search` y `generator = azure-openai/gpt-41-mini`.
+- **Estado:** `ACEPTADA` (2026-10-17). Implementada; **no desplegada**.
 
 ## Decisiones deliberadamente NO tomadas
 

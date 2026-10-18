@@ -68,7 +68,7 @@ class U12WiringTest(unittest.TestCase):
         self.assertIn("var genaiEnv = genaiEnabled ? [", apps)
         for name in ("GENAI_PROVIDER", "AZURE_OPENAI_ENDPOINT", "AZURE_OPENAI_DEPLOYMENT", "AZURE_CLIENT_ID"):
             self.assertIn(f"name: '{name}'", apps)
-        self.assertIn("], genaiEnv)", apps)
+        self.assertIn("], genaiEnv, searchEnv)", apps)  # U15b (DT-103) appends the Search variables
         self.assertNotRegex(apps, r"(?i)OPENAI_API_KEY|AZURE_OPENAI_KEY")
 
     def test_disabled_by_default_and_enabled_in_dev_after_verification(self) -> None:

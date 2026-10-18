@@ -16,7 +16,8 @@ export type Resource =
   | 'forecasts'
   | 'recommendations'
   | 'explanation'
-  | 'runs';
+  | 'runs'
+  | 'assistant';
 
 const ALL: readonly Role[] = ROLES;
 
@@ -29,6 +30,7 @@ export const ACCESS: Readonly<Record<Resource, readonly Role[]>> = {
   recommendations: ALL, // GET /recommendations, /recommendations/{id}
   explanation: ALL, // GET /recommendations/{id}/explanation
   runs: ['PLANNER', 'ADMIN'], // GET /runs/{run_id}
+  assistant: ALL, // GET /assistant/answer (U15b, DT-103)
 };
 
 export function canAccess(roles: readonly Role[], resource: Resource): boolean {

@@ -10,6 +10,8 @@ export const PATHS = {
   recommendation: '/recomendaciones/:recommendationId',
   forecasts: '/predicciones',
   run: '/ejecuciones/:runId',
+  /** Documentary assistant (U15b, DT-103); the question is `?pregunta=`. */
+  assistant: '/asistente',
   /** Access check of the session (U11, DT-099); not in the navigation. */
   accessCheck: '/acceso',
 } as const;

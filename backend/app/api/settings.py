@@ -13,6 +13,11 @@
 then ``AZURE_OPENAI_ENDPOINT``, ``AZURE_OPENAI_DEPLOYMENT`` and ``AZURE_CLIENT_ID`` (identifiers, not secrets) are
 required and ``GENAI_TIMEOUT_SECONDS`` and ``GENAI_MAX_CALLS_PER_MINUTE`` are optional. There is never a key.
 
+``SEARCH_PROVIDER`` (U15b, `DT-103`): ``local`` (default: the synthetic corpus shipped with the API) or ``azure``,
+only with ``APP_ENV=dev``; then ``AZURE_SEARCH_ENDPOINT``, ``AZURE_SEARCH_INDEX``,
+``AZURE_OPENAI_EMBEDDING_DEPLOYMENT``, ``AZURE_OPENAI_ENDPOINT`` and ``AZURE_CLIENT_ID`` are required (identifiers,
+not secrets). There is never a key.
+
 ``DATABASE_URL`` is read with the mechanism of `app.db.connection` (never stored in the repository). The
 application reads ``os.environ`` only: no ``.env`` loader. Any refusal happens before the server starts.
 """
@@ -36,6 +41,9 @@ ENTRA_VARS = ("ENTRA_TENANT_ID", "ENTRA_API_CLIENT_ID", "ENTRA_SPA_CLIENT_ID")
 GENAI_PROVIDERS = ("template", "azure-openai")
 AZURE_OPENAI_VARS = ("AZURE_OPENAI_ENDPOINT", "AZURE_OPENAI_DEPLOYMENT", "AZURE_CLIENT_ID")
 _AOAI_HOSTS = (".openai.azure.com", ".cognitiveservices.azure.com", ".services.ai.azure.com")
+SEARCH_PROVIDERS = ("local", "azure")
+AZURE_SEARCH_VARS = ("AZURE_SEARCH_ENDPOINT", "AZURE_SEARCH_INDEX", "AZURE_OPENAI_EMBEDDING_DEPLOYMENT",
+                     "AZURE_OPENAI_ENDPOINT", "AZURE_CLIENT_ID")
 
 
 class SettingsError(RuntimeError):
@@ -51,6 +59,8 @@ class Settings:
     entra: Any = None
     #: Only with ``APP_ENV=dev`` and ``GENAI_PROVIDER=azure-openai``: an ``AzureOpenAIConfig`` (`DT-101`).
     genai: Any = None
+    #: Only with ``APP_ENV=dev`` and ``SEARCH_PROVIDER=azure``: an ``app.api.assistant.AzureSearchSettings`` (`DT-103`).
+    search: Any = None
 
     def __post_init__(self) -> None:
         if self.app_env not in APP_ENVS:
@@ -68,6 +78,8 @@ class Settings:
             raise SettingsError(f"{DATABASE_ENV_VAR} is not set")
         if self.genai is not None and self.app_env != DEV:
             raise SettingsError("GENAI_PROVIDER=azure-openai is only accepted with APP_ENV=dev")
+        if self.search is not None and self.app_env != DEV:
+            raise SettingsError("SEARCH_PROVIDER=azure is only accepted with APP_ENV=dev")
 
 
 def load_settings(environ: Mapping[str, str] | None = None) -> Settings:
@@ -83,8 +95,9 @@ def load_settings(environ: Mapping[str, str] | None = None) -> Settings:
     if not database_url:
         raise SettingsError(f"{DATABASE_ENV_VAR} is not set")
     genai = _genai_config(env, app_env)
+    search = _search_config(env, app_env)
     if app_env == DEV:
-        return Settings(app_env, database_url, {}, _entra_config(env), genai)
+        return Settings(app_env, database_url, {}, _entra_config(env), genai, search)
     try:
         identities = parse_identities(env.get("DEV_AUTH_IDENTITIES"))
     except IdentityRegistryError as exc:
@@ -122,6 +135,35 @@ def _genai_config(env: Mapping[str, str], app_env: str) -> Any:
         raise SettingsError("GENAI_TIMEOUT_SECONDS must be 1-30 and GENAI_MAX_CALLS_PER_MINUTE 1-600")
     return AzureOpenAIConfig(endpoint, env["AZURE_OPENAI_DEPLOYMENT"], env["AZURE_CLIENT_ID"],
                              timeout_seconds=timeout, max_calls_per_minute=calls)
+
+
+def _search_config(env: Mapping[str, str], app_env: str) -> Any:
+    """``None`` for the local corpus; an ``AzureSearchSettings`` for ``azure`` (`DT-103`), or a refusal."""
+    provider = env.get("SEARCH_PROVIDER") or "local"
+    if provider not in SEARCH_PROVIDERS:
+        raise SettingsError(f"SEARCH_PROVIDER must be one of {', '.join(SEARCH_PROVIDERS)}")
+    if provider == "local":
+        return None
+    if app_env != DEV:
+        raise SettingsError("SEARCH_PROVIDER=azure is only accepted with APP_ENV=dev")
+    if any(name.endswith(("_KEY", "_API_KEY")) and name.startswith(("AZURE_SEARCH", "SEARCH")) and env.get(name)
+           for name in env):
+        raise SettingsError("U15 uses Microsoft Entra ID only: remove the Azure AI Search key from the environment")
+    missing = [name for name in AZURE_SEARCH_VARS if not env.get(name)]
+    if missing:
+        raise SettingsError(f"SEARCH_PROVIDER=azure requires {', '.join(missing)}")
+    search_endpoint = env["AZURE_SEARCH_ENDPOINT"].rstrip("/")
+    host = search_endpoint.removeprefix("https://")
+    if not search_endpoint.startswith("https://") or "/" in host or not host.endswith(".search.windows.net"):
+        raise SettingsError("AZURE_SEARCH_ENDPOINT must be https://<service>.search.windows.net")
+    openai_endpoint = env["AZURE_OPENAI_ENDPOINT"].rstrip("/")
+    openai_host = openai_endpoint.removeprefix("https://")
+    if not openai_endpoint.startswith("https://") or "/" in openai_host or not openai_host.endswith(_AOAI_HOSTS):
+        raise SettingsError("AZURE_OPENAI_ENDPOINT must be https://<account>.openai.azure.com")
+    from .assistant import AzureSearchSettings
+
+    return AzureSearchSettings(search_endpoint, env["AZURE_SEARCH_INDEX"], openai_endpoint,
+                               env["AZURE_OPENAI_EMBEDDING_DEPLOYMENT"], env["AZURE_CLIENT_ID"])
 
 
 def _entra_config(env: Mapping[str, str]) -> Any:

@@ -128,7 +128,7 @@ Reglas verificables por prueba: [`docs/03`](03-arquitectura.md) §16.4.
 
 **Soporte del sistema, fuera de las capacidades funcionales del MVP:** U7 (Docker) proporciona el medio verificable de ejecución local de MVP-08; U8 (CI) y U9 (vistas analíticas) son soporte. El propietario aceptó esta clasificación el 2026-10-14.
 
-**Fuera del MVP:** Entra ID y despliegue U10–U12, Azure OpenAI U13 y Azure ML U14 están implementados en `dev`. U15 (AI Search) está integrada en `main` por el PR #22, con corpus sintético; el responsable creó el servicio en nivel Free (2026-10-16) y desplegó los embeddings `text-embedding-3-small` (2026-10-17), y el 2026-10-17 cargó y verificó el índice con su identidad; la conexión con la API sigue pendiente. La cuenta tiene USD 100 de crédito total, se conserva el umbral de planificación de USD 50 y se evaluará primero la alternativa compatible más económica. U16 (Power BI) no está autorizada.
+**Fuera del MVP:** Entra ID y despliegue U10–U12, Azure OpenAI U13 y Azure ML U14 están implementados en `dev`. U15 (AI Search) está integrada en `main` por el PR #22, con corpus sintético; el responsable creó el servicio en nivel Free (2026-10-16) y desplegó los embeddings `text-embedding-3-small` (2026-10-17), y el 2026-10-17 cargó y verificó el índice con su identidad; la API ya tiene el asistente documental que la consulta (`DT-103`, implementado y no desplegado). La cuenta tiene USD 100 de crédito total, se conserva el umbral de planificación de USD 50 y se evaluará primero la alternativa compatible más económica. U16 (Power BI) no está autorizada.
 
 **Fuera del MVP o diferido** (`CLAUDE.md` §3 y §17, `DT-094`):
 

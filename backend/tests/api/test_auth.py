@@ -96,8 +96,8 @@ class RoleMatrixTest(unittest.TestCase):
                     status = api.get(path, headers=auth(role)).status_code
                     if role not in allowed:
                         self.assertEqual(status, 403)
-                    elif path == "/api/v1/me":
-                        self.assertEqual(status, 200)
+                    elif path == "/api/v1/me" or path.startswith("/api/v1/assistant/"):
+                        self.assertEqual(status, 200)  # the assistant reads the shipped corpus, not the database
                     else:
                         self.assertEqual(status, 503)  # authorized: it tried to read
 
