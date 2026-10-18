@@ -4516,10 +4516,11 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
 - **Consecuencias:** coste por uso: una llamada de embeddings y una de chat por pregunta. La pregunta viaja en la URL y
   puede quedar en registros de acceso, así que el asistente solo se usa con el corpus sintético. La explicación de
   recomendaciones (`DT-101`) no cambia y sigue sin RAG.
-- **Verificación:** [CC] pruebas sin red de backend, API, frontend e infraestructura. **Pendiente [AZ-U]:** publicar la
-  imagen de este cambio, `deploy-u12.ps1 -Stage Apps` con su etiqueta y `-Stage Verify`, y una pregunta real en `dev` que
-  muestre `retriever = azure-ai-search` y `generator = azure-openai/gpt-41-mini`.
-- **Estado:** `ACEPTADA` (2026-10-17). Implementada; **no desplegada**.
+- **Verificación:** [CC] pruebas sin red de backend, API, frontend e infraestructura. **[AZ-U] (2026-10-18):** PR #25
+  (`118fe06`) en `main`, imagen `118fe06dc06fcbe2abf28ea71f2fc8f27acf318c` desplegada; `deploy-u12.ps1 -Stage Verify` 20/20; con sesión real de Entra ID (`PLANNER`), una pregunta en
+  «Asistente» devolvió `ANSWERED` con `retriever = azure-ai-search`, `generator = azure-openai/gpt-41-mini` y citas a
+  3 de los 4 fragmentos recuperados.
+- **Estado:** `ACEPTADA` (2026-10-17). **Desplegada y verificada en `dev`** (2026-10-18).
 
 ## Decisiones deliberadamente NO tomadas
 

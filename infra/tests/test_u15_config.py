@@ -127,7 +127,7 @@ class DocumentationTest(unittest.TestCase):
         readme = read(U15 / "README.md")
         for needle in ("motor-predictivo-search-dev", "Free", "text-embedding-3-small", "[AZ-U]", "deploy-u15.ps1",
                        "-Stage Roles", "deploy-u12.ps1 -Stage Verify", "## Pendiente", "No está autorizado",
-                       "USD 50", "Implementada, no desplegada", "DT-103"):
+                       "USD 50", "Verificada en `dev`", "DT-103"):
             self.assertIn(needle, readme)
         self.assertNotRegex(readme, r"(?i)integraci[oó]n (probada|funcional|verificada)")
 
