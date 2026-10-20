@@ -3,6 +3,7 @@ import { API_PATHS } from '../../api/paths';
 import type { RunDetail } from '../../api/types';
 import { useApiQuery } from '../../api/useApiQuery';
 import { QueryView } from '../../components/QueryView';
+import { ModelReference } from '../../components/provenance/ModelReference';
 import { formatCalendarDate, formatTimestamp } from '../../format/dates';
 
 function plain(value: unknown): string {
@@ -47,9 +48,7 @@ export function RunDetailPage() {
               <dd>
                 motor {run.versions.engine_version ?? '—'} · forecast #
                 {run.versions.forecast_run_id ?? '—'} · modelo de referencia{' '}
-                {run.versions.reference_model_version
-                  ? `${run.versions.reference_model_version.name} ${run.versions.reference_model_version.version}`
-                  : '—'}
+                <ModelReference model={run.versions.reference_model_version} />
               </dd>
               <dt>Configuración</dt>
               <dd>

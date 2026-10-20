@@ -9,7 +9,7 @@ embeddings y solo el corpus sintético de [`knowledge/search_corpus/`](../../../
 
 | Pieza | Estado | Evidencia |
 |---|---|---|
-| Servicio `motor-predictivo-search-dev` | Creado por el responsable en el portal el 2026-10-16: Free (50 MB), Central US, `running`, Entra ID **y** claves de API (`aadOrApiKey`, `disableLocalAuth: false`), acceso público | `az search service show` [AZ-U] |
+| Servicio `motor-predictivo-search-dev` | Creado por el responsable en el portal el 2026-10-16: Free (50 MB), Central US, `running`, acceso público. **Claves de API desactivadas el 2026-10-18** (`-Stage DisableKeys`): solo Entra ID | `az search service show` y `-Stage Verify` [AZ-U] |
 | Embeddings `text-embedding-3-small` | Desplegado el 2026-10-17 en `oai-mpa-dev-a73qz3afqj7no` (versión 1, GlobalStandard, capacidad 10 = 10 000 tokens/min, 10 solicitudes cada 10 s); responde con vectores de 1536 dimensiones | `az cognitiveservices account deployment create` y llamada de prueba [AZ-U] |
 | Roles de datos del responsable | `Search Service Contributor` y `Search Index Data Contributor` sobre el servicio; `Cognitive Services OpenAI User` sobre la cuenta de U13 | `az role assignment create` [AZ-U] |
 | Entra ID en el nivel Free | El servicio aceptó el token de Entra ID del responsable sin clave (`GET /indexes` → lista vacía) | Prueba C [AZ-U] |
@@ -17,7 +17,7 @@ embeddings y solo el corpus sintético de [`knowledge/search_corpus/`](../../../
 | Corpus | 9 fragmentos sintéticos cargados el 2026-10-17 con `-Stage Load` (el primer intento falló con HTTP 400 por las claves con `:`, corregido) | [AZ-U] |
 | Rol de `id-mpa-dev-runtime` | Asignado: `Verify` confirma exactamente 1 `Search Index Data Reader` sobre el servicio (2026-10-17) | [AZ-U] |
 | Comprobación con tu identidad | `-Stage Verify` en verde el 2026-10-17: 9 documentos, las 6 consultas con resultados (aciertos 6/6, informativo) y filtro de grupos aplicado por Search; `deploy-u12.ps1 -Stage Verify` 20/20 | [AZ-U] |
-| Consulta desde la API | **Implementada, no desplegada** (`DT-103`): `GET /api/v1/assistant/answer` usa `AzureSearchRetriever` con la identidad de la API y `gpt-41-mini`, con el corpus local de respaldo | [CC] |
+| Consulta desde la API | **Verificada en `dev` el 2026-10-18** (`DT-103`): la vista «Asistente» respondió con `azure-ai-search` y `gpt-41-mini`, citando los fragmentos; es la identidad administrada de la API la que consulta Search | [AZ-U] |
 
 La validación del nivel Free con Entra ID se hizo con la identidad del responsable. La identidad administrada de la API
 solo quedará probada cuando la API consulte Search.
@@ -43,6 +43,7 @@ powershell -ExecutionPolicy Bypass -File infra\azure\deploy-u15.ps1 -Stage Index
 powershell -ExecutionPolicy Bypass -File infra\azure\deploy-u15.ps1 -Stage Load      # vectoriza y carga el corpus (CARGAR)
 powershell -ExecutionPolicy Bypass -File infra\azure\deploy-u15.ps1 -Stage Roles     # lector para id-mpa-dev-runtime (ROL)
 powershell -ExecutionPolicy Bypass -File infra\azure\deploy-u12.ps1 -Stage Verify    # U12 debe seguir en verde
+powershell -ExecutionPolicy Bypass -File infra\azure\deploy-u15.ps1 -Stage DisableKeys  # solo Entra ID (SINCLAVES)
 powershell -ExecutionPolicy Bypass -File infra\azure\deploy-u15.ps1 -Stage Verify    # comprobaciones y evidencia
 ```
 
@@ -53,7 +54,8 @@ powershell -ExecutionPolicy Bypass -File infra\azure\deploy-u15.ps1 -Stage Verif
 | `Index` | Crea o actualiza `u15-demo-documents` desde `index.json` | Sí: el índice |
 | `Load` | Trocea el corpus, pide un embedding por fragmento (pausa de 1,2 s y reintentos ante HTTP 429) y lo sube; la clave de cada documento es el identificador del fragmento en Base64 URL-safe con prefijo `k`, porque Search solo admite letras, dígitos, `-`, `_` y `=` en las claves | Sí: documentos sintéticos |
 | `Roles` | Asigna `Search Index Data Reader` a `id-mpa-dev-runtime` solo sobre el servicio; si ya existe, no hace nada | Sí: un rol |
-| `Verify` | Servicio, embeddings, rol de ejecución (exactamente uno, nada más sobre Search) y, con **tu** identidad: número de documentos, consultas de [`evaluation.json`](../../../knowledge/search_corpus/evaluation.json) y filtro de grupos; escribe `tmp/u15-evidence/` | No |
+| `DisableKeys` | Desactiva las claves de API del servicio (`disableLocalAuth = true`, sin `authOptions`) con un `PATCH` de ARM; si ya lo están, no hace nada. Para volver atrás: portal, Configuración > Claves > Ambos | Sí: la autenticación del servicio |
+| `Verify` | Servicio (claves desactivadas), embeddings, rol de ejecución (exactamente uno, nada más sobre Search) y, con **tu** identidad: número de documentos, consultas de [`evaluation.json`](../../../knowledge/search_corpus/evaluation.json) y filtro de grupos; escribe `tmp/u15-evidence/` | No |
 
 `-Stage Roles` necesita el `deploy-u12.ps1` de este mismo cambio: su comprobación de roles de la identidad de ejecución
 acepta ahora `Search Index Data Reader` solo sobre un servicio de Search del grupo. Con la versión anterior,
@@ -83,7 +85,8 @@ Owner no basta: no incluye acciones de datos. Las asignaciones tardan unos minut
 
 ## Plantilla
 
-[`main.bicep`](main.bicep) describe el servicio real (`serviceName`, `searchSku = 'free'`, `disableLocalAuth = false`,
+[`main.bicep`](main.bicep) describe el servicio real (`serviceName`, `searchSku = 'free'`, `disableLocalAuth = true` tras
+`-Stage DisableKeys`,
 `semanticSearch = 'free'`) y el rol de lectura. **No se usa para desplegar**: el servicio se creó en el portal y el rol lo
 asigna `-Stage Roles`. `-Stage WhatIf` muestra la diferencia; se espera al menos el alta de etiquetas, que el servicio
 real no tiene.
@@ -94,9 +97,8 @@ activas.
 
 ## Pendiente
 
-1. Desplegar el asistente documental de `DT-103` (ya implementado): publicar la imagen, `deploy-u12.ps1 -Stage Apps`
-   (aplica `searchEnabled`) y comprobar en la vista «Asistente» que responde con `azure-ai-search` y `gpt-41-mini`.
-2. Desactivar las claves de API del servicio (`disableLocalAuth = true`) cuando la API funcione con Entra ID.
+Nada en `dev` (2026-10-18): servicio solo con Entra ID, índice verificado y asistente funcionando. Antes de usar datos
+reales hay que sustituir el corpus sintético y los grupos de demostración (`ASSUMPTION-008`).
 
 ## Límites
 

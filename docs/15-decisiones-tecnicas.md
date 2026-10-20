@@ -2194,7 +2194,8 @@ D-01 a D-22 y criterios de cierre: `docs/05` §19.8 y §19.9.*
        (`baseline.naive`, `baseline.seasonal_naive`, `baseline.moving_average`; `version = 1.0.0`;
        `algorithm` = `NAIVE`, `SEASONAL_NAIVE`, `MOVING_AVERAGE`; `is_baseline = true`). En los
        baselines, `trained_at`, `training_data_from`, `training_data_to`, `metrics`,
-       `baseline_metrics`, `status` y `external_ref` son `NULL`: no hay entrenamiento ni evaluación, y
+       `baseline_metrics`, `status` y `external_ref` son `NULL` *(enmienda del 2026-10-20, `DT-104`: salvo
+       `external_ref` del baseline de referencia, `azureml:baseline-ma13:1`)*: no hay entrenamiento ni evaluación, y
        el ciclo de vida de `docs/05` §13 es el de «cada modelo entrenado». CHECK
        `is_baseline = (status IS NULL)`. `hyperparameters` (`jsonb`, obligatorio) lleva la definición
        completa de `DT-056`.
@@ -4516,10 +4517,46 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
 - **Consecuencias:** coste por uso: una llamada de embeddings y una de chat por pregunta. La pregunta viaja en la URL y
   puede quedar en registros de acceso, así que el asistente solo se usa con el corpus sintético. La explicación de
   recomendaciones (`DT-101`) no cambia y sigue sin RAG.
-- **Verificación:** [CC] pruebas sin red de backend, API, frontend e infraestructura. **Pendiente [AZ-U]:** publicar la
-  imagen de este cambio, `deploy-u12.ps1 -Stage Apps` con su etiqueta y `-Stage Verify`, y una pregunta real en `dev` que
-  muestre `retriever = azure-ai-search` y `generator = azure-openai/gpt-41-mini`.
-- **Estado:** `ACEPTADA` (2026-10-17). Implementada; **no desplegada**.
+- **Verificación:** [CC] pruebas sin red de backend, API, frontend e infraestructura. **[AZ-U] (2026-10-18):** PR #25
+  (`118fe06`) en `main`, imagen `118fe06dc06fcbe2abf28ea71f2fc8f27acf318c` desplegada; `deploy-u12.ps1 -Stage Verify` 20/20; con sesión real de Entra ID (`PLANNER`), una pregunta en
+  «Asistente» devolvió `ANSWERED` con `retriever = azure-ai-search`, `generator = azure-openai/gpt-41-mini` y citas a
+  3 de los 4 fragmentos recuperados. El mismo día se desactivaron las claves de API del servicio (`deploy-u15.ps1 -Stage
+  DisableKeys`) y el asistente siguió respondiendo con `azure-ai-search`: solo se usa Entra ID.
+- **Estado:** `ACEPTADA` (2026-10-17). **Desplegada y verificada en `dev`** (2026-10-18).
+
+## DT-104 — U14b: el baseline de referencia enlaza su registro de Azure ML (trazabilidad, sin inferencia en Azure)
+
+- **Contexto:** U14 (`DT-102`) reprodujo en Azure ML el *backtesting* F5a del baseline de referencia con la misma
+  huella `results_sha256` (`67608e95…`) y registró el modelo `baseline-ma13`, versión 1 (workspace `mlw-mpa-dev`, job
+  `frank_skin_7lcq5hn0hj`). La aplicación no lo sabía: Azure ML quedaba aislado. El responsable pidió el 2026-10-20
+  conectarlo sin ampliar el alcance ni el gasto (opción A frente a B, pronósticos calculados en Azure ML, y C, *endpoint*
+  en línea con cargo continuo).
+- **Decisión** (`ACEPTADA` el 2026-10-20 con la autorización del responsable de preparar la opción A):
+  1. **Dato:** `model_versions.external_ref`, previsto para «la referencia al registro de modelos de Azure ML»
+     (`docs/04` §9.10), vale `azureml:baseline-ma13:1` (referencia de modelo de la CLI v2 de Azure ML) en la fila del
+     baseline de referencia, `baseline.moving_average` 1.0.0. Los otros dos baselines siguen con `NULL`. Enmienda el
+     punto de `DT-057` según el cual un baseline tiene siempre `external_ref` nulo.
+  2. **Origen:** `BaselineDefinition.external_ref` en `backend/app/forecasting/baselines.py`. No entra en la
+     configuración de la ejecución: `config_sha256` no cambia y las ejecuciones existentes se reconocen
+     (`ALREADY_COMPUTED`). `register_model_versions` compara también `external_ref`: una referencia distinta es un error,
+     como cualquier otra diferencia de definición.
+  3. **Bases existentes:** la migración `0005_model_registry_ref` rellena el valor solo si es `NULL`; en una base vacía
+     no hace nada y la fila nace con la referencia. No cambia cálculos ni filas de negocio.
+  4. **API:** `ModelRef` añade `external_ref` (opcional) en `provenance.model_version` de los pronósticos y en
+     `versions.reference_model_version` del detalle de ejecución. Ninguna llamada a Azure ML en tiempo de ejecución, ni
+     roles nuevos.
+  5. **Interfaz:** «Modelo: baseline.moving_average 1.0.0 · registrado y validado en Azure ML como
+     `azureml:baseline-ma13:1`» en la procedencia de las predicciones y en el detalle de ejecución.
+- **Alternativas descartadas:** B (los pronósticos de Azure ML se cargan en PostgreSQL) toca el *bootstrap* de U12 y el
+  movimiento de datos, con riesgo para la fecha de entrega; C (*endpoint* en línea) tiene cargo continuo y supera el
+  presupuesto de `DT-094`.
+- **Consecuencias:** la cadena es visible de punta a punta: Azure ML valida y registra el modelo, la aplicación pronostica
+  con esa misma definición y la interfaz muestra la referencia. Azure ML no calcula en vivo y la interfaz no lo afirma.
+  Si se borra el workspace (`deploy-u14.ps1 -Stage Remove`), la referencia queda como dato histórico.
+- **Verificación:** [CC] pruebas sin red y de integración con PostgreSQL 16 (migración desde cero y sobre una base
+  anterior, idempotencia, `ALREADY_COMPUTED`, API y Vitest). **Pendiente [AZ-U]:** desplegar la imagen, ejecutar el
+  *bootstrap* (aplica `0005`) y ver la referencia en la vista Predicciones de `dev`.
+- **Estado:** `ACEPTADA` (2026-10-20). Implementada; **no desplegada**.
 
 ## Decisiones deliberadamente NO tomadas
 

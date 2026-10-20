@@ -4,6 +4,7 @@ import { formatCalendarDate } from '../../format/dates';
 import { RoleGate } from '../../roles/RoleGate';
 import { toRun } from '../../routes/paths';
 import { NoticeBanner } from '../NoticeBanner';
+import { ModelReference } from './ModelReference';
 
 type Provenance = RecommendationProvenance | ForecastProvenance;
 
@@ -52,9 +53,7 @@ export function ProvenancePanel({ provenance }: { provenance: Provenance }) {
           <>
             <dt>Modelo</dt>
             <dd>
-              {provenance.model_version
-                ? `${provenance.model_version.name} ${provenance.model_version.version}`
-                : '—'}
+              <ModelReference model={provenance.model_version} />
             </dd>
           </>
         ) : null}

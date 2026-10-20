@@ -188,7 +188,8 @@ class ForecastsTest(ApiTestCase):
         self.assertEqual(provenance["run_id"], _FORECAST_RUN)
         self.assertEqual((provenance["dataset_version"], provenance["data_origin"], provenance["as_of_date"]),
                          ("ds-6c8ad65b4999", "SYNTHETIC", "2025-12-31"))
-        self.assertEqual(provenance["model_version"], {"name": "baseline.moving_average", "version": "1.0.0"})
+        self.assertEqual(provenance["model_version"], {"name": "baseline.moving_average", "version": "1.0.0",
+                                                       "external_ref": "azureml:baseline-ma13:1"})  # DT-104
         self.assertEqual(provenance["notices"], ["SYNTHETIC_DATA"])
 
     def test_pagination_by_series_and_filters(self) -> None:
@@ -268,6 +269,7 @@ class RunsTest(ApiTestCase):
         forecast = self.get(f"/api/v1/runs/{_FORECAST_RUN}", ADMIN)
         self.assertEqual((forecast["counts"]["forecast_rows"], forecast["versions"]["reference_model_version"]["name"]),
                          (3990, "baseline.moving_average"))
+        self.assertEqual(forecast["versions"]["reference_model_version"]["external_ref"], "azureml:baseline-ma13:1")
         self.get(f"/api/v1/runs/{_FORECAST_RUN}", VIEWER, 403)
         self.get(f"/api/v1/runs/{_FORECAST_RUN}", ANALYST, 403)
         self.get("/api/v1/runs/999999", PLANNER, 404)

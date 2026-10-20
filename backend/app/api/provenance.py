@@ -34,7 +34,8 @@ def _common(run: dict[str, Any]) -> dict[str, Any]:
 def forecast_provenance(run: dict[str, Any]) -> dict[str, Any]:
     model = None
     if run.get("reference_model_name") is not None:
-        model = {"name": run["reference_model_name"], "version": run["reference_model_version"]}
+        model = {"name": run["reference_model_name"], "version": run["reference_model_version"],
+                 "external_ref": run.get("reference_model_external_ref")}
     return {**_common(run), "model_version": model, "notices": notices(run["data_origin"])}
 
 

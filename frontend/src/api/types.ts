@@ -23,6 +23,7 @@ export type RecommendationExplanation = Schemas['RecommendationExplanation'];
 export type AssistantAnswer = Schemas['AssistantAnswer'];
 export type AssistantCitation = Schemas['AssistantCitation'];
 export type ForecastProvenance = Schemas['ForecastProvenance'];
+export type ModelRef = Schemas['ModelRef'];
 export type RecommendationProvenance = Schemas['RecommendationProvenance'];
 export type Notice = RecommendationProvenance['notices'][number];
 

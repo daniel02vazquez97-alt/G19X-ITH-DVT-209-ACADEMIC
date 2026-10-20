@@ -79,7 +79,7 @@ class BicepTest(unittest.TestCase):
     def test_dev_parameters_match_the_service_seen_on_2026_10_16(self) -> None:
         params = read(U15 / "dev.bicepparam")
         for needle in ("param serviceName = 'motor-predictivo-search-dev'", "param searchSku = 'free'",
-                       "param disableLocalAuth = false", "param semanticSearch = 'free'"):
+                       "param disableLocalAuth = true", "param semanticSearch = 'free'"):
             self.assertIn(needle, params)
 
     @unittest.skipUnless(BICEP, "Bicep CLI not available")
@@ -127,7 +127,7 @@ class DocumentationTest(unittest.TestCase):
         readme = read(U15 / "README.md")
         for needle in ("motor-predictivo-search-dev", "Free", "text-embedding-3-small", "[AZ-U]", "deploy-u15.ps1",
                        "-Stage Roles", "deploy-u12.ps1 -Stage Verify", "## Pendiente", "No está autorizado",
-                       "USD 50", "Implementada, no desplegada", "DT-103"):
+                       "USD 50", "Verificada en `dev`", "DT-103"):
             self.assertIn(needle, readme)
         self.assertNotRegex(readme, r"(?i)integraci[oó]n (probada|funcional|verificada)")
 
@@ -321,7 +321,7 @@ class ScriptSourceTest(unittest.TestCase):
 
     def test_ascii_stages_and_no_key_commands(self) -> None:
         self.assertTrue(self.SOURCE.isascii())
-        self.assertIn("[ValidateSet('Preflight', 'WhatIf', 'Index', 'Load', 'Roles', 'Verify')]", self.SOURCE)
+        self.assertIn("[ValidateSet('Preflight', 'WhatIf', 'Index', 'Load', 'Roles', 'Verify', 'DisableKeys')]", self.SOURCE)
         for word in ("'keys'", "'admin-key'", "'query-key'", "'get-access-token'"):
             self.assertIn(word, self.SOURCE)  # refused by Invoke-Az
         self.assertNotRegex(self.SOURCE, r"Invoke-Az @\('search', 'service', '(update|create|delete)'")
@@ -332,6 +332,9 @@ class ScriptSourceTest(unittest.TestCase):
         self.assertEqual(len(creates), 1)
         self.assertIn("'--role', $SearchReaderRoleId, '--scope', \"$($svc.id", creates[0])
         self.assertIn("$SearchReaderRoleId = '1407120a-92aa-4202-b7e9-c0e197c71c8f'", self.SOURCE)
+        # The only other change to Azure is DisableKeys: one ARM PATCH of the service, keys off and no authOptions.
+        self.assertEqual(len(re.findall(r"Invoke-Az @\('rest'", self.SOURCE)), 1)
+        self.assertIn('{"properties":{"disableLocalAuth":true,"authOptions":null}}', self.SOURCE)
 
     def test_u12_accepts_the_reader_only_on_a_search_service(self) -> None:
         u12 = read(ROOT / "infra" / "azure" / "deploy-u12.ps1")
@@ -403,6 +406,27 @@ class ScriptFlowTest(unittest.TestCase):
         self.assertEqual(again.returncode, 0, again.stdout + again.stderr)
         self.assertIn("ya tiene Search Index Data Reader", again.stdout)
         self.assertEqual(len(state["assignments"]), 1)
+
+    def test_disable_keys_patches_the_service_once_and_is_idempotent(self) -> None:
+        result, state = run_pwsh(self.dir, "-Stage", "DisableKeys", "-Yes")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("Claves desactivadas", result.stdout)
+        self.assertEqual(len(state["patches"]), 1)
+        patch = state["patches"][0]
+        self.assertEqual(patch["method"], "patch")
+        self.assertTrue(patch["url"].startswith("https://management.azure.com/subscriptions/"))
+        self.assertTrue(patch["url"].endswith("/searchServices/motor-predictivo-search-dev?api-version=2025-05-01"))
+        self.assertEqual(patch["body"], {"properties": {"disableLocalAuth": True, "authOptions": None}})
+        again, state = run_pwsh(self.dir, "-Stage", "DisableKeys", "-Yes")
+        self.assertEqual(again.returncode, 0, again.stdout + again.stderr)
+        self.assertIn("ya estan desactivadas", again.stdout)
+        self.assertEqual(len(state["patches"]), 1)
+
+    def test_preflight_accepts_a_service_with_keys_disabled(self) -> None:
+        result, _ = run_pwsh(self.dir, "-PreflightOnly", env={"FAKE_U15_KEYS_OFF": "1"})
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("autenticacion: solo Entra ID (claves desactivadas)", result.stdout)
+        self.assertNotIn("siguen activas", result.stdout)
 
     def test_writing_stages_stop_without_python_before_changing_anything(self) -> None:
         for stage in ("Index", "Load"):

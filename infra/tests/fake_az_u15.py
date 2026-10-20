@@ -3,7 +3,8 @@
 It answers only the commands the script uses and never reaches Azure. Every call is recorded in the JSON state file
 (``FAKE_AZ_STATE``). Switches: ``FAKE_U15_SKU`` (default ``free``), ``FAKE_U15_OWNER_ROLES`` (``all`` or ``none``),
 ``FAKE_U15_EMBEDDINGS`` (``1``/``0``) and ``FAKE_U15_RUNTIME_READER`` (``1``: the runtime identity already has the
-reader role).
+reader role) and ``FAKE_U15_KEYS_OFF`` (``1``: the API keys are already disabled). ``az rest`` PATCHes of the
+service are recorded in ``patches`` and turn the keys off.
 """
 
 from __future__ import annotations
@@ -26,7 +27,7 @@ def load() -> dict:
     if os.path.exists(path):
         with open(path, encoding="utf-8") as handle:
             return json.load(handle)
-    return {"argv": [], "assignments": []}
+    return {"argv": [], "assignments": [], "patches": [], "keys_off": os.environ.get("FAKE_U15_KEYS_OFF") == "1"}
 
 
 def option(args: list[str], name: str) -> str | None:
@@ -65,8 +66,8 @@ def answer(args: list[str], state: dict):
     if starts("search service show"):
         return {"id": SEARCH, "name": "motor-predictivo-search-dev", "location": "Central US",
                 "sku": {"name": os.environ.get("FAKE_U15_SKU", "free")}, "status": "running",
-                "provisioningState": "Succeeded", "publicNetworkAccess": "Enabled", "disableLocalAuth": False,
-                "authOptions": {"aadOrApiKey": {"aadAuthFailureMode": "http401WithBearerChallenge"}},
+                "provisioningState": "Succeeded", "publicNetworkAccess": "Enabled", "disableLocalAuth": state["keys_off"],
+                "authOptions": None if state["keys_off"] else {"aadOrApiKey": {"aadAuthFailureMode": "http401WithBearerChallenge"}},
                 "endpoint": "https://motor-predictivo-search-dev.search.windows.net"}
     if starts("resource list"):
         return [{"id": OPENAI, "name": "oai-mpa-dev-x"}]
@@ -89,6 +90,14 @@ def answer(args: list[str], state: dict):
         state["assignments"].append({"principal": option(args, "--assignee-object-id"), "role": option(args, "--role"),
                                      "scope": option(args, "--scope"),
                                      "type": option(args, "--assignee-principal-type")})
+        return None
+    if starts("rest"):
+        body = option(args, "--body") or ""
+        with open(body[1:], encoding="utf-8") as handle:
+            content = json.loads(handle.read())
+        state["patches"].append({"method": option(args, "--method"), "url": option(args, "--url"), "body": content})
+        if content.get("properties", {}).get("disableLocalAuth") is True:
+            state["keys_off"] = True
         return None
     raise ValueError(f"unexpected command: {' '.join(args)}")
 

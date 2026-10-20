@@ -1,4 +1,5 @@
 // Parametros de U15 en dev: el servicio Free real (creado en el portal el 2026-10-16). Sin secretos.
+// disableLocalAuth = true: estado tras deploy-u15.ps1 -Stage DisableKeys (solo Entra ID, DT-103).
 using 'main.bicep'
 
 param environment = 'dev'
@@ -7,5 +8,5 @@ param ownerTag = 'responsable-del-proyecto'
 param runtimeIdentityName = 'id-mpa-dev-runtime'
 param serviceName = 'motor-predictivo-search-dev'
 param searchSku = 'free'
-param disableLocalAuth = false
+param disableLocalAuth = true
 param semanticSearch = 'free'

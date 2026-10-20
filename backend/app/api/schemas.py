@@ -73,6 +73,8 @@ class ProductNamedRef(Schema):
 class ModelRef(Schema):
     name: str
     version: str
+    #: Model registry entry (`DT-104`): ``azureml:baseline-ma13:1`` for the reference baseline, else ``None``.
+    external_ref: str | None = None
 
 
 # --- products and inventory -------------------------------------------------------------------

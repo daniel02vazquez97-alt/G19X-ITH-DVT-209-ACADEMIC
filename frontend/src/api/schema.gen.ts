@@ -557,6 +557,8 @@ export interface components {
             name: string;
             /** Version */
             version: string;
+            /** External Ref */
+            external_ref?: string | null;
         };
         /** OpenLine */
         OpenLine: {

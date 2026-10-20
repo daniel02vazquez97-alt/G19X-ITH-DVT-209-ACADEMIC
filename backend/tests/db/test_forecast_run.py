@@ -208,7 +208,7 @@ class ModelVersionsTest(RunTestCase):
             """
         ).fetchall()
         expected = sorted(
-            (d.name, d.version, d.algorithm, d.hyperparameters, True) + (None,) * 7
+            (d.name, d.version, d.algorithm, d.hyperparameters, True) + (None,) * 6 + (d.external_ref,)
             for d in (NAIVE, SEASONAL_NAIVE, MOVING_AVERAGE)
         )
         self.assertEqual(rows, expected)
