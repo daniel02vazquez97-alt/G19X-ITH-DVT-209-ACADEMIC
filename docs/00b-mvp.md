@@ -5,7 +5,7 @@
 | Campo | Valor |
 |---|---|
 | Propósito | Delimitar la **primera versión funcional** y fijar **cómo se acepta**. El «qué producto y por qué» está en el PRD ([`docs/00a-prd.md`](00a-prd.md)) |
-| Estado | **Aprobado por el propietario** (2026-10-14), con el alcance vigente de §1 y §4 |
+| Estado | **Aprobado por el propietario** (2026-10-14), con el alcance vigente de §1 y §4. Actualizado el 2026-10-20: estado de U13–U16 en §1.1, §4 y §8 |
 | Fuente principal del alcance | `DT-094` (`ACEPTADA`, 2026-10-06), puntos 2, 9, 10 y 11 |
 | Fuentes de los criterios | Criterios de cierre ya existentes: [`docs/05`](05-motor-predictivo.md) §19.9 (U3), [`docs/06`](06-motor-abastecimiento.md) §16.13.4 (U4), [`docs/07`](07-api.md) §7.5 (U5), [`docs/09`](09-ia-generativa.md) §14.6 (U6), [`docs/08`](08-frontend.md) §12.1 (Fase 7), `DT-095` (U7) |
 | Estado vivo | [`project/status.md`](../project/status.md). Si este documento lo contradice, manda `status.md` y este documento se corrige |
@@ -32,7 +32,11 @@ alcance de la Etapa 2**, pero el punto 10 los clasifica **aparte** del MVP local
   en Azure. Es un hito propio, con su matriz de cierre en
   [`docs/reports/u12-cierre-evidencias.md`](reports/u12-cierre-evidencias.md).
 - **Las unidades de servicio** U13 (Azure OpenAI), U14 (Azure ML), U15 (AI Search) y U16 (Power BI) no forman parte del
-  MVP. U13 y U14 están implementadas y verificadas en `dev`; U15 está integrada en `main` con corpus sintético y sin despliegue; U16 sigue sin autorización.
+  MVP. U13 y U14 están implementadas y verificadas en `dev`. U15 está desplegada y verificada en `dev` (Search Free, solo
+  Entra ID, 2026-10-18) y la usa el **asistente documental U15b** (`DT-103`), un extra fuera del MVP: una pregunta sobre
+  los documentos sintéticos se responde con fragmentos citados; sin Azure, con el corpus local y solo los fragmentos.
+  La aplicación muestra además la referencia del modelo registrado en Azure ML (`DT-104`). **U16 no se implementa en
+  esta entrega:** el alcance se cierra aquí (retroalimentación de la revisión del 2026-10-20).
 
 ### 1.2 Definición operativa
 
@@ -95,7 +99,7 @@ El propietario revisó y aceptó la definición operativa y los límites de este
 | Alta, edición y registro de maestros, movimientos, órdenes y recepciones (escrituras de RF-001, RF-004, RF-005 y RF-008) | **Aprobado, aplazado** en V1 | `docs/07` §7.3 |
 | Resolución humana de recomendaciones (atender, descartar o convertir) | Aplazado | `DT-059` |
 | Desempeño de proveedores (RF-016) | Propuesta no vinculante | `docs/01` §5, `BR-X05` |
-| Azure OpenAI, Azure ML, AI Search, Power BI (U13–U16) | Stack de Azure, **fuera del MVP**. U13/U14 desplegadas; U15 integrada en `main` sin desplegar; U16 sin autorizar | `DT-094` puntos 3 y 10; `DT-101`, `DT-102` |
+| Azure OpenAI, Azure ML, AI Search, Power BI (U13–U16) | Stack de Azure, **fuera del MVP**. U13, U14 y U15 desplegadas y verificadas en `dev`; U15b (asistente documental) y U14b (referencia del modelo de Azure ML) como extras; U16 no se implementa en esta entrega | `DT-094` puntos 3 y 10; `DT-101` a `DT-104` |
 | Despliegue en Azure `dev` (U10–U12) | **Objetivo separado** del MVP funcional | `DT-094` punto 10; informe de U12 |
 | Modelos experimentales (SES y los candidatos de F5c), F5d, G2, G3, promoción y uso del *holdout* | Experimental o posterior | `DT-094` puntos 9 y 10 |
 | Estrategia (b) de `DT-011` | Sin autorizar | `DT-094` punto 9 |
@@ -185,8 +189,8 @@ cumplido.
 | Implementado, pendiente de evidencia | Nada dentro del MVP. Fuera de él: verificaciones pendientes aceptadas de U12 (informe de U12 §4, P1–P5) |
 | Pruebas bloqueadas | Ninguna del MVP. Las de U12 en Azure no se pueden ejecutar desde Claude Code Cloud: sin Azure CLI ni credenciales, red bloqueada a `*.azurecontainerapps.io`, sin navegador. Las ejecuta el responsable |
 | Experimental | F5c (candidatos), SES sin promover; todo `SYNTHETIC` |
-| Decisiones pendientes | `BR-X03`; validación de roles (`ASSUMPTION-010`); parámetros de política; `DT-P16`; evaluación de alternativa de menor costo y decisión de despliegue para U15; corpus empresarial (`ASSUMPTION-008`) |
-| Próximo hito concreto | El MVP y el PRD están aceptados. U15 está implementada con corpus sintético; evaluar primero una opción de costo mínimo compatible con la autenticación requerida antes de desplegar. U16 requiere autorización propia |
+| Decisiones pendientes | `BR-X03`; validación de roles (`ASSUMPTION-010`); parámetros de política; `DT-P16`; corpus empresarial (`ASSUMPTION-008`) |
+| Próximo hito concreto | El MVP y el PRD están aceptados. *(Actualización 2026-10-20:)* U15 y el asistente U15b están verificados en `dev`; el alcance se cierra y el trabajo pasa a la entrega: README, capturas y demo local sin Azure. U16 no se implementa |
 
 **El MVP está aceptado**: MVP-01…MVP-09 tienen evidencia documentada y MVP-10 fue aprobado por el propietario el 2026-10-14.
 
