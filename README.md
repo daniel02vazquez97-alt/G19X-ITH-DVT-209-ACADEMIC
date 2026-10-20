@@ -6,14 +6,25 @@ Sistema de apoyo a la decisión de compras. A partir del histórico de consumo, 
 el comportamiento de los proveedores, **pronostica la demanda** de cada producto y **recomienda qué comprar, cuánto y
 cuándo**. Cada recomendación es determinista, se explica cifra a cifra y se puede reconstruir meses después.
 
-> **Estado (2026-10-13):** MVP **implementado y funcionando** en local con un solo comando, y **desplegado en Azure**
-> (entorno `dev`, Azure Container Apps) con Microsoft Entra ID. Datos 100 % sintéticos (generador propio 0.4.0).
-> Detalle por componente en [Estado de implementación](#estado-de-implementación).
+> **Estado (2026-10-20), con su comprobación:**
+>
+> - **MVP local, sin Azure:** `docker compose -f infra/docker-compose.yml --profile app up --build -d` y después
+>   `python infra/docker/smoke.py`, que debe terminar en `SMOKE OK` (frontend → API → PostgreSQL, recomendaciones,
+>   pronósticos, explicación y asistente con el corpus local).
+> - **Azure `dev`:** `deploy-u12.ps1 -Stage Verify` 20/20 (2026-10-18) y `deploy-u15.ps1 -Stage Verify` en verde
+>   (2026-10-18), con Microsoft Entra ID.
+> - **Pruebas:** CI en verde en `main` ([`ci.yml`](.github/workflows/ci.yml)); en local, `python scripts/test.py`.
+> - **Extras fuera del MVP:** explicaciones con Azure OpenAI, *backtesting* reproducido en Azure ML y **asistente
+>   documental** con Azure AI Search ([Qué hace la aplicación](#qué-hace-la-aplicación)).
+>
+> Datos 100 % sintéticos (generador propio 0.4.0). Detalle en [Estado de implementación](#estado-de-implementación).
 
 ## Contenido
 
 - [Qué problema resuelve](#qué-problema-resuelve)
+- [Cómo evaluar el proyecto](#cómo-evaluar-el-proyecto)
 - [Demo en 3 minutos (local, sin Azure)](#demo-en-3-minutos-local-sin-azure)
+- [Capturas](#capturas)
 - [Qué hace la aplicación](#qué-hace-la-aplicación)
 - [Arquitectura](#arquitectura)
 - [Estado de implementación](#estado-de-implementación)
@@ -37,6 +48,21 @@ auditable **sin quitarle la decisión a la persona que compra**:
 3. **Explicación** en lenguaje natural de cada recomendación, con verificación automática de que toda cifra del texto
    sale del cálculo. La IA generativa **redacta, nunca calcula**.
 
+## Cómo evaluar el proyecto
+
+1. **Arrancar la demo local** y pasar el *smoke test* ([siguiente sección](#demo-en-3-minutos-local-sin-azure)). No
+   hace falta Azure ni ninguna credencial.
+2. **Recorrer la interfaz** en <http://127.0.0.1:8080> con el token de `PLANNER`: Recomendaciones → abrir una
+   recomendación (desglose del cálculo y explicación verificada) → Predicciones (gráfica con banda) → Asistente.
+3. **Ver cómo se calcula una recomendación:** reglas en [`docs/06-motor-abastecimiento.md`](docs/06-motor-abastecimiento.md);
+   código en `backend/app/supply_engine/engine.py` (cálculo puro) y `backend/app/runs/recommendation.py` (lee los datos,
+   ejecuta el motor y persiste el resultado).
+4. **Ver cómo la IA no inventa cifras:** `backend/app/genai/` (verificación de cifras de la explicación) y
+   `backend/app/genai/assistant.py` (el asistente solo usa fragmentos de documentos, citados con `[n]`).
+5. **Ejecutar las pruebas:** `python scripts/test.py` ([Pruebas y calidad](#pruebas-y-calidad)).
+6. **Comprobar Azure** (opcional; exige una cuenta del tenant): evidencias en
+   [`docs/reports/u12-cierre-evidencias.md`](docs/reports/u12-cierre-evidencias.md) y [`project/status.md`](project/status.md).
+
 ## Demo en 3 minutos (local, sin Azure)
 
 **Requisito:** Docker con Compose v2. No hacen falta Python, Node ni credenciales.
@@ -57,6 +83,11 @@ recomendaciones (corte 2025-12-31). Después:
 | Comprobación automática de punta a punta | `python infra/docker/smoke.py` |
 | Parar (y borrar datos con `-v`) | `docker compose -f infra/docker-compose.yml --profile app down` |
 
+Sin Azure, el asistente documental responde con el corpus sintético incluido en la imagen de la API y muestra solo los
+fragmentos con sus fuentes (estado `RETRIEVAL_ONLY`, sin modelo de lenguaje); el *smoke test* lo comprueba. Las
+explicaciones usan la plantilla determinista. Se publican solo en `127.0.0.1` los puertos 8080 (interfaz), 8000 (API) y
+5432 (PostgreSQL).
+
 Para entrar en la interfaz se pega un token ficticio de [`.env.example`](.env.example), uno por rol:
 
 | Rol | Token | Puede ver |
@@ -68,9 +99,21 @@ Para entrar en la interfaz se pega un token ficticio de [`.env.example`](.env.ex
 
 Los tokens solo se aceptan con `APP_ENV=local`; con `APP_ENV=dev` la API exige Microsoft Entra ID.
 
+## Capturas
+
+Entorno `dev` en Azure, con sesión de Microsoft Entra ID y datos sintéticos.
+
+| Recomendaciones | Detalle con explicación |
+|---|---|
+| ![Lista de recomendaciones con su procedencia y avisos](docs/img/recomendaciones.png) | ![Detalle de una recomendación: desglose del cálculo y explicación verificada](docs/img/detalle-explicacion.png) |
+
+| Predicciones | Asistente documental |
+|---|---|
+| ![Pronóstico semanal con banda de incertidumbre](docs/img/predicciones.png) | ![Asistente: respuesta con citas y fuentes](docs/img/asistente.png) |
+
 ## Qué hace la aplicación
 
-API REST de solo lectura (14 rutas, FastAPI) e interfaz React:
+API REST de solo lectura (15 rutas, FastAPI) e interfaz React:
 
 | Función | Ruta de la API | Vista |
 |---|---|---|
@@ -82,6 +125,7 @@ API REST de solo lectura (14 rutas, FastAPI) e interfaz React:
 | Explicación verificada de la recomendación | `GET /api/v1/recommendations/{id}/explanation` | Recomendación |
 | Ejecución de cálculo y su procedencia | `GET /api/v1/runs/{id}` | Ejecuciones |
 | Identidad y roles; comprobación de la matriz de acceso | `GET /api/v1/me` | Comprobación de acceso |
+| *Extra fuera del MVP:* asistente documental sobre el corpus sintético, con citas (`DT-103`) | `GET /api/v1/assistant/answer?q=` | Asistente |
 
 Resultado sobre el dataset 0.4.0: 100 productos evaluados → 50 `RECOMMEND`, 40 `NO_NEED` y 10 `NOT_CALCULABLE`
 (cada uno con su motivo). Cada respuesta lleva su **procedencia**: dataset, carga, ejecución, versión del motor y
@@ -99,8 +143,10 @@ flowchart LR
     I --> DB[(PostgreSQL 16)]
     F --> DB
     R --> DB
-    DB --> API[API FastAPI<br/>solo lectura, 14 rutas]
+    DB --> API[API FastAPI<br/>solo lectura, 15 rutas]
     API --> X[Explicación<br/>plantilla o Azure OpenAI<br/>+ verificación de cifras]
+    API --> AS[Asistente documental<br/>Azure AI Search + Azure OpenAI<br/>o corpus local]
+    ML[Azure ML<br/>backtesting y registro<br/>del modelo] -.->|referencia del modelo| DB
     UI[React + Vite<br/>nginx] -->|/api, mismo origen| API
     E[Microsoft Entra ID] -.->|tokens y roles| UI
     E -.-> API
@@ -114,14 +160,14 @@ flowchart LR
 | **Explicación** (`backend/app/genai`) | Texto en lenguaje natural de un cálculo ya hecho | **No calcula ninguna cifra**: un verificador rechaza cualquier número que no salga del cálculo |
 
 Diseño completo en [`docs/03-arquitectura.md`](docs/03-arquitectura.md); decisiones en
-[`docs/15-decisiones-tecnicas.md`](docs/15-decisiones-tecnicas.md) (registro de decisiones técnicas, de `DT-001` a `DT-101`).
+[`docs/15-decisiones-tecnicas.md`](docs/15-decisiones-tecnicas.md) (registro de decisiones técnicas, de `DT-001` a `DT-104`).
 
 ## Estado de implementación
 
 | Tecnología | Uso en el proyecto | Estado | Evidencia |
 |---|---|---|---|
 | Python 3.11 · FastAPI | API de solo lectura, motor, pronóstico, ingesta | ✅ Implementado y desplegado | `backend/`, [`docs/07-api.md`](docs/07-api.md) |
-| PostgreSQL 16 | Modelo de datos, migraciones `0001`–`0004`, vistas analíticas | ✅ Implementado y desplegado (Azure Flexible Server) | `backend/db/migrations` |
+| PostgreSQL 16 | Modelo de datos, migraciones `0001`–`0005`, vistas analíticas | ✅ Implementado y desplegado (Azure Flexible Server) | `backend/db/migrations` |
 | React 19 · TypeScript · Vite | Interfaz por roles, gráficas con Recharts | ✅ Implementado y desplegado | `frontend/`, [`docs/08-frontend.md`](docs/08-frontend.md) |
 | Machine Learning (Python) | Backtesting, métricas (MASE), candidatos y simulador de inventario | ✅ Implementado (estudio sintético) | `ml/`, [`docs/reports/`](docs/reports/README.md) |
 | Docker · Docker Compose | Sistema completo en local con un comando | ✅ Implementado | `infra/docker/`, `infra/docker-compose.yml` |
@@ -129,9 +175,9 @@ Diseño completo en [`docs/03-arquitectura.md`](docs/03-arquitectura.md); decisi
 | Microsoft Entra ID | Inicio de sesión MSAL y cuatro roles de aplicación | ✅ Implementado y desplegado | `infra/azure/entra/`, `backend/app/api/entra.py` |
 | Azure (Bicep) | Container Apps, ACR, PostgreSQL, Key Vault, identidades administradas | ✅ Desplegado y verificado en `dev` | `infra/azure/`, [informe de U12](docs/reports/u12-cierre-evidencias.md) |
 | Azure OpenAI | Explicaciones con `gpt-4.1-mini`, sin claves, con verificación de cifras y plantilla de respaldo | ✅ Implementado, desplegado y activo en `dev` | `backend/app/genai/chat.py`, `infra/azure/u13/` |
-| Azure Machine Learning | Reproducción del *backtesting* del baseline con MLflow y registro de `baseline-ma13` | 🟡 Implementado; despliegue pendiente (U14) | `infra/azure/u14/`, `infra/azure/deploy-u14.ps1` |
-| Azure AI Search | Búsqueda sobre un corpus documental sintético | ⏳ En desarrollo (U15) | [`docs/09-ia-generativa.md`](docs/09-ia-generativa.md) |
-| Power BI | Informes sobre las vistas del esquema `analytics` | ⏳ En desarrollo (U16); las vistas ya existen | [`docs/11-power-bi.md`](docs/11-power-bi.md) |
+| Azure Machine Learning | Reproducción del *backtesting* del baseline con MLflow y registro de `baseline-ma13`; la aplicación muestra esa referencia del modelo (`DT-104`) | ✅ Desplegado y verificado en `dev` (2026-10-14, Verify 7/7) | `infra/azure/u14/`, `infra/azure/deploy-u14.ps1` |
+| Azure AI Search | Búsqueda híbrida del **asistente documental** (extra fuera del MVP) sobre un corpus sintético, solo con Entra ID | ✅ Desplegado y verificado en `dev` (2026-10-18) | `infra/azure/u15/`, `backend/app/genai/assistant.py`, `DT-103` |
+| Power BI | Informes sobre las vistas del esquema `analytics` | ⏸ Fuera de esta entrega (U16 no se implementa); las vistas ya existen | [`docs/11-power-bi.md`](docs/11-power-bi.md) |
 
 ## Pruebas y calidad
 
@@ -153,7 +199,7 @@ Todas las suites corren en CI en cada *push* y *pull request* ([`ci.yml`](.githu
 | Integración | Migraciones y API contra PostgreSQL 16 efímero | `backend/`: `python -m unittest discover -s tests/db -t tests/db` (exige `U2_TEST_ADMIN_DSN`) |
 | ML | Backtesting, métricas, candidatos | raíz: `python -m unittest discover -s ml/tests -t .` |
 | Generador | Dataset sintético y sus 51 validaciones | raíz: `python -m unittest discover -s data/synthetic/tests -t .` |
-| Frontend | ESLint, `tsc`, Prettier, Vitest (176 pruebas) y build | `frontend/`: `npm ci`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run build` |
+| Frontend | ESLint, `tsc`, Prettier, Vitest (183 pruebas) y build | `frontend/`: `npm ci`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run build` |
 | Infraestructura | Bicep, workflows, scripts de despliegue con Azure CLI simulado | raíz: `python -m unittest discover -s infra/tests -t infra/tests` |
 | Seguridad | Detección de secretos y archivos prohibidos | raíz: `python infra/ci/secret_scan.py` |
 | Lint de Python | Ruff con errores reales (`F`, `E9`), sin imponer estilo ([`ruff.toml`](ruff.toml)) | raíz: `python -m ruff check .` |
@@ -185,7 +231,7 @@ Procedimiento: [`infra/azure/u12/README.md`](infra/azure/u12/README.md). Evidenc
 .
 ├── backend/                 API FastAPI, motor, pronóstico, ingesta y explicación (Python 3.11)
 │   ├── app/                     api · supply_engine · forecasting · runs · ingestion · db · genai
-│   ├── db/migrations/           SQL 0001–0004 (incluye las vistas analíticas)
+│   ├── db/migrations/           SQL 0001–0005 (incluye las vistas analíticas)
 │   └── tests/                   suite por defecto, tests/api y tests/db (integración)
 ├── frontend/                React 19 + TypeScript + Vite (vistas por rol, MSAL para Entra ID)
 ├── ml/                      Backtesting, métricas, candidatos y simulador (solo biblioteca estándar)
@@ -193,7 +239,7 @@ Procedimiento: [`infra/azure/u12/README.md`](infra/azure/u12/README.md). Evidenc
 ├── infra/
 │   ├── docker/                  Dockerfiles, nginx, bootstrap y smoke
 │   ├── docker-compose.yml       Sistema completo en local
-│   ├── azure/                   Bicep y scripts de despliegue (U10–U13) con su README
+│   ├── azure/                   Bicep y scripts de despliegue (U10–U15) con su README
 │   └── tests/                   Pruebas de la infraestructura
 ├── .github/workflows/       CI (9 jobs) y Deploy dev (OIDC)
 ├── scripts/test.py          Un solo comando para todas las pruebas (Windows y Linux)
@@ -230,6 +276,9 @@ Procedimiento: [`infra/azure/u12/README.md`](infra/azure/u12/README.md). Evidenc
 - **Solo lectura.** La V1 consulta y explica; no crea órdenes de compra ni escribe en la base desde la API.
 - **Modelo de pronóstico.** El baseline oficial es la media móvil de 13 semanas; los candidatos estudiados (SES, Holt,
   Croston, TSB…) no se promueven sin datos reales.
+- **Asistente documental.** Responde solo sobre los 3 documentos sintéticos del corpus (cómo funciona el sistema), no
+  sobre datos de ventas o inventario: esas consultas están en las vistas. Si los documentos no contienen la respuesta,
+  dice «No encuentro esa información en los documentos disponibles».
 - **Acceso a `dev` en Azure.** La URL desplegada exige una cuenta del tenant con un rol asignado; para evaluar sin
   cuenta, usa la [demo local](#demo-en-3-minutos-local-sin-azure).
 

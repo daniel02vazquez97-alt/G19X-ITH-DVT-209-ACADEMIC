@@ -34,6 +34,7 @@ import os
 import re
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -141,6 +142,16 @@ def main() -> int:
         check("explanation of a recommendation (U6)", status == 200, f"HTTP {status}")
     else:
         check("explanation of a recommendation (U6)", False, "no recommendation to explain")
+
+    # U15b (`DT-103`): without Azure the documentary assistant answers from the corpus shipped in the API image,
+    # with the fragments only (no model): it must work, not fail, when Search and Azure OpenAI are absent.
+    question = urllib.parse.quote("¿Se ejecutan compras automáticas?")
+    status, body = get(f"{FRONTEND}/api/v1/assistant/answer?q={question}", token)
+    answer = json.loads(body) if status == 200 else {}
+    check("documentary assistant without Azure: local corpus, fragments with sources (U15b)",
+          status == 200 and answer.get("retriever") == "local" and answer.get("status") == "RETRIEVAL_ONLY"
+          and bool(answer.get("citations")),
+          f"HTTP {status}, {answer.get('retriever')}/{answer.get('status')}, {len(answer.get('citations') or [])} fuentes")
 
     print("SMOKE OK" if not failures else f"SMOKE FAILED: {len(failures)} check(s)")
     return 0 if not failures else 1
