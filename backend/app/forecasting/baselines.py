@@ -16,6 +16,10 @@ from .contract import BaselineDefinition
 
 SEASON_LENGTH_WEEKS = 52
 WINDOW_WEEKS = 13
+#: U14 (`DT-102`, `DT-104`): Azure ML registered the reference baseline as model ``baseline-ma13`` version 1 (workspace
+#: ``mlw-mpa-dev``, job ``frank_skin_7lcq5hn0hj``) after reproducing the F5a backtest with the same ``results_sha256``
+#: as the versioned report. ``azureml:<name>:<version>`` is the model reference of the Azure ML CLI v2.
+AZUREML_REFERENCE_MODEL = "azureml:baseline-ma13:1"
 
 NAIVE = BaselineDefinition(name="baseline.naive", version="1.0.0", algorithm="NAIVE")
 SEASONAL_NAIVE = BaselineDefinition(
@@ -29,6 +33,7 @@ MOVING_AVERAGE = BaselineDefinition(
     version="1.0.0",
     algorithm="MOVING_AVERAGE",
     specific=(("window_weeks", WINDOW_WEEKS),),
+    external_ref=AZUREML_REFERENCE_MODEL,
 )
 
 #: Every baseline U3 runs, in a fixed order.

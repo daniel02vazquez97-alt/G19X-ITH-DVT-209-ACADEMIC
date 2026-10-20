@@ -69,6 +69,9 @@ class BaselineDefinition:
     algorithm: str
     #: Parameters specific to the algorithm, as ``(key, value)`` pairs.
     specific: tuple[tuple[str, int], ...] = ()
+    #: Model registry entry of this version (``model_versions.external_ref``), or ``None``. Not part of the run
+    #: configuration: it records where the version is registered, it does not change any result (`DT-104`).
+    external_ref: str | None = None
 
     @property
     def hyperparameters(self) -> dict[str, Any]:

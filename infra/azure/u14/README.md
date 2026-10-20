@@ -5,6 +5,11 @@ con MLflow. **Criterio de aceptación:** el `results_sha256` del job es idéntic
 [`docs/reports/fase5-f5a-backtest-sintetico.json`](../../../docs/reports/fase5-f5a-backtest-sintetico.json)
 (`67608e95…`). `ml/` no cambia y sigue sin dependencias; MLflow vive en `job/run_backtest.py`.
 
+**Uso en la aplicación (`DT-104`):** la fila de `model_versions` del baseline de referencia guarda
+`external_ref = azureml:baseline-ma13:1` (migración `0005`), y la API y la interfaz la muestran como «registrado y
+validado en Azure ML» en la procedencia de las predicciones y en el detalle de ejecución. No hay inferencia en Azure ML
+ni llamadas a Azure en tiempo de ejecución. Si se ejecuta `-Stage Remove`, la referencia queda como dato histórico.
+
 ## 1. Qué se crea
 
 | Recurso | Configuración | Coste |

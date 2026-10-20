@@ -216,7 +216,8 @@ class AnalyticsMigrationTest(DatabaseTestCase):
     def test_from_scratch_the_four_migrations_apply_in_order_and_once(self) -> None:
         self.assertEqual(
             apply_migrations(self.conn),
-            ["0001_dataset_tables", "0002_forecast_tables", "0003_recommendation_tables", "0004_analytics_views"],
+            ["0001_dataset_tables", "0002_forecast_tables", "0003_recommendation_tables", "0004_analytics_views",
+             "0005_model_registry_ref"],  # U14 adds 0005 (`DT-104`)
         )
         self.assertEqual(apply_migrations(self.conn), [])
         self.assertEqual(analytics_views(self.conn), set(EXPECTED_VIEWS))
@@ -232,7 +233,7 @@ class AnalyticsMigrationTest(DatabaseTestCase):
         tables = ("products", "consumption", "inventory", "inventory_movements", "purchase_order_items",
                   "calculation_runs", "forecasts", "recommendations", "data_loads")
         before = {t: self.count(t) for t in tables}
-        self.assertEqual(apply_migrations(self.conn), ["0004_analytics_views"])
+        self.assertEqual(apply_migrations(self.conn), ["0004_analytics_views", "0005_model_registry_ref"])
         self.assertEqual({t: self.count(t) for t in tables}, before)
         self.assertEqual(self.conn.execute("SELECT count(*) FROM analytics.fact_recommendation").fetchone()[0], 100)
         # The operational flow still works after 0004: a repeated run is recognised, not rewritten.

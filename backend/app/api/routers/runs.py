@@ -35,7 +35,8 @@ def get_run(
     summary = run["summary"] or {}
     model = None
     if run["reference_model_name"] is not None:
-        model = {"name": run["reference_model_name"], "version": run["reference_model_version"]}
+        model = {"name": run["reference_model_name"], "version": run["reference_model_version"],
+                 "external_ref": run.get("reference_model_external_ref")}
     return {
         "id": run["id"],
         "run_type": run["run_type"],

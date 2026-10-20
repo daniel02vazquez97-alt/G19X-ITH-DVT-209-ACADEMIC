@@ -10,7 +10,8 @@ _CONTEXT = """
     SELECT r.id, r.run_type, r.status, r.as_of_date, r.data_load_id, r.config_sha256, r.summary, r.error,
            r.started_at, r.finished_at, r.forecast_run_id, r.engine_version,
            d.dataset_version, d.generator_version, d.data_origin,
-           m.name AS reference_model_name, m.version AS reference_model_version
+           m.name AS reference_model_name, m.version AS reference_model_version,
+           m.external_ref AS reference_model_external_ref
     FROM calculation_runs r
     JOIN data_loads d ON d.id = r.data_load_id
     LEFT JOIN model_versions m ON m.id = r.reference_model_version_id

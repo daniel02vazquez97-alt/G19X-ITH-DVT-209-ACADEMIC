@@ -160,11 +160,12 @@ def register_model_versions(conn: psycopg.Connection) -> dict[str, int]:
         for definition in BASELINES:
             conn.execute(
                 """
-                INSERT INTO model_versions (name, version, algorithm, hyperparameters, is_baseline)
-                VALUES (%s, %s, %s, %s, true)
+                INSERT INTO model_versions (name, version, algorithm, hyperparameters, is_baseline, external_ref)
+                VALUES (%s, %s, %s, %s, true, %s)
                 ON CONFLICT (name, version) DO NOTHING
                 """,
-                (definition.name, definition.version, definition.algorithm, Jsonb(definition.hyperparameters)),
+                (definition.name, definition.version, definition.algorithm, Jsonb(definition.hyperparameters),
+                 definition.external_ref),
             )
             row = conn.execute(
                 """
@@ -174,7 +175,9 @@ def register_model_versions(conn: psycopg.Connection) -> dict[str, int]:
                 """,
                 (definition.name, definition.version),
             ).fetchone()
-            expected = (definition.algorithm, definition.hyperparameters, True) + (None,) * 7
+            # Baselines have no training, metrics or status (`DT-057`); external_ref is the registry entry, if any
+            # (`DT-104`; migration 0005 sets it on databases created before it).
+            expected = (definition.algorithm, definition.hyperparameters, True) + (None,) * 6 + (definition.external_ref,)
             if tuple(row[1:]) != expected:
                 raise ForecastRunError(
                     f"model_versions {definition.name} {definition.version} differs from its definition: "

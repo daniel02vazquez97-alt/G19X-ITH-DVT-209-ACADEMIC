@@ -373,7 +373,7 @@ explicarse con la política vigente en su momento, no con la actual.
 | `baseline_metrics` | Métricas del baseline en la misma evaluación |
 | `hyperparameters` | Configuración |
 | `status` | `TRAINING`, `EVALUATED`, `PRODUCTION`, `ARCHIVED`, `REJECTED` |
-| `external_ref` | Referencia al registro de modelos de Azure ML |
+| `external_ref` | Referencia al registro de modelos de Azure ML. En el baseline de referencia, `azureml:baseline-ma13:1` desde la migración `0005` (`DT-104`); `NULL` en los demás baselines |
 | `is_baseline` | Si esta versión es el baseline |
 
 **Restricción:** como máximo una versión en estado `PRODUCTION` por objetivo de predicción. Nunca se
@@ -867,7 +867,7 @@ propuestas de §9.6 para U3; las columnas de U4 se deciden con U4.*
 
 | Tabla | Columnas y restricciones |
 |---|---|
-| `model_versions` | `id` (identidad), `name`, `version` (único `(name, version)`), `algorithm`, `trained_at`, `training_data_from`, `training_data_to`, `metrics`, `baseline_metrics`, `hyperparameters` (`jsonb`, obligatorio), `status`, `external_ref`, `is_baseline`, `created_at`. En los baselines, `trained_at`, ventana, métricas, `status` y `external_ref` son `NULL` (no hay entrenamiento ni evaluación); CHECK `is_baseline = (status IS NULL)` |
+| `model_versions` | `id` (identidad), `name`, `version` (único `(name, version)`), `algorithm`, `trained_at`, `training_data_from`, `training_data_to`, `metrics`, `baseline_metrics`, `hyperparameters` (`jsonb`, obligatorio), `status`, `external_ref`, `is_baseline`, `created_at`. En los baselines, `trained_at`, ventana, métricas, `status` y `external_ref` son `NULL` (no hay entrenamiento ni evaluación), salvo `external_ref` del baseline de referencia, `azureml:baseline-ma13:1` (`DT-104`); CHECK `is_baseline = (status IS NULL)` |
 | `calculation_runs` | `id`, `run_type` (`FORECAST` · `RECOMMENDATION`), `status` (`COMPLETED` · `FAILED`), `as_of_date`, `data_load_id` (FK → `data_loads`), `reference_model_version_id` (FK → `model_versions`, obligatoria en `FORECAST`), `config_sha256`, `summary` (`jsonb`), `error` (solo en `FAILED`), `started_at`, `finished_at`. Único parcial `(run_type, as_of_date, data_load_id, config_sha256) WHERE status = 'COMPLETED'` |
 | `forecasts` | `id`, `calculation_run_id` (FK), `product_id`, `location_id`, `model_version_id` (FK), `as_of_date`, `generated_at`, `period_start`, `period_end` (`= period_start + 7`), `granularity`, `predicted_quantity`, `lower_bound`, `upper_bound` (`numeric`; `0 ≤ lower ≤ predicted ≤ upper`; escala `≤ 6`), `confidence_level` (`0 < c < 1`, nominal), `method_used`, `confidence_flag` (`STANDARD` · `INSUFFICIENT_HISTORY`), `is_primary`. Único `(calculation_run_id, model_version_id, product_id, location_id, period_start)`; único parcial `(calculation_run_id, product_id, location_id, period_start) WHERE is_primary` |
 
