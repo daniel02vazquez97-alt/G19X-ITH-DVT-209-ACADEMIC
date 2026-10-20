@@ -10,7 +10,8 @@ cuándo**. Cada recomendación es determinista, se explica cifra a cifra y se pu
 >
 > - **MVP local, sin Azure:** `docker compose -f infra/docker-compose.yml --profile app up --build -d` y después
 >   `python infra/docker/smoke.py`, que debe terminar en `SMOKE OK` (frontend → API → PostgreSQL, recomendaciones,
->   pronósticos, explicación y asistente con el corpus local).
+>   pronósticos, explicación y asistente con el corpus local). Probado el 2026-10-20 en un clon limpio: `SMOKE OK`,
+>   9/9 comprobaciones.
 > - **Azure `dev`:** `deploy-u12.ps1 -Stage Verify` 20/20 (2026-10-18) y `deploy-u15.ps1 -Stage Verify` en verde
 >   (2026-10-18), con Microsoft Entra ID.
 > - **Pruebas:** CI en verde en `main` ([`ci.yml`](.github/workflows/ci.yml)); en local, `python scripts/test.py`.
@@ -65,7 +66,13 @@ auditable **sin quitarle la decisión a la persona que compra**:
 
 ## Demo en 3 minutos (local, sin Azure)
 
-**Requisito:** Docker con Compose v2. No hacen falta Python, Node ni credenciales.
+**Requisitos:** Docker con Compose v2 para el sistema y Python 3 (solo la biblioteca estándar) para el *smoke test*. No
+hacen falta Node, dependencias de Python ni credenciales.
+
+**Probado el 2026-10-20** en un clon limpio de la rama, en Windows con Docker Desktop 29.8.1 (WSL 2, 12 CPU y 11,5 GiB
+para Docker): la API respondió sana a los **1,9 min** del `up` y `smoke.py` terminó en `SMOKE OK` (9/9). Ese tiempo
+aprovechó la caché de construcciones anteriores de Docker; la primera construcción en una máquina nueva tarda más,
+porque descarga las imágenes base y construye las tres imágenes.
 
 ```bash
 git clone https://github.com/daniel02vazquez97-alt/G19X-ITH-DVT-209-ACADEMIC.git
@@ -82,6 +89,10 @@ recomendaciones (corte 2025-12-31). Después:
 | API y su documentación OpenAPI | <http://127.0.0.1:8000/docs> |
 | Comprobación automática de punta a punta | `python infra/docker/smoke.py` |
 | Parar (y borrar datos con `-v`) | `docker compose -f infra/docker-compose.yml --profile app down` |
+| Ver el estado si algo falla | `docker compose -f infra/docker-compose.yml --profile app ps -a` y `... logs --tail 40` |
+
+En PowerShell, ejecuta `docker compose ... up` directamente: si su salida se canaliza (por ejemplo, dentro de
+`Measure-Command { ... | Out-Default }`), Compose no obtiene la consola y se detiene con «failed to get console».
 
 Sin Azure, el asistente documental responde con el corpus sintético incluido en la imagen de la API y muestra solo los
 fragmentos con sus fuentes (estado `RETRIEVAL_ONLY`, sin modelo de lenguaje); el *smoke test* lo comprueba. Las
