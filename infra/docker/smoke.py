@@ -66,6 +66,9 @@ def get(url: str, token: str | None = None) -> tuple[int, bytes]:
             return response.status, response.read()
     except urllib.error.HTTPError as exc:
         return exc.code, exc.read()
+    except urllib.error.URLError as exc:  # nothing listening: the system is not up (or not healthy yet)
+        raise SystemExit(f"SMOKE FAILED: sin conexión con {url} ({exc.reason}). ¿Está levantado el sistema? "
+                         "Compruébalo con: docker compose -f infra/docker-compose.yml --profile app ps") from None
 
 
 def entra_identifiers() -> dict[str, str]:

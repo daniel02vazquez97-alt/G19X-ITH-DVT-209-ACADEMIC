@@ -10,8 +10,9 @@ cuándo**. Cada recomendación es determinista, se explica cifra a cifra y se pu
 >
 > - **MVP local, sin Azure:** `docker compose -f infra/docker-compose.yml --profile app up --build -d` y después
 >   `python infra/docker/smoke.py`, que debe terminar en `SMOKE OK` (frontend → API → PostgreSQL, recomendaciones,
->   pronósticos, explicación y asistente con el corpus local).
-> - **Azure `dev`:** `deploy-u12.ps1 -Stage Verify` 20/20 (2026-10-18) y `deploy-u15.ps1 -Stage Verify` en verde
+>   pronósticos, explicación y asistente con el corpus local). Probado el 2026-10-20 en un clon limpio: `SMOKE OK`,
+>   9/9 comprobaciones.
+> - **Azure `dev`:** `deploy-u12.ps1 -Stage Verify` 20/20 (2026-10-20) y `deploy-u15.ps1 -Stage Verify` en verde
 >   (2026-10-18), con Microsoft Entra ID.
 > - **Pruebas:** CI en verde en `main` ([`ci.yml`](.github/workflows/ci.yml)); en local, `python scripts/test.py`.
 > - **Extras fuera del MVP:** explicaciones con Azure OpenAI, *backtesting* reproducido en Azure ML y **asistente
@@ -65,7 +66,13 @@ auditable **sin quitarle la decisión a la persona que compra**:
 
 ## Demo en 3 minutos (local, sin Azure)
 
-**Requisito:** Docker con Compose v2. No hacen falta Python, Node ni credenciales.
+**Requisitos:** Docker con Compose v2 para el sistema y Python 3 (solo la biblioteca estándar) para el *smoke test*. No
+hacen falta Node, dependencias de Python ni credenciales.
+
+**Probado el 2026-10-20** en un clon limpio de la rama, en Windows con Docker Desktop 29.8.1 (WSL 2, 12 CPU y 11,5 GiB
+para Docker): la API respondió sana a los **1,9 min** del `up` y `smoke.py` terminó en `SMOKE OK` (9/9). Ese tiempo
+aprovechó la caché de construcciones anteriores de Docker; la primera construcción en una máquina nueva tarda más,
+porque descarga las imágenes base y construye las tres imágenes.
 
 ```bash
 git clone https://github.com/daniel02vazquez97-alt/G19X-ITH-DVT-209-ACADEMIC.git
@@ -82,6 +89,10 @@ recomendaciones (corte 2025-12-31). Después:
 | API y su documentación OpenAPI | <http://127.0.0.1:8000/docs> |
 | Comprobación automática de punta a punta | `python infra/docker/smoke.py` |
 | Parar (y borrar datos con `-v`) | `docker compose -f infra/docker-compose.yml --profile app down` |
+| Ver el estado si algo falla | `docker compose -f infra/docker-compose.yml --profile app ps -a` y `... logs --tail 40` |
+
+En PowerShell, ejecuta `docker compose ... up` directamente: si su salida se canaliza (por ejemplo, dentro de
+`Measure-Command { ... | Out-Default }`), Compose no obtiene la consola y se detiene con «failed to get console».
 
 Sin Azure, el asistente documental responde con el corpus sintético incluido en la imagen de la API y muestra solo los
 fragmentos con sus fuentes (estado `RETRIEVAL_ONLY`, sin modelo de lenguaje); el *smoke test* lo comprueba. Las
@@ -175,7 +186,7 @@ Diseño completo en [`docs/03-arquitectura.md`](docs/03-arquitectura.md); decisi
 | Microsoft Entra ID | Inicio de sesión MSAL y cuatro roles de aplicación | ✅ Implementado y desplegado | `infra/azure/entra/`, `backend/app/api/entra.py` |
 | Azure (Bicep) | Container Apps, ACR, PostgreSQL, Key Vault, identidades administradas | ✅ Desplegado y verificado en `dev` | `infra/azure/`, [informe de U12](docs/reports/u12-cierre-evidencias.md) |
 | Azure OpenAI | Explicaciones con `gpt-4.1-mini`, sin claves, con verificación de cifras y plantilla de respaldo | ✅ Implementado, desplegado y activo en `dev` | `backend/app/genai/chat.py`, `infra/azure/u13/` |
-| Azure Machine Learning | Reproducción del *backtesting* del baseline con MLflow y registro de `baseline-ma13`; la aplicación muestra esa referencia del modelo (`DT-104`) | ✅ Desplegado y verificado en `dev` (2026-10-14, Verify 7/7) | `infra/azure/u14/`, `infra/azure/deploy-u14.ps1` |
+| Azure Machine Learning | Reproducción del *backtesting* del baseline con MLflow y registro de `baseline-ma13`; la aplicación muestra esa referencia del modelo (`DT-104`) | ✅ Desplegado y verificado en `dev` (2026-10-14, Verify 7/7; referencia en la aplicación, 2026-10-20) | `infra/azure/u14/`, `infra/azure/deploy-u14.ps1` |
 | Azure AI Search | Búsqueda híbrida del **asistente documental** (extra fuera del MVP) sobre un corpus sintético, solo con Entra ID | ✅ Desplegado y verificado en `dev` (2026-10-18) | `infra/azure/u15/`, `backend/app/genai/assistant.py`, `DT-103` |
 | Power BI | Informes sobre las vistas del esquema `analytics` | ⏸ Fuera de esta entrega (U16 no se implementa); las vistas ya existen | [`docs/11-power-bi.md`](docs/11-power-bi.md) |
 
@@ -199,7 +210,7 @@ Todas las suites corren en CI en cada *push* y *pull request* ([`ci.yml`](.githu
 | Integración | Migraciones y API contra PostgreSQL 16 efímero | `backend/`: `python -m unittest discover -s tests/db -t tests/db` (exige `U2_TEST_ADMIN_DSN`) |
 | ML | Backtesting, métricas, candidatos | raíz: `python -m unittest discover -s ml/tests -t .` |
 | Generador | Dataset sintético y sus 51 validaciones | raíz: `python -m unittest discover -s data/synthetic/tests -t .` |
-| Frontend | ESLint, `tsc`, Prettier, Vitest (183 pruebas) y build | `frontend/`: `npm ci`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run build` |
+| Frontend | ESLint, `tsc`, Prettier, Vitest (185 pruebas) y build | `frontend/`: `npm ci`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run build` |
 | Infraestructura | Bicep, workflows, scripts de despliegue con Azure CLI simulado | raíz: `python -m unittest discover -s infra/tests -t infra/tests` |
 | Seguridad | Detección de secretos y archivos prohibidos | raíz: `python infra/ci/secret_scan.py` |
 | Lint de Python | Ruff con errores reales (`F`, `E9`), sin imponer estilo ([`ruff.toml`](ruff.toml)) | raíz: `python -m ruff check .` |
