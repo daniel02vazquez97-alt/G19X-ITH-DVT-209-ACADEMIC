@@ -1,0 +1,3 @@
+# Las migraciones se registran con el sha256 de sus bytes (backend/app/db/migrations.py). Con LF en toda copia del
+# repositorio, Windows, Linux y Azure calculan la misma huella y `init` no las rechaza como cambiadas (DT-099).
+backend/db/migrations/*.sql text eol=lf

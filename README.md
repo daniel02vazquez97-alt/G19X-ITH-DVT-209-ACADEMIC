@@ -24,7 +24,8 @@ cuándo**. Cada recomendación es determinista, se explica cifra a cifra y se pu
 
 - [Qué problema resuelve](#qué-problema-resuelve)
 - [Cómo evaluar el proyecto](#cómo-evaluar-el-proyecto)
-- [Demo en 3 minutos (local, sin Azure)](#demo-en-3-minutos-local-sin-azure)
+- [Demo local (sin Azure)](#demo-local-sin-azure)
+- [Entorno nuevo](#entorno-nuevo)
 - [Capturas](#capturas)
 - [Qué hace la aplicación](#qué-hace-la-aplicación)
 - [Arquitectura](#arquitectura)
@@ -51,7 +52,7 @@ auditable **sin quitarle la decisión a la persona que compra**:
 
 ## Cómo evaluar el proyecto
 
-1. **Arrancar la demo local** y pasar el *smoke test* ([siguiente sección](#demo-en-3-minutos-local-sin-azure)). No
+1. **Arrancar la demo local** y pasar el *smoke test* ([siguiente sección](#demo-local-sin-azure)). No
    hace falta Azure ni ninguna credencial.
 2. **Recorrer la interfaz** en <http://127.0.0.1:8080> con el token de `PLANNER`: Recomendaciones → abrir una
    recomendación (desglose del cálculo y explicación verificada) → Predicciones (gráfica con banda) → Asistente.
@@ -64,15 +65,17 @@ auditable **sin quitarle la decisión a la persona que compra**:
 6. **Comprobar Azure** (opcional; exige una cuenta del tenant): evidencias en
    [`docs/reports/u12-cierre-evidencias.md`](docs/reports/u12-cierre-evidencias.md) y [`project/status.md`](project/status.md).
 
-## Demo en 3 minutos (local, sin Azure)
+## Demo local (sin Azure)
 
 **Requisitos:** Docker con Compose v2 para el sistema y Python 3 (solo la biblioteca estándar) para el *smoke test*. No
 hacen falta Node, dependencias de Python ni credenciales.
 
-**Probado el 2026-10-20** en un clon limpio de la rama, en Windows con Docker Desktop 29.8.1 (WSL 2, 12 CPU y 11,5 GiB
-para Docker): la API respondió sana a los **1,9 min** del `up` y `smoke.py` terminó en `SMOKE OK` (9/9). Ese tiempo
-aprovechó la caché de construcciones anteriores de Docker; la primera construcción en una máquina nueva tarda más,
-porque descarga las imágenes base y construye las tres imágenes.
+**Probado en frío el 2026-10-21** con un clon de `main` (`4e734a0`) en Windows con Docker Desktop 29.8.1 (WSL 2, 12 CPU
+y 11,5 GiB para Docker), sin imágenes ni caché de construcción: la API respondió sana a los **3,8 min** del `up` y
+`smoke.py` terminó en `SMOKE OK` (9/9). Casi todo es descarga e instalación (imágenes base, `pip install` y `npm ci`,
+alrededor de 1 min cada uno), así que depende de la red; con la caché ya creada, el arranque tarda 1–2 min. Ocupa unos
+**2,1 GB** de disco: 0,8 GB de imágenes, 0,2 GB de datos y 1,1 GB de caché de construcción (`docker builder prune` la
+libera).
 
 ```bash
 git clone https://github.com/daniel02vazquez97-alt/G19X-ITH-DVT-209-ACADEMIC.git
@@ -109,6 +112,45 @@ Para entrar en la interfaz se pega un token ficticio de [`.env.example`](.env.ex
 | `ADMIN` | `dev-example-admin-00000000000` | Todo |
 
 Los tokens solo se aceptan con `APP_ENV=local`; con `APP_ENV=dev` la API exige Microsoft Entra ID.
+
+## Entorno nuevo
+
+Qué esperar al descargar el proyecto en una máquina o una cuenta nuevas.
+
+**Máquina nueva con Docker.** El resultado es el mismo en cualquier equipo: el generador usa una semilla fija, el
+identificador del dataset se deriva de su configuración (`ds-6c8ad65b4999`) y el motor calcula con aritmética exacta.
+Se esperan 95 productos con pronóstico y 100 evaluaciones: 50 `RECOMMEND`, 40 `NO_NEED` y 10 `NOT_CALCULABLE`. Volver a
+ejecutar `up` no duplica nada (la carga devuelve `ALREADY_LOADED` y los cálculos `ALREADY_COMPUTED`); `down -v` empieza
+de cero.
+
+| Síntoma | Causa | Solución |
+|---|---|---|
+| `Bind for 127.0.0.1:5432 failed: port is already allocated` (o 8000, 8080) | Otro servicio en ese puerto, por ejemplo un PostgreSQL local | Detenerlo y repetir `up` |
+| La construcción falla al descargar | Sin acceso a Docker Hub, PyPI o el registro de npm (solo hacen falta la primera vez) | Revisar la red o el proxy |
+| `init` termina con `applied migration … has changed on disk` | Volumen creado desde una copia del repositorio con otros finales de línea | `docker compose -f infra/docker-compose.yml --profile app down -v` y repetir `up` |
+| `failed to get console` en PowerShell | La salida de Compose se canalizó | Ejecutar `up` sin canalizar |
+
+Las migraciones se registran con el `sha256` de sus bytes; [`.gitattributes`](.gitattributes) las fija con finales de
+línea LF para que Windows, Linux y Azure calculen la misma huella.
+
+**Desarrollo sin Docker.** `python scripts/test.py` ejecuta las suites cuyos requisitos estén instalados (Python 3.11;
+PostgreSQL 16 con `U2_TEST_ADMIN_DSN` para la integración; Node 24 y npm 11 con `--frontend`) y marca las demás como
+`OMITIDA`, nunca como aprobadas. En un *fork*, CI funciona igual; **Deploy dev** no, porque depende del entorno `dev`
+de GitHub y de una credencial federada atada a este repositorio.
+
+**Otra suscripción o tenant de Azure.** El código de `infra/azure/` se reutiliza, pero los valores de `dev` están fijados
+a propósito y hay que cambiarlos antes de desplegar:
+
+- `$ExpectedTenant` en `deploy-u12.ps1` a `deploy-u15.ps1`: es una protección, los scripts se niegan a actuar en otro
+  tenant.
+- Los `dev.bicepparam` de `infra/azure/`: tenant e identificadores de Entra ID, Key Vault y nombres de servicios. El de
+  Search (`motor-predictivo-search-dev`) es único en todo Azure y el nivel Free admite un servicio por suscripción.
+- Los registros de aplicación de Entra ID (U11, con permisos en el tenant) y las variables del entorno `dev` de GitHub
+  con su credencial federada.
+- Cuota y región para `gpt-4.1-mini` y `text-embedding-3-small`.
+
+Después se repiten U10 a U15 con las etapas `Preflight` y `WhatIf` de cada script ([Despliegue en
+Azure](#despliegue-en-azure)).
 
 ## Capturas
 
@@ -291,7 +333,7 @@ Procedimiento: [`infra/azure/u12/README.md`](infra/azure/u12/README.md). Evidenc
   sobre datos de ventas o inventario: esas consultas están en las vistas. Si los documentos no contienen la respuesta,
   dice «No encuentro esa información en los documentos disponibles».
 - **Acceso a `dev` en Azure.** La URL desplegada exige una cuenta del tenant con un rol asignado; para evaluar sin
-  cuenta, usa la [demo local](#demo-en-3-minutos-local-sin-azure).
+  cuenta, usa la [demo local](#demo-local-sin-azure).
 
 ## Licencia
 
