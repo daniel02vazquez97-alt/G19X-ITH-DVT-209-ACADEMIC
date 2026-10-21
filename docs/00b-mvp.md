@@ -5,7 +5,7 @@
 | Campo | Valor |
 |---|---|
 | Propósito | Delimitar la **primera versión funcional** y fijar **cómo se acepta**. El «qué producto y por qué» está en el PRD ([`docs/00a-prd.md`](00a-prd.md)) |
-| Estado | **Aprobado por el propietario** (2026-10-14), con el alcance vigente de §1 y §4. Actualizado el 2026-10-20: estado de U13–U16 en §1.1, §4 y §8 |
+| Estado | **Aprobado por el propietario** (2026-10-14), con el alcance vigente de §1 y §4. Actualizado el 2026-10-20: estado de U13–U16 en §1.1, §4 y §8. **Cerrado para la revisión el 2026-10-21** (§8) |
 | Fuente principal del alcance | `DT-094` (`ACEPTADA`, 2026-10-06), puntos 2, 9, 10 y 11 |
 | Fuentes de los criterios | Criterios de cierre ya existentes: [`docs/05`](05-motor-predictivo.md) §19.9 (U3), [`docs/06`](06-motor-abastecimiento.md) §16.13.4 (U4), [`docs/07`](07-api.md) §7.5 (U5), [`docs/09`](09-ia-generativa.md) §14.6 (U6), [`docs/08`](08-frontend.md) §12.1 (Fase 7), `DT-095` (U7) |
 | Estado vivo | [`project/status.md`](../project/status.md). Si este documento lo contradice, manda `status.md` y este documento se corrige |
@@ -190,7 +190,7 @@ cumplido.
 | Pruebas bloqueadas | Ninguna del MVP. Las de U12 en Azure no se pueden ejecutar desde Claude Code Cloud: sin Azure CLI ni credenciales, red bloqueada a `*.azurecontainerapps.io`, sin navegador. Las ejecuta el responsable |
 | Experimental | F5c (candidatos), SES sin promover; todo `SYNTHETIC` |
 | Decisiones pendientes | `BR-X03`; validación de roles (`ASSUMPTION-010`); parámetros de política; `DT-P16`; corpus empresarial (`ASSUMPTION-008`) |
-| Próximo hito concreto | El MVP y el PRD están aceptados. *(Actualización 2026-10-20:)* U15 y el asistente U15b están verificados en `dev`; el alcance se cierra y el trabajo pasa a la entrega: README, capturas y demo local sin Azure. U16 no se implementa |
+| Próximo hito concreto | El MVP y el PRD están aceptados. *(Actualización 2026-10-20:)* U15 y el asistente U15b están verificados en `dev`; el alcance se cierra y el trabajo pasa a la entrega: README, capturas y demo local sin Azure. U16 no se implementa. *(Cierre 2026-10-21:)* **MVP cerrado para la revisión**: demo local probada en un clon limpio (`SMOKE OK` 9/9), U14b desplegada y verificada, imágenes `2e079c4` en `dev` con Verify 20/20 y cuatro capturas en `docs/img/`. Sin trabajo nuevo pendiente dentro del MVP |
 
 **El MVP está aceptado**: MVP-01…MVP-09 tienen evidencia documentada y MVP-10 fue aprobado por el propietario el 2026-10-14.
 

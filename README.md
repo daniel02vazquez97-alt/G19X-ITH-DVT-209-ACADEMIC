@@ -6,13 +6,13 @@ Sistema de apoyo a la decisión de compras. A partir del histórico de consumo, 
 el comportamiento de los proveedores, **pronostica la demanda** de cada producto y **recomienda qué comprar, cuánto y
 cuándo**. Cada recomendación es determinista, se explica cifra a cifra y se puede reconstruir meses después.
 
-> **Estado (2026-10-20), con su comprobación:**
+> **Estado (2026-10-21, MVP cerrado para la revisión), con su comprobación:**
 >
 > - **MVP local, sin Azure:** `docker compose -f infra/docker-compose.yml --profile app up --build -d` y después
 >   `python infra/docker/smoke.py`, que debe terminar en `SMOKE OK` (frontend → API → PostgreSQL, recomendaciones,
 >   pronósticos, explicación y asistente con el corpus local). Probado el 2026-10-20 en un clon limpio: `SMOKE OK`,
 >   9/9 comprobaciones.
-> - **Azure `dev`:** `deploy-u12.ps1 -Stage Verify` 20/20 (2026-10-20) y `deploy-u15.ps1 -Stage Verify` en verde
+> - **Azure `dev`:** `deploy-u12.ps1 -Stage Verify` 20/20 (2026-10-21) y `deploy-u15.ps1 -Stage Verify` en verde
 >   (2026-10-18), con Microsoft Entra ID.
 > - **Pruebas:** CI en verde en `main` ([`ci.yml`](.github/workflows/ci.yml)); en local, `python scripts/test.py`.
 > - **Extras fuera del MVP:** explicaciones con Azure OpenAI, *backtesting* reproducido en Azure ML y **asistente
@@ -112,7 +112,7 @@ Los tokens solo se aceptan con `APP_ENV=local`; con `APP_ENV=dev` la API exige M
 
 ## Capturas
 
-Entorno `dev` en Azure, con sesión de Microsoft Entra ID y datos sintéticos.
+Entorno `dev` en Azure (2026-10-21, imágenes `2e079c4`), con sesión de Microsoft Entra ID y datos sintéticos.
 
 | Recomendaciones | Detalle con explicación |
 |---|---|
