@@ -219,6 +219,12 @@ a {
   text-decoration: underline;
 }
 
+/* The main region receives focus from the skip link and after each navigation (tabIndex -1); the frame
+   around the whole page is noise, not a focus cue for a control. */
+.shell__main:focus {
+  outline: none;
+}
+
 .shell__main {
   grid-area: main;
   padding: var(--space-4);
