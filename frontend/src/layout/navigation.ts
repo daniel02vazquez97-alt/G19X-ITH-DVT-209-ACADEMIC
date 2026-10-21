@@ -6,15 +6,42 @@ export interface NavigationItem {
   to: string;
   /** Resource the item needs; `null` for the home page. */
   resource: Resource | null;
+  /** One line for the card of the home page. */
+  description: string;
 }
 
 // Only what V1 offers (DT-070 point 5) plus the documentary assistant (U15b, DT-103). The product history lives
 // inside the product detail.
 export const NAVIGATION: readonly NavigationItem[] = [
-  { label: 'Inicio', to: PATHS.home, resource: null },
-  { label: 'Productos', to: PATHS.products, resource: 'products' },
-  { label: 'Inventario', to: PATHS.inventory, resource: 'inventory' },
-  { label: 'Recomendaciones', to: PATHS.recommendations, resource: 'recommendations' },
-  { label: 'Predicciones', to: PATHS.forecasts, resource: 'forecasts' },
-  { label: 'Asistente', to: PATHS.assistant, resource: 'assistant' },
+  { label: 'Inicio', to: PATHS.home, resource: null, description: '' },
+  {
+    label: 'Productos',
+    to: PATHS.products,
+    resource: 'products',
+    description: 'Catálogo con estado, categoría y proveedores de cada producto.',
+  },
+  {
+    label: 'Inventario',
+    to: PATHS.inventory,
+    resource: 'inventory',
+    description: 'Existencias a la fecha de corte y líneas de compra abiertas.',
+  },
+  {
+    label: 'Recomendaciones',
+    to: PATHS.recommendations,
+    resource: 'recommendations',
+    description: 'Qué comprar, cuánto y cuándo, con el cálculo y su explicación.',
+  },
+  {
+    label: 'Predicciones',
+    to: PATHS.forecasts,
+    resource: 'forecasts',
+    description: 'Pronóstico semanal de la demanda con su banda de incertidumbre.',
+  },
+  {
+    label: 'Asistente',
+    to: PATHS.assistant,
+    resource: 'assistant',
+    description: 'Preguntas sobre los documentos del proyecto, con las fuentes citadas.',
+  },
 ];

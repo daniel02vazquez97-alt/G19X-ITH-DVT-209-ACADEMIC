@@ -4556,7 +4556,7 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
 - **Verificación:** [CC] pruebas sin red y de integración con PostgreSQL 16 (migración desde cero y sobre una base
   anterior, idempotencia, `ALREADY_COMPUTED`, API y Vitest). **Pendiente [AZ-U]:** desplegar la imagen, ejecutar el
   *bootstrap* (aplica `0005`) y ver la referencia en la vista Predicciones de `dev`.
-- **Estado:** `ACEPTADA` (2026-10-20). Implementada; **no desplegada**.
+- **Estado:** `ACEPTADA` (2026-10-20). Implementada; **desplegada y verificada en `dev`** (2026-10-20, [AZ-U]: imágenes `996f8b7`, bootstrap `Succeeded` con la migración `0005`, Verify de U12 20/20 y la referencia visible en Predicciones).
 
 ## Decisiones deliberadamente NO tomadas
 

@@ -20,6 +20,24 @@ describe('navigation by role', () => {
     expect(within(nav).queryByText(/Dashboard|Riesgos|Proveedores|Administración/)).toBeNull();
   });
 
+  it('the home page offers a card for each view the role can open', async () => {
+    installFetch(withMe());
+    const { user } = renderApp('/');
+    await loginAs(user, 'VIEWER');
+    const views = screen.getByRole('region', { name: 'Vistas' });
+    const cards = within(views)
+      .getAllByRole('link')
+      .map((link) => link.getAttribute('href'));
+    expect(cards).toEqual([
+      '/productos',
+      '/inventario',
+      '/recomendaciones',
+      '/predicciones',
+      '/asistente',
+    ]);
+    expect(within(views).getByText(/con las fuentes citadas/)).toBeInTheDocument();
+  });
+
   it('the home page mentions once that the dashboard and risks are not in V1', async () => {
     installFetch(withMe());
     const { user } = renderApp('/');

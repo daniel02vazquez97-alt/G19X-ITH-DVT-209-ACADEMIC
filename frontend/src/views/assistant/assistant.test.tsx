@@ -45,7 +45,10 @@ describe('AssistantPage (U15b, DT-103)', () => {
     expect(requestedUrls(fetchMock)).toEqual([]); // nothing is asked before a question
     await user.type(screen.getByLabelText('Pregunta'), ANSWER.question);
     await user.click(screen.getByRole('button', { name: 'Preguntar' }));
-    expect(await screen.findByText(ANSWER.answer)).toBeInTheDocument();
+    // The [n] markers are styled, but the text of the answer stays exactly the API's.
+    const answer = await screen.findByRole('region', { name: 'Respuesta' });
+    expect(answer.querySelector('.answer__text')?.textContent).toBe(ANSWER.answer);
+    expect(answer.querySelectorAll('.cite')).toHaveLength(1);
     expect(router.state.location.search).toBe(
       `?${new URLSearchParams({ pregunta: ANSWER.question }).toString()}`,
     );
@@ -57,7 +60,7 @@ describe('AssistantPage (U15b, DT-103)', () => {
     const sources = screen.getByRole('region', { name: 'Fuentes' });
     expect(within(sources).getAllByRole('listitem')).toHaveLength(2);
     expect(within(sources).getByText('El asistente no decide compras.')).toBeInTheDocument();
-    expect(within(sources).getByText(/citada en la respuesta/)).toBeInTheDocument();
+    expect(within(sources).getAllByText('Citada en la respuesta')).toHaveLength(1);
     expect(screen.getByText(/Datos sintéticos/)).toBeInTheDocument();
   });
 
@@ -87,6 +90,20 @@ describe('AssistantPage (U15b, DT-103)', () => {
     const { user } = renderApp('/asistente?pregunta=compras');
     await loginAs(user, 'PLANNER');
     expect(await screen.findByRole('alert')).toBeInTheDocument();
+  });
+
+  it('an example question is asked with one click and is kept in the URL', async () => {
+    const fetchMock = installFetch(
+      routeApi({ '/api/v1/assistant/answer': () => jsonResponse(200, ANSWER) }),
+    );
+    const { user, router } = renderApp('/asistente');
+    await loginAs(user, 'VIEWER');
+    await user.click(screen.getByRole('button', { name: '¿Esta documentación es real?' }));
+    await screen.findByRole('region', { name: 'Respuesta' });
+    expect(router.state.location.search).toBe('?pregunta=%C2%BFEsta+documentaci%C3%B3n+es+real%3F');
+    expect(screen.getByLabelText('Pregunta')).toHaveValue('¿Esta documentación es real?');
+    expect(requestedUrls(fetchMock)).toHaveLength(1);
+    expect(screen.queryByRole('region', { name: 'Prueba con una de estas preguntas' })).toBeNull();
   });
 
   it('a question shorter than 3 characters cannot be sent', async () => {
