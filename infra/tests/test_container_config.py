@@ -52,6 +52,14 @@ def compose_services() -> dict[str, str]:
     return dict(zip(blocks[1::2], blocks[2::2]))
 
 
+class MigrationLineEndings(unittest.TestCase):
+    def test_migrations_keep_lf_on_every_checkout(self) -> None:
+        # backend/app/db/migrations.py hashes the bytes of each file: a CRLF checkout on Windows would record a
+        # different sha256 from Linux and Azure, and `init` would reject the volume as changed (DT-099).
+        rules = text(ROOT / ".gitattributes")
+        self.assertRegex(rules, r"(?m)^backend/db/migrations/\*\.sql\s+text\s+eol=lf\s*$")
+
+
 class BaseImages(unittest.TestCase):
     def test_every_base_image_is_an_exact_release(self) -> None:
         for name, path in DOCKERFILES.items():
