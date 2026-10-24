@@ -257,9 +257,11 @@ Todas las suites corren en CI en cada *push* y *pull request* ([`ci.yml`](.githu
 | Seguridad | Detección de secretos y archivos prohibidos | raíz: `python infra/ci/secret_scan.py` |
 | Lint de Python | Ruff con errores reales (`F`, `E9`), sin imponer estilo ([`ruff.toml`](ruff.toml)) | raíz: `python -m ruff check .` |
 
-**Cobertura** de `backend/app` (informativa, sin umbral; cada job de CI la publica en su resumen). Medición local del
-2026-10-14 con la suite por defecto y la de la API: 79 % global; motor 99 %, pronóstico 98 %, explicación 96 %,
-API 91 %. Las capas que dependen de la base se cubren además con la suite de integración.
+**Cobertura** de líneas de `backend/app` (informativa, sin umbral; cada job de CI la publica en su resumen). Medición
+local del 2026-10-24 con las tres suites del backend combinadas (por defecto 391, API 121 e integración 180 pruebas,
+todas en verde): **96 % global**; motor 99 %, ejecuciones de cálculo 97 %, pronóstico 98 %, IA generativa 96 %, API 96 %,
+ingesta 91 % y acceso a datos 91 %. Lo que queda sin cubrir son sobre todo los puntos de entrada de línea de comandos
+(`__main__.py`) y ramas de error de red de los adaptadores de Azure.
 
 Principios que aplican las pruebas: aritmética exacta y determinista en el motor, ninguna llamada de red en pruebas
 unitarias (Azure se sustituye por dobles), y verificación de que el sistema funciona completo sin Azure (RNF-006).
@@ -332,8 +334,20 @@ Procedimiento: [`infra/azure/u12/README.md`](infra/azure/u12/README.md). Evidenc
 - **Asistente documental.** Responde solo sobre los 3 documentos sintéticos del corpus (cómo funciona el sistema), no
   sobre datos de ventas o inventario: esas consultas están en las vistas. Si los documentos no contienen la respuesta,
   dice «No encuentro esa información en los documentos disponibles».
-- **Acceso a `dev` en Azure.** La URL desplegada exige una cuenta del tenant con un rol asignado; para evaluar sin
-  cuenta, usa la [demo local](#demo-local-sin-azure).
+- **Acceso a `dev` en Azure.** La URL desplegada solo admite cuentas del tenant del proyecto con un rol asignado (las
+  aplicaciones de Entra ID son de un solo tenant) y no se crean cuentas invitadas. Para evaluar sin cuenta, usa la
+  [demo local](#demo-local-sin-azure); el responsable muestra `dev` en vivo. El mismo código funciona en tres modos:
+
+  | Modo | Dónde corre | Cómo se entra | Quién puede entrar | Explicaciones y asistente |
+  |---|---|---|---|---|
+  | Local (`APP_ENV=local`) | Docker en el equipo | Token ficticio de [`.env.example`](.env.example) | Cualquiera | Plantilla determinista; el asistente muestra fragmentos del corpus local |
+  | Local con Entra ID (`u11-entra-dev`) | Docker en el equipo | Microsoft Entra ID | Cuentas del tenant con rol | Como en el modo local |
+  | Azure `dev` | Azure Container Apps | Microsoft Entra ID | Cuentas del tenant con rol | Azure OpenAI, con la plantilla de respaldo; el asistente redacta con Azure AI Search |
+
+- **Disponibilidad de `dev` para la revisión.** Costo de octubre de 2026: 2,73 USD acumulados al día 24 (previsión
+  4,06 USD), casi todo del registro de contenedores (ACR Basic), frente al crédito de 100 USD de Azure for Students. Antes
+  de la revisión el responsable ejecuta `deploy-u12.ps1 -Stage Verify` y `deploy-u15.ps1 -Stage Verify`; si `dev` no
+  respondiera, la demostración se hace con la demo local, que no depende de Azure.
 
 ## Licencia
 

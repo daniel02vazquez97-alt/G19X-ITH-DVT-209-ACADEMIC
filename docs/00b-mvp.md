@@ -181,7 +181,7 @@ cumplido.
 
 ---
 
-## 8. Estado del MVP a 2026-10-14
+## 8. Estado del MVP a 2026-10-21
 
 | Categoría | Contenido |
 |---|---|
@@ -203,7 +203,7 @@ cumplido.
 **Plan mínimo:**
 
 1. Conservar esta decisión de alcance en `project/status.md` y `project/roadmap.md`.
-2. Antes de desplegar U15, comparar Free, Serverless Developer (preview) y Basic con precios de la región y confirmar Entra ID sin claves; no provisionar hasta decidir y autorizar el costo. Validar el corpus empresarial requerido por `ASSUMPTION-008` antes de usar documentos reales.
+2. U15 ya está desplegada: se compararon los niveles, se eligió Free con el costo autorizado y Search acepta solo Entra ID, sin claves (2026-10-18). Antes de usar documentos reales hay que validar el corpus empresarial requerido por `ASSUMPTION-008`.
 
 **Lo que no debe ampliar el MVP:**
 
