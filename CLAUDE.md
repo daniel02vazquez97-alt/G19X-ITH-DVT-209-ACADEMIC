@@ -413,6 +413,13 @@ PostgreSQL 16 B1ms, job único de bootstrap; el despliegue real lo ejecuta el re
 (`gpt-4.1-mini`, sin claves, identidad de ejecución) tras `TextGenerator` para CU-1, con la plantilla como respaldo;
 desplegada y verificada en `dev` el 2026-10-14. **U14 autorizada y completada**, `DT-102`: Azure ML reprodujo el backtest
 versionado y registró `baseline-ma13` v1; job serverless `Completed`, Verify 7/7 [AZ-U]. **U15 autorizada e implementada** con corpus sintético; Search Basic preparado, sin despliegue. Azure for Students tiene USD 100 de crédito total; se prioriza costo mínimo, se conserva el umbral de planificación de USD 50 y falta validar la opción Search más barata compatible con Entra sin claves. U16 sigue sin autorizar.)*
+**Estado vigente (2026-10-21; sustituye a lo que los párrafos anteriores digan de U12–U16):** U12 cerrada el 2026-10-13.
+U13, U14 y U14b (`DT-101`, `DT-102`, `DT-104`) y **U15 y U15b** (`DT-103`; Search Free, solo Entra ID, claves
+desactivadas el 2026-10-18) están **desplegadas y verificadas en `dev`**. **U16 (Power BI) queda descartada para esta
+entrega**: no se implementa; las vistas `analytics` de U9 quedan listas. El MVP se cerró para la revisión el
+2026-10-21; desde entonces solo se admiten correcciones (2026-11-05: filtros por código visible, `DT-105`). Estado
+detallado en `project/status.md`.
+
 Restricciones vigentes, que se levantan solo por instrucción explícita:
 
 - **No escribir código de aplicación fuera de una unidad autorizada.** Cada unidad (U1 a U6 de `DT-047`,
