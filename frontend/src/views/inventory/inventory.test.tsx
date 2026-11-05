@@ -9,7 +9,7 @@ describe('InventoryPage (F7b)', () => {
     const fetchMock = installFetch(
       routeApi({ '/api/v1/inventory': () => jsonResponse(200, INVENTORY_PAGE) }),
     );
-    const { user } = renderApp('/inventario?sort=-available&category_id=3');
+    const { user } = renderApp('/inventario?sort=-available&category_code=CAT-003');
     await loginAs(user, 'VIEWER');
     const table = await screen.findByRole('table');
     const row = within(table).getAllByRole('row')[1] as HTMLElement;
@@ -20,7 +20,9 @@ describe('InventoryPage (F7b)', () => {
       'href',
       '/inventario/4',
     );
-    expect(requestedUrls(fetchMock)).toEqual(['/api/v1/inventory?sort=-available&category_id=3']);
+    expect(requestedUrls(fetchMock)).toEqual([
+      '/api/v1/inventory?sort=-available&category_code=CAT-003',
+    ]);
     expect(screen.getByText('Orden: Disponible descendente.')).toBeInTheDocument();
   });
 });

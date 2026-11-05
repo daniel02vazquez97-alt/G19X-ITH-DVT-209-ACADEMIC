@@ -261,6 +261,39 @@ class RecommendationsTest(ApiTestCase):
                          ["error"]["details"]["reason"], "wrong_type")
 
 
+class CodeFiltersTest(ApiTestCase):
+    """DT-105: the lists filter by the codes the interface shows; the result equals the filter by identifier."""
+
+    def ids(self, path: str) -> list:
+        items = self.get(path)["items"]
+        return [i.get("id") or i.get("product_id") or i["product"]["id"] for i in items]
+
+    def test_code_filters_match_the_identifier_filters(self) -> None:
+        pairs = [
+            ("/api/v1/products?page_size=200&category_code=CAT-001", "/api/v1/products?page_size=200&category_id=1"),
+            ("/api/v1/inventory?sku=SKU-00004", "/api/v1/inventory?product_id=4"),
+            ("/api/v1/inventory?page_size=200&category_code=CAT-003", "/api/v1/inventory?page_size=200&category_id=3"),
+            ("/api/v1/forecasts?sku=SKU-00001", "/api/v1/forecasts?product_id=1"),
+            ("/api/v1/forecasts?page_size=200&category_code=CAT-004", "/api/v1/forecasts?page_size=200&category_id=4"),
+            ("/api/v1/recommendations?sku=SKU-00004", "/api/v1/recommendations?product_id=4"),
+            ("/api/v1/recommendations?page_size=200&category_code=CAT-002",
+             "/api/v1/recommendations?page_size=200&category_id=2"),
+            ("/api/v1/recommendations?page_size=200&supplier_code=SUP-010",
+             "/api/v1/recommendations?page_size=200&supplier_id=10"),
+        ]
+        for by_code, by_id in pairs:
+            with self.subTest(by_code):
+                expected = self.ids(by_id)
+                self.assertTrue(expected)
+                self.assertEqual(self.ids(by_code), expected)
+
+    def test_case_insensitive_unknown_is_empty_and_blank_is_rejected(self) -> None:
+        self.assertEqual(self.ids("/api/v1/recommendations?sku=sku-00004"), self.ids("/api/v1/recommendations?sku=SKU-00004"))
+        self.assertEqual(self.get("/api/v1/inventory?sku=SKU-99999")["total"], 0)
+        self.assertEqual(self.get("/api/v1/products?category_code=CAT-999")["total"], 0)
+        self.assertEqual(self.get("/api/v1/recommendations?sku=", expected=422)["error"]["code"], "VALIDATION_ERROR")
+
+
 class RunsTest(ApiTestCase):
     def test_run_detail_for_planner_and_admin_only(self) -> None:
         run = self.get(f"/api/v1/runs/{_RECOMMENDATION_RUN}", PLANNER)

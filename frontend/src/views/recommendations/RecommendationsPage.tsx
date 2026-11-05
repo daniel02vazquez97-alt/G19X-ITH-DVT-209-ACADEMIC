@@ -5,6 +5,12 @@ import { useApiQuery } from '../../api/useApiQuery';
 import { CodeList } from '../../components/CodeList';
 import { EmptyState } from '../../components/EmptyState';
 import { FilterForm, type FilterField, type FilterOption } from '../../components/FilterForm';
+import {
+  CATEGORY_FILTER,
+  RUN_FILTER,
+  SKU_FILTER,
+  SUPPLIER_FILTER,
+} from '../../components/codeFilters';
 import { Pagination } from '../../components/Pagination';
 import { ProvenancePanel } from '../../components/provenance/ProvenancePanel';
 import { QueryView } from '../../components/QueryView';
@@ -35,24 +41,14 @@ const FIELDS: readonly FilterField[] = [
       { value: 'NOT_CALCULABLE', label: 'No calculable' },
     ],
   },
-  { key: 'product_id', label: 'Producto (identificador)', kind: 'id' },
-  { key: 'category_id', label: 'Categoría (identificador)', kind: 'id' },
-  {
-    key: 'supplier_id',
-    label: 'Proveedor (identificador)',
-    kind: 'id',
-    help: 'La API no ofrece catálogo de proveedores.',
-  },
-  {
-    key: 'run_id',
-    label: 'Ejecución (identificador)',
-    kind: 'id',
-    help: 'Vacío: la última ejecución completada.',
-  },
+  SKU_FILTER,
+  CATEGORY_FILTER,
+  SUPPLIER_FILTER,
+  RUN_FILTER,
   { key: SORT, label: 'Orden', kind: 'select', options: RECOMMENDATION_SORTS },
 ];
 
-const FILTER_KEYS = ['outcome', 'product_id', 'category_id', 'supplier_id', 'run_id'];
+const FILTER_KEYS = ['outcome', 'sku', 'category_code', 'supplier_code', 'run_id'];
 
 function quantity(value: string | null): string {
   return value === null ? NOT_CALCULATED : formatDisplay(value);
@@ -80,7 +76,7 @@ export function RecommendationsPage() {
             {data.items.length === 0 ? (
               <EmptyState
                 title="Sin resultados"
-                message="Ninguna evaluación de la ejecución cumple los filtros."
+                message={`Ningún producto con resultado «${outcomeLabel(query.outcome ?? 'RECOMMEND')}» cumple los filtros. Si buscas un producto concreto, prueba con otro valor en «Resultado».`}
               />
             ) : (
               <div className="table-wrap">

@@ -4,6 +4,7 @@ import type { InventoryPage as InventoryPageData } from '../../api/types';
 import { useApiQuery } from '../../api/useApiQuery';
 import { EmptyState } from '../../components/EmptyState';
 import { FilterForm, type FilterField, type FilterOption } from '../../components/FilterForm';
+import { CATEGORY_FILTER, SKU_FILTER } from '../../components/codeFilters';
 import { Pagination } from '../../components/Pagination';
 import { QueryView } from '../../components/QueryView';
 import { SortNote } from '../../components/SortNote';
@@ -22,17 +23,12 @@ export const INVENTORY_SORTS: readonly FilterOption[] = [
 ];
 
 const FIELDS: readonly FilterField[] = [
-  { key: 'product_id', label: 'Producto (identificador)', kind: 'id' },
-  {
-    key: 'category_id',
-    label: 'Categoría (identificador)',
-    kind: 'id',
-    help: 'La API no ofrece catálogo de categorías.',
-  },
+  SKU_FILTER,
+  CATEGORY_FILTER,
   { key: SORT, label: 'Orden', kind: 'select', options: INVENTORY_SORTS },
 ];
 
-const FILTER_KEYS = ['product_id', 'category_id'];
+const FILTER_KEYS = ['sku', 'category_code'];
 
 export function InventoryPage() {
   const { search, query, setFilters, setPage, setFilter } = useListParams(FILTER_KEYS);

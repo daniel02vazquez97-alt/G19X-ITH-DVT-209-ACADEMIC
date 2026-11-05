@@ -4,6 +4,7 @@ import type { ForecastPage } from '../../api/types';
 import { useApiQuery } from '../../api/useApiQuery';
 import { EmptyState } from '../../components/EmptyState';
 import { FilterForm, type FilterField } from '../../components/FilterForm';
+import { CATEGORY_FILTER, RUN_FILTER, SKU_FILTER } from '../../components/codeFilters';
 import { Pagination } from '../../components/Pagination';
 import { ProvenancePanel } from '../../components/provenance/ProvenancePanel';
 import { QueryView } from '../../components/QueryView';
@@ -16,18 +17,9 @@ import {
   NominalBandNote,
 } from './ForecastTable';
 
-const FIELDS: readonly FilterField[] = [
-  { key: 'product_id', label: 'Producto (identificador)', kind: 'id' },
-  { key: 'category_id', label: 'Categoría (identificador)', kind: 'id' },
-  {
-    key: 'run_id',
-    label: 'Ejecución (identificador)',
-    kind: 'id',
-    help: 'Vacío: la última ejecución completada.',
-  },
-];
+const FIELDS: readonly FilterField[] = [SKU_FILTER, CATEGORY_FILTER, RUN_FILTER];
 
-const FILTER_KEYS = ['product_id', 'category_id', 'run_id'];
+const FILTER_KEYS = ['sku', 'category_code', 'run_id'];
 
 export function ForecastsPage() {
   const { search, query, setFilters, setPage, setFilter } = useListParams(FILTER_KEYS);

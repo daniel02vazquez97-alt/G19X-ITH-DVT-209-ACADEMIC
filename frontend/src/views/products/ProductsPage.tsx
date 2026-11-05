@@ -4,6 +4,7 @@ import type { ProductPage } from '../../api/types';
 import { useApiQuery } from '../../api/useApiQuery';
 import { EmptyState } from '../../components/EmptyState';
 import { FilterForm, type FilterField, type FilterOption } from '../../components/FilterForm';
+import { CATEGORY_FILTER } from '../../components/codeFilters';
 import { Pagination } from '../../components/Pagination';
 import { QueryView } from '../../components/QueryView';
 import { SortNote } from '../../components/SortNote';
@@ -32,16 +33,11 @@ const FIELDS: readonly FilterField[] = [
       { value: 'false', label: 'Inactivos' },
     ],
   },
-  {
-    key: 'category_id',
-    label: 'Categoría (identificador)',
-    kind: 'id',
-    help: 'La API no ofrece catálogo de categorías.',
-  },
+  CATEGORY_FILTER,
   { key: SORT, label: 'Orden', kind: 'select', options: PRODUCT_SORTS },
 ];
 
-const FILTER_KEYS = ['search', 'is_active', 'category_id'];
+const FILTER_KEYS = ['search', 'is_active', 'category_code'];
 
 export function ProductsPage() {
   const { search, query, setFilters, setPage, setFilter } = useListParams(FILTER_KEYS);

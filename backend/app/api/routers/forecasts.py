@@ -39,7 +39,9 @@ def series_from_rows(rows: list[dict]) -> list[dict]:
             summary="Series primarias de la ejecución de forecast (los cuatro roles)")
 def list_forecasts(
     product_id: int | None = Query(None, ge=1),
+    sku: str | None = Query(None, min_length=1, max_length=100, description="SKU exacto (SKU-00004), sin distinguir mayúsculas"),
     category_id: int | None = Query(None),
+    category_code: str | None = Query(None, min_length=1, max_length=100, description="Código de categoría (CAT-001)"),
     run_id: int | None = Query(None, ge=1, description="Por defecto, la regla determinista de DT-066"),
     page: PageParams = Depends(page_params),
     _identity=Depends(require_roles(ALL_ROLES)),
@@ -47,7 +49,8 @@ def list_forecasts(
 ) -> dict:
     run = resolve_run(conn, "FORECAST", run_id)
     total, rows = forecasts_read.series_page(
-        conn, run["id"], product_id=product_id, category_id=category_id, limit=page.page_size, offset=page.offset
+        conn, run["id"], product_id=product_id, category_id=category_id, sku=sku,
+        category_code=category_code, limit=page.page_size, offset=page.offset
     )
     return {"items": series_from_rows(rows), "total": total, "page": page.page, "page_size": page.page_size,
             "provenance": forecast_provenance(run)}

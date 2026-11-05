@@ -7,7 +7,7 @@ from typing import Any
 import psycopg
 from psycopg import sql
 
-from . import like_pattern
+from . import code_filters, like_pattern
 
 SORT_COLUMNS = {"sku": "p.sku", "name": "p.name", "id": "p.id"}
 
@@ -28,6 +28,7 @@ def list_products(
     descending: bool,
     limit: int,
     offset: int,
+    category_code: str | None = None,
 ) -> tuple[int, list[dict[str, Any]]]:
     where, params = ["TRUE"], []
     if search is not None:
@@ -39,6 +40,7 @@ def list_products(
     if is_active is not None:
         where.append("p.is_active = %s")
         params.append(is_active)
+    code_filters(where, params, category_code=category_code)
     condition = sql.SQL(" AND ".join(where))
     total = conn.execute(
         sql.SQL("SELECT count(*) AS n FROM products p WHERE {}").format(condition), params

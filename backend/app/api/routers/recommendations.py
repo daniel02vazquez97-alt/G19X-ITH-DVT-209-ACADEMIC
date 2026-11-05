@@ -47,8 +47,11 @@ def detail_from_row(row: dict) -> dict:
 def list_recommendations(
     outcome: Literal["RECOMMEND", "NO_NEED", "NOT_CALCULABLE"] = Query("RECOMMEND"),
     product_id: int | None = Query(None, ge=1),
+    sku: str | None = Query(None, min_length=1, max_length=100, description="SKU exacto (SKU-00004), sin distinguir mayúsculas"),
     category_id: int | None = Query(None),
+    category_code: str | None = Query(None, min_length=1, max_length=100, description="Código de categoría (CAT-001)"),
     supplier_id: int | None = Query(None),
+    supplier_code: str | None = Query(None, min_length=1, max_length=100, description="Código de proveedor (SUP-010)"),
     run_id: int | None = Query(None, ge=1, description="Por defecto, la regla determinista de DT-066"),
     sort: str | None = Query(None, description="sku | recommended_quantity | suggested_order_date; por defecto sku"),
     page: PageParams = Depends(page_params),
@@ -59,7 +62,7 @@ def list_recommendations(
     run = resolve_run(conn, "RECOMMENDATION", run_id)
     total, rows = recommendations_read.list_recommendations(
         conn, run["id"], outcome=outcome, product_id=product_id, category_id=category_id, supplier_id=supplier_id,
-        sort=order.field, descending=order.descending, limit=page.page_size, offset=page.offset,
+        sku=sku, category_code=category_code, supplier_code=supplier_code, sort=order.field, descending=order.descending, limit=page.page_size, offset=page.offset,
     )
     items = [
         {"id": r["id"], "product": _product(r), "supplier": _supplier(r), "recommended_quantity": r["recommended_quantity"],

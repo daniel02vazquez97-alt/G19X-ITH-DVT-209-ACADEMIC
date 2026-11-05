@@ -11,6 +11,8 @@ from typing import Any
 import psycopg
 from psycopg import sql
 
+from . import code_filters
+
 SORT_COLUMNS = {"sku": "p.sku", "on_hand": "i.quantity_on_hand", "available": "available"}
 
 _SELECT = """
@@ -31,6 +33,8 @@ def list_inventory(
     descending: bool,
     limit: int,
     offset: int,
+    sku: str | None = None,
+    category_code: str | None = None,
 ) -> tuple[int, list[dict[str, Any]]]:
     where, params = ["TRUE"], []
     if product_id is not None:
@@ -39,6 +43,7 @@ def list_inventory(
     if category_id is not None:
         where.append("p.category_id = %s")
         params.append(category_id)
+    code_filters(where, params, sku=sku, category_code=category_code)
     condition = sql.SQL(" AND ".join(where))
     total = conn.execute(
         sql.SQL("SELECT count(*) AS n FROM inventory i JOIN products p ON p.id = i.product_id WHERE {}").format(condition),
