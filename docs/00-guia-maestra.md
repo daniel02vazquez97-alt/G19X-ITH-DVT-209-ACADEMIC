@@ -128,7 +128,7 @@ Reglas verificables por prueba: [`docs/03`](03-arquitectura.md) §16.4.
 
 **Soporte del sistema, fuera de las capacidades funcionales del MVP:** U7 (Docker) proporciona el medio verificable de ejecución local de MVP-08; U8 (CI) y U9 (vistas analíticas) son soporte. El propietario aceptó esta clasificación el 2026-10-14.
 
-**Fuera del MVP:** Entra ID y despliegue U10–U12, Azure OpenAI U13 y Azure ML U14 están implementados en `dev`. U15 (AI Search) está integrada en `main` por el PR #22, con corpus sintético; el responsable creó el servicio en nivel Free (2026-10-16) y desplegó los embeddings `text-embedding-3-small` (2026-10-17), y el 2026-10-17 cargó y verificó el índice con su identidad; el asistente documental de la API la consulta desde el 2026-10-18 (`DT-103`, verificado en `dev`). La cuenta tiene USD 100 de crédito total, se conserva el umbral de planificación de USD 50 y se evaluará primero la alternativa compatible más económica. U16 (Power BI) no está autorizada.
+**Fuera del MVP (estado al 2026-10-21):** Entra ID y despliegue U10–U12, Azure OpenAI U13, Azure ML U14 y su referencia en la aplicación U14b, Azure AI Search U15 (nivel Free, solo Entra ID, claves desactivadas el 2026-10-18) y el asistente documental U15b (`DT-103`) están desplegados y verificados en `dev`. **U16 (Power BI) queda descartada para esta entrega**; las vistas `analytics` de U9 quedan listas. La cuenta tiene USD 100 de crédito total y se conserva el umbral de planificación de USD 50.
 
 **Fuera del MVP o diferido** (`CLAUDE.md` §3 y §17, `DT-094`):
 
@@ -136,7 +136,7 @@ Reglas verificables por prueba: [`docs/03`](03-arquitectura.md) §16.4.
 - ERP, WMS, rutas, *pricing*, MRP y finanzas;
 - clasificación de riesgo y urgencia (bloqueada por `BR-X03`);
 - escritura en la API;
-- Servicios U13–U16: Azure OpenAI y Azure ML (U13/U14) están desplegados fuera del MVP; U15 está integrada en `main` (PR #22), con Search Free cargado y verificado con la identidad del responsable, sin conexión con la API; U16 sigue sin autorización;
+- Servicios U13–U16: U13, U14, U14b, U15 y U15b están desplegados y verificados en `dev`, fuera del MVP; U16 queda descartada para esta entrega;
 - `staging` y `prod`;
 - modelos promovidos (F5d, G2 y G3 sin autorizar).
 
@@ -199,7 +199,7 @@ Pruebas: `PYTHONPATH=backend python -m unittest discover -s ml/tests -t .` (CI p
 | **U12 — `dev` en Azure** | Container Apps (Consumption, `WorkloadProfiles`): frontend externo HTTPS, api interna, job de *bootstrap*; ACR Basic; PostgreSQL 16 B1ms; CD por OIDC | `infra/azure/u12/`, `infra/azure/deploy-u12.ps1`, `infra/docker/bootstrap.py`, `.github/workflows/deploy-dev.yml` | [`infra/azure/u12/README.md`](../infra/azure/u12/README.md) §5–§6, `DT-100` | 🟢 **Cerrada (2026-10-13) con verificaciones pendientes aceptadas** (§G) |
 | **U13 — Azure OpenAI** | Explicación generativa tras `TextGenerator`, con plantilla de respaldo | `backend/app/genai/`, `infra/azure/u13/` | [`infra/azure/README.md`](../infra/azure/u13/README.md), `DT-101` | ✅ Desplegada y verificada en `dev` el 2026-10-14; activa en la API |
 | **U14 — Azure ML** | Backtesting serverless reproducible y registro de `baseline-ma13`, sin endpoint | `ml/`, `infra/azure/u14/` | [`infra/azure/u14/README.md`](../infra/azure/u14/README.md), `DT-102` | ✅ Desplegada y verificada en `dev` el 2026-10-14; Verify 7/7. La aplicación muestra la referencia `azureml:baseline-ma13:1` del modelo (`DT-104`, implementada, no desplegada) |
-| U15–U16, QA, entrega | AI Search, Power BI, QA integral y entrega | — | `DT-094` | U15 implementada con corpus sintético. Servicio Free `motor-predictivo-search-dev` (2026-10-16) y embeddings `text-embedding-3-small` (2026-10-17) creados por el responsable; índice con 9 fragmentos, rol de lectura de `id-mpa-dev-runtime` y `deploy-u15.ps1 -Stage Verify` en verde con su identidad (2026-10-17). Conexión con la API pendiente (`infra/azure/u15/README.md`). El corpus empresarial sigue bajo `ASSUMPTION-008`. U16 sin autorización |
+| U15–U16, QA, entrega | AI Search, Power BI, QA integral y entrega | — | `DT-094` | U15 y U15b desplegadas y verificadas en `dev` (Search Free, índice con 9 fragmentos sintéticos, solo Entra ID desde el 2026-10-18; asistente documental, `DT-103`). El corpus empresarial sigue bajo `ASSUMPTION-008`. **U16 descartada para esta entrega.** MVP cerrado para la revisión el 2026-10-21 |
 
 ---
 
@@ -438,7 +438,7 @@ Estimaciones, no cifras garantizadas: README de U12 §7.
 - Crear o rotar credenciales, o leer secretos.
 - Cambiar la configuración de `main` o hacer *merge*.
 - *Push* fuera de la rama de trabajo.
-- Ampliar U12 (`staging` o `prod`), iniciar unidades sin autorización (actualmente U16) o pasar U15 a un nivel con cargo continuo (Basic o superior) sin autorizar su gasto.
+- Ampliar U12 (`staging` o `prod`), retomar U16 (descartada para esta entrega) o iniciar otra unidad sin autorización, o pasar U15 a un nivel con cargo continuo (Basic o superior) sin autorizar su gasto.
 - Modificar el generador o el dataset 0.4.0.
 - Promover un modelo o cambiar el baseline oficial MA13.
 - Tomar decisiones de negocio.
@@ -506,9 +506,9 @@ están marcadas como tales.
 | K-01 | `README.md` (2026-09-30) dice que el sistema no está implementado y que `backend/`, `frontend/`, `ml/`, `infra/` y `.github/workflows/` no existen | `README.md` frente al repositorio y a `status.md` | Repositorio (`AGENTS.md` §1.5) | **Hecho corregido:** aviso al principio de `README.md` que remite a esta guía y a `status.md`. **Resuelto (2026-10-13):** `README.md` reescrito con el estado real, la demo local, la tabla de tecnologías y las pruebas; los documentos `docs/03`–`docs/14` llevan una línea de estado vigente |
 | K-02 | `CLAUDE.md` §14: «`ml/` y `.github/workflows/` aún no existen» | `CLAUDE.md` frente al repositorio | Repositorio | **Hecho corregido** en `CLAUDE.md` §14 |
 | K-03 | `AGENTS.md` §9 y §10 exigen preguntar antes de cualquier commit; `CLAUDE.md` §13 (2026-10-06) permite al agente commits en ramas de trabajo y reserva *push*, PR y *merge* al responsable; en la sesión del 2026-10-10 el responsable pidió expresamente *push* y PR | `AGENTS.md`, `CLAUDE.md`, instrucción de sesión | `CLAUDE.md` (fuente operativa y posterior) más la instrucción explícita de la sesión | **Sin cambio de regla:** se registra. El responsable decide si alinea `AGENTS.md` |
-| K-04 | U7, U8 y U9 figuran «pendiente de revisión» (`roadmap.md`, `status.md` §Progreso, `docs/12` §3.4 y §4.5, `docs/11` §10), pero están integradas en `main` (PR #13 y PR #14, `70e69f9`) | Documentos de estado frente a Git | Git para la integración; el **estado formal de revisión es decisión del responsable** | **Sin cambio de estado:** se registra. En §B se marcan 🟢 «implementado e integrado» |
-| K-05 | U8 «falta la primera ejecución real» y U7 «digest pendiente de verificación externa», pero CI se ha ejecutado en GitHub y está en verde en `main` `62f25ca` (run 38035570538, con el job `docker` que construye con las bases por digest) | `roadmap.md`, `docs/12` §3.4 frente a GitHub Actions | GitHub Actions ([CI]) | **Hecho registrado** aquí; las etiquetas de estado las actualiza el responsable (K-04) |
-| K-06 | Roadmap, fila U11: «código pendiente de commit y PR», pero está en `main` (commits `329da12`, `70e6887` y `71dd044`, PR #14) | `roadmap.md` frente a Git | Git | **Hecho registrado**; sin cambio de estado |
+| K-04 | U7, U8 y U9 figuran «pendiente de revisión» (`roadmap.md`, `status.md` §Progreso, `docs/12` §3.4 y §4.5, `docs/11` §10), pero están integradas en `main` (PR #13 y PR #14, `70e69f9`) | Documentos de estado frente a Git | Git para la integración; el **estado formal de revisión es decisión del responsable** | **Sin cambio de estado:** se registra. En §B se marcan 🟢 «implementado e integrado» **Resuelto (2026-11-05):** etiquetas actualizadas en `roadmap.md` y `status.md` §Progreso. |
+| K-05 | U8 «falta la primera ejecución real» y U7 «digest pendiente de verificación externa», pero CI se ha ejecutado en GitHub y está en verde en `main` `62f25ca` (run 38035570538, con el job `docker` que construye con las bases por digest) | `roadmap.md`, `docs/12` §3.4 frente a GitHub Actions | GitHub Actions ([CI]) | **Hecho registrado** aquí; las etiquetas de estado las actualiza el responsable (K-04) **Resuelto (2026-11-05):** etiquetas actualizadas en `roadmap.md` y `status.md` §Progreso. |
+| K-06 | Roadmap, fila U11: «código pendiente de commit y PR», pero está en `main` (commits `329da12`, `70e6887` y `71dd044`, PR #14) | `roadmap.md` frente a Git | Git | **Hecho registrado**; sin cambio de estado **Resuelto (2026-11-05):** etiquetas actualizadas en `roadmap.md` y `status.md` §Progreso. |
 | K-07 | `docs/12` §5: `dev` «automático desde `main`», frente a `DT-100`: despliegue manual (`workflow_dispatch`) | `docs/12` §5 tabla frente a `DT-100` | `DT-100` (`ACEPTADA`, posterior); la propia `docs/12` §5 lo anota | Ya anotada en `docs/12`; no requiere cambio |
 | K-08 | Número de comprobaciones de `Verify`: 18 (fila de `status.md` del 2026-10-08) frente a 19 (script, README y evidencia real) | `status.md` frente a `deploy-u12.ps1` | Script | La fila es historial anterior a la comprobación `WorkloadProfiles`; vale 19 hasta `9d9c040` y **20** desde entonces (rol de GitHub sobre el job) |
 | K-09 | `DT-100` dice que U12 no se cierra hasta cumplir «los 15 criterios», pero ningún documento los enumera | `DT-100` | `DT-100` (exige 15), sin lista | Matriz **derivada** C01–C15, en estado `PROPUESTA` hasta su validación, en el informe de cierre |

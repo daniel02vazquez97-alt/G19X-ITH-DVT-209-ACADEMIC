@@ -6,6 +6,8 @@ from typing import Any
 
 import psycopg
 
+from . import code_filters
+
 _PERIODS = """
     SELECT f.product_id, p.sku, m.name AS model_name, m.version AS model_version, f.period_start, f.period_end,
            f.predicted_quantity, f.lower_bound, f.upper_bound, f.confidence_level, f.method_used, f.confidence_flag
@@ -25,6 +27,8 @@ def series_page(
     category_id: int | None,
     limit: int,
     offset: int,
+    sku: str | None = None,
+    category_code: str | None = None,
 ) -> tuple[int, list[dict[str, Any]]]:
     """Paginated by series (product); returns the total of series and the periods of the page."""
     where, params = ["f.calculation_run_id = %s", "f.is_primary"], [run_id]
@@ -34,6 +38,7 @@ def series_page(
     if category_id is not None:
         where.append("p.category_id = %s")
         params.append(category_id)
+    code_filters(where, params, sku=sku, category_code=category_code)
     base = (
         "SELECT DISTINCT f.product_id FROM forecasts f JOIN products p ON p.id = f.product_id WHERE "
         + " AND ".join(where)

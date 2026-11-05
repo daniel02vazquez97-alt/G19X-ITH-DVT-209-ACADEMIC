@@ -4558,6 +4558,29 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
   *bootstrap* (aplica `0005`) y ver la referencia en la vista Predicciones de `dev`.
 - **Estado:** `ACEPTADA` (2026-10-20). Implementada; **desplegada y verificada en `dev`** (2026-10-20, [AZ-U]: imágenes `996f8b7`, bootstrap `Succeeded` con la migración `0005`, Verify de U12 20/20 y la referencia visible en Predicciones).
 
+## DT-105 — Filtros por los códigos que muestra la interfaz (SKU, categoría y proveedor)
+
+- **Contexto:** el responsable observó el 2026-11-04 que «no funciona el filtro de ninguna sección». Probado contra la
+  API real: los filtros funcionaban, pero pedían el identificador interno (`product_id=4`, `category_id=1`,
+  `supplier_id=10`), que ninguna pantalla muestra. Escribir lo que sí se ve (`SKU-00004`, `CAT-001`, `SUP-010`) daba
+  «Filtro no válido» (422). Además, en Recomendaciones el filtro «Resultado» vale `RECOMMEND` por defecto, y un producto
+  con otro resultado aparecía como lista vacía sin explicación. `docs/07` §1 ya preveía que el SKU fuera «clave de
+  negocio consultable por filtro».
+- **Decisión** (`ACEPTADA` el 2026-11-05, corrección de usabilidad autorizada por el responsable; no es una función
+  nueva ni una ruta nueva):
+  1. **API:** parámetros opcionales `sku` (inventario, pronósticos, recomendaciones), `category_code` (las cuatro listas)
+     y `supplier_code` (recomendaciones). Coincidencia exacta sin distinguir mayúsculas; un código desconocido da una
+     página vacía, no un error; vacío → 422. Los parámetros por identificador siguen igual. Un único punto en el código:
+     `app.db.read.code_filters`, SQL parametrizado.
+  2. **Interfaz:** los campos piden lo que se ve («Producto (SKU)», «Categoría (código)», «Proveedor (código)», con un
+     ejemplo cada uno) y «Ejecución (número)» explica que es el número de «Ejecución #2». Ningún campo pide un
+     identificador interno. La lista vacía de Recomendaciones nombra el resultado filtrado y sugiere cambiarlo.
+  3. Enmienda el punto 11 de `DT-070`: los filtros siguen sin catálogo, pero por código visible, no por identificador.
+- **Verificación:** [CC] integración con PostgreSQL 16 (cada filtro por código devuelve lo mismo que el filtro por
+  identificador; mayúsculas, código desconocido y vacío), suites de backend y API, Vitest y prueba manual en el
+  navegador contra la API local. **Pendiente [AZ-U]:** desplegar con Deploy dev.
+- **Estado:** `ACEPTADA` (2026-11-05). Implementada; pendiente de despliegue.
+
 ## Decisiones deliberadamente NO tomadas
 
 | ID | Tema | Se decidirá en | Por qué no ahora |

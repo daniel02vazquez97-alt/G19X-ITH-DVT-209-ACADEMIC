@@ -53,6 +53,7 @@ def require_product(conn: psycopg.Connection, product_id: int) -> None:
 def list_products(
     search: str | None = Query(None, min_length=1, max_length=100, description="Subcadena en sku o nombre"),
     category_id: int | None = Query(None),
+    category_code: str | None = Query(None, min_length=1, max_length=100, description="Código de categoría (CAT-001)"),
     is_active: bool | None = Query(None),
     sort: str | None = Query(None, description="sku | name | id, con - para descendente; por defecto sku"),
     page: PageParams = Depends(page_params),
@@ -61,7 +62,7 @@ def list_products(
 ) -> dict:
     order = parse_sort(sort, _SORT_FIELDS, "sku")
     total, rows = products_read.list_products(
-        conn, search=search, category_id=category_id, is_active=is_active, sort=order.field,
+        conn, search=search, category_id=category_id, category_code=category_code, is_active=is_active, sort=order.field,
         descending=order.descending, limit=page.page_size, offset=page.offset,
     )
     return {"items": [product_item(r) for r in rows], "total": total, "page": page.page, "page_size": page.page_size}

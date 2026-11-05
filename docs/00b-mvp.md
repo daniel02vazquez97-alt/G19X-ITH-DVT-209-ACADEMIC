@@ -181,7 +181,7 @@ cumplido.
 
 ---
 
-## 8. Estado del MVP a 2026-10-14
+## 8. Estado del MVP a 2026-10-21
 
 | Categoría | Contenido |
 |---|---|
@@ -200,20 +200,24 @@ cumplido.
 
 **Aceptación:** MVP-10 está cumplido. El propietario resolvió las decisiones de alcance de §1.3; `BR-X03`, los parámetros de negocio y la validación de roles siguen abiertos para el producto, pero no bloquean la aceptación de este MVP.
 
-**Plan mínimo:**
+**Plan mínimo (cumplido el 2026-10-21):**
 
-1. Conservar esta decisión de alcance en `project/status.md` y `project/roadmap.md`.
-2. Antes de desplegar U15, comparar Free, Serverless Developer (preview) y Basic con precios de la región y confirmar Entra ID sin claves; no provisionar hasta decidir y autorizar el costo. Validar el corpus empresarial requerido por `ASSUMPTION-008` antes de usar documentos reales.
+1. La decisión de alcance está en `project/status.md` y `project/roadmap.md`.
+2. El MVP se cerró para la revisión el 2026-10-21: demo local probada en un clon limpio, README con estado comprobable
+   y capturas de `dev`.
 
-**Lo que no debe ampliar el MVP:**
+**Lo que queda fuera del MVP, con su estado al 2026-10-21:**
 
-- cerrar U12;
-- U13–U16;
-- promoción de modelos;
-- datos reales;
-- rendimiento.
+| Unidad o tema | Estado | Relación con el MVP |
+|---|---|---|
+| U12 — despliegue en Azure Container Apps | Cerrada el 2026-10-13, con verificaciones pendientes aceptadas | Extra: el MVP no depende de Azure |
+| U13 — explicaciones con Azure OpenAI | Desplegada y verificada en `dev` | Extra, con la plantilla del MVP como respaldo |
+| U14 y U14b — Azure ML y referencia del modelo | Desplegadas y verificadas en `dev` | Extra: no cambia ningún cálculo |
+| U15 y U15b — AI Search y asistente documental | Desplegadas y verificadas en `dev` (Search Free, solo Entra ID) | Extra: no decide compras |
+| U16 — Power BI | **Descartada para esta entrega**; las vistas `analytics` (U9) quedan listas | — |
+| Promoción de modelos, datos reales, rendimiento | No iniciados | Posteriores, cada uno con su propia autorización (`DT-094` punto 3) |
 
-Son objetivos posteriores o separados, cada uno con su propia autorización (`DT-094` punto 3).
+Antes de usar documentos reales en el asistente hay que validar el corpus empresarial (`ASSUMPTION-008`).
 
 **Riesgos:**
 

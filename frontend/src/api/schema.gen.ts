@@ -970,6 +970,8 @@ export interface operations {
                 /** @description Subcadena en sku o nombre */
                 search?: string | null;
                 category_id?: number | null;
+                /** @description Código de categoría (CAT-001) */
+                category_code?: string | null;
                 is_active?: boolean | null;
                 /** @description sku | name | id, con - para descendente; por defecto sku */
                 sort?: string | null;
@@ -1286,7 +1288,11 @@ export interface operations {
         parameters: {
             query?: {
                 product_id?: number | null;
+                /** @description SKU exacto (SKU-00004), sin distinguir mayúsculas */
+                sku?: string | null;
                 category_id?: number | null;
+                /** @description Código de categoría (CAT-001) */
+                category_code?: string | null;
                 /** @description sku | on_hand | available, con - para descendente; por defecto sku */
                 sort?: string | null;
                 /** @description Página, desde 1 */
@@ -1409,7 +1415,11 @@ export interface operations {
         parameters: {
             query?: {
                 product_id?: number | null;
+                /** @description SKU exacto (SKU-00004), sin distinguir mayúsculas */
+                sku?: string | null;
                 category_id?: number | null;
+                /** @description Código de categoría (CAT-001) */
+                category_code?: string | null;
                 /** @description Por defecto, la regla determinista de DT-066 */
                 run_id?: number | null;
                 /** @description Página, desde 1 */
@@ -1484,8 +1494,14 @@ export interface operations {
             query?: {
                 outcome?: "RECOMMEND" | "NO_NEED" | "NOT_CALCULABLE";
                 product_id?: number | null;
+                /** @description SKU exacto (SKU-00004), sin distinguir mayúsculas */
+                sku?: string | null;
                 category_id?: number | null;
+                /** @description Código de categoría (CAT-001) */
+                category_code?: string | null;
                 supplier_id?: number | null;
+                /** @description Código de proveedor (SUP-010) */
+                supplier_code?: string | null;
                 /** @description Por defecto, la regla determinista de DT-066 */
                 run_id?: number | null;
                 /** @description sku | recommended_quantity | suggested_order_date; por defecto sku */

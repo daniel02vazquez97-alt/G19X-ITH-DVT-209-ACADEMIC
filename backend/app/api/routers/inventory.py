@@ -28,7 +28,9 @@ def inventory_item(row: dict) -> dict:
             summary="Posición de inventario del catálogo (los cuatro roles)")
 def list_inventory(
     product_id: int | None = Query(None, ge=1),
+    sku: str | None = Query(None, min_length=1, max_length=100, description="SKU exacto (SKU-00004), sin distinguir mayúsculas"),
     category_id: int | None = Query(None),
+    category_code: str | None = Query(None, min_length=1, max_length=100, description="Código de categoría (CAT-001)"),
     sort: str | None = Query(None, description="sku | on_hand | available, con - para descendente; por defecto sku"),
     page: PageParams = Depends(page_params),
     _identity=Depends(require_roles(ALL_ROLES)),
@@ -36,7 +38,7 @@ def list_inventory(
 ) -> dict:
     order = parse_sort(sort, _SORT_FIELDS, "sku")
     total, rows = inventory_read.list_inventory(
-        conn, product_id=product_id, category_id=category_id, sort=order.field, descending=order.descending,
+        conn, product_id=product_id, category_id=category_id, sku=sku, category_code=category_code, sort=order.field, descending=order.descending,
         limit=page.page_size, offset=page.offset,
     )
     return {"items": [inventory_item(r) for r in rows], "total": total, "page": page.page, "page_size": page.page_size}

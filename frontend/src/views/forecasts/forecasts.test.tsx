@@ -29,7 +29,7 @@ describe('ForecastsPage (F7d, US-075 partial)', () => {
     const fetchMock = installFetch(
       routeApi({ '/api/v1/forecasts': () => jsonResponse(200, FORECASTS) }),
     );
-    const { user } = renderApp('/predicciones?category_id=2&run_id=1');
+    const { user } = renderApp('/predicciones?category_code=CAT-002&run_id=1');
     await loginAs(user, 'VIEWER');
     expect(await screen.findByText('SKU-00001', { selector: '.series__sku' })).toBeInTheDocument();
     expect(screen.getByText(/· 14 semanas/)).toBeInTheDocument();
@@ -37,7 +37,7 @@ describe('ForecastsPage (F7d, US-075 partial)', () => {
       'Datos sintéticos',
     );
     expect(screen.getByText(/no una cobertura validada/)).toBeInTheDocument();
-    expect(requestedUrls(fetchMock)).toEqual(['/api/v1/forecasts?category_id=2&run_id=1']);
+    expect(requestedUrls(fetchMock)).toEqual(['/api/v1/forecasts?category_code=CAT-002&run_id=1']);
   });
 });
 

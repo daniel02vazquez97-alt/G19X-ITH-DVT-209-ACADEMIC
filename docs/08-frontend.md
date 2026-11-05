@@ -272,7 +272,7 @@ de §1–§10, que siguen describiendo el sistema completo.*
 | §4.4, US-072 | Filtro «por debajo del punto de reorden», cobertura en días | Fuera (`docs/07` §7.3, `DT-P19`, `BR-X03`) |
 | §4.6, US-075 | Banda de incertidumbre; filtro por horizonte | Banda **nominal** (`confidence_level`, hoy 0.80) de los baselines de U3, sin afirmar cobertura validada (US-055, Fase 5); aviso con `INSUFFICIENT_HISTORY`; historia y forecast separados; sin filtro de horizonte (la API no lo tiene) |
 | §4.3 | Columnas existencia, cobertura, riesgo, recomendación abierta; filtros ABC y rotación | Columnas del maestro que entrega `/products`; sin ABC ni rotación (`DT-029`), sin cobertura ni riesgo |
-| §4.3, §4.6, §4.7 | Filtros por categoría y proveedor | Solo por identificador explícito: la API no tiene `/categories` ni `/suppliers` y la interfaz **no fabrica catálogos** |
+| §4.3, §4.6, §4.7 | Filtros por categoría y proveedor | Por el código que muestra la interfaz (`CAT-001`, `SUP-010`; el producto, por SKU), desde `DT-105`; la API no tiene `/categories` ni `/suppliers` y la interfaz **no fabrica catálogos** |
 | §4.8.5, §4.9, US-076 | Riesgos | Fuera (`BR-X03`) |
 | §4.8.6, §4.5 | Proveedores con desempeño | Solo las condiciones de `/products/{id}`; vista de proveedores fuera |
 | §4.8.7, §4.10 | Explicación del asistente con fuentes citadas | Explicación determinista de U6 (`GET /recommendations/{id}/explanation`), sin fuentes ni chat; el asistente es de la Fase 10 |

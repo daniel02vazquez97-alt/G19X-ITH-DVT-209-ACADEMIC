@@ -44,9 +44,9 @@ describe('ProductsPage (F7b, US-072)', () => {
     await loginAs(user, 'VIEWER');
     await screen.findByRole('table');
     await user.type(screen.getByLabelText('Buscar por SKU o nombre'), 'SKU-0000');
-    await user.type(screen.getByLabelText('Categoría (identificador)'), '2');
+    await user.type(screen.getByLabelText('Categoría (código)'), 'CAT-002');
     await user.click(screen.getByRole('button', { name: 'Aplicar' }));
-    expect(router.state.location.search).toBe('?search=SKU-0000&category_id=2');
+    expect(router.state.location.search).toBe('?search=SKU-0000&category_code=CAT-002');
   });
 
   it('moves to the next page through the URL', async () => {

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 from contextlib import contextmanager
+from typing import Any
 
 import psycopg
 from psycopg.rows import dict_row
@@ -65,3 +66,25 @@ def like_pattern(text: str) -> str:
     """Substring pattern for ``ILIKE … ESCAPE '\\'`` with the wildcards of ``text`` escaped."""
     escaped = text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
     return f"%{escaped}%"
+
+
+def code_filters(
+    where: list[str],
+    params: list[Any],
+    *,
+    sku: str | None = None,
+    category_code: str | None = None,
+    supplier_code: str | None = None,
+    supplier_column: str = "",
+) -> None:
+    """Adds the filters by the codes the interface shows (``SKU-00004``, ``CAT-001``, ``SUP-010``) over ``p``
+    (``products``): exact match, case-insensitive. An unknown code matches nothing (an empty page, not an error)."""
+    if sku is not None:
+        where.append("upper(p.sku) = upper(%s)")
+        params.append(sku)
+    if category_code is not None:
+        where.append("p.category_id IN (SELECT cf.id FROM categories cf WHERE upper(cf.code) = upper(%s))")
+        params.append(category_code)
+    if supplier_code is not None:
+        where.append(f"{supplier_column} IN (SELECT sf.id FROM suppliers sf WHERE upper(sf.code) = upper(%s))")
+        params.append(supplier_code)

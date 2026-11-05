@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import {
   CORRELATION_ID,
@@ -71,18 +71,50 @@ describe('RecommendationsPage (F7c, US-073 without actions)', () => {
     );
   });
 
-  it('sends outcome, identifiers and sort to the API as they are', async () => {
+  it('sends outcome, codes and sort to the API as they are', async () => {
     const fetchMock = installFetch(
       routeApi({ '/api/v1/recommendations': () => jsonResponse(200, RECOMMENDATIONS) }),
     );
     const { user } = renderApp(
-      '/recomendaciones?outcome=NOT_CALCULABLE&supplier_id=10&run_id=2&sort=-suggested_order_date',
+      '/recomendaciones?outcome=NOT_CALCULABLE&supplier_code=SUP-010&run_id=2&sort=-suggested_order_date',
     );
     await loginAs(user, 'VIEWER');
     await screen.findByRole('table');
     expect(requestedUrls(fetchMock)).toEqual([
-      '/api/v1/recommendations?sort=-suggested_order_date&outcome=NOT_CALCULABLE&supplier_id=10&run_id=2',
+      '/api/v1/recommendations?sort=-suggested_order_date&outcome=NOT_CALCULABLE&supplier_code=SUP-010&run_id=2',
     ]);
+  });
+
+  it('filters by the SKU the interface shows, never by an internal identifier (DT-105)', async () => {
+    const fetchMock = installFetch(
+      routeApi({ '/api/v1/recommendations': () => jsonResponse(200, RECOMMENDATIONS) }),
+    );
+    const { user, router } = renderApp('/recomendaciones');
+    await loginAs(user, 'VIEWER');
+    await screen.findByRole('table');
+    expect(screen.queryByLabelText(/identificador/)).toBeNull();
+    await user.type(screen.getByLabelText('Producto (SKU)'), 'SKU-00004');
+    await user.type(screen.getByLabelText('Categoría (código)'), 'CAT-001');
+    await user.click(screen.getByRole('button', { name: 'Aplicar' }));
+    expect(router.state.location.search).toBe('?sku=SKU-00004&category_code=CAT-001');
+    await waitFor(() =>
+      expect(requestedUrls(fetchMock)).toContain(
+        '/api/v1/recommendations?sku=SKU-00004&category_code=CAT-001',
+      ),
+    );
+  });
+
+  it('an empty page names the outcome filter, the usual reason a product is missing', async () => {
+    installFetch(
+      routeApi({
+        '/api/v1/recommendations': () =>
+          jsonResponse(200, { ...RECOMMENDATIONS, items: [], total: 0 }),
+      }),
+    );
+    const { user } = renderApp('/recomendaciones?sku=SKU-00001');
+    await loginAs(user, 'VIEWER');
+    expect(await screen.findByText(/resultado «Se sugiere pedir»/)).toBeInTheDocument();
+    expect(screen.getByText(/prueba con otro valor en «Resultado»/)).toBeInTheDocument();
   });
 });
 

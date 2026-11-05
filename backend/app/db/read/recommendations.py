@@ -7,6 +7,8 @@ from typing import Any
 import psycopg
 from psycopg import sql
 
+from . import code_filters
+
 SORT_COLUMNS = {"sku": "p.sku", "recommended_quantity": "r.recommended_quantity", "suggested_order_date": "r.suggested_order_date"}
 
 _ITEM = """
@@ -43,12 +45,17 @@ def list_recommendations(
     descending: bool,
     limit: int,
     offset: int,
+    sku: str | None = None,
+    category_code: str | None = None,
+    supplier_code: str | None = None,
 ) -> tuple[int, list[dict[str, Any]]]:
     where, params = ["r.calculation_run_id = %s", "r.outcome = %s"], [run_id, outcome]
     for column, value in (("r.product_id", product_id), ("p.category_id", category_id), ("r.suggested_supplier_id", supplier_id)):
         if value is not None:
             where.append(f"{column} = %s")
             params.append(value)
+    code_filters(where, params, sku=sku, category_code=category_code, supplier_code=supplier_code,
+                 supplier_column="r.suggested_supplier_id")
     condition = sql.SQL(" AND ".join(where))
     total = conn.execute(
         sql.SQL("SELECT count(*) AS n FROM recommendations r JOIN products p ON p.id = r.product_id WHERE {}").format(condition),
