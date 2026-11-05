@@ -344,10 +344,13 @@ Procedimiento: [`infra/azure/u12/README.md`](infra/azure/u12/README.md). Evidenc
   | Local con Entra ID (`u11-entra-dev`) | Docker en el equipo | Microsoft Entra ID | Cuentas del tenant con rol | Como en el modo local |
   | Azure `dev` | Azure Container Apps | Microsoft Entra ID | Cuentas del tenant con rol | Azure OpenAI, con la plantilla de respaldo; el asistente redacta con Azure AI Search |
 
-- **Disponibilidad de `dev` para la revisión.** Costo de octubre de 2026: 2,73 USD acumulados al día 24 (previsión
-  4,06 USD), casi todo del registro de contenedores (ACR Basic), frente al crédito de 100 USD de Azure for Students. Antes
-  de la revisión el responsable ejecuta `deploy-u12.ps1 -Stage Verify` y `deploy-u15.ps1 -Stage Verify`; si `dev` no
-  respondiera, la demostración se hace con la demo local, que no depende de Azure.
+- **Crédito de Azure y disponibilidad de `dev`.** Al 2026-11-05 quedan **97,96 USD** de los 100 USD de Azure for
+  Students (2,04 USD usados, según el portal). Gasto: octubre de 2026, 4,04 USD; noviembre, 0,64 USD hasta la fecha
+  (previsión del mes: 5,01 USD). Casi todo es el registro de contenedores (ACR Basic); Azure OpenAI, Search Free,
+  Container Apps y PostgreSQL apenas suman. A este ritmo, unos 5 USD al mes, el crédito alcanza de sobra para la
+  entrega. Container Apps, PostgreSQL y Search **se mantienen activos hasta la revisión final**. Antes de ella, el
+  responsable ejecuta `deploy-u12.ps1 -Stage Verify` y `deploy-u15.ps1 -Stage Verify`. Si `dev` no respondiera, la
+  demostración se hace con la demo local, que no depende de Azure.
 
 ## Licencia
 
