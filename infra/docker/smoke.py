@@ -134,6 +134,19 @@ def main() -> int:
     total = recommendations.get("total", 0)
     check("recommendations persisted in PostgreSQL", status == 200 and total > 0, f"HTTP {status}, total {total}")
 
+    # DT-105: the lists filter by the code the interface shows. The SKU goes in lower case to check that the match
+    # ignores case; an API that does not know `sku` would ignore it and return the whole list, so `total` must be 1.
+    first = (recommendations.get("items") or [{}])[0].get("product", {}).get("sku")
+    if first:
+        query = urllib.parse.urlencode({"sku": first.lower()})
+        status, body = get(f"{FRONTEND}/api/v1/recommendations?{query}", token)
+        found = json.loads(body) if status == 200 else {}
+        skus = [item["product"]["sku"] for item in found.get("items", [])]
+        check("filter by the SKU the interface shows (DT-105)", status == 200 and found.get("total") == 1
+              and skus == [first], f"HTTP {status}, {first} -> total {found.get('total')}")
+    else:
+        check("filter by the SKU the interface shows (DT-105)", False, "no recommendation to filter")
+
     status, body = get(f"{FRONTEND}/api/v1/forecasts?page_size=5", token)
     forecasts = json.loads(body) if status == 200 else {}
     check("forecasts persisted in PostgreSQL", status == 200 and forecasts.get("total", 0) > 0,
