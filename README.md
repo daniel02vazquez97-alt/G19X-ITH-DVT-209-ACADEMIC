@@ -75,7 +75,7 @@ Windows con Docker Desktop 29.8.1 (WSL 2, 12 CPU y 11,5 GiB para Docker), sin im
 respondió sana a los **2,5 min** del `up` y `smoke.py` terminó en `SMOKE OK` (10/10, incluida la comprobación del filtro
 por SKU). Casi todo es descarga e instalación (imágenes base, `pip install` y `npm ci`), así que depende de la red: la
 prueba anterior, del 2026-10-21 sobre `4e734a0`, tardó 3,8 min. Con la caché ya creada, el arranque tarda 1–2 min. Ocupa
-unos **2,1 GB** de disco (medido el 2026-10-21): 0,8 GB de imágenes, 0,2 GB de datos y 1,1 GB de caché de construcción
+unos **2,1 GB** de disco (medido el 2026-11-12): 0,8 GB de imágenes, 0,2 GB de datos y 1,1 GB de caché de construcción
 (`docker builder prune` la libera).
 
 ```bash
