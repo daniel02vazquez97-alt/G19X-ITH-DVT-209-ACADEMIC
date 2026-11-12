@@ -12,8 +12,8 @@ cuándo**. Cada recomendación es determinista, se explica cifra a cifra y se pu
 >   `python infra/docker/smoke.py`, que debe terminar en `SMOKE OK` (frontend → API → PostgreSQL, recomendaciones,
 >   pronósticos, explicación, filtro por SKU y asistente con el corpus local). Probado en frío el 2026-11-12 con un
 >   clon de `main` (`93d3bc1`): `SMOKE OK`, 10/10 comprobaciones.
-> - **Azure `dev`:** `deploy-u12.ps1 -Stage Verify` 20/20 (2026-10-21) y `deploy-u15.ps1 -Stage Verify` en verde
->   (2026-10-18), con Microsoft Entra ID.
+> - **Azure `dev`:** al día con `main` (imágenes `5b28877`, 2026-11-12, con los filtros por código de `DT-105`):
+>   `deploy-u12.ps1 -Stage Verify` 20/20 y `deploy-u15.ps1 -Stage Verify` en verde, con Microsoft Entra ID.
 > - **Pruebas:** CI en verde en `main` ([`ci.yml`](.github/workflows/ci.yml)); en local, `python scripts/test.py`.
 > - **Extras fuera del MVP:** explicaciones con Azure OpenAI, *backtesting* reproducido en Azure ML y **asistente
 >   documental** con Azure AI Search ([Qué hace la aplicación](#qué-hace-la-aplicación)).
