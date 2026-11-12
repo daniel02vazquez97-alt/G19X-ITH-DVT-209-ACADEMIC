@@ -4578,8 +4578,12 @@ responsable, `ACEPTADA` y **provisionales**: valen solo con datos `SYNTHETIC` y 
   3. Enmienda el punto 11 de `DT-070`: los filtros siguen sin catálogo, pero por código visible, no por identificador.
 - **Verificación:** [CC] integración con PostgreSQL 16 (cada filtro por código devuelve lo mismo que el filtro por
   identificador; mayúsculas, código desconocido y vacío), suites de backend y API, Vitest y prueba manual en el
-  navegador contra la API local. **Pendiente [AZ-U]:** desplegar con Deploy dev.
-- **Estado:** `ACEPTADA` (2026-11-05). Implementada; pendiente de despliegue.
+  navegador contra la API local. **[AZ-U] (2026-11-12):** Deploy dev desde `main` (`5b28877`) en verde; imágenes
+  `5b28877` en `dev`; `deploy-u12.ps1 -Stage Verify` 20/20 («U12: dev verificado») y `deploy-u15.ps1 -Stage Verify`
+  `VERIFY OK`. [CC] comprobó que el frontend de `dev` sirve la interfaz nueva («Producto (SKU)», «Categoría (código)»,
+  «Proveedor (código)»; ningún «(identificador)»). Antes de este despliegue, `dev` servía la interfaz anterior.
+- **Estado:** `ACEPTADA` (2026-11-05). Implementada; **desplegada y verificada en `dev`** (2026-11-12, imágenes `5b28877`,
+  Verify de U12 20/20 y de U15 en verde).
 
 ## Decisiones deliberadamente NO tomadas
 
