@@ -155,7 +155,8 @@ Azure](#despliegue-en-azure)).
 
 ## Capturas
 
-Entorno `dev` en Azure (2026-10-21, imágenes `2e079c4`), con sesión de Microsoft Entra ID y datos sintéticos.
+Entorno `dev` en Azure (2026-11-12, imágenes `5b28877`, con los filtros por código de `DT-105`), con sesión de Microsoft
+Entra ID y datos sintéticos.
 
 | Recomendaciones | Detalle con explicación |
 |---|---|
