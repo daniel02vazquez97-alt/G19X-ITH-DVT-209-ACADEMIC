@@ -153,6 +153,9 @@ a {
     'nav'
     'main';
   grid-template-rows: auto auto 1fr;
+  /* minmax(0, 1fr), not 1fr: a wide table must scroll inside its .table-wrap, not widen the whole page and push
+     the header and «Cerrar sesión» off a phone screen. */
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .shell__header {
@@ -933,7 +936,7 @@ a {
     grid-template-areas:
       'header header'
       'nav main';
-    grid-template-columns: var(--nav-width) 1fr;
+    grid-template-columns: var(--nav-width) minmax(0, 1fr);
     grid-template-rows: auto 1fr;
   }
 

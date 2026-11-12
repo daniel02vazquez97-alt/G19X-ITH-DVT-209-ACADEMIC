@@ -254,7 +254,7 @@ Todas las suites corren en CI en cada *push* y *pull request* ([`ci.yml`](.githu
 | Integración | Migraciones y API contra PostgreSQL 16 efímero | `backend/`: `python -m unittest discover -s tests/db -t tests/db` (exige `U2_TEST_ADMIN_DSN`) |
 | ML | Backtesting, métricas, candidatos | raíz: `python -m unittest discover -s ml/tests -t .` |
 | Generador | Dataset sintético y sus 51 validaciones | raíz: `python -m unittest discover -s data/synthetic/tests -t .` |
-| Frontend | ESLint, `tsc`, Prettier, Vitest (187 pruebas) y build | `frontend/`: `npm ci`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run build` |
+| Frontend | ESLint, `tsc`, Prettier, Vitest (188 pruebas) y build | `frontend/`: `npm ci`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run build` |
 | Infraestructura | Bicep, workflows, scripts de despliegue con Azure CLI simulado | raíz: `python -m unittest discover -s infra/tests -t infra/tests` |
 | Seguridad | Detección de secretos y archivos prohibidos | raíz: `python infra/ci/secret_scan.py` |
 | Lint de Python | Ruff con errores reales (`F`, `E9`), sin imponer estilo ([`ruff.toml`](ruff.toml)) | raíz: `python -m ruff check .` |

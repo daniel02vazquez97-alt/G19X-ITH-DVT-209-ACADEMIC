@@ -60,9 +60,10 @@ export function AssistantPage() {
       <header className="page__header">
         <h1 className="page__title">Asistente documental</h1>
         <p className="page__lead">
-          Responde con los documentos sintéticos del proyecto: busca los fragmentos en Azure AI
-          Search y el modelo de Azure OpenAI redacta la respuesta citándolos. No decide compras ni
-          cambia recomendaciones.
+          Responde con los documentos sintéticos del proyecto: busca los fragmentos relevantes y, si
+          el entorno tiene un modelo de lenguaje, redacta la respuesta citándolos; si no, muestra
+          solo los fragmentos. En Azure usa Azure AI Search y Azure OpenAI; en la demo local, un
+          buscador local y ningún modelo. No decide compras ni cambia recomendaciones.
         </p>
       </header>
       <form
