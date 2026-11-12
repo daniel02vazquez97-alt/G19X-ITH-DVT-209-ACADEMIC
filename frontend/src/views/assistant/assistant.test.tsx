@@ -64,6 +64,15 @@ describe('AssistantPage (U15b, DT-103)', () => {
     expect(screen.getByText(/Datos sintéticos/)).toBeInTheDocument();
   });
 
+  it('does not promise Azure in the local demo, where there is no Azure', async () => {
+    installFetch(routeApi({}));
+    const { user } = renderApp('/asistente');
+    await loginAs(user, 'VIEWER');
+    const lead = screen.getByText(/Responde con los documentos sintéticos/);
+    expect(lead).toHaveTextContent('si el entorno tiene un modelo de lenguaje');
+    expect(lead).toHaveTextContent('en la demo local, un buscador local y ningún modelo');
+  });
+
   it('shows the fragments and the warning when the model did not answer', async () => {
     const fallback = {
       ...ANSWER,
