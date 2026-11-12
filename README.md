@@ -6,12 +6,12 @@ Sistema de apoyo a la decisión de compras. A partir del histórico de consumo, 
 el comportamiento de los proveedores, **pronostica la demanda** de cada producto y **recomienda qué comprar, cuánto y
 cuándo**. Cada recomendación es determinista, se explica cifra a cifra y se puede reconstruir meses después.
 
-> **Estado (2026-10-21, MVP cerrado para la revisión), con su comprobación:**
+> **Estado (2026-11-12; MVP cerrado para la revisión el 2026-10-21), con su comprobación:**
 >
 > - **MVP local, sin Azure:** `docker compose -f infra/docker-compose.yml --profile app up --build -d` y después
 >   `python infra/docker/smoke.py`, que debe terminar en `SMOKE OK` (frontend → API → PostgreSQL, recomendaciones,
->   pronósticos, explicación y asistente con el corpus local). Probado el 2026-10-20 en un clon limpio: `SMOKE OK`,
->   9/9 comprobaciones.
+>   pronósticos, explicación, filtro por SKU y asistente con el corpus local). Probado en frío el 2026-11-12 con un
+>   clon de `main` (`93d3bc1`): `SMOKE OK`, 10/10 comprobaciones.
 > - **Azure `dev`:** `deploy-u12.ps1 -Stage Verify` 20/20 (2026-10-21) y `deploy-u15.ps1 -Stage Verify` en verde
 >   (2026-10-18), con Microsoft Entra ID.
 > - **Pruebas:** CI en verde en `main` ([`ci.yml`](.github/workflows/ci.yml)); en local, `python scripts/test.py`.
@@ -70,12 +70,13 @@ auditable **sin quitarle la decisión a la persona que compra**:
 **Requisitos:** Docker con Compose v2 para el sistema y Python 3 (solo la biblioteca estándar) para el *smoke test*. No
 hacen falta Node, dependencias de Python ni credenciales.
 
-**Probado en frío el 2026-10-21** con un clon de `main` (`4e734a0`) en Windows con Docker Desktop 29.8.1 (WSL 2, 12 CPU
-y 11,5 GiB para Docker), sin imágenes ni caché de construcción: la API respondió sana a los **3,8 min** del `up` y
-`smoke.py` terminó en `SMOKE OK` (9/9). Casi todo es descarga e instalación (imágenes base, `pip install` y `npm ci`,
-alrededor de 1 min cada uno), así que depende de la red; con la caché ya creada, el arranque tarda 1–2 min. Ocupa unos
-**2,1 GB** de disco: 0,8 GB de imágenes, 0,2 GB de datos y 1,1 GB de caché de construcción (`docker builder prune` la
-libera).
+**Probado en frío el 2026-11-12** con un clon de `main` (`93d3bc1`, que incluye los filtros por código de `DT-105`) en
+Windows con Docker Desktop 29.8.1 (WSL 2, 12 CPU y 11,5 GiB para Docker), sin imágenes ni caché de construcción: la API
+respondió sana a los **2,5 min** del `up` y `smoke.py` terminó en `SMOKE OK` (10/10, incluida la comprobación del filtro
+por SKU). Casi todo es descarga e instalación (imágenes base, `pip install` y `npm ci`), así que depende de la red: la
+prueba anterior, del 2026-10-21 sobre `4e734a0`, tardó 3,8 min. Con la caché ya creada, el arranque tarda 1–2 min. Ocupa
+unos **2,1 GB** de disco (medido el 2026-11-12): 0,8 GB de imágenes, 0,2 GB de datos y 1,1 GB de caché de construcción
+(`docker builder prune` la libera).
 
 ```bash
 git clone https://github.com/daniel02vazquez97-alt/G19X-ITH-DVT-209-ACADEMIC.git
